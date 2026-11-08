@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  A button row of the detailed photo screen (plus/photoscreen/photodetail.cpp).
+-->
+<panel
+ background_visible="false"
+ follows="left|right|top"
+ height="30"
+ layout="topleft"
+ name="plus_photoscreen_row"
+ width="260">
+    <button
+     follows="left|right|top"
+     height="22"
+     label="Button"
+     layout="topleft"
+     left="8"
+     right="-8"
+     top="4"
+     name="ctl" />
+</panel>

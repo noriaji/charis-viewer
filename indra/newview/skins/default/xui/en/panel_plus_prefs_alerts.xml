@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis の窓（元: 公式 Second_Life_Release#d567465e-26.5 の panel_preferences_alerts.xml。research/266 prefs-w-chat）.
+     Charis window: Preferences > Notifications in the psui look. The official file stays as it is (the ledger's
+     source: research/ui-ledger/map.json). The C++ (LLFloaterPreference::postBuild) asks for enabled_popups /
+     disabled_popups (LLScrollListCtrl: the official lists, each in a plus_ps_box kind glass) and enable_this_popup /
+     disable_this_popup (LLButton: compat buttons, the arrows as psui icons); friends_online_notify_checkbox is
+     enabled by it after login.
+     Size (1080 base; a preferences page, plus/prefscharis/prefs_tab_template.xml): 574 x 515, a scroll_container
+     with a panel 557 wide. Rows at left 14, 529 wide. From the top:
+       10 + the heading (tell_me_label) 40 + 3 checks 90 + 10 + the list's label 24 + the list 120 + 6 + the arrows 40
+       + 6 + the list's label 24 + the list 120 + 14 = 504 (no scroll at the default size; it scrolls in a shorter
+     window). The arrows: two 40 x 40 buttons with 20 between them, in the middle of the row (228 and 288). -->
+<panel
+ border="true"
+ follows="all"
+ height="515"
+ label="Popups"
+ layout="topleft"
+ left="0"
+ name="popups"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="popups_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="popups_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="504"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <plus_ps_text
+                 name="tell_me_label"
+                 follows="top|left"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="10"
+                 type="string"
+                 width="529">
+                    Tell me:
+                </plus_ps_text>
+                <plus_ps_check_compat
+                 name="notify_money_spend_checkbox"
+                 control_name="NotifyMoneySpend"
+                 follows="left|top|right"
+                 height="30"
+                 label="When I spend L$"
+                 layout="topleft"
+                 left="14"
+                 top="50"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="notify_money_received_checkbox"
+                 control_name="NotifyMoneyReceived"
+                 follows="left|top|right"
+                 height="30"
+                 label="When I get L$"
+                 layout="topleft"
+                 left="14"
+                 top="80"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="friends_online_notify_checkbox"
+                 control_name="ChatOnlineNotification"
+                 follows="left|top|right"
+                 height="30"
+                 label="When my friends log in or out"
+                 layout="topleft"
+                 left="14"
+                 top="110"
+                 width="529" />
+
+                <plus_ps_text
+                 name="show_label"
+                 follows="top|left"
+                 height="24"
+                 kind="white"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="150"
+                 type="string"
+                 width="529">
+                    Always show:
+                </plus_ps_text>
+                <plus_ps_box
+                 name="enabled_popups_box"
+                 follows="left|top|right"
+                 height="120"
+                 kind="glass"
+                 layout="topleft"
+                 left="14"
+                 top="174"
+                 width="529">
+                    <scroll_list
+                     name="enabled_popups"
+                     background_visible="false"
+                     follows="all"
+                     height="116"
+                     layout="topleft"
+                     left="2"
+                     multi_select="true"
+                     sort_ascending="true"
+                     sort_column="0"
+                     top="2"
+                     width="525" />
+                </plus_ps_box>
+                <plus_ps_button_compat
+                 name="enable_this_popup"
+                 follows="top|left"
+                 height="40"
+                 icon="chevron_up"
+                 layout="topleft"
+                 left="228"
+                 tool_tip="Always show the messages chosen in the list below"
+                 top="300"
+                 width="40">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.ClickEnablePopup" />
+                </plus_ps_button_compat>
+                <plus_ps_button_compat
+                 name="disable_this_popup"
+                 follows="top|left"
+                 height="40"
+                 icon="chevron_down"
+                 layout="topleft"
+                 left="288"
+                 tool_tip="Never show the messages chosen in the list above"
+                 top="300"
+                 width="40">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.ClickDisablePopup" />
+                </plus_ps_button_compat>
+
+                <plus_ps_text
+                 name="dont_show_label"
+                 follows="top|left"
+                 height="24"
+                 kind="white"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="346"
+                 type="string"
+                 width="529">
+                    Never show:
+                </plus_ps_text>
+                <plus_ps_box
+                 name="disabled_popups_box"
+                 follows="left|top|right"
+                 height="120"
+                 kind="glass"
+                 layout="topleft"
+                 left="14"
+                 top="370"
+                 width="529">
+                    <scroll_list
+                     name="disabled_popups"
+                     background_visible="false"
+                     follows="all"
+                     height="116"
+                     layout="topleft"
+                     left="2"
+                     multi_select="true"
+                     sort_ascending="true"
+                     sort_column="0"
+                     top="2"
+                     width="525" />
+                </plus_ps_box>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

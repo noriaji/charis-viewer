@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_safemode">
+	<panel.string name="badge_title">セーフモードで起動中</panel.string>
+	<panel.string name="badge_detail">一部の新しい描画機能を切っています</panel.string>
+	<panel.string name="next_start_not_written">「次回もセーフモードで起動する」をオンにできませんでした（[FILE] に書き込めません）。次の起動は通常の起動になります。</panel.string>
+	<panel.string name="next_start_not_removed">「次回もセーフモードで起動する」をオフにできませんでした（[FILE] を消せません）。通常の起動に戻すには、このファイルを手で消してください。</panel.string>
+</panel>

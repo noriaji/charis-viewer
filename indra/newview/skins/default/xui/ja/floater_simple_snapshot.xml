@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="simple_snapshot" title="アイテムのスナップショット">
+	<button name="new_snapshot_btn" label="撮影"/>
+	<button name="save_btn" label="保存"/>
+	<button name="cancel_btn" label="キャンセル"/>
+</floater>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- 環境設定「ゲームパッド」の「フライカム（キー）」タブ（plus/flycammouse）の日本語 -->
+<panel label="フライカム（キー）" name="tab_plus_flycam_mouse">
+	<text name="intro">キーボードとマウスで飛ぶフライカム（Charis メニューでオンにします）の設定です。</text>
+	<button label="初期設定に戻す" name="restore_defaults" tool_tip="このタブの設定をすべて初期設定に戻します。"/>
+	<text name="mouse_mode_label">マウスで見回す：</text>
+	<combo_box name="mouse_mode" tool_tip="マウスでフライカムの向きを変える方法です。「右ボタンを押している間」: 短くクリックすれば、今までどおり右クリックのメニューが出ます。「常に」: 飛んでいる間はカーソルが消えます。Alt を押している間はカーソルが戻ります。">
+		<combo_box.item label="使わない" name="off"/>
+		<combo_box.item label="右ボタンを押している間" name="right_button"/>
+		<combo_box.item label="常に（Alt でカーソル）" name="always"/>
+	</combo_box>
+	<slider label="見回しの速さ" name="mouse_sens" tool_tip="マウスを動かした時に向きが変わる量です。1 で一人称視点（マウスルック）と同じ量です（そちらのマウス感度も効きます）。"/>
+	<slider label="飛ぶ速さ" name="speed" tool_tip="キーで飛ぶ速さです（1 が普通で、50 まで）。飛んでいる間はマウスのホイールでも変えられます（Shift・Ctrl・Alt を押しながら回すとズーム）。ホイールで変えた速さは［キャンセル］でもそのままです。"/>
+	<slider label="Shift で加速（倍）" name="boost" tool_tip="Shift を押している間、何倍の速さで飛ぶかです。"/>
+	<slider label="なめらかさ（秒）" name="smooth" tool_tip="キーで動き出す・止まる時のなめらかさです。全速になるまで、止まるまでにかかるおよその秒数です。0 にするとすぐに動き、すぐに止まります。"/>
+	<slider label="傾ける速さ（度/秒）" name="roll_speed" tool_tip="Q と E でカメラを傾ける速さ（1 秒あたりの角度）です。Shift を押すと 3 倍になります。"/>
+	<text name="note">飛んでいる間: W A S D で移動、Space と C で上下、Q と E で傾け、Shift で加速、マウスのホイールで速さを変えます。3D マウスの設定は別にあります（移動と表示 ＞ その他のデバイス）。ゲームパッドのフライカムは「操作の割り当て」で設定します。</text>
+</panel>

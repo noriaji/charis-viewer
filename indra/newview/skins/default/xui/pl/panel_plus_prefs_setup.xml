@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Input panel" label="Środowisko">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="setup_scroll">
+			<panel name="setup_scroll_panel">
+				<plus_ps_text name="Network:">
+					Sieć:
+				</plus_ps_text>
+				<plus_ps_text name="Maximum bandwidth">
+					Maks. przepustowość
+				</plus_ps_text>
+				<plus_ps_check_compat name="connection_port_enabled" label="Własny port" />
+				<plus_ps_spinner name="connection_port" label="Numer portu:" />
+				<plus_ps_text name="Web:">
+					WWW:
+				</plus_ps_text>
+				<plus_ps_radio name="preferred_browser_behavior">
+					<radio_item name="internal" label="Własna (Chrome, Firefox, IE) dla wszystkich linków" tool_tip="Używa domyślnej systemowej przeglądarki internetowej do przeglądania plików pomocy, otwierania linków itp. Nie jest zalecane zaznaczanie tej opcji, jeśli uruchamiasz Second Life na pełnym ekranie." />
+					<radio_item name="external" label="Wbudowana tylko dla linków Second Life" tool_tip="Używa domyślnej systemowej przeglądarki internetowej do przeglądania plików pomocy, otwierania linków itp. Przeglądarka wbudowana będzie używana tylko dla linków LindenLab/SecondLife." />
+					<radio_item name="external_all" label="Wbudowana dla wszystkich linków" tool_tip="Używa wbudowanej przeglądarki internetowej do przeglądania plików pomocy, otwierania linków itp. Ta przeglądarka otwiera nowe okienko wewnątrz [APP_NAME]." />
+				</plus_ps_radio>
+				<plus_ps_check_compat name="browser_javascript_enabled" label="Włącz Javascript" />
+				<plus_ps_text name="Software updates:">
+					Aktualizacje:
+				</plus_ps_text>
+				<plus_ps_combo name="updater_service_combobox">
+					<plus_ps_combo.item name="Install_automatically" label="Instaluj automatycznie" />
+					<plus_ps_combo.item name="Install_manual" label="Pobieraj i instaluj łatki ręcznie" />
+				</plus_ps_combo>
+				<plus_ps_check_compat name="update_willing_to_test" label="Chcę aktualizować do wersji testowych" />
+				<plus_ps_text name="Proxy Settings:">
+					Ustawienia proxy:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_proxy" label="Dostosuj ustawienia" label_selected="Przeglądaj" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

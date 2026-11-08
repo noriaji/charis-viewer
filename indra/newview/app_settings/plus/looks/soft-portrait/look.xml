@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Soft Portrait</string><key>ja</key><string>やわらかな肌色</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Warm, gentle skin tones with soft contrast, for portraits.</string><key>ja</key><string>肌が暖かくやさしく見える、やわらかいコントラスト。人物の写真に。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>100</integer>
+  </map>
+</llsd>

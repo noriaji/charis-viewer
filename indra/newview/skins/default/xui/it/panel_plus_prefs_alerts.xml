@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="popups" label="Pop-up">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="popups_scroll">
+			<panel name="popups_scroll_panel">
+				<plus_ps_text name="tell_me_label">
+					Avvisami:
+				</plus_ps_text>
+				<plus_ps_check_compat name="notify_money_spend_checkbox" label="Quando spendo $" />
+				<plus_ps_check_compat name="notify_money_received_checkbox" label="Quando ottengo $" />
+				<plus_ps_check_compat name="friends_online_notify_checkbox" label="Quando i miei amici entrano o escono da Second Life" />
+				<plus_ps_text name="show_label">
+					Mostra sempre:
+				</plus_ps_text>
+				<plus_ps_text name="dont_show_label">
+					Non mostrare mai:
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="uploads" label="アップロード">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="uploads_scroll">
+			<panel name="uploads_scroll_panel">
+				<plus_ps_text name="title">
+					アップロード先のフォルダ
+				</plus_ps_text>
+				<plus_ps_text name="title_models">
+					画像
+				</plus_ps_text>
+				<plus_ps_text name="title_sounds">
+					サウンド
+				</plus_ps_text>
+				<plus_ps_text name="title_animation">
+					アニメーション
+				</plus_ps_text>
+				<plus_ps_text name="title_model">
+					モデル
+				</plus_ps_text>
+				<plus_ps_text name="title_pbr">
+					PBR マテリアル
+				</plus_ps_text>
+				<plus_ps_text name="upload_help">
+					アップロード先を変えるには、インベントリでそのフォルダを右クリックし、「デフォルトとして使用」を選びます。
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

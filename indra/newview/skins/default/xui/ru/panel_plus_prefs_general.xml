@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_general.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="general_panel" label="Общие">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="general_scroll">
+            <panel name="general_scroll_panel">
+                <plus_ps_text name="language_textbox">
+                    Язык:
+                </plus_ps_text>
+                <plus_ps_combo name="language_combobox">
+                    <plus_ps_combo.item name="English" label="English - Английский" />
+                    <plus_ps_combo.item name="Danish" label="Dansk – датский (бета-версия)" />
+                    <plus_ps_combo.item name="Deutsch(German)" label="Deutsch – немецкий (бета-версия)" />
+                    <plus_ps_combo.item name="Spanish" label="Español – испанский (бета-версия)" />
+                    <plus_ps_combo.item name="French" label="Français – французский (бета-версия)" />
+                    <plus_ps_combo.item name="Italian" label="Italiano – итальянский (бета-версия)" />
+                    <plus_ps_combo.item name="Polish" label="Polski – польский (бета-версия)" />
+                    <plus_ps_combo.item name="Portugese" label="Português – португальский (бета-версия)" />
+                    <plus_ps_combo.item name="Russian" label="Русский (бета-версия)" />
+                    <plus_ps_combo.item name="Turkish" label="Türkçe - турецкий (бета-версия)" />
+                    <plus_ps_combo.item name="(Japanese)" label="日本語 – японский (бета-версия)" />
+                    <plus_ps_combo.item name="Traditional Chinese" label="китайский, традиционное письмо - бета-версия" />
+                </plus_ps_combo>
+                <plus_ps_text name="language_textbox2">
+                    (Требуется перезапуск)
+                </plus_ps_text>
+                <plus_ps_text name="maturity_desired_prompt">
+                    Показывать контент:
+                </plus_ps_text>
+                <plus_ps_combo name="maturity_desired_combobox">
+                    <plus_ps_combo.item name="Desired_Adult" label="Общий, умеренный, для взрослых" />
+                    <plus_ps_combo.item name="Desired_Mature" label="Общий и умеренный" />
+                    <plus_ps_combo.item name="Desired_PG" label="Общий" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="favorites_on_login_check" label="Показывать любимые места на экране входа" />
+                <plus_ps_text name="favorites_check_extra_text">
+                    (Другие пользователи этого компьютера также увидят их)
+                </plus_ps_text>
+                <plus_ps_text name="name_tags_textbox">
+                    Теги имен:
+                </plus_ps_text>
+                <plus_ps_radio name="Name_Tag_Preference">
+                    <radio_item name="radio" label="Выкл." />
+                    <radio_item name="radio2" label="Вкл." />
+                    <radio_item name="radio3" label="Временный показ" />
+                </plus_ps_radio>
+                <plus_ps_check_compat name="show_my_name_checkbox1" label="Мое имя" />
+                <plus_ps_check_compat name="show_slids" label="Имена пользователей" tool_tip="Показывать имя пользователя, например, bobsmith123" />
+                <plus_ps_check_compat name="display_names_check" label="Экранные имена" tool_tip="Показывать экранные имена в чате, IM, тегах имен и пр." />
+                <plus_ps_check_compat name="show_friends" label="Подсветка друзей" tool_tip="Подсвечивать теги имен ваших друзей" />
+                <plus_ps_text name="inworld_typing_rg_label">
+                    Нажатие клавиш с буквами:
+                </plus_ps_text>
+                <plus_ps_radio name="inworld_typing_preference">
+                    <radio_item name="radio_start_chat" label="Начинает локальный чат" />
+                    <radio_item name="radio_move" label="Приводит к перемещению (т. е. WASD)" />
+                </plus_ps_radio>
+                <plus_ps_text name="title_afk_text">
+                    Задержка режима «Отошел»:
+                </plus_ps_text>
+                <plus_ps_combo name="afk" label="Задержка режима «Отошел»:">
+                    <plus_ps_combo.item name="item0" label="2 мин" />
+                    <plus_ps_combo.item name="item1" label="5 мин" />
+                    <plus_ps_combo.item name="item2" label="10 мин" />
+                    <plus_ps_combo.item name="item3" label="30 мин" />
+                    <plus_ps_combo.item name="item4" label="никогда" />
+                </plus_ps_combo>
+                <plus_ps_text name="text_box3">
+                    Ответ в режиме «Не беспокоить»:
+                </plus_ps_text>
+                <plus_ps_box name="dnd_response_glass">
+                    <text_editor name="do_not_disturb_response">
+                        log_in_to_change
+                    </text_editor>
+                </plus_ps_box>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

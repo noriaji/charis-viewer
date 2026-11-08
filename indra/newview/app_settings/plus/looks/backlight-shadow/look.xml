@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Backlight and Shadow</string><key>ja</key><string>逆光と影</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Teal-green shadows, washed-out highlights and a firm contrast: a city street against a low sun.</string><key>ja</key><string>影は青緑、明るい所は色を抜いて白っぽく。コントラスト強め。低い太陽を背にした街の写真に。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>35</integer>
+  </map>
+</llsd>

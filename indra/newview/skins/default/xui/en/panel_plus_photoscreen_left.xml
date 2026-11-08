@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The left side of the detailed photo screen (plus/photoscreen/photodetail_left.cpp, research/221): the rail of
+  eight tabs (and the conversations tab at its bottom) and, beside it, the tab's column of headings and rows (made in the code by psui/psstack.cpp).
+  Sizes at a window 1080 high: the rail 123, the panel 280 with a gap of 8 around it; the code lays them out
+  again for the window (layoutLeft). The words of the column are the strings below.
+-->
+<panel
+ background_visible="false"
+ follows="left|top|bottom"
+ height="800"
+ layout="topleft"
+ left="0"
+ top="0"
+ mouse_opaque="false"
+ name="plus_photoscreen_left"
+ width="419">
+    <string name="SecScene">Scene</string>
+    <string name="Location">Location</string>
+    <string name="LocationTip">The parcel you are on. Click for About Land.</string>
+    <string name="LocationNone">(unknown parcel)</string>
+    <string name="TimeOfDay">Time of Day</string>
+    <string name="TimeTip">Sunrise, noon, sunset or midnight, as World &gt; Environment sets them. The sky's card brings back the land's sky.</string>
+    <string name="Time0">6:00</string>
+    <string name="Time1">12:00</string>
+    <string name="Time2">18:00</string>
+    <string name="Time3">0:00</string>
+    <string name="TimeOther">--</string>
+    <string name="Sky">Windlight</string>
+    <string name="SkyTip">The sky in use. Click to choose from the list of skies (All, Favorites, Recent); click again to close it.</string>
+    <string name="SkyLand">The land's sky</string>
+    <string name="SkyCustom">Custom sky</string>
+    <string name="SkyBackLand">Sky: Back to the Land's</string>
+    <string name="WaterBackLand">Water: Back to the Land's</string>
+    <string name="Water">Water</string>
+    <string name="WaterTip">The water in use. Click to choose from the list of waters (All, Favorites, Recent); click again to close it.</string>
+    <string name="WaterLand">The land's water</string>
+    <string name="WaterCustom">Custom water</string>
+    <string name="ListAll">All</string>
+    <string name="ListFav">Favorites</string>
+    <string name="ListRecent">Recent</string>
+    <string name="LandTip">Back to the land's own (the region or parcel's environment)</string>
+    <string name="RowTip">Click (or Return) to use it. The star (or Shift+Return) adds it to or removes it from your favorites, shared with the photo tools.</string>
+    <string name="Missing">[NAME] (not found)</string>
+    <string name="MissingTip">Not in your inventory (deleted, in the trash, or not loaded yet). The star removes it from the list.</string>
+    <string name="MissingTipRecent">Not in your inventory (deleted, in the trash, or not loaded yet). Newer ones push it out of the list.</string>
+    <string name="EmptyFav">No favorites yet. Add one with the star of a row in All.</string>
+    <string name="ListMore">and [COUNT] more (search in the photo tools)</string>
+    <string name="EmptyRecent">Nothing used yet. What you choose here or in the photo tools is listed.</string>
+    <string name="FavFull">The favorites are full. Remove one with its star first.</string>
+    <string name="ItemGone">That sky or water is not in your inventory any more.</string>
+    <string name="SecDisplay">Environment</string>
+    <string name="ShowHud">Show HUD</string>
+    <string name="ShowHudTip">Your HUD attachments in the picture. As they were when you leave the photo screen.</string>
+    <string name="ShowParticles">Show Particles</string>
+    <string name="ShowParticlesTip">Smoke, sparkles and the like. Shown again when you leave the photo screen.</string>
+    <string name="ShowShadows">Show Shadows</string>
+    <string name="MaxLod">Maximum LOD</string>
+    <string name="SecAvatar">Avatar</string>
+    <string name="Complexity">Complexity [N]</string>
+    <string name="StopAO">Freeze Animation (AO)</string>
+    <string name="StopAOTip">Turns the animation overrider off so it does not change your pose while you shoot</string>
+    <string name="ResetAvatar">Reset Avatar</string>
+    <string name="ResetAvatarTip">The AO back on if it was stopped here, the world going on again and the eyes as normal</string>
+    <string name="SecLook">Appearance</string>
+    <string name="SecPose">Poses</string>
+    <string name="OpenPoser">Open the Poser</string>
+    <string name="OpenPoserTip">Opens the poser, where poses are loaded and saved</string>
+    <string name="SavedPoses">Saved Poses</string>
+    <string name="NoPoses">No poses saved yet. Poses are made and saved in the poser.</string>
+    <string name="SecMotion">Motion</string>
+    <string name="SecLight">Light</string>
+    <string name="SecShadow">Shadows</string>
+    <string name="SecLensFx">Lens Effects</string>
+    <string name="SecAir">Fog &amp; Light Shafts</string>
+    <string name="SecLens">Camera</string>
+    <string name="CamOrbit">Orbit</string>
+    <string name="CamOrbitTip">Hold it on a side to orbit the camera around what it looks at; faster toward the edge. The dot in the middle puts the camera back.</string>
+    <string name="CamPan">Pan</string>
+    <string name="CamPanTip">Hold it on a side to move the camera up, down, left or right; faster toward the edge. The dot in the middle puts the camera back.</string>
+    <string name="CamZoom">Zoom</string>
+    <string name="CamZoomTip">Drag up to come closer, down to go farther (the arrow keys too).</string>
+    <string name="CamZoomInTip">Closer (hold to keep zooming)</string>
+    <string name="CamZoomOutTip">Farther (hold to keep zooming)</string>
+    <string name="Tilt">Tilt</string>
+    <string name="TiltTip">Tilts the picture sideways: + is to the right, 0 is level. The same tilt as the photo tools' slider.</string>
+    <string name="TiltLeftTip">Tilt the camera to the left (hold to keep tilting)</string>
+    <string name="TiltRightTip">Tilt the camera to the right (hold to keep tilting)</string>
+    <string name="TiltValueTip">How far the camera is tilted (degrees, + is to the right)</string>
+    <string name="TiltLevel">Level</string>
+    <string name="TiltLevelTip">Level the camera (no tilt)</string>
+    <string name="PreciseCamera">Use precise controls</string>
+    <string name="PreciseCameraTip">Opens Camera Position, where the camera's place and what it looks at are typed in as numbers.</string>
+    <string name="SecFlycam">Flycam</string>
+    <string name="Flycam">Flycam (keyboard and mouse)</string>
+    <string name="FlycamTip">The camera leaves the avatar and flies free. [KEY] also turns it on and off.</string>
+    <string name="FlycamKeys0">W A S D fly, Space / C up and down, the arrow keys turn, the wheel sets the speed, Q / E tilt.</string>
+    <string name="FlycamKeys1">W A S D fly, Space / C up and down. Hold the right button to look around; the wheel sets the speed, Q / E tilt.</string>
+    <string name="FlycamKeys2">W A S D fly, Space / C up and down. The mouse looks around (Alt for the cursor); the wheel sets the speed, Q / E tilt.</string>
+    <string name="SecGuide">Composition Guide</string>
+    <string name="SecQuality">Graphics Quality</string>
+    <string name="QualityLevel">Quality level</string>
+    <string name="QualityLevelTip">Seven quality levels, Low to Ultra (the same as the quality slider in Preferences and the photo tools' Quality tab). The viewer stops for a moment while a level is applied.</string>
+    <string name="QualityLevel0">Low</string>
+    <string name="QualityLevel1">Low-Mid</string>
+    <string name="QualityLevel2">Mid</string>
+    <string name="QualityLevel3">Mid-High</string>
+    <string name="QualityLevel4">High</string>
+    <string name="QualityLevel5">High-Ultra</string>
+    <string name="QualityLevel6">Ultra</string>
+    <string name="SecQualityAA">Anti-Aliasing</string>
+    <string name="SecQualityShading">Shading &amp; Glow</string>
+    <string name="SecQualityReflect">Reflections &amp; Water</string>
+    <string name="SecQualityDetail">Detail &amp; Counts</string>
+    <plus_ps_box
+     corners="tl"
+     follows="left|top|bottom"
+     height="800"
+     kind="rail"
+     layout="topleft"
+     left="0"
+     name="rail"
+     top="0"
+     width="123">
+        <scroll_container
+         border_visible="false"
+         follows="all"
+         height="800"
+         layout="topleft"
+         left="0"
+         name="rail_scroll"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="123">
+            <panel
+             background_visible="false"
+             follows="left|top"
+             height="668"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             name="rail_tabs"
+             top="0"
+             width="123">
+                <plus_ps_left_rail_tab
+                 follows="left|top"
+                 height="83"
+                 icon="quality"
+                 label="Quality"
+                 layout="topleft"
+                 left="0"
+                 name="tab_quality"
+                 tool_tip="The overall quality and its cost: the seven levels, draw distance, object detail, cleaner photos; anti-aliasing, shading, reflections and water, and the finer detail"
+                 top="4"
+                 width="123" />
+                <plus_ps_left_rail_tab
+                 follows="left|top"
+                 height="83"
+                 icon="scene"
+                 initial_value="true"
+                 label="Scene"
+                 layout="topleft"
+                 left="0"
+                 name="tab_scene"
+                 tool_tip="The place, the time of day, the sky and what is shown"
+                 top="87"
+                 width="123" />
+                <plus_ps_left_rail_tab
+                 follows="left|top"
+                 height="83"
+                 icon="avatar"
+                 label="Avatar"
+                 layout="topleft"
+                 left="0"
+                 name="tab_avatar"
+                 tool_tip="Your avatar: the AO, stopping the world, the eyes and the look"
+                 top="170"
+                 width="123" />
+                <plus_ps_left_rail_tab
+                 follows="left|top"
+                 height="83"
+                 icon="environment"
+                 label="Environment"
+                 layout="topleft"
+                 left="0"
+                 name="tab_environment"
+                 tool_tip="Water, rain and snow, fog, stars and light shafts"
+                 top="253"
+                 width="123" />
+                <plus_ps_left_rail_tab
+                 follows="left|top"
+                 height="83"
+                 icon="lighting"
+                 label="Lighting"
+                 layout="topleft"
+                 left="0"
+                 name="tab_lighting"
+                 tool_tip="The light's direction, the shadows and the indirect light"
+                 top="336"
+                 width="123" />
+                <plus_ps_left_rail_tab
+                 follows="left|top"
+                 height="83"
+                 icon="pose"
+                 label="Pose &amp;&#10;Animation"
+                 layout="topleft"
+                 left="0"
+                 name="tab_pose"
+                 tool_tip="The poser and your saved poses"
+                 top="419"
+                 width="123" />
+                <plus_ps_left_rail_tab
+                 follows="left|top"
+                 height="83"
+                 icon="camera"
+                 label="Camera"
+                 layout="topleft"
+                 left="0"
+                 name="tab_camera"
+                 tool_tip="Camera controls, the flycam and the composition guide"
+                 top="502"
+                 width="123" />
+                <plus_ps_left_rail_tab
+                 follows="left|top"
+                 height="83"
+                 icon="effects"
+                 label="Effects"
+                 layout="topleft"
+                 left="0"
+                 name="tab_effects"
+                 tool_tip="Lens flare, star rays, glare, fog and light shafts"
+                 top="585"
+                 width="123" />
+            </panel>
+        </scroll_container>
+        <!-- the conversations (photoconv_panel.cpp): kept at the rail's bottom, out of its scrolling (layoutLeft) -->
+        <plus_ps_left_rail_tab
+         follows="left|bottom"
+         height="83"
+         icon="message"
+         label="Conversations"
+         layout="topleft"
+         left="0"
+         name="tab_conv"
+         tool_tip="IMs and group chats: read and answer them here. The number is what is not read yet."
+         top="717"
+         width="123" />
+    </plus_ps_box>
+    <plus_ps_box
+     corners="all"
+     follows="left|top|bottom"
+     height="784"
+     kind="panel"
+     layout="topleft"
+     left="131"
+     name="body"
+     top="8"
+     width="280">
+        <scroll_container
+         border_visible="false"
+         follows="all"
+         height="772"
+         layout="topleft"
+         left="0"
+         name="scroll"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="4"
+         width="280">
+            <panel
+             background_visible="false"
+             follows="left|top"
+             height="772"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             name="content"
+             top="0"
+             width="265" />
+        </scroll_container>
+    </plus_ps_box>
+</panel>

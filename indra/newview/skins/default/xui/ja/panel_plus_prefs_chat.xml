@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="chat" label="チャット">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="chat_scroll">
+			<panel name="chat_scroll_panel">
+				<panel name="general_chat_settings">
+					<plus_ps_header name="h_chat" label="チャット" />
+					<plus_ps_check_compat name="auto_complete_gestures" label="近隣チャットでジェスチャーを自動補完する" />
+					<plus_ps_check_compat name="play_typing_animation" label="チャット中にタイピング動作のアニメーションを再生" />
+					<plus_ps_check_compat name="bubble_text_chat" label="吹き出しチャット" />
+					<plus_ps_text name="font_size">
+						フォントサイズ：
+					</plus_ps_text>
+					<plus_ps_combo name="chat_font_size">
+						<plus_ps_combo.item name="Small" label="小" />
+						<plus_ps_combo.item name="Medium" label="中" />
+						<plus_ps_combo.item name="Large" label="大" />
+					</plus_ps_combo>
+				</panel>
+				<panel name="im_notification_settings">
+					<plus_ps_header name="h_im" label="IM と通知" />
+					<plus_ps_check_compat name="voice_call_friends_only_check" label="フレンドとグループ以外からのコールと IM は受け取らない" />
+					<plus_ps_text name="email_settings">
+						[https://accounts.secondlife.com/change_email?lang=ja オフライン時のIMのメール送信先の設定]
+					</plus_ps_text>
+					<plus_ps_text name="friend_ims">
+						フレンドからのIM：
+					</plus_ps_text>
+					<plus_ps_combo name="FriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="会話ウィンドウを開く" />
+						<plus_ps_combo.item name="PopUpMessage" label="メッセージをポップアップ表示" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="ツールバーのボタンを点滅" />
+						<plus_ps_combo.item name="NoAction" label="何もしない" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_friend_im" label="サウンドを再生" />
+					<plus_ps_text name="non_friend_ims">
+						フレンド以外からのIM：
+					</plus_ps_text>
+					<plus_ps_combo name="NonFriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="会話ウィンドウを開く" />
+						<plus_ps_combo.item name="PopUpMessage" label="メッセージをポップアップ表示" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="ツールバーのボタンを点滅" />
+						<plus_ps_combo.item name="NoAction" label="何もしない" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_non_friend_im" label="サウンドを再生" />
+					<plus_ps_text name="conference_ims">
+						会議IM：
+					</plus_ps_text>
+					<plus_ps_combo name="ConferenceIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="会話ウィンドウを開く" />
+						<plus_ps_combo.item name="PopUpMessage" label="メッセージをポップアップ表示" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="ツールバーのボタンを点滅" />
+						<plus_ps_combo.item name="NoAction" label="何もしない" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_conference_im" label="サウンドを再生" />
+					<plus_ps_text name="group_chat">
+						グループチャット：
+					</plus_ps_text>
+					<plus_ps_combo name="GroupChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="会話ウィンドウを開く" />
+						<plus_ps_combo.item name="PopUpMessage" label="メッセージをポップアップ表示" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="ツールバーのボタンを点滅" />
+						<plus_ps_combo.item name="NoAction" label="何もしない" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_group_chat_im" label="サウンドを再生" />
+					<plus_ps_text name="nearby_chat">
+						近隣チャット：
+					</plus_ps_text>
+					<plus_ps_combo name="NearbyChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="会話ウィンドウを開く" />
+						<plus_ps_combo.item name="PopUpMessage" label="メッセージをポップアップ表示" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="ツールバーのボタンを点滅" />
+						<plus_ps_combo.item name="NoAction" label="何もしない" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_nearby_chat_im" label="サウンドを再生" />
+					<plus_ps_text name="object_ims">
+						オブジェクトによるIM：
+					</plus_ps_text>
+					<plus_ps_combo name="ObjectIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="会話ウィンドウを開く" />
+						<plus_ps_combo.item name="PopUpMessage" label="メッセージをポップアップ表示" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="ツールバーのボタンを点滅" />
+						<plus_ps_combo.item name="NoAction" label="何もしない" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_object_im" label="サウンドを再生" />
+					<plus_ps_text name="notifications_alert">
+						通知を一時的に止めるには「コミュニケーション」＞「着信拒否」を使います。
+					</plus_ps_text>
+				</panel>
+				<panel name="play_sound_settings">
+					<plus_ps_header name="h_sounds" label="サウンド" />
+					<plus_ps_text name="play_sound">
+						サウンドを再生：
+					</plus_ps_text>
+					<plus_ps_check_compat name="new_conversation" label="新しい会話" />
+					<plus_ps_check_compat name="teleport_offer" label="テレポートの誘い" />
+					<plus_ps_check_compat name="incoming_voice_call" label="ボイスコールの着信" />
+					<plus_ps_check_compat name="inventory_offer" label="インベントリの受け渡し" />
+					<plus_ps_check_compat name="chat_mention" label="チャットでのメンション" />
+				</panel>
+				<panel name="log_settings">
+					<plus_ps_header name="h_logs" label="会話の記録" />
+					<plus_ps_text name="logging_label">
+						保存する内容：
+					</plus_ps_text>
+					<plus_ps_combo name="conversation_log_combo">
+						<plus_ps_combo.item name="log_and_transcripts" label="ログと会話の記録" />
+						<plus_ps_combo.item name="log_only" label="ログのみ" />
+						<plus_ps_combo.item name="no_log_or_transcript" label="ログも記録も残さない" />
+					</plus_ps_combo>
+					<plus_ps_button_compat name="clear_log" label="ログを消去…" />
+					<plus_ps_button_compat name="delete_transcripts" label="会話の記録を削除…" />
+					<plus_ps_text name="log_location_label">
+						保存先：
+					</plus_ps_text>
+					<plus_ps_button_compat name="log_path_button" label="参照…" label_selected="参照" />
+				</panel>
+				<plus_ps_header name="h_tools" label="翻訳と入力の補助" />
+				<plus_ps_button_compat name="ok_btn" label="翻訳…" />
+				<plus_ps_button_compat name="autoreplace_showgui" label="自動置換…" />
+				<plus_ps_button_compat name="spellcheck_showgui" label="スペルチェック…" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

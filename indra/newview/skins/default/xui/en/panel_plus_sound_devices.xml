@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window (from: official Second_Life_Release#d567465e-26.5 panel_sound_devices.xml;
+     research/266 4. prefs-w-basic): the voice devices, a part of the Voice page (panel_plus_prefs_voice.xml
+     includes it: class panel_voice_device_settings, LLPanelVoiceDeviceSettings). No ground and no scroll of
+     its own: it lies in the Voice page's list, 557 wide. Height (1080 base): input 33 + output 33 + 6
+     + the microphone row 33 + 4 = 109. The class draws the meter's bars at the rects of bar0..bar4 (in this
+     panel's coordinates) and shows one of wait_text, disabled_text and unmute_btn at a time over them. -->
+<panel
+ name="device_settings_panel"
+ background_visible="false"
+ follows="left|top"
+ height="109"
+ label="Device Settings"
+ layout="topleft"
+ width="557">
+    <panel.string
+     name="default_text">
+        Default
+    </panel.string>
+    <string
+     name="name_no_device">
+        No Device
+    </string>
+    <string
+     name="name_default_system_device">
+        Default System Device
+    </string>
+    <string
+     name="device_not_loaded">
+        Device not loaded
+    </string>
+    <plus_ps_text
+     name="Input"
+     follows="left|top"
+     height="33"
+     layout="topleft"
+     left="14"
+     length="1"
+     top="0"
+     type="string"
+     width="100">
+        Input
+    </plus_ps_text>
+    <plus_ps_combo
+     name="voice_input_device"
+     control_name="VoiceInputAudioDevice"
+     follows="left|top|right"
+     height="33"
+     layout="topleft"
+     left="126"
+     max_chars="128"
+     top="0"
+     width="417" />
+    <plus_ps_text
+     name="Output"
+     follows="left|top"
+     height="33"
+     layout="topleft"
+     left="14"
+     length="1"
+     top="33"
+     type="string"
+     width="100">
+        Output
+    </plus_ps_text>
+    <plus_ps_combo
+     name="voice_output_device"
+     control_name="VoiceOutputAudioDevice"
+     follows="left|top|right"
+     height="33"
+     layout="topleft"
+     left="126"
+     max_chars="128"
+     top="33"
+     width="417" />
+    <plus_ps_text
+     name="My volume label"
+     follows="left|top"
+     height="33"
+     layout="topleft"
+     left="14"
+     length="1"
+     top="72"
+     type="string"
+     width="100">
+        Mic volume:
+    </plus_ps_text>
+    <slider_bar
+     name="mic_volume_slider"
+     control_name="AudioLevelMic"
+     follows="left|top"
+     height="17"
+     increment="0.025"
+     initial_value="1.0"
+     layout="topleft"
+     left="126"
+     max_val="2"
+     tool_tip="Change the mic level using this slider"
+     top="80"
+     width="200" />
+    <!-- the meter: the class draws its bars at these places (getRect() in this panel, so they stay its children) -->
+    <locate
+     name="bar0"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="338"
+     top="78"
+     width="20" />
+    <locate
+     name="bar1"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="363"
+     top="78"
+     width="20" />
+    <locate
+     name="bar2"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="388"
+     top="78"
+     width="20" />
+    <locate
+     name="bar3"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="413"
+     top="78"
+     width="20" />
+    <locate
+     name="bar4"
+     follows="left|top"
+     height="20"
+     layout="topleft"
+     left="438"
+     top="78"
+     width="20" />
+    <!-- one of these three at a time, over the meter (the class shows them by the voice's state) -->
+    <plus_ps_text
+     name="wait_text"
+     follows="left|top"
+     height="33"
+     kind="white"
+     layout="topleft"
+     left="338"
+     length="1"
+     top="72"
+     type="string"
+     width="205">
+        Please wait
+    </plus_ps_text>
+    <plus_ps_text
+     name="disabled_text"
+     follows="left|top"
+     height="33"
+     kind="white"
+     layout="topleft"
+     left="338"
+     length="1"
+     top="72"
+     type="string"
+     width="205">
+        Disabled
+    </plus_ps_text>
+    <plus_ps_button_compat
+     name="unmute_btn"
+     follows="left|top"
+     height="30"
+     label="Unmute"
+     layout="topleft"
+     left="338"
+     top="73"
+     width="120" />
+</panel>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="Geräteeinstellungen">
+    <panel.string name="default_text">
+        Standard
+    </panel.string>
+    <string name="name_no_device">
+        Kein Gerät
+    </string>
+    <string name="name_default_system_device">
+        Standardsystemgerät
+    </string>
+    <plus_ps_text name="Input">
+        Eingabe
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        Ausgabe
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        Mikrofonlautstärke:
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="Mit diesem Schieberegler können Sie den Mikrofonpegel ändern" />
+    <plus_ps_text name="wait_text">
+        Bitte warten
+    </plus_ps_text>
+</panel>

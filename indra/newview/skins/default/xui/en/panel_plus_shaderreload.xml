@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Texts of plus/shaderreload (research/250: the notice while the shaders are made in the background).
+  Never shown: the viewer reads its strings.
+-->
+<panel
+ name="plus_shaderreload"
+ visible="false"
+ height="10"
+ width="10">
+    <panel.string name="preparing">Preparing the shaders...</panel.string>
+    <panel.string name="percent">[PERCENT]%</panel.string>
+    <panel.string name="switching">Switching to the new shaders...</panel.string>
+    <panel.string name="failed">Some shaders could not be prepared (see the log)</panel.string>
+</panel>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="settings_color" title="色の設定">
+	<filter_editor name="filter_input" label="検索用語を入力する"/>
+	<scroll_list name="setting_list">
+		<scroll_list.columns name="color" label="色"/>
+	</scroll_list>
+	<text name="color_name_txt">
+		色の名前
+	</text>
+	<spinner name="alpha_spinner" label="アルファ"/>
+	<button name="default_btn" label="デフォルトにリセット"/>
+	<check_box name="hide_default" label="変更した色だけを表示"/>
+</floater>

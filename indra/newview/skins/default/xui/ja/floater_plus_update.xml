@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_update" title="Charis Viewer の新しい版">
+	<floater.string name="body">Charis Viewer の新しい版 [VERSION] が出ています。今お使いの版は [CURRENT] です。</floater.string>
+	<floater.string name="body_required">今お使いの版 [CURRENT] はサポートが終わりました。[VERSION] に更新してください。</floater.string>
+	<floater.string name="notes">更新内容: [URL]</floater.string>
+	<floater.string name="page">ダウンロードページ: [URL]</floater.string>
+	<floater.string name="btn_notes">更新内容を開く</floater.string>
+	<floater.string name="btn_notes_tip">更新内容のページをブラウザで開きます（ダウンロードページの指定がないため）</floater.string>
+	<button name="btn_download" label="ダウンロードページへ" tool_tip="ダウンロードページをブラウザで開きます" />
+	<button name="btn_later" label="あとで" tool_tip="閉じます。1 日以上たった後の起動で、もう一度お知らせします。" />
+	<button name="btn_skip" label="この版は通知しない" tool_tip="これより新しい版が出るまで、お知らせしません" />
+</floater>

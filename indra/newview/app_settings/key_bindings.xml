@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<keys xml_version="3">
+  <first_person>
+    <binding key="A" mask="NONE" command="slide_left"/>
+    <binding key="D" mask="NONE" command="slide_right"/>
+    <binding key="W" mask="NONE" command="push_forward"/>
+    <binding key="S" mask="NONE" command="push_backward"/>
+    <binding key="E" mask="NONE" command="jump"/>
+    <binding key="C" mask="NONE" command="push_down"/>
+    <binding key="C" mask="SHIFT" command="toggle_down"/>
+    <binding key="F" mask="NONE" command="toggle_fly"/>
+    <!-- plus: the flycam on and off in every mode (plus/flycammouse; the same key as the menu item) -->
+    <binding key="F" mask="ALT_SHIFT" command="toggle_flycam"/>
+    <!-- /plus -->
+
+    <binding key="LEFT" mask="NONE" command="slide_left"/>
+    <binding key="RIGHT" mask="NONE" command="slide_right"/>
+    <binding key="UP" mask="NONE" command="push_forward"/>
+    <binding key="DOWN" mask="NONE" command="push_backward"/>
+    <binding key="PGUP" mask="NONE" command="jump"/>
+    <binding key="PGDN" mask="NONE" command="push_down"/>
+    <binding key="HOME" mask="NONE" command="toggle_fly"/>
+
+    <binding key="SPACE" mask="NONE" command="stop_moving"/>
+    <binding key="ENTER" mask="NONE" command="start_chat"/>
+    <binding key="DIVIDE" mask="NONE" command="start_gesture"/>
+
+    <binding key="" mask="NONE" mouse="MMB" command="voice_follow_key"/>
+
+    <binding key="" mask="NONE" mouse="LMB" command="script_trigger_lbutton"/>
+
+    <binding key="" mask="none" controller="axis_forward" command="push_forward"/>
+    <binding key="" mask="none" controller="axis_backward" command="push_backward"/>
+    <binding key="" mask="none" controller="axis_left" command="slide_left"/>
+    <binding key="" mask="none" controller="axis_right" command="slide_right"/>
+    <binding key="" mask="none" controller="button_a" command="jump"/>
+    <binding key="" mask="none" controller="button_b" command="push_down"/>
+    <binding key="" mask="none" controller="axis_turn_left" command="turn_left"/>
+    <binding key="" mask="none" controller="axis_turn_right" command="turn_right"/>
+    <binding key="" mask="none" controller="axis_look_up" command="pitch_forward"/>
+    <binding key="" mask="none" controller="axis_look_down" command="pitch_backward"/>
+  </first_person>
+  <third_person>
+    <binding key="A" mask="NONE" command="turn_left"/>
+    <binding key="D" mask="NONE" command="turn_right"/>
+    <binding key="A" mask="SHIFT" command="slide_left"/>
+    <binding key="D" mask="SHIFT" command="slide_right"/>
+    <binding key="W" mask="NONE" command="push_forward"/>
+    <binding key="S" mask="NONE" command="push_backward"/>
+    <binding key="E" mask="NONE" command="jump"/>
+    <binding key="C" mask="NONE" command="push_down"/>
+    <binding key="C" mask="SHIFT" command="toggle_down"/>
+
+    <binding key="F" mask="NONE" command="toggle_fly"/>
+    <!-- plus: the flycam on and off in every mode (plus/flycammouse; the same key as the menu item) -->
+    <binding key="F" mask="ALT_SHIFT" command="toggle_flycam"/>
+    <!-- /plus -->
+
+    <binding key="SPACE" mask="NONE" command="stop_moving"/>
+    <binding key="ENTER" mask="NONE" command="start_chat"/>
+    <binding key="DIVIDE" mask="NONE" command="start_gesture"/>
+
+    <binding key="LEFT" mask="NONE" command="turn_left"/>
+    <binding key="LEFT" mask="SHIFT" command="slide_left"/>
+    <binding key="RIGHT" mask="NONE" command="turn_right"/>
+    <binding key="RIGHT" mask="SHIFT" command="slide_right"/>
+    <binding key="UP" mask="NONE" command="push_forward"/>
+    <binding key="DOWN" mask="NONE" command="push_backward"/>
+    <binding key="PGUP" mask="NONE" command="jump"/>
+    <binding key="PGDN" mask="NONE" command="push_down"/>
+    <binding key="HOME" mask="NONE" command="toggle_fly"/>
+
+    <!-- Controller gamepad bindings -->
+    <binding key="" mask="none" controller="axis_forward" command="push_forward"/>
+    <binding key="" mask="none" controller="axis_backward" command="push_backward"/>
+    <binding key="" mask="none" controller="axis_left" command="slide_left"/>
+    <binding key="" mask="none" controller="axis_right" command="slide_right"/>
+    <binding key="" mask="none" controller="axis_turn_left" command="turn_left"/>
+    <binding key="" mask="none" controller="axis_turn_right" command="turn_right"/>
+    <binding key="" mask="none" controller="axis_look_up" command="spin_over_agent"/>
+    <binding key="" mask="none" controller="axis_look_down" command="spin_under_agent"/>
+
+    <binding key="" mask="none" controller="button_a" command="jump"/>
+    <binding key="" mask="none" controller="button_b" command="push_down"/>
+    <binding key="" mask="none" controller="button_dpad_up" command="toggle_fly"/>
+
+    <!--Camera controls in third person on Alt-->
+    <binding key="LEFT" mask="ALT" command="spin_around_cw"/>
+    <binding key="RIGHT" mask="ALT" command="spin_around_ccw"/>
+    <binding key="UP" mask="ALT" command="move_forward"/>
+    <binding key="DOWN" mask="ALT" command="move_backward"/>
+    <binding key="PGUP" mask="ALT" command="spin_over"/>
+    <binding key="PGDN" mask="ALT" command="spin_under"/>
+
+    <binding key="A" mask="ALT" command="spin_around_cw"/>
+    <binding key="D" mask="ALT" command="spin_around_ccw"/>
+    <binding key="W" mask="ALT" command="move_forward"/>
+    <binding key="S" mask="ALT" command="move_backward"/>
+    <binding key="E" mask="ALT" command="spin_over"/>
+    <binding key="C" mask="ALT" command="spin_under"/>
+
+    <!--mimic alt zoom behavior with keyboard only-->
+    <binding key="W" mask="CTL_ALT" command="spin_over"/>
+    <binding key="S" mask="CTL_ALT" command="spin_under"/>
+
+    <binding key="UP" mask="CTL_ALT" command="spin_over"/>
+    <binding key="DOWN" mask="CTL_ALT" command="spin_under"/>
+
+    <!--Therefore pan on Alt-Shift-->
+    <binding key="A" mask="CTL_ALT_SHIFT" command="pan_left"/>
+    <binding key="D" mask="CTL_ALT_SHIFT" command="pan_right"/>
+    <binding key="W" mask="CTL_ALT_SHIFT" command="pan_up"/>
+    <binding key="S" mask="CTL_ALT_SHIFT" command="pan_down"/>
+
+    <binding key="LEFT" mask="CTL_ALT_SHIFT" command="pan_left"/>
+    <binding key="RIGHT" mask="CTL_ALT_SHIFT" command="pan_right"/>
+    <binding key="UP" mask="CTL_ALT_SHIFT" command="pan_up"/>
+    <binding key="DOWN" mask="CTL_ALT_SHIFT" command="pan_down"/>
+
+    <!-- plus photo tools: the camera's tilt (Shift: faster) and the composition guide (plus/photomode/photokeys) -->
+    <binding key="R" mask="NONE" command="roll_left"/>
+    <binding key="T" mask="NONE" command="roll_right"/>
+    <binding key="Y" mask="NONE" command="roll_reset"/>
+    <binding key="V" mask="NONE" command="photo_guide_toggle"/>
+    <binding key="B" mask="NONE" command="photo_guide_next"/>
+    <!-- camera path keys: add a point at the camera, play / stop (plus/camerapath) -->
+    <binding key="K" mask="NONE" command="camera_path_add"/>
+    <binding key="J" mask="NONE" command="camera_path_play"/>
+    <!-- the photo screen in and out (plus/photoscreen; a global key) -->
+    <binding key="F12" mask="NONE" command="photo_screen_toggle"/>
+    <!-- /plus -->
+
+    <binding key="" mask="NONE" mouse="MMB" command="toggle_voice"/>
+
+    <binding key="" mask="NONE" mouse="LMB" command="script_trigger_lbutton"/>
+
+    <binding key="Q" mask="SHIFT" command="roll_left"/>
+    <binding key="E" mask="SHIFT" command="roll_right"/>
+    <binding key="Q" mask="CTL_SHIFT" command="roll_reset"/>
+    <binding key="E" mask="CTL_SHIFT" command="roll_reset"/>
+  </third_person>
+  <sitting>
+    <!-- plus: the flycam on and off in every mode (plus/flycammouse; the same key as the menu item) -->
+    <binding key="F" mask="ALT_SHIFT" command="toggle_flycam"/>
+    <!-- /plus -->
+    <binding key="A" mask="ALT" command="spin_around_cw"/>
+    <binding key="D" mask="ALT" command="spin_around_ccw"/>
+    <binding key="W" mask="ALT" command="move_forward"/>
+    <binding key="S" mask="ALT" command="move_backward"/>
+    <binding key="E" mask="ALT" command="spin_over_sitting"/>
+    <binding key="C" mask="ALT" command="spin_under_sitting"/>
+
+    <binding key="LEFT" mask="ALT" command="spin_around_cw"/>
+    <binding key="RIGHT" mask="ALT" command="spin_around_ccw"/>
+    <binding key="UP" mask="ALT" command="move_forward"/>
+    <binding key="DOWN" mask="ALT" command="move_backward"/>
+    <binding key="PGUP" mask="ALT" command="spin_over"/>
+    <binding key="PGDN" mask="ALT" command="spin_under"/>
+
+    <binding key="W" mask="CTL_ALT" command="spin_over"/>
+    <binding key="S" mask="CTL_ALT" command="spin_under"/>
+    <binding key="E" mask="CTL_ALT" command="spin_over"/>
+    <binding key="C" mask="CTL_ALT" command="spin_under"/>
+
+    <binding key="UP" mask="CTL_ALT" command="spin_over"/>
+    <binding key="DOWN" mask="CTL_ALT" command="spin_under"/>
+    <binding key="PGUP" mask="CTL_ALT" command="spin_over"/>
+    <binding key="PGDN" mask="CTL_ALT" command="spin_under"/>
+
+
+    <binding key="A" mask="NONE" command="spin_around_cw_sitting"/>
+    <binding key="D" mask="NONE" command="spin_around_ccw_sitting"/>
+    <binding key="W" mask="NONE" command="move_forward_sitting"/>
+    <binding key="S" mask="NONE" command="move_backward_sitting"/>
+    <binding key="E" mask="NONE" command="spin_over_sitting"/>
+    <binding key="C" mask="NONE" command="spin_under_sitting"/>
+
+    <binding key="LEFT" mask="NONE" command="spin_around_cw_sitting"/>
+    <binding key="RIGHT" mask="NONE" command="spin_around_ccw_sitting"/>
+    <binding key="UP" mask="NONE" command="move_forward_sitting"/>
+    <binding key="DOWN" mask="NONE" command="move_backward_sitting"/>
+    <binding key="PGUP" mask="NONE" command="spin_over_sitting"/>
+    <binding key="PGDN" mask="NONE" command="spin_under_sitting"/>
+
+    <!--these are for passing controls when sitting on vehicles-->
+    <binding key="A" mask="SHIFT" command="slide_left"/>
+    <binding key="D" mask="SHIFT" command="slide_right"/>
+    <binding key="W" mask="SHIFT" command="move_forward_sitting"/>
+    <binding key="S" mask="SHIFT" command="move_backward_sitting"/>
+    <binding key="E" mask="SHIFT" command="spin_over_sitting"/>
+    <binding key="C" mask="SHIFT" command="spin_under_sitting"/>
+
+    <binding key="LEFT" mask="SHIFT" command="slide_left"/>
+    <binding key="RIGHT" mask="SHIFT" command="slide_right"/>
+    <binding key="UP" mask="SHIFT" command="move_forward_sitting"/>
+    <binding key="DOWN" mask="SHIFT" command="move_backward_sitting"/>
+    <binding key="PGUP" mask="SHIFT" command="spin_over_sitting"/>
+    <binding key="PGDN" mask="SHIFT" command="spin_under_sitting"/>
+
+    <!--pan on Alt-Shift-->
+    <binding key="A" mask="CTL_ALT_SHIFT" command="pan_left"/>
+    <binding key="D" mask="CTL_ALT_SHIFT" command="pan_right"/>
+    <binding key="W" mask="CTL_ALT_SHIFT" command="pan_up"/>
+    <binding key="S" mask="CTL_ALT_SHIFT" command="pan_down"/>
+
+    <binding key="LEFT" mask="CTL_ALT_SHIFT" command="pan_left"/>
+    <binding key="RIGHT" mask="CTL_ALT_SHIFT" command="pan_right"/>
+    <binding key="UP" mask="CTL_ALT_SHIFT" command="pan_up"/>
+    <binding key="DOWN" mask="CTL_ALT_SHIFT" command="pan_down"/>
+
+    <binding key="ENTER" mask="NONE" command="start_chat"/>
+    <binding key="DIVIDE" mask="NONE" command="start_gesture"/>
+
+    <!-- plus photo tools: the camera's tilt (Shift: faster) and the composition guide (plus/photomode/photokeys) -->
+    <binding key="R" mask="NONE" command="roll_left"/>
+    <binding key="T" mask="NONE" command="roll_right"/>
+    <binding key="Y" mask="NONE" command="roll_reset"/>
+    <binding key="V" mask="NONE" command="photo_guide_toggle"/>
+    <binding key="B" mask="NONE" command="photo_guide_next"/>
+    <!-- camera path keys: add a point at the camera, play / stop (plus/camerapath) -->
+    <binding key="K" mask="NONE" command="camera_path_add"/>
+    <binding key="J" mask="NONE" command="camera_path_play"/>
+    <!-- the photo screen in and out (plus/photoscreen; a global key) -->
+    <binding key="F12" mask="NONE" command="photo_screen_toggle"/>
+    <!-- /plus -->
+
+    <binding key="" mask="NONE" mouse="MMB" command="toggle_voice"/>
+
+    <binding key="" mask="NONE" mouse="LMB" command="script_trigger_lbutton"/>
+
+    <binding key="Q" mask="SHIFT" command="roll_left"/>
+    <binding key="E" mask="SHIFT" command="roll_right"/>
+    <binding key="Q" mask="CTL_SHIFT" command="roll_reset"/>
+    <binding key="E" mask="CTL_SHIFT" command="roll_reset"/>
+  </sitting>
+  <edit_avatar>
+    <!-- plus: the flycam on and off in every mode (plus/flycammouse; the same key as the menu item) -->
+    <binding key="F" mask="ALT_SHIFT" command="toggle_flycam"/>
+    <!-- /plus -->
+    <!--Avatar editing camera controls-->
+    <binding key="A" mask="NONE" command="edit_avatar_spin_cw"/>
+    <binding key="D" mask="NONE" command="edit_avatar_spin_ccw"/>
+    <binding key="W" mask="NONE" command="edit_avatar_move_forward"/>
+    <binding key="S" mask="NONE" command="edit_avatar_move_backward"/>
+    <binding key="E" mask="NONE" command="edit_avatar_spin_over"/>
+    <binding key="C" mask="NONE" command="edit_avatar_spin_under"/>
+    <binding key="LEFT" mask="NONE" command="edit_avatar_spin_cw"/>
+    <binding key="RIGHT" mask="NONE" command="edit_avatar_spin_ccw"/>
+    <binding key="UP" mask="NONE" command="edit_avatar_move_forward"/>
+    <binding key="DOWN" mask="NONE" command="edit_avatar_move_backward"/>
+    <binding key="PGUP" mask="NONE" command="edit_avatar_spin_over"/>
+    <binding key="PGDN" mask="NONE" command="edit_avatar_spin_under"/>
+    <binding key="ENTER" mask="NONE" command="start_chat"/>
+    <binding key="DIVIDE" mask="NONE" command="start_gesture"/>
+
+    <!-- plus: the photo screen in and out while editing the appearance too (plus/photoscreen; a global key) -->
+    <binding key="F12" mask="NONE" command="photo_screen_toggle"/>
+    <!-- /plus -->
+
+    <binding key="" mask="NONE" mouse="MMB" command="voice_follow_key"/>
+
+    <binding key="" mask="NONE" mouse="LMB" command="script_trigger_lbutton"/>
+  </edit_avatar>
+  <flycam>
+    <binding key="W" mask="NONE" command="flycam_move_forward"/>
+    <binding key="S" mask="NONE" command="flycam_move_backward"/>
+    <binding key="A" mask="NONE" command="flycam_truck_left"/>
+    <binding key="D" mask="NONE" command="flycam_truck_right"/>
+    <!-- plus: up on the space bar (the official key was E), Q / E tilt the camera as the photo tools' tilt
+         (plus/flycammouse, plus/camroll; flycam-keys). The official line:
+    <binding key="E" mask="NONE" command="flycam_move_up"/>
+    -->
+    <binding key="SPACE" mask="NONE" command="flycam_move_up"/>
+    <binding key="Q" mask="NONE" command="flycam_roll_left"/>
+    <binding key="E" mask="NONE" command="flycam_roll_right"/>
+    <!-- /plus -->
+    <binding key="C" mask="NONE" command="flycam_move_down"/>
+
+    <!--Camera controls on Alt, mirroring third_person-->
+    <binding key="A" mask="ALT" command="flycam_yaw_left"/>
+    <binding key="D" mask="ALT" command="flycam_yaw_right"/>
+    <binding key="W" mask="ALT" command="flycam_move_forward"/>
+    <binding key="S" mask="ALT" command="flycam_move_backward"/>
+    <binding key="E" mask="ALT" command="flycam_pitch_up"/>
+    <binding key="C" mask="ALT" command="flycam_pitch_down"/>
+
+    <!--mimic alt zoom behavior with keyboard only-->
+    <binding key="W" mask="CTL_ALT" command="flycam_pitch_up"/>
+    <binding key="S" mask="CTL_ALT" command="flycam_pitch_down"/>
+
+    <!--pan on Ctrl-Alt-Shift-->
+    <binding key="A" mask="CTL_ALT_SHIFT" command="flycam_truck_left"/>
+    <binding key="D" mask="CTL_ALT_SHIFT" command="flycam_truck_right"/>
+    <binding key="W" mask="CTL_ALT_SHIFT" command="flycam_move_up"/>
+    <binding key="S" mask="CTL_ALT_SHIFT" command="flycam_move_down"/>
+
+    <binding key="LEFT" mask="NONE" command="flycam_yaw_left"/>
+    <binding key="RIGHT" mask="NONE" command="flycam_yaw_right"/>
+    <binding key="UP" mask="NONE" command="flycam_pitch_up"/>
+    <binding key="DOWN" mask="NONE" command="flycam_pitch_down"/>
+
+    <binding key="HOME" mask="NONE" command="flycam_unroll"/>
+
+    <binding key="Z" mask="NONE" command="toggle_flycam"/>
+    <!-- plus: the flycam off with the key that turned it on (plus/flycammouse; the same key as the menu item) -->
+    <binding key="F" mask="ALT_SHIFT" command="toggle_flycam"/>
+    <!-- /plus -->
+    <!-- plus: the photo screen in and out while flying too (plus/photoscreen; a global key) -->
+    <binding key="F12" mask="NONE" command="photo_screen_toggle"/>
+    <!-- /plus -->
+
+    <binding key="ENTER" mask="NONE" command="start_chat"/>
+    <binding key="DIVIDE" mask="NONE" command="start_gesture"/>
+
+    <binding key="" mask="NONE" mouse="LMB" command="script_trigger_lbutton"/>
+  </flycam>
+</keys>

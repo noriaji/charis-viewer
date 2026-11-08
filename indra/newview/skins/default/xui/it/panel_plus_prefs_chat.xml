@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="chat" label="Text Chat">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="chat_scroll">
+			<panel name="chat_scroll_panel">
+				<panel name="general_chat_settings">
+					<plus_ps_check_compat name="auto_complete_gestures" label="Auto-completamento gesti nella chat vicina" />
+					<plus_ps_check_compat name="play_typing_animation" label="Simula la battitura tasti quando sei in chat" />
+					<plus_ps_check_compat name="bubble_text_chat" label="Chat a vignetta" />
+					<plus_ps_text name="font_size">
+						Dimensioni carattere:
+					</plus_ps_text>
+					<plus_ps_combo name="chat_font_size">
+						<plus_ps_combo.item name="Small" label="Piccolo" />
+						<plus_ps_combo.item name="Medium" label="Medio" />
+						<plus_ps_combo.item name="Large" label="Grande" />
+					</plus_ps_combo>
+				</panel>
+				<panel name="im_notification_settings">
+					<plus_ps_check_compat name="voice_call_friends_only_check" label="Solo amici e gruppi possono chiamarmi o mandarmi IM" />
+					<plus_ps_text name="friend_ims">
+						IM degli amici:
+					</plus_ps_text>
+					<plus_ps_combo name="FriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Apri finestra Conversazioni" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mostra il messaggio in una finestra pop-up" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Pulsante barra strumenti Flash" />
+						<plus_ps_combo.item name="NoAction" label="Nessuna azione" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_friend_im" label="Riproduci suono" />
+					<plus_ps_text name="non_friend_ims">
+						IM non di amici:
+					</plus_ps_text>
+					<plus_ps_combo name="NonFriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Apri finestra Conversazioni" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mostra il messaggio in una finestra pop-up" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Pulsante barra strumenti Flash" />
+						<plus_ps_combo.item name="NoAction" label="Nessuna azione" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_non_friend_im" label="Riproduci suono" />
+					<plus_ps_text name="conference_ims">
+						IM conferenza:
+					</plus_ps_text>
+					<plus_ps_combo name="ConferenceIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Apri finestra Conversazioni" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mostra il messaggio in una finestra pop-up" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Pulsante barra strumenti Flash" />
+						<plus_ps_combo.item name="NoAction" label="Nessuna azione" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_conference_im" label="Riproduci suono" />
+					<plus_ps_text name="group_chat">
+						Chat di gruppo:
+					</plus_ps_text>
+					<plus_ps_combo name="GroupChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Apri finestra Conversazioni" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mostra il messaggio in una finestra pop-up" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Pulsante barra strumenti Flash" />
+						<plus_ps_combo.item name="NoAction" label="Nessuna azione" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_group_chat_im" label="Riproduci suono" />
+					<plus_ps_text name="nearby_chat">
+						Chat nei dintorni:
+					</plus_ps_text>
+					<plus_ps_combo name="NearbyChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Apri finestra Conversazioni" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mostra il messaggio in una finestra pop-up" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="Pulsante barra strumenti Flash" />
+						<plus_ps_combo.item name="NoAction" label="Nessuna azione" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_nearby_chat_im" label="Riproduci suono" />
+					<plus_ps_text name="object_ims">
+						IM di oggetti:
+					</plus_ps_text>
+					<plus_ps_combo name="ObjectIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Apri finestra Conversazioni" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mostra il messaggio in una finestra pop-up" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="Pulsante barra strumenti Flash" />
+						<plus_ps_combo.item name="NoAction" label="Nessuna azione" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_object_im" label="Riproduci suono" />
+					<plus_ps_text name="notifications_alert">
+						Per interrompere temporaneamente le notifiche, usa Comunica &gt; Non disturbare.
+					</plus_ps_text>
+				</panel>
+				<panel name="play_sound_settings">
+					<plus_ps_text name="play_sound">
+						Riproduci suono:
+					</plus_ps_text>
+					<plus_ps_check_compat name="new_conversation" label="Nuova conversazione" />
+					<plus_ps_check_compat name="teleport_offer" label="Offerta di Teleport" />
+					<plus_ps_check_compat name="incoming_voice_call" label="Chiamata voce in arrivo" />
+					<plus_ps_check_compat name="inventory_offer" label="Offerta inventario" />
+				</panel>
+				<panel name="log_settings">
+					<plus_ps_text name="logging_label">
+						Salva:
+					</plus_ps_text>
+					<plus_ps_combo name="conversation_log_combo">
+						<plus_ps_combo.item name="log_and_transcripts" label="Registrazione e trascrizioni" />
+						<plus_ps_combo.item name="log_only" label="Solo registrazione" />
+						<plus_ps_combo.item name="no_log_or_transcript" label="Nessuna registrazione o trascrizione" />
+					</plus_ps_combo>
+					<plus_ps_button_compat name="clear_log" label="Cancella registro..." />
+					<plus_ps_button_compat name="delete_transcripts" label="Cancella trascrizioni..." />
+					<plus_ps_text name="log_location_label">
+						Posizione:
+					</plus_ps_text>
+					<plus_ps_button_compat name="log_path_button" label="Sfoglia..." label_selected="Sfoglia" />
+				</panel>
+				<plus_ps_button_compat name="ok_btn" label="Traduzione..." />
+				<plus_ps_button_compat name="autoreplace_showgui" label="Sostituzione automatica..." />
+				<plus_ps_button_compat name="spellcheck_showgui" label="Correzione ortografica..." />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

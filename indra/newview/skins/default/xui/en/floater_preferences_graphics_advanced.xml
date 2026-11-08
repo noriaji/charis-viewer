@@ -1,0 +1,2213 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+  can_resize="true"
+  height="508"
+  layout="topleft"
+  min_height="200"
+  min_width="600"
+  name="prefs_graphics_advanced"
+  help_topic="Preferences_Graphics_Advanced"
+  single_instance="true"
+  save_rect="true"
+  title="ADVANCED GRAPHICS PREFERENCES"
+  width="800">
+
+<!-- This block shows Advanced Settings -->
+
+  <!-- plus: gfx-tabs (research/238). The settings are in tabs named and ordered as the tabs of
+       Firestorm's graphics preferences (General, Hardware Settings, Rendering, Depth of Field),
+       and a Charis tab for Charis' own settings. vsync-ui: the floater resizes (can_resize,
+       min_height, min_width above) and each tab scrolls (a scroll_container that follows the tab,
+       around a panel of a fixed height), so every row can be reached in a short window. The tab
+       area is 466 - 21 (the tab buttons) - 1 = 444 high and 798 wide; the panels in the scroll
+       containers are 783 wide, so the vertical scrollbar (15) does not bring a horizontal one.
+       Columns: headers at 10 and 400, rows at 30 and 420, nothing right of 779.
+       Every tab is shorter than 444 (General 320, Hardware 160, Rendering 270, Depth of Field 170,
+       Charis 302, with the object appear / disappear effects): no scrollbar at the default size. Translations: each language wraps its rows
+       in the same tab_container / panel / scroll_container / panel (updateNode matches names
+       under the matched parent only). -->
+  <tab_container
+    follows="all"
+    halign="center"
+    height="466"
+    layout="topleft"
+    left="0"
+    name="graphics_tabs"
+    tab_min_width="80"
+    tab_position="top"
+    top="0"
+    width="800">
+  <panel
+    follows="all"
+    height="444"
+    label="General"
+    layout="topleft"
+    left="0"
+    name="General"
+    top="0"
+    width="798">
+  <scroll_container
+    follows="all"
+    height="444"
+    layout="topleft"
+    left="0"
+    name="general_scroll"
+    opaque="false"
+    reserve_scroll_corner="false"
+    top="0"
+    width="798">
+  <panel
+    background_visible="false"
+    follows="left|top"
+    height="320"
+    layout="topleft"
+    left="0"
+    name="general_scroll_panel"
+    top="0"
+    width="783">
+  <!-- /plus -->
+
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="ShadersText"
+    width="300"
+    left="10"
+    top="5">
+      Shaders
+  </text>
+  <check_box
+    control_name="RenderTransparentWater"
+    height="16"
+    initial_value="true"
+    label="Transparent Water"
+    layout="topleft"
+    name="TransparentWater"
+    width="345"
+    left="30"
+    top_delta="18">
+    <check_box.commit_callback
+      function="Pref.RenderOptionUpdate" />
+  </check_box>
+  <check_box
+    control_name="RenderDeferredSSAO"
+    height="16"
+    initial_value="true"
+    label="Screen Space Ambient Occlusion"
+    layout="topleft"
+    name="UseSSAO"
+    width="345"
+    left="30"
+    top_delta="20">
+    <check_box.commit_callback
+      function="Pref.RenderOptionUpdate" />
+  </check_box>
+  <check_box
+    control_name="RenderScreenSpaceReflections"
+    height="16"
+    initial_value="true"
+    label="Screen Space Reflections"
+    layout="topleft"
+    name="ScreenSpaceReflections"
+    width="345"
+    left="30"
+    top_delta="20">
+    <check_box.commit_callback
+      function="Pref.RenderOptionUpdate" />
+  </check_box>
+  <check_box
+    control_name="RenderMirrors"
+    height="16"
+    initial_value="false"
+    label="Mirrors"
+    layout="topleft"
+    name="Mirrors"
+    width="345"
+    left="30"
+    top_delta="20">
+    <check_box.commit_callback
+      function="Pref.RenderOptionUpdate" />
+  </check_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="RenderShadowDetailText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="24">
+      Shadows:
+  </text>
+  <combo_box
+    control_name="RenderShadowDetail"
+    height="18"
+    layout="topleft"
+    name="ShadowDetail"
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="None"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Sun/Moon"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Sun/Moon + Projectors"
+      name="2"
+      value="2" />
+  </combo_box>
+  <!-- plus: shadowdist. The shadow distance (PlusShadowDistance, plus/shadowdist), the shadow detail,
+       focus and edges, under the shadows. -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PlusShadowDistanceText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="22">
+      Shadow distance:
+  </text>
+  <combo_box
+    control_name="PlusShadowDistance"
+    height="18"
+    layout="topleft"
+    name="PlusShadowDistance"
+    tool_tip="How far the sun's shadows reach, and how sharp they stay there. Far and Very far use finer shadow maps (more video memory)."
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="Near (96 m)"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Normal (192 m)"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Far (384 m)"
+      name="2"
+      value="2" />
+    <combo_box.item
+      label="Very far (512 m)"
+      name="3"
+      value="3" />
+    <combo_box.item
+      label="Default"
+      name="official"
+      value="-1" />
+  </combo_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PlusShadowPrecisionText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="22">
+      Shadow detail:
+  </text>
+  <combo_box
+    control_name="PlusShadowPrecision"
+    height="18"
+    layout="topleft"
+    name="PlusShadowPrecision"
+    tool_tip="How thin a shadow (legs, railings, hair) stays at a distance. Fine and Very fine use finer shadow maps (more video memory)."
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="Normal"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Fine"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Very fine"
+      name="2"
+      value="2" />
+    <combo_box.item
+      label="Default"
+      name="official"
+      value="-1" />
+  </combo_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PlusShadowFocusText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="22">
+      Shadow focus:
+  </text>
+  <combo_box
+    control_name="PlusShadowFocus"
+    height="18"
+    layout="topleft"
+    name="PlusShadowFocus"
+    tool_tip="Where the finest shadows go. The subject: your avatar (or what the camera is pointed at) and its shadow get the finest shadow map the screen allows, wherever it stands; things much nearer or farther get coarser ones. Snapshots always use the subject."
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="The subject"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Even from the camera"
+      name="0"
+      value="0" />
+  </combo_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PlusShadowSoftnessText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="22">
+      Shadow edges:
+  </text>
+  <combo_box
+    control_name="PlusShadowSoftness"
+    height="18"
+    layout="topleft"
+    name="PlusShadowSoftness"
+    tool_tip="How sharp or soft the edges of the sun's shadows are. Kept in snapshots; does not change the preset in use."
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="Sharp"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Slightly sharp"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Normal"
+      name="2"
+      value="2" />
+    <combo_box.item
+      label="Slightly soft"
+      name="3"
+      value="3" />
+    <combo_box.item
+      label="Soft"
+      name="4"
+      value="4" />
+    <combo_box.item
+      label="Default"
+      name="official"
+      value="-1" />
+  </combo_box>
+  <!-- /plus -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="ReflectionDetailText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="24">
+      Reflection Detail:
+  </text>
+  <combo_box
+    control_name="RenderReflectionProbeDetail"
+    height="18"
+    layout="topleft"
+    name="ReflectionDetail"
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="Static Only"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Static+Dynamic"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Realtime"
+      name="2"
+      value="2" />
+  </combo_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="ReflectionProbeText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="22">
+      Reflection Coverage:
+  </text>
+  <combo_box
+    control_name="RenderReflectionProbeLevel"
+    height="18"
+    layout="topleft"
+    name="ReflectionLevel"
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="None"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Manual only"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Manual + terrain"
+      name="2"
+      value="2" />
+    <combo_box.item
+      label="Full scene"
+      name="3"
+      value="3" />
+  </combo_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="MirrorResolutionText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="22">
+      Mirror Resolution:
+  </text>
+  <combo_box
+    control_name="RenderHeroProbeResolution"
+    height="18"
+    layout="topleft"
+    name="MirrorResolution"
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="256"
+      name="0"
+      value="256" />
+    <combo_box.item
+      label="512"
+      name="1"
+      value="512" />
+    <combo_box.item
+      label="1024"
+      name="2"
+      value="1024" />
+    <combo_box.item
+      label="2048"
+      name="3"
+      value="2048" />
+  </combo_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="HeroProbeUpdateText"
+    text_readonly_color="LabelDisabledColor"
+    width="165"
+    left="30"
+    top_delta="22">
+      Mirror Update Rate:
+  </text>
+  <combo_box
+    control_name="RenderHeroProbeUpdateRate"
+    height="18"
+    layout="topleft"
+    name="HeroProbeUpdateRate"
+    width="175"
+    left_delta="170"
+    top_delta="0">
+    <combo_box.item
+      label="Low"
+      name="6"
+      value="6" />
+    <combo_box.item
+      label="Medium"
+      name="3"
+      value="3" />
+    <combo_box.item
+      label="High"
+      name="1"
+      value="2" />
+    <combo_box.item
+      label="Ultra"
+      name="0"
+      value="1" />
+  </combo_box>
+  <!-- plus: gfx-tabs (the right column of General: the view, avatars and the level of detail) -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="GeneralText"
+    width="300"
+    left="400"
+    top="5">
+      View
+  </text>
+  <!-- /plus -->
+  <slider
+    control_name="RenderFarClip"
+    decimal_digits="0"
+    follows="left|top"
+    height="16"
+    increment="8"
+    initial_value="160"
+    label="Draw distance:"
+    label_width="185"
+    layout="topleft"
+    min_val="64"
+    max_val="512"
+    name="DrawDistance"
+    width="320"
+    left="420"
+    top_delta="16" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="DrawDistanceMeterText2"
+    width="20"
+    left_delta="320"
+    top_delta="0">
+      m
+  </text>
+  <slider
+    control_name="RenderMaxPartCount"
+    decimal_digits="0"
+    follows="left|top"
+    height="16"
+    increment="256"
+    initial_value="4096"
+    label="Max. particle count:"
+    label_width="185"
+    layout="topleft"
+    max_val="8192"
+    name="MaxParticleCount"
+    width="326"
+    left="420"
+    top_delta="16" />
+  <slider
+    control_name="RenderGlowResolutionPow"
+    decimal_digits="0"
+    follows="left|top"
+    height="16"
+    increment="1"
+    initial_value="8"
+    label="Glow quality:"
+    label_width="185"
+    layout="topleft"
+    min_val="8"
+    max_val="9"
+    name="GlowResolution"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="16">
+    <slider.commit_callback
+      function="Pref.UpdateSliderText"
+      parameter="GlowResolutionText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="GlowResolutionText"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      Low
+  </text>
+  <slider
+    control_name="RenderLocalLightCount"
+    decimal_digits="0"
+    follows="left|top"
+    height="16"
+    increment="1"
+    initial_value="256"
+    label="Max. nearby lights:"
+    label_width="185"
+    layout="topleft"
+    min_val="0"
+    max_val="8192"
+    name="MaxLights"
+    width="326"
+    left="420"
+    top_delta="16" />
+  <slider
+    control_name="RenderExposure"
+    decimal_digits="1"
+    follows="left|top"
+    height="16"
+    increment="0.1"
+    initial_value="160"
+    label="Exposure:"
+    label_width="185"
+    layout="topleft"
+    min_val="0.5"
+    max_val="4.0"
+    name="RenderExposure"
+    show_text="true"
+    width="326"
+    left="420"
+    top_delta="16" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="AvatarText"
+    width="300"
+    left="400"
+    top_delta="24">
+      Avatar
+  </text>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    width="160"
+    name="AvatarComplexityModeLabel"
+    text_readonly_color="LabelDisabledColor"
+    left="420"
+    top_delta="16">
+      Avatar display:
+  </text>
+  <combo_box
+    control_name="RenderAvatarComplexityMode"
+    height="19"
+    layout="topleft"
+    name="AvatarComplexityMode"
+    width="150"
+    left_pad="25"
+    top_delta="-1">
+    <combo_box.item
+      label="Limit by complexity"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Always show friends"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Only show friends"
+      name="2"
+      value="2" />
+  </combo_box>
+  <slider
+    control_name="IndirectMaxComplexity"
+    tool_tip="Controls at what point a visually complex avatar is drawn as a JellyDoll"
+    follows="left|top"
+    height="16"
+    initial_value="101"
+    increment="1"
+    label="Maximum complexity:"
+    label_width="185"
+    layout="topleft"
+    min_val="1"
+    max_val="101"
+    name="IndirectMaxComplexity"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="19">
+    <slider.commit_callback
+      function="Pref.UpdateIndirectMaxComplexity"
+      parameter="IndirectMaxComlexityText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    text_readonly_color="LabelDisabledColor"
+    name="IndirectMaxComplexityText"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      0
+  </text>
+  <slider
+    control_name="IndirectMaxNonImpostors"
+    decimal_digits="0"
+    follows="left|top"
+    height="16"
+    increment="1"
+    initial_value="12"
+    label="Max. # animated avatars:"
+    label_width="185"
+    layout="topleft"
+    min_val="1"
+    max_val="66"
+    name="IndirectMaxNonImpostors"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="16">
+    <slider.commit_callback
+      function="Pref.UpdateIndirectMaxNonImpostors"
+      parameter="IndirectNonImpostorsText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    text_readonly_color="LabelDisabledColor"
+    name="IndirectMaxNonImpostorsText"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      0
+  </text>
+  <slider
+    control_name="RenderAvatarPhysicsLODFactor"
+    follows="left|top"
+    height="16"
+    initial_value="100"
+    increment=".05"
+    label="Physics:"
+    label_width="185"
+    layout="topleft"
+    name="AvatarPhysicsDetail"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="16">
+    <slider.commit_callback
+      function="Pref.UpdateSliderText"
+      parameter="AvatarPhysicsDetailText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="AvatarPhysicsDetailText"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      Low
+  </text>
+  <!-- plus: gfx-tabs (Firestorm's "Level of Detail (LOD)" group: objects, flexiprims, trees, avatars, terrain) -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="MeshText"
+    width="360"
+    left="400"
+    top_delta="24">
+      Level of detail (LOD)
+  </text>
+  <slider
+    control_name="RenderVolumeLODFactor"
+    follows="left|top"
+    height="16"
+    increment="0.125"
+    initial_value="160"
+    label="Objects:"
+    label_width="185"
+    layout="topleft"
+    min_val="0"
+    max_val="4"
+    name="ObjectMeshDetail"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="16">
+    <slider.commit_callback
+      function="Pref.UpdateSliderText"
+      parameter="ObjectMeshDetailText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="ObjectMeshDetailText"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      Low
+  </text>
+  <slider
+    control_name="RenderFlexTimeFactor"
+    follows="left|top"
+    height="16"
+    initial_value="160"
+    label="Flexiprims:"
+    label_width="185"
+    layout="topleft"
+    name="FlexibleMeshDetail"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="16">
+    <slider.commit_callback
+      function="Pref.UpdateSliderText"
+      parameter="FlexibleMeshDetailText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="FlexibleMeshDetailText"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      Low
+  </text>
+  <slider
+    control_name="RenderTreeLODFactor"
+    follows="topleft"
+    height="16"
+    increment="0.125"
+    initial_value="160"
+    label="Trees:"
+    label_width="185"
+    layout="topleft"
+    name="TreeMeshDetail"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="16">
+    <slider.commit_callback
+      function="Pref.UpdateSliderText"
+      parameter="TreeMeshDetailText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="TreeMeshDetailText"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      Low
+  </text>
+  <slider
+    control_name="RenderAvatarLODFactor"
+    follows="left|top"
+    height="16"
+    increment="0.125"
+    initial_value="160"
+    label="Avatars:"
+    label_width="185"
+    layout="topleft"
+    name="AvatarMeshDetail"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="16">
+    <slider.commit_callback
+      function="Pref.UpdateSliderText"
+      parameter="AvatarMeshDetailText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="AvatarMeshDetailText"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      Low
+  </text>
+  <slider
+    control_name="RenderTerrainLODFactor"
+    follows="topleft"
+    height="16"
+    increment="0.125"
+    initial_value="160"
+    label="Terrain:"
+    label_width="185"
+    layout="topleft"
+    min_val="1"
+    max_val="2"
+    name="TerrainMeshDetail"
+    show_text="false"
+    width="290"
+    left="420"
+    top_delta="16">
+    <slider.commit_callback
+      function="Pref.UpdateSliderText"
+      parameter="TerrainMeshDetailText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="topleft"
+    height="16"
+    layout="topleft"
+    name="TerrainMeshDetailText"
+    text_readonly_color="LabelDisabledColor"
+    width="65"
+    left_delta="294"
+    top_delta="0">
+      Low
+  </text>
+  <!-- /plus -->
+
+  <!-- plus: gfx-tabs (end of General; the Hardware Settings tab) -->
+  </panel>
+  </scroll_container>
+  </panel>
+  <panel
+    follows="all"
+    height="444"
+    label="Hardware"
+    layout="topleft"
+    left="0"
+    name="Hardware Settings"
+    top="0"
+    width="798">
+  <scroll_container
+    follows="all"
+    height="444"
+    layout="topleft"
+    left="0"
+    name="hardware_scroll"
+    opaque="false"
+    reserve_scroll_corner="false"
+    top="0"
+    width="798">
+  <panel
+    background_visible="false"
+    follows="left|top"
+    height="160"
+    layout="topleft"
+    left="0"
+    name="hardware_scroll_panel"
+    top="0"
+    width="783">
+  <!-- /plus -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="20"
+    layout="topleft"
+    name="af strength label"
+    width="165"
+    left="30"
+    top="10">
+      Anisotropic Filtering:
+  </text>
+  <combo_box
+    control_name="RenderAnisotropicLevel"
+    height="20"
+    label="Anisotropic Filtering"
+    layout="topleft"
+    name="anisotropic_filter"
+    width="120"
+    left_pad="5"
+    top_delta="0">
+    <combo_box.item
+      label="Disabled"
+      name="disabled"
+      value="0" />
+    <combo_box.item
+      label="2x"
+      name="2x"
+      value="2" />
+    <combo_box.item
+      label="4x"
+      name="4x"
+      value="4" />
+    <combo_box.item
+      label="8x"
+      name="8x"
+      value="8" />
+    <combo_box.item
+      label="16x"
+      name="16x"
+      value="16" />
+  </combo_box>
+  <check_box
+    control_name="RenderCompressTextures"
+    height="16"
+    initial_value="true"
+    label="Enable Texture Compression (requires restart)"
+    layout="topleft"
+    name="texture compression"
+    tool_tip="Compresses textures in video memory, allowing for higher resolution textures to be loaded at the cost of some color quality."
+    width="500"
+    left="30"
+    top_delta="26" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="20"
+    layout="topleft"
+    name="antialiasing label"
+    width="165"
+    left="30"
+    top_delta="24">
+      Antialiasing:
+  </text>
+  <combo_box
+    control_name="RenderFSAAType"
+    height="20"
+    initial_value="false"
+    label="Antialiasing"
+    layout="topleft"
+    name="fsaa"
+    width="120"
+    left_pad="5"
+    top_delta="0">
+    <combo_box.item
+      label="Disabled"
+      name="FSAADisabled"
+      value="0" />
+    <combo_box.item
+      label="FXAA"
+      name="FXAA"
+      value="1" />
+    <combo_box.item
+      label="SMAA"
+      name="SMAA"
+      value="2" />
+  </combo_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="antialiasing restart"
+    width="160"
+    left_pad="10"
+    top_delta="0">
+      (requires restart)
+  </text>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="20"
+    layout="topleft"
+    name="antialiasing quality label"
+    width="165"
+    left="30"
+    top_delta="24">
+      Antialiasing Quality:
+  </text>
+  <combo_box
+    control_name="RenderFSAASamples"
+    height="20"
+    initial_value="false"
+    label="Antialiasing"
+    layout="topleft"
+    name="fsaa quality"
+    width="120"
+    left_pad="5"
+    top_delta="0">
+    <combo_box.item
+      label="Low"
+      name="Low"
+      value="0" />
+    <combo_box.item
+      label="Medium"
+      name="Medium"
+      value="1" />
+    <combo_box.item
+      label="High"
+      name="High"
+      value="2" />
+    <combo_box.item
+      label="Ultra"
+      name="Ultra"
+      value="3" />
+  </combo_box>
+  <!-- plus: taa-ui. Temporal anti-aliasing (PlusTAA, plus/taa) under the anti-aliasing rows. It takes
+       effect at once (no restart). -->
+  <check_box
+    control_name="PlusTAA"
+    height="16"
+    initial_value="false"
+    label="Temporal AA (TAA: smooths thin lines)"
+    layout="topleft"
+    name="taa"
+    tool_tip="Temporal anti-aliasing: mixes the last few frames into this one, so thin lines and edges that stay jagged or flicker smooth out where the view is still. It comes after the anti-aliasing above, which stays as it is set (FXAA or SMAA and TAA are both used). Moving things may leave a faint trail. Saved snapshots are taken without it. Light; takes effect at once, no restart."
+    width="500"
+    left="30"
+    top_delta="26" />
+  <!-- /plus -->
+  <!-- plus: gfx-tabs (HiDPI last: it is hidden on Windows, so it leaves no gap) -->
+  <check_box
+    control_name="RenderHiDPI"
+    height="16"
+    initial_value="true"
+    label="Enable support for HiDPI displays (requires restart)"
+    layout="topleft"
+    name="use HiDPI"
+    tool_tip="Enable OpenGL for High-Resolution Drawing."
+    width="500"
+    left="30"
+    top_delta="20" />
+  <!-- /plus -->
+
+  <!-- plus: gfx-tabs (end of Hardware Settings; the Rendering tab, with Firestorm's groups) -->
+  </panel>
+  </scroll_container>
+  </panel>
+  <panel
+    follows="all"
+    height="444"
+    label="Rendering"
+    layout="topleft"
+    left="0"
+    name="Rendering"
+    top="0"
+    width="798">
+  <scroll_container
+    follows="all"
+    height="444"
+    layout="topleft"
+    left="0"
+    name="rendering_scroll"
+    opaque="false"
+    reserve_scroll_corner="false"
+    top="0"
+    width="798">
+  <panel
+    background_visible="false"
+    follows="left|top"
+    height="270"
+    layout="topleft"
+    left="0"
+    name="rendering_scroll_panel"
+    top="0"
+    width="783">
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="FrameRateText"
+    left="10"
+    top="5"
+    width="300">
+      Frame rate
+  </text>
+  <!-- /plus -->
+  <!-- plus: fps-limit. Frame rate limit (PlusFpsLimit, 0 = none) and a button that sets it to the
+       refresh rate of the monitor the window is on. -->
+  <spinner
+    control_name="PlusFpsLimit"
+    decimal_digits="0"
+    follows="left|top"
+    height="20"
+    increment="1"
+    initial_value="0"
+    label="Frame rate limit (0 = none):"
+    label_width="215"
+    layout="topleft"
+    max_val="1000"
+    min_val="0"
+    name="fpslimit"
+    tool_tip="The most frames per second the viewer makes. 0 = no limit. Lowers the load and heat of the graphics card when VSync is off. With VSync on, a value above the monitor's refresh rate does nothing."
+    width="275"
+    left="30"
+    top_delta="18" />
+  <!-- The button ends at 311 + 66 = 377 (spinner 30 + 275 = 305, pad 6). -->
+  <button
+    follows="left|top"
+    height="20"
+    label="Match"
+    layout="topleft"
+    name="fpslimit_match"
+    tool_tip="Match the monitor's refresh rate: sets the limit to the refresh rate of the monitor this window is on. With VSync on, a 59.94 Hz style rate (59, 119, 143, 239 as Windows reports it) is set one higher (60, 120, 144, 240), so that VSync sets the pace without a hitch."
+    width="66"
+    left_pad="6"
+    top_delta="0">
+    <button.commit_callback
+      function="Plus.FpsLimit.MatchMonitor" />
+  </button>
+  <!-- /plus -->
+  <check_box
+    control_name="RenderVSyncEnable"
+    height="16"
+    initial_value="true"
+    label="Enable VSync"
+    layout="topleft"
+    name="vsync"
+    tool_tip="Synchronizes the frame rate to the refresh rate of the monitor, which results in smooth performance."
+    width="400"
+    left="30"
+    top_delta="24" />
+  <!-- plus: gfx-tabs -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="Texture Rendering"
+    left="10"
+    top_delta="24"
+    width="300">
+      Textures
+  </text>
+  <!-- /plus -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    width="210"
+    name="MaxTextureResolutionLabel"
+    text_readonly_color="LabelDisabledColor"
+    left="30"
+    top_delta="18">
+      Maximum LOD resolution:
+  </text>
+  <combo_box
+    control_name="RenderMaxTextureResolution"
+    height="19"
+    layout="topleft"
+    name="MaxTextureResolution"
+    tool_tip="Maximum resolution for 'level of detail' textures"
+    width="90"
+    left_pad="5"
+    top_delta="0">
+    <combo_box.item
+      label="512"
+      name="512"
+      value="512" />
+    <combo_box.item
+      label="1024"
+      name="1024"
+      value="1024" />
+    <combo_box.item
+      label="2048"
+      name="2048"
+      value="2048" />
+  </combo_box>
+  <!-- plus: gfx-tabs -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="Miscellaneous Rendering"
+    left="10"
+    top_delta="26"
+    width="300">
+      Miscellaneous
+  </text>
+  <!-- /plus -->
+  <check_box
+    control_name="RenderDisableVintageMode"
+    height="16"
+    initial_value="false"
+    label="HDR and Emissive"
+    layout="topleft"
+    name="VintageMode"
+    width="400"
+    left="30"
+    top_delta="18">
+    <check_box.commit_callback
+      function="Pref.RenderOptionUpdate" />
+  </check_box>
+  <slider
+    control_name="RenderHighPrecisionPostProcess"
+    decimal_digits="0"
+    follows="left|top"
+    height="16"
+    increment="1"
+    initial_value="160"
+    label="Post Process Quality:"
+    label_width="185"
+    layout="topleft"
+    min_val="0"
+    max_val="1"
+    name="RenderPostProcess"
+    show_text="false"
+    width="300"
+    left="30"
+    top_delta="22">
+    <slider.commit_callback
+      function="Pref.UpdateSliderText"
+      parameter="PostProcessText" />
+  </slider>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PostProcessText"
+    text_readonly_color="LabelDisabledColor"
+    width="65"
+    left_delta="304"
+    top_delta="0">
+      Low
+  </text>
+  <slider
+    control_name="RenderCASSharpness"
+    decimal_digits="1"
+    follows="left|top"
+    height="16"
+    increment="0.1"
+    initial_value="160"
+    label="Sharpening:"
+    label_width="185"
+    layout="topleft"
+    min_val="0.0"
+    max_val="1.0"
+    name="RenderSharpness"
+    show_text="true"
+    width="300"
+    left="30"
+    top_delta="20" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="ReflectionProbeCount"
+    text_readonly_color="LabelDisabledColor"
+    width="180"
+    left="30"
+    top_delta="22">
+      Max Reflection Probes:
+  </text>
+  <combo_box
+    control_name="RenderReflectionProbeCount"
+    height="18"
+    layout="topleft"
+    label="Max. Reflection Probes:"
+    name="ProbeCount"
+    width="150"
+    left_pad="5"
+    top_delta="0">
+    <combo_box.item
+      label="None"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Low"
+      name="32"
+      value="32" />
+    <combo_box.item
+      label="Medium"
+      name="64"
+      value="64" />
+    <combo_box.item
+      label="High"
+      name="128"
+      value="128" />
+    <combo_box.item
+      label="Ultra"
+      name="256"
+      value="256" />
+  </combo_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="TonemapTypeText"
+    text_readonly_color="LabelDisabledColor"
+    width="180"
+    left="30"
+    top_delta="24">
+      Tone Mapper:
+  </text>
+  <combo_box
+    control_name="RenderTonemapType"
+    height="18"
+    layout="topleft"
+    name="TonemapType"
+    width="220"
+    left_pad="5"
+    top_delta="0">
+    <combo_box.item
+      label="Khronos Neutral"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="ACES"
+      name="1"
+      value="1" />
+    <!-- plus: tonemap-hable -->
+    <combo_box.item
+      label="Reinhard (keeps hue)"
+      name="2"
+      value="2" />
+    <combo_box.item
+      label="Hable (film look)"
+      name="3"
+      value="3" />
+    <combo_box.item
+      label="Hejl (film look, soft)"
+      name="4"
+      value="4" />
+    <!-- /plus -->
+  </combo_box>
+  <slider
+    control_name="RenderTonemapMix"
+    decimal_digits="1"
+    follows="left|top"
+    height="16"
+    increment="0.1"
+    initial_value="1"
+    label="Tone Mapping Mix:"
+    tool_tip="Mix between linear and tone mapped colors"
+    label_width="185"
+    layout="topleft"
+    min_val="0.0"
+    max_val="1.0"
+    name="TonemapMix"
+    show_text="true"
+    width="300"
+    left="30"
+    top_delta="22" />
+
+  <!-- plus: gfx-tabs (end of Rendering; the Depth of Field tab. Its rows below the check box come from
+       Firestorm's "Depth of Field" tab (panel_preferences_graphics1.xml, LGPL 2.1; the official
+       settings, ranges as there) and are grayed out while depth of field is off) -->
+  </panel>
+  </scroll_container>
+  </panel>
+  <panel
+    follows="all"
+    height="444"
+    label="Depth of Field"
+    layout="topleft"
+    left="0"
+    name="DOF panel"
+    top="0"
+    width="798">
+  <scroll_container
+    follows="all"
+    height="444"
+    layout="topleft"
+    left="0"
+    name="dof_scroll"
+    opaque="false"
+    reserve_scroll_corner="false"
+    top="0"
+    width="798">
+  <panel
+    background_visible="false"
+    follows="left|top"
+    height="170"
+    layout="topleft"
+    left="0"
+    name="dof_scroll_panel"
+    top="0"
+    width="783">
+  <!-- /plus -->
+  <check_box
+    control_name="RenderDepthOfField"
+    height="16"
+    initial_value="true"
+    label="Enable depth of field (the view is blurred except where the camera is focused)"
+    layout="topleft"
+    name="UseDoF"
+    width="600"
+    left="10"
+    top="10">
+    <check_box.commit_callback
+      function="Pref.RenderOptionUpdate" />
+  </check_box>
+  <!-- plus: gfx-tabs (from Firestorm) -->
+  <check_box
+    control_name="RenderDepthOfFieldInEditMode"
+    enabled_control="RenderDepthOfField"
+    height="16"
+    initial_value="false"
+    label="Also while editing"
+    layout="topleft"
+    left="28"
+    name="RenderDepthOfFieldInEditMode"
+    tool_tip="Keeps depth of field on while you build or edit objects."
+    top_delta="20"
+    width="560" />
+  <slider
+    enabled_control="RenderDepthOfField"
+    control_name="CameraFNumber"
+    decimal_digits="1"
+    follows="left|top"
+    height="16"
+    increment=".5"
+    initial_value="9.5"
+    label="Camera f-number:"
+    label_width="230"
+    layout="topleft"
+    left="10"
+    max_val="64"
+    min_val="1"
+    name="CameraFNum"
+    tool_tip="The f-number of the camera for depth of field: lower blurs more of what is out of focus."
+    top_delta="26"
+    width="510" />
+  <slider
+    enabled_control="RenderDepthOfField"
+    control_name="CameraFocalLength"
+    decimal_digits="0"
+    follows="left|top"
+    height="16"
+    increment="1"
+    initial_value="50"
+    label="Focal length (mm):"
+    label_width="230"
+    layout="topleft"
+    left="10"
+    max_val="1000"
+    min_val="1"
+    name="CameraFocal"
+    tool_tip="The focal length of the camera for depth of field, in millimetres."
+    top_delta="20"
+    width="510" />
+  <slider
+    enabled_control="RenderDepthOfField"
+    control_name="CameraFieldOfView"
+    decimal_digits="0"
+    follows="left|top"
+    height="16"
+    increment="1"
+    initial_value="60"
+    label="Field of view (degrees):"
+    label_width="230"
+    layout="topleft"
+    left="10"
+    max_val="200"
+    min_val="10"
+    name="Camera FOV"
+    tool_tip="The vertical field of view of the camera for depth of field, in degrees."
+    top_delta="20"
+    width="510" />
+  <slider
+    enabled_control="RenderDepthOfField"
+    control_name="CameraFocusTransitionTime"
+    decimal_digits="2"
+    follows="left|top"
+    height="16"
+    increment="0.01"
+    initial_value="0.5"
+    label="Focus transition time:"
+    label_width="230"
+    layout="topleft"
+    left="10"
+    max_val="10"
+    min_val="0.1"
+    name="CameraFocusTrans"
+    tool_tip="How long the focus takes to move from one place to the next, in seconds."
+    top_delta="20"
+    width="510" />
+  <slider
+    enabled_control="RenderDepthOfField"
+    control_name="CameraDoFResScale"
+    decimal_digits="3"
+    follows="left|top"
+    height="16"
+    increment="0.025"
+    initial_value="0.70"
+    label="Depth of field quality:"
+    label_width="230"
+    layout="topleft"
+    left="10"
+    max_val="1"
+    min_val="0.25"
+    name="CameraDoFResScale"
+    tool_tip="The quality of the blur: higher looks better, lower is faster."
+    top_delta="20"
+    width="510" />
+  <!-- /plus -->
+
+  <!-- plus: gfx-tabs (end of Depth of Field; the Charis tab: Charis' own picture settings that have
+       no place in Firestorm's tabs. Left: upscaling, GTAO and SSGI; right: reflections and OIT.
+       enabled_control grays a row out while what it needs is off; the rows under GTAO (they need
+       SSAO and GTAO both) and OIT are enabled by the code (refreshEnabledState). -->
+  </panel>
+  </scroll_container>
+  </panel>
+  <panel
+    follows="all"
+    height="444"
+    label="Charis"
+    layout="topleft"
+    left="0"
+    name="Charis panel"
+    top="0"
+    width="798">
+  <scroll_container
+    follows="all"
+    height="444"
+    layout="topleft"
+    left="0"
+    name="charis_scroll"
+    opaque="false"
+    reserve_scroll_corner="false"
+    top="0"
+    width="798">
+  <panel
+    background_visible="false"
+    follows="left|top"
+    height="302"
+    layout="topleft"
+    left="0"
+    name="charis_scroll_panel"
+    top="0"
+    width="783">
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="UpscaleText"
+    left="10"
+    top="5"
+    width="300">
+      Upscaling
+  </text>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PlusUpscaleText"
+    left="30"
+    top_delta="18"
+    width="165">
+      Upscaling:
+  </text>
+  <combo_box
+    control_name="PlusUpscale"
+    height="18"
+    layout="topleft"
+    left_delta="170"
+    top_delta="0"
+    name="PlusUpscale"
+    tool_tip="Draws the world smaller than the window and brings it up to the window's size, for more frames per second where the graphics card sets the pace. The HUD, name tags and the UI stay sharp; snapshots are taken at the full size, and while the photo screen or the photo tools (not minimized) are open the world is drawn at the full size too, so the frame rate drops there."
+    width="175">
+    <combo_box.item
+      label="Off"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="AMD FSR 1"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Plain stretch (to compare)"
+      name="2"
+      value="2" />
+  </combo_box>
+  <slider
+    control_name="PlusUpscaleScale"
+    enabled_control="PlusUpscale"
+    decimal_digits="2"
+    follows="left|top"
+    height="16"
+    increment="0.01"
+    initial_value="0.67"
+    label="Render scale:"
+    label_width="170"
+    layout="topleft"
+    left="30"
+    max_val="1"
+    min_val="0.5"
+    name="PlusUpscaleScale"
+    tool_tip="The share of the window's width and height the world is drawn at: 0.77 quality, 0.67 balanced, 0.59 faster, 0.5 fastest."
+    top_delta="24"
+    width="345" />
+  <slider
+    control_name="PlusUpscaleSharpness"
+    enabled_control="PlusUpscale"
+    decimal_digits="2"
+    follows="left|top"
+    height="16"
+    increment="0.05"
+    initial_value="0.5"
+    label="Sharpening:"
+    label_width="170"
+    layout="topleft"
+    left="30"
+    max_val="1"
+    min_val="0"
+    name="PlusUpscaleSharpness"
+    tool_tip="How much the upscaled picture is sharpened (0: not at all, 1: the most). A matter of taste."
+    top_delta="20"
+    width="345" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="AOText"
+    left="10"
+    top_delta="26"
+    width="300">
+      Ambient occlusion and indirect light
+  </text>
+  <check_box
+    control_name="PlusGtao"
+    height="16"
+    initial_value="false"
+    label="GTAO (finer shade in corners)"
+    layout="topleft"
+    left="30"
+    name="PlusGtao"
+    tool_tip="Ground-truth ambient occlusion in place of the standard one: the shade in corners, under furniture and where surfaces meet. Needs Screen Space Ambient Occlusion (General tab), which it replaces. Costs graphics card time (see the quality)."
+    top_delta="18"
+    width="345">
+    <check_box.commit_callback
+      function="Pref.RenderOptionUpdate" />
+  </check_box>
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PlusGtaoQualityText"
+    text_readonly_color="LabelDisabledColor"
+    left="30"
+    top_delta="22"
+    width="165">
+      GTAO quality:
+  </text>
+  <combo_box
+    control_name="PlusGtaoQuality"
+    height="18"
+    layout="topleft"
+    left_delta="170"
+    top_delta="0"
+    name="PlusGtaoQuality"
+    tool_tip="Low and Medium work on a quarter of the pixels (8 and 24 samples); High on every pixel. Higher is finer and slower."
+    width="120">
+    <combo_box.item
+      label="Low"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Medium"
+      name="2"
+      value="2" />
+    <combo_box.item
+      label="High"
+      name="3"
+      value="3" />
+  </combo_box>
+  <slider
+    control_name="PlusGtaoStrength"
+    decimal_digits="1"
+    follows="left|top"
+    height="16"
+    increment="0.1"
+    initial_value="1"
+    label="GTAO strength:"
+    label_width="170"
+    layout="topleft"
+    left="30"
+    max_val="4"
+    min_val="0"
+    name="PlusGtaoStrength"
+    tool_tip="How dark occluded places get: 1 as measured, 2 darker, 0 none."
+    top_delta="22"
+    width="345" />
+  <slider
+    control_name="PlusGtaoRadius"
+    decimal_digits="2"
+    follows="left|top"
+    height="16"
+    increment="0.05"
+    initial_value="0.75"
+    label="GTAO reach (m):"
+    label_width="170"
+    layout="topleft"
+    left="30"
+    max_val="5"
+    min_val="0.1"
+    name="PlusGtaoRadius"
+    tool_tip="How far away a surface still shades another, in metres. Larger: broader, softer shade."
+    top_delta="20"
+    width="345" />
+  <check_box
+    control_name="PlusSsgi"
+    height="16"
+    initial_value="false"
+    label="Indirect light (SSGI)"
+    layout="topleft"
+    left="30"
+    name="PlusSsgi"
+    tool_tip="The colour of nearby lit surfaces (sunny ground, a red wall) comes back into the shade beside them. Needs GTAO, Screen Space Ambient Occlusion, HDR and the reflection probes."
+    top_delta="22"
+    width="345">
+    <check_box.commit_callback
+      function="Pref.RenderOptionUpdate" />
+  </check_box>
+  <slider
+    control_name="PlusSsgiStrength"
+    decimal_digits="2"
+    follows="left|top"
+    height="16"
+    increment="0.05"
+    initial_value="1"
+    label="Indirect light strength:"
+    label_width="170"
+    layout="topleft"
+    left="30"
+    max_val="1"
+    min_val="0"
+    name="PlusSsgiStrength"
+    tool_tip="How much of the light nearby surfaces send back is added (1: all that is gathered)."
+    top_delta="20"
+    width="345" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="CharisReflectionText"
+    left="400"
+    top="5"
+    width="300">
+      Reflections and transparency
+  </text>
+  <check_box
+    control_name="PlusSSR"
+    enabled_control="RenderScreenSpaceReflections"
+    height="16"
+    initial_value="false"
+    label="Reflections: New Method"
+    layout="topleft"
+    left="420"
+    name="PlusSSR"
+    tool_tip="Screen-space reflections, new method: reflections reach farther, and slightly rough floors get blurred ones too. Needs Screen Space Reflections (General tab) on. A little slower. Glass, alpha and water keep the standard reflections."
+    top_delta="18"
+    width="345" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="OITModeText"
+    text_readonly_color="LabelDisabledColor"
+    width="345"
+    left="420"
+    top_delta="26">
+      Exact transparency order (OIT):
+  </text>
+  <combo_box
+    control_name="RenderOITMode"
+    height="18"
+    layout="topleft"
+    name="OITMode"
+    tool_tip="Draws overlapping transparent surfaces (hair, eyelashes, glass, smoke) in their true order, so hair edges no longer cut holes in what is behind them. Grayed out on graphics cards that lack the features OIT needs."
+    width="250"
+    left="440"
+    top_delta="18">
+    <combo_box.item
+      label="Off"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Avatars only"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Everything"
+      name="2"
+      value="2" />
+  </combo_box>
+  <check_box
+    control_name="RenderOITSnapshotFull"
+    height="16"
+    initial_value="false"
+    label="Take snapshots with full OIT"
+    layout="topleft"
+    name="OITSnapshotFull"
+    tool_tip="Snapshots are rendered with OIT on everything, whatever the setting above is. Slower to take."
+    width="345"
+    left="420"
+    top_delta="24" />
+  <!-- objectfx (research/256 materialize, research/257 derez). The group "Object appear /
+       disappear effects" goes on in the right column below OIT: header 117, materialize 135, time 157,
+       colour (palette and swatch on one row) 179 to 197, avatars too (research/259) 201; derez
+       (research/257): crumble 223, time 245, colour 267 to 285. The panel above is 285 + 17 = 302
+       high (the left column ends at 233; it scrolls only past 444). ObjectFxText is where the Charis menu's entry scrolls to (plus/objectfx,
+       GROUP_SHOW_HEIGHT). A new row of the group goes below the last one with top_delta="22" and the
+       panel grows with it. The swatches are not bound by control_name (a Color3 setting would show
+       see-through): plus/objectfx shows and writes them, enabled with their effect; picking a colour
+       sets the palette to Custom (4). -->
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="ObjectFxText"
+    left="400"
+    top_delta="26"
+    width="345">
+      Object appear / disappear effects
+  </text>
+  <check_box
+    control_name="PlusMaterialize"
+    height="16"
+    initial_value="true"
+    label="Materialize objects as their textures arrive"
+    layout="topleft"
+    left="420"
+    name="PlusMaterialize"
+    tool_tip="While its textures load, an object is drawn as glowing lines; when they arrive, a band of light sweeps up it and leaves the real surfaces behind. Objects whose textures are already at hand (the cache) show at once, without it. Needs the wireframe while textures load (the debug setting RenderGrayTextureWireframe, on by default)."
+    top_delta="18"
+    width="345" />
+  <slider
+    control_name="PlusMaterializeSeconds"
+    enabled_control="PlusMaterialize"
+    decimal_digits="1"
+    follows="left|top"
+    height="16"
+    increment="0.1"
+    initial_value="1.2"
+    label="Materialize time (s):"
+    label_width="170"
+    layout="topleft"
+    left="420"
+    max_val="4"
+    min_val="0.4"
+    name="PlusMaterializeSeconds"
+    tool_tip="How long the band of light takes to sweep from the bottom of an object to its top, in seconds."
+    top_delta="22"
+    width="345" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PlusMaterializePaletteText"
+    left="420"
+    top_delta="22"
+    width="165">
+      Glow colour:
+  </text>
+  <combo_box
+    control_name="PlusMaterializePalette"
+    enabled_control="PlusMaterialize"
+    height="18"
+    layout="topleft"
+    left_delta="170"
+    top_delta="0"
+    name="PlusMaterializePalette"
+    tool_tip="The colour of the lines and of the band of light. Custom: the colour of the swatch on the right."
+    width="120">
+    <combo_box.item
+      label="Cyan"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Orange"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Magenta"
+      name="2"
+      value="2" />
+    <combo_box.item
+      label="Green"
+      name="3"
+      value="3" />
+    <combo_box.item
+      label="Custom"
+      name="4"
+      value="4" />
+  </combo_box>
+  <color_swatch
+    enabled_control="PlusMaterialize"
+    can_apply_immediately="true"
+    border.border_thickness="0"
+    follows="left|top"
+    height="18"
+    label_height="0"
+    layout="topleft"
+    left_pad="6"
+    name="PlusMaterializeColor"
+    tool_tip="A colour of your own for the lines and the band of light. Picking one sets the glow colour to Custom. Its brightness is used as it is; a colour close to black gives cyan."
+    top_delta="0"
+    width="44">
+    <color_swatch.init_callback
+      function="Plus.ObjectFx.InitColor3"
+      parameter="PlusMaterializeColor PlusMaterializePalette" />
+    <color_swatch.commit_callback
+      function="Plus.ObjectFx.SetColor3"
+      parameter="PlusMaterializeColor PlusMaterializePalette" />
+    <color_swatch.caption_text
+      height="0" />
+  </color_swatch>
+  <check_box
+    control_name="PlusMaterializeAvatar"
+    enabled_control="PlusMaterialize"
+    height="16"
+    initial_value="true"
+    label="Materialize avatars too"
+    layout="topleft"
+    left="420"
+    name="PlusMaterializeAvatar"
+    tool_tip="An avatar drawn as glowing lines while it loads (yours after login, others whose clothes are not loaded yet) is swept once by the band of light from its feet to its head when it has everything, and the real body, clothes and attachments appear. Up to 8 avatars at once; avatars already at hand show at once."
+    top_delta="22"
+    width="345" />
+  <check_box
+    control_name="PlusDerez"
+    height="16"
+    initial_value="true"
+    label="Crumble objects as they vanish"
+    layout="topleft"
+    left="420"
+    name="PlusDerez"
+    tool_tip="When an object near you is deleted or returned (yours or someone else's), it breaks into small glowing cubes that drift up and fade, instead of vanishing at once. Not for attachments, avatars, physical objects or teleports."
+    top_delta="22"
+    width="345" />
+  <slider
+    control_name="PlusDerezSeconds"
+    enabled_control="PlusDerez"
+    decimal_digits="1"
+    follows="left|top"
+    height="16"
+    increment="0.1"
+    initial_value="1.2"
+    label="Crumble time (s):"
+    label_width="170"
+    layout="topleft"
+    left="420"
+    max_val="4"
+    min_val="0.4"
+    name="PlusDerezSeconds"
+    tool_tip="How long a vanishing object takes to crumble away, in seconds."
+    top_delta="22"
+    width="345" />
+  <text
+    type="string"
+    length="1"
+    follows="left|top"
+    height="16"
+    layout="topleft"
+    name="PlusDerezPaletteText"
+    left="420"
+    top_delta="22"
+    width="165">
+      Glow colour:
+  </text>
+  <combo_box
+    control_name="PlusDerezPalette"
+    enabled_control="PlusDerez"
+    height="18"
+    layout="topleft"
+    left_delta="170"
+    top_delta="0"
+    name="PlusDerezPalette"
+    tool_tip="The colour of the glowing edge where the object breaks apart. Custom: the colour of the swatch on the right."
+    width="120">
+    <combo_box.item
+      label="Cyan"
+      name="0"
+      value="0" />
+    <combo_box.item
+      label="Orange"
+      name="1"
+      value="1" />
+    <combo_box.item
+      label="Magenta"
+      name="2"
+      value="2" />
+    <combo_box.item
+      label="Green"
+      name="3"
+      value="3" />
+    <combo_box.item
+      label="Custom"
+      name="4"
+      value="4" />
+  </combo_box>
+  <color_swatch
+    enabled_control="PlusDerez"
+    can_apply_immediately="true"
+    border.border_thickness="0"
+    follows="left|top"
+    height="18"
+    label_height="0"
+    layout="topleft"
+    left_pad="6"
+    name="PlusDerezColor"
+    tool_tip="A glow colour of your own for objects that crumble away. Picking one sets the glow colour to Custom."
+    top_delta="0"
+    width="44">
+    <color_swatch.init_callback
+      function="Plus.ObjectFx.InitColor3"
+      parameter="PlusDerezColor PlusDerezPalette" />
+    <color_swatch.commit_callback
+      function="Plus.ObjectFx.SetColor3"
+      parameter="PlusDerezColor PlusDerezPalette" />
+    <color_swatch.caption_text
+      height="0" />
+  </color_swatch>
+  </panel>
+  </scroll_container>
+  </panel>
+  </tab_container>
+  <!-- /plus -->
+  <!-- End of Advanced Settings block -->
+  <!-- plus: vsync-ui. The line and the button stay at the bottom when the
+       floater resizes (follows was all / top|left). -->
+	<view_border
+      bevel_style="in"
+      follows="left|right|bottom"
+      height="0"
+      layout="topleft"
+      left="13"
+      name="horiz_border"
+      top="471"
+      top_delta="5"
+      width="774"/>
+  <button
+    follows="left|bottom"
+    height="23"
+    label="Reset to recommended settings"
+    layout="topleft"
+    left="20"
+    name="Defaults"
+    top_delta="7"
+    width="210">
+    <button.commit_callback
+      function="Pref.HardwareDefaults" />
+  </button>
+  <!-- /plus -->
+
+  <button
+    follows="right|bottom"
+    height="23"
+    label="OK"
+    label_selected="OK"
+    layout="topleft"
+    right="-115"
+    name="OK"
+    top_delta="0"
+    width="80">
+      <button.commit_callback
+        function="Pref.OK"
+        parameter="closeadvanced" />
+   </button>
+
+   <button
+    follows="right|bottom"
+    height="23"
+    label="Cancel"
+    label_selected="Cancel"
+    layout="topleft"
+    left_pad="5"
+    right="-20"
+    name="Cancel"
+    top_delta="0"
+    width="80" >
+      <button.commit_callback
+        function="Pref.Cancel"
+        parameter="closeadvanced" />
+   </button>
+
+<!-- These two check boxes are dummies and will never be displayed.  They are here so the control variables
+are saved in a preset file. -->
+  <check_box
+    control_name="RenderAvatarMaxComplexity"
+    visible="false"
+    height="0"
+    label="RenderAvatarMaxComplexity"
+    layout="topleft"
+    left="0"
+    name="RenderAvatarMaxComplexity"
+    top_delta="0"
+    width="0">
+  </check_box>
+
+  <check_box
+    control_name="RenderAvatarMaxNonImpostors"
+    visible="false"
+    height="0"
+    label="RenderAvatarMaxNonImpostors"
+    layout="topleft"
+    left="0"
+    name="RenderAvatarMaxNonImpostors"
+    top_delta="0"
+    width="0">
+  </check_box>
+</floater>

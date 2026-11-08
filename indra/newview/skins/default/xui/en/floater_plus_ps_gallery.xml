@@ -1,0 +1,1617 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The photo screen's parts sample (plus/photoscreen/psui/psgallery.cpp, research/221).
+     Written by plus/photoscreen/psui/make_ps_gallery.py: change the script and run it again. -->
+<floater
+  name="plus_ps_gallery"
+  can_close="true"
+  can_minimize="true"
+  can_resize="true"
+  height="820"
+  layout="topleft"
+  legacy_header_height="18"
+  min_height="420"
+  min_width="640"
+  positioning="cascading"
+  reuse_instance="true"
+  save_rect="true"
+  single_instance="true"
+  title="Photo Screen Parts Sample (Development)"
+  width="1280">
+  <string name="StackHead">Rows with the label beside</string>
+  <string name="StackExposure">Exposure</string>
+  <string name="StackSoftness">Shadow Softness</string>
+  <string name="StackParticles">Show Particles</string>
+  <string name="StackShadows">Shadows</string>
+  <string name="StackShadows0">None</string>
+  <string name="StackShadows1">Sun and Moon</string>
+  <string name="StackShadows2">Sun, Moon and Lights</string>
+  <string name="StackGaze">Gaze</string>
+  <string name="StackGazeChoices">Off|Camera|Everyone</string>
+  <string name="StackTime">Real Sky Time</string>
+  <string name="StackTimeHint">e.g. 2026-12-14 22:00 (empty: now)</string>
+  <string name="StackLook">Look</string>
+  <string name="StackLookPrev">The look before</string>
+  <string name="StackLookNext">The next look</string>
+  <string name="StackLook0">None</string>
+  <string name="StackLook1">Cinematic</string>
+  <string name="StackLook2">Warm</string>
+  <string name="StackDetails">Details (2)</string>
+  <string name="StackFog">Ground Fog</string>
+  <string name="StackGlow">Fog Glow</string>
+  <string name="StackStarTip">Show this on the Home tab</string>
+  <string name="StackChangedTip">Changed</string>
+  <string name="StackRebuildTip">The picture stops for a few seconds when this changes</string>
+  <plus_ps_check
+    name="show_disabled"
+    height="30"
+    label="Show the disabled look"
+    layout="topleft"
+    left="12"
+    top="28"
+    width="260" />
+  <plus_ps_label
+    name="hint"
+    height="30"
+    kind="hint"
+    label="Sizes of the target picture at 1080 high (research/221). Hover, click and Tab to see the states."
+    layout="topleft"
+    left="290"
+    top="28"
+    width="970" />
+  <scroll_container
+    name="scroll"
+    border_visible="false"
+    follows="all"
+    height="756"
+    layout="topleft"
+    left="0"
+    opaque="false"
+    reserve_scroll_corner="false"
+    top="64"
+    width="1280">
+    <panel
+      name="sample"
+      background_visible="false"
+      follows="left|top"
+      height="1830"
+      layout="topleft"
+      left="0"
+      top="0"
+      width="1812">
+      <plus_ps_box
+        name="ground"
+        height="1830"
+        kind="ground"
+        layout="topleft"
+        left="0"
+        top="0"
+        width="1812" />
+      <plus_ps_box
+        name="rail"
+        corners="tl"
+        height="1076"
+        kind="rail"
+        layout="topleft"
+        left="0"
+        top="0"
+        width="123">
+        <plus_ps_rail_tab
+          name="tab_scene"
+          height="83"
+          icon="scene"
+          initial_value="true"
+          label="Scene"
+          layout="topleft"
+          left="0"
+          top="8"
+          width="123" />
+        <plus_ps_rail_tab
+          name="tab_avatar"
+          height="83"
+          icon="avatar"
+          label="Avatar"
+          layout="topleft"
+          left="0"
+          top="92"
+          width="123" />
+        <plus_ps_rail_tab
+          name="tab_environment"
+          height="83"
+          icon="environment"
+          label="Environment"
+          layout="topleft"
+          left="0"
+          top="176"
+          width="123" />
+        <plus_ps_rail_tab
+          name="tab_lighting"
+          height="83"
+          icon="lighting"
+          label="Lighting"
+          layout="topleft"
+          left="0"
+          top="260"
+          width="123" />
+        <plus_ps_rail_tab
+          name="tab_pose"
+          height="83"
+          icon="pose"
+          label="Pose &amp;&#10;Animation"
+          layout="topleft"
+          left="0"
+          top="344"
+          width="123" />
+        <plus_ps_rail_tab
+          name="tab_camera"
+          height="83"
+          icon="camera"
+          label="Camera"
+          layout="topleft"
+          left="0"
+          top="428"
+          width="123" />
+        <plus_ps_rail_tab
+          name="tab_effects"
+          height="83"
+          icon="effects"
+          label="Effects"
+          layout="topleft"
+          left="0"
+          top="512"
+          width="123" />
+        <plus_ps_rail_tab
+          name="tab_presets"
+          height="83"
+          icon="presets"
+          label="Presets"
+          layout="topleft"
+          left="0"
+          top="596"
+          width="123" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="left"
+        height="1060"
+        kind="panel"
+        layout="topleft"
+        left="131"
+        top="8"
+        width="280">
+        <plus_ps_header
+          name="h_scene"
+          height="52"
+          icon="clapperboard"
+          label="Scene"
+          layout="topleft"
+          left="0"
+          top="0"
+          width="280" />
+        <plus_ps_label
+          name="l_location"
+          height="24"
+          label="Location"
+          layout="topleft"
+          left="14"
+          top="62"
+          width="252" />
+        <plus_ps_card
+          name="c_location"
+          height="59"
+          icon="scene"
+          label="My Parcel"
+          layout="topleft"
+          left="14"
+          subtitle="Seaside Villa"
+          top="90"
+          width="252" />
+        <plus_ps_label
+          name="l_time"
+          height="24"
+          label="Time of Day"
+          layout="topleft"
+          left="14"
+          top="160"
+          width="252" />
+        <plus_ps_picture
+          name="p_time"
+          height="52"
+          layout="topleft"
+          left="14"
+          placeholder="dusk_night"
+          top="188"
+          width="252" />
+        <plus_ps_slider
+          name="s_time"
+          decimal_digits="0"
+          height="30"
+          increment="1"
+          initial_value="2"
+          label_width="0"
+          layout="topleft"
+          left="14"
+          max_value="3"
+          min_value="0"
+          ticks="4"
+          top="246"
+          width="252" />
+        <plus_ps_label
+          name="l_sky"
+          height="24"
+          label="Windlight"
+          layout="topleft"
+          left="14"
+          top="288"
+          width="252" />
+        <plus_ps_card
+          name="c_sky"
+          height="59"
+          icon="sun"
+          label="Golden Hour"
+          layout="topleft"
+          left="14"
+          top="316"
+          width="252" />
+        <plus_ps_header
+          name="h_env"
+          divider="top"
+          height="52"
+          icon="sliders"
+          label="Environment"
+          layout="topleft"
+          left="0"
+          top="392"
+          width="280" />
+        <plus_ps_check
+          name="chk_env_0"
+          height="30"
+          initial_value="false"
+          label="Show HUD"
+          layout="topleft"
+          left="14"
+          top="448"
+          width="252" />
+        <plus_ps_check
+          name="chk_env_1"
+          height="30"
+          initial_value="false"
+          label="Show Other Avatars"
+          layout="topleft"
+          left="14"
+          top="478"
+          width="252" />
+        <plus_ps_check
+          name="chk_env_2"
+          height="30"
+          initial_value="false"
+          label="Show Attachments"
+          layout="topleft"
+          left="14"
+          top="508"
+          width="252" />
+        <plus_ps_check
+          name="chk_env_3"
+          height="30"
+          initial_value="true"
+          label="Show Particles"
+          layout="topleft"
+          left="14"
+          top="538"
+          width="252" />
+        <plus_ps_check
+          name="chk_env_4"
+          height="30"
+          initial_value="true"
+          label="Show Shadows"
+          layout="topleft"
+          left="14"
+          top="568"
+          width="252" />
+        <plus_ps_check
+          name="chk_env_5"
+          height="30"
+          initial_value="true"
+          label="Maximum LOD"
+          layout="topleft"
+          left="14"
+          top="598"
+          width="252" />
+        <plus_ps_header
+          name="h_avatar"
+          divider="top"
+          height="52"
+          icon="user"
+          label="Avatar"
+          layout="topleft"
+          left="0"
+          top="632"
+          width="280" />
+        <plus_ps_card
+          name="c_avatar"
+          height="69"
+          icon="avatar"
+          kind="avatar"
+          label="Hinata"
+          layout="topleft"
+          left="14"
+          subtitle="Complexity 134,217"
+          top="690"
+          width="252" />
+        <plus_ps_check
+          name="chk_avatar_0"
+          height="30"
+          initial_value="true"
+          label="Freeze Animation (AO)"
+          layout="topleft"
+          left="14"
+          top="770"
+          width="252" />
+        <plus_ps_check
+          name="chk_avatar_1"
+          height="30"
+          initial_value="true"
+          label="Freeze Pose"
+          layout="topleft"
+          left="14"
+          top="800"
+          width="252" />
+        <plus_ps_check
+          name="chk_avatar_2"
+          height="30"
+          initial_value="true"
+          label="Disable Head Tracking"
+          layout="topleft"
+          left="14"
+          top="830"
+          width="252" />
+        <plus_ps_check
+          name="chk_avatar_3"
+          height="30"
+          initial_value="false"
+          label="Hide Attachments"
+          layout="topleft"
+          left="14"
+          top="860"
+          width="252" />
+        <plus_ps_check
+          name="chk_avatar_4"
+          height="30"
+          initial_value="true"
+          label="Render at Max Quality"
+          layout="topleft"
+          left="14"
+          top="890"
+          width="252" />
+        <plus_ps_button
+          name="b_reset"
+          height="40"
+          label="Reset Avatar"
+          layout="topleft"
+          left="14"
+          top="932"
+          width="252" />
+      </plus_ps_box>
+      <plus_ps_picture
+        name="world"
+        height="808"
+        layout="topleft"
+        left="419"
+        placeholder="dusk_night"
+        radius="0"
+        top="8"
+        width="972" />
+      <plus_ps_row
+        name="chips"
+        height="40"
+        layout="topleft"
+        left="431"
+        spacing="10"
+        top="20"
+        width="700">
+        <plus_ps_chip
+          name="chip_look"
+          dropdown="true"
+          height="40"
+          icon="film"
+          label="Cinematic"
+          layout="topleft"
+          left="0"
+          top="0"
+          width="150" />
+        <plus_ps_chip
+          name="chip_size"
+          height="40"
+          icon="resolution"
+          label="4K"
+          layout="topleft"
+          left="160"
+          top="0"
+          width="90" />
+        <plus_ps_chip
+          name="chip_aspect"
+          height="40"
+          icon="ratio"
+          label="16:9"
+          layout="topleft"
+          left="260"
+          top="0"
+          width="100" />
+        <plus_ps_chip
+          name="chip_grid"
+          dropdown="true"
+          height="40"
+          icon="palette"
+          label="Grid"
+          layout="topleft"
+          left="370"
+          top="0"
+          width="110" />
+      </plus_ps_row>
+      <plus_ps_histogram
+        name="histogram"
+        height="101"
+        layout="topleft"
+        left="1184"
+        top="20"
+        width="195" />
+      <plus_ps_readout
+        name="readout"
+        height="83"
+        label="F 1.8|1/125|ISO 100|50 mm"
+        layout="topleft"
+        left="419"
+        top="733"
+        width="972" />
+      <plus_ps_box
+        name="icon_box"
+        height="40"
+        kind="glass"
+        layout="topleft"
+        left="1195"
+        top="762"
+        width="130">
+        <plus_ps_icon_button
+          name="ib_shoot"
+          height="40"
+          icon="camera"
+          layout="topleft"
+          left="1"
+          tool_tip="Take a picture"
+          top="0"
+          width="42" />
+        <plus_ps_icon_button
+          name="ib_focus"
+          height="40"
+          icon="focus"
+          layout="topleft"
+          left="44"
+          tool_tip="Focus"
+          top="0"
+          width="42" />
+        <plus_ps_icon_button
+          name="ib_frame"
+          height="40"
+          icon="frame"
+          layout="topleft"
+          left="87"
+          toggle="true"
+          tool_tip="Focus frame"
+          top="0"
+          width="42" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="full_box"
+        height="40"
+        kind="glass"
+        layout="topleft"
+        left="1339"
+        top="762"
+        width="40">
+        <plus_ps_icon_button
+          name="ib_full"
+          height="40"
+          icon="maximize"
+          layout="topleft"
+          left="0"
+          tool_tip="Simple view"
+          top="0"
+          width="40" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="world_corners"
+        height="808"
+        kind="world_corners"
+        layout="topleft"
+        left="419"
+        mouse_opaque="false"
+        top="8"
+        width="972" />
+      <plus_ps_box
+        name="bottom"
+        height="244"
+        kind="panel"
+        layout="topleft"
+        left="419"
+        top="824"
+        width="972">
+        <plus_ps_row
+          name="tabs"
+          height="36"
+          kind="tabs"
+          layout="topleft"
+          left="0"
+          pad="14"
+          spacing="18"
+          top="8"
+          width="972">
+          <plus_ps_tab
+            name="tab_camera"
+            height="36"
+            initial_value="true"
+            label="Camera Presets"
+            layout="topleft"
+            left="0"
+            top="0"
+            width="120" />
+          <plus_ps_tab
+            name="tab_pose"
+            height="36"
+            label="Pose Presets"
+            layout="topleft"
+            left="130"
+            top="0"
+            width="110" />
+          <plus_ps_tab
+            name="tab_scene"
+            height="36"
+            label="Scene Presets"
+            layout="topleft"
+            left="250"
+            top="0"
+            width="110" />
+          <plus_ps_tab
+            name="tab_mine"
+            height="36"
+            label="My Presets"
+            layout="topleft"
+            left="370"
+            top="0"
+            width="100" />
+        </plus_ps_row>
+        <plus_ps_preset_card
+          name="preset_0"
+          height="140"
+          icon="camera"
+          initial_value="true"
+          label="Portrait"
+          layout="topleft"
+          left="12"
+          subtitle="Close Up"
+          top="56"
+          width="108" />
+        <plus_ps_preset_card
+          name="preset_1"
+          height="140"
+          icon="camera"
+          label="Fashion"
+          layout="topleft"
+          left="132"
+          subtitle="Half Body"
+          top="56"
+          width="108" />
+        <plus_ps_preset_card
+          name="preset_2"
+          height="140"
+          icon="camera"
+          label="Full Body"
+          layout="topleft"
+          left="252"
+          subtitle="Whole Avatar"
+          top="56"
+          width="108" />
+        <plus_ps_preset_card
+          name="preset_3"
+          height="140"
+          icon="camera"
+          label="Low Angle"
+          layout="topleft"
+          left="372"
+          subtitle="Dramatic"
+          top="56"
+          width="108" />
+        <plus_ps_preset_card
+          name="preset_4"
+          height="140"
+          icon="camera"
+          label="High Angle"
+          layout="topleft"
+          left="492"
+          subtitle="Looking Down"
+          top="56"
+          width="108" />
+        <plus_ps_preset_card
+          name="preset_5"
+          deletable="true"
+          height="140"
+          icon="camera"
+          label="Landscape"
+          layout="topleft"
+          left="612"
+          subtitle="Scenery"
+          top="56"
+          width="108" />
+        <plus_ps_preset_card
+          name="preset_6"
+          deletable="true"
+          height="140"
+          icon="camera"
+          label="Marketplace"
+          layout="topleft"
+          left="732"
+          subtitle="Product Shot"
+          top="56"
+          width="108" />
+        <plus_ps_add_card
+          name="preset_add"
+          height="132"
+          label="Save Current"
+          layout="topleft"
+          left="852"
+          top="56"
+          width="108" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="right"
+        height="932"
+        kind="panel"
+        layout="topleft"
+        left="1399"
+        top="8"
+        width="405">
+        <plus_ps_header
+          name="h_camera"
+          height="40"
+          icon="aperture"
+          label="Camera"
+          layout="topleft"
+          left="0"
+          size="right"
+          top="0"
+          width="405" />
+        <plus_ps_header
+          name="sh_lens"
+          height="28"
+          label="Lens"
+          layout="topleft"
+          left="21"
+          size="sub"
+          top="46"
+          width="363" />
+        <plus_ps_slider
+          name="s_focal"
+          decimal_digits="0"
+          height="31"
+          increment="1"
+          initial_value="50"
+          label="Focal Length"
+          layout="topleft"
+          left="21"
+          max_value="200"
+          min_value="10"
+          top="78"
+          unit=" mm"
+          width="363" />
+        <plus_ps_slider
+          name="s_fov"
+          decimal_digits="1"
+          height="31"
+          increment="0.1"
+          initial_value="39.6"
+          label="Field of View"
+          layout="topleft"
+          left="21"
+          max_value="120"
+          min_value="5"
+          top="109"
+          unit="°"
+          width="363" />
+        <plus_ps_slider
+          name="s_aperture"
+          decimal_digits="1"
+          default_value="22"
+          height="31"
+          increment="0.1"
+          initial_value="1.8"
+          label="Aperture (F)"
+          layout="topleft"
+          left="21"
+          max_value="22"
+          min_value="1"
+          top="140"
+          width="363" />
+        <plus_ps_label
+          name="l_focus_mode"
+          height="33"
+          label="Focus Mode"
+          layout="topleft"
+          left="21"
+          top="172"
+          width="124" />
+        <plus_ps_combo
+          name="c_focus_mode"
+          height="33"
+          layout="topleft"
+          left="157"
+          top="172"
+          width="186">
+          <plus_ps_combo.item
+            name="auto"
+            label="Auto (Avatar)"
+            value="auto" />
+          <plus_ps_combo.item
+            name="cursor"
+            label="Cursor"
+            value="cursor" />
+          <plus_ps_combo.item
+            name="self"
+            label="My Face"
+            value="self" />
+          <plus_ps_combo.item
+            name="other"
+            label="Their Face"
+            value="other" />
+        </plus_ps_combo>
+        <plus_ps_icon_button
+          name="ib_focus_frame"
+          height="33"
+          icon="scan_face"
+          layout="topleft"
+          left="349"
+          toggle="true"
+          tool_tip="Show the focus frame"
+          top="172"
+          width="35" />
+        <plus_ps_slider
+          name="s_focus_distance"
+          decimal_digits="1"
+          height="31"
+          increment="0.1"
+          initial_value="2.3"
+          label="Focus Distance"
+          layout="topleft"
+          left="21"
+          max_value="50"
+          min_value="0.1"
+          top="211"
+          unit=" m"
+          width="363" />
+        <plus_ps_divider
+          name="div_dof"
+          height="9"
+          kind="right"
+          layout="topleft"
+          left="0"
+          top="246"
+          width="405" />
+        <plus_ps_header
+          name="sh_dof"
+          height="31"
+          label="Depth of Field"
+          layout="topleft"
+          left="21"
+          size="sub"
+          top="256"
+          width="300" />
+        <plus_ps_switch
+          name="sw_dof"
+          height="31"
+          initial_value="true"
+          layout="topleft"
+          left="353"
+          top="256"
+          width="31" />
+        <plus_ps_label
+          name="l_bokeh"
+          height="33"
+          label="Bokeh Shape"
+          layout="topleft"
+          left="21"
+          top="291"
+          width="124" />
+        <plus_ps_combo
+          name="c_bokeh"
+          height="33"
+          layout="topleft"
+          left="157"
+          top="291"
+          width="227">
+          <plus_ps_combo.item
+            name="circle"
+            label="Circular"
+            value="circle" />
+          <plus_ps_combo.item
+            name="hexagon"
+            label="Hexagon"
+            value="hexagon" />
+        </plus_ps_combo>
+        <plus_ps_slider
+          name="s_bokeh"
+          decimal_digits="1"
+          height="31"
+          increment="0.1"
+          initial_value="0.6"
+          label="Bokeh Intensity"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="0"
+          top="330"
+          width="363" />
+        <plus_ps_header
+          name="h_exposure"
+          divider="top"
+          height="40"
+          icon="sun"
+          label="Exposure &amp; Tone"
+          layout="topleft"
+          left="0"
+          size="right"
+          top="368"
+          width="405" />
+        <plus_ps_slider
+          name="s_exposure"
+          decimal_digits="1"
+          default_value="0"
+          height="31"
+          increment="0.1"
+          initial_value="0.2"
+          label="Exposure"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="-1"
+          show_sign="true"
+          top="412"
+          width="363" />
+        <plus_ps_slider
+          name="s_contrast"
+          decimal_digits="1"
+          default_value="0"
+          height="31"
+          increment="0.1"
+          initial_value="0"
+          label="Contrast"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="-1"
+          show_sign="true"
+          top="443"
+          width="363" />
+        <plus_ps_slider
+          name="s_highlights"
+          decimal_digits="1"
+          default_value="0"
+          height="31"
+          increment="0.1"
+          initial_value="-0.3"
+          label="Highlights"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="-1"
+          show_sign="true"
+          top="474"
+          width="363" />
+        <plus_ps_slider
+          name="s_shadows"
+          decimal_digits="1"
+          default_value="0"
+          height="31"
+          increment="0.1"
+          initial_value="0.4"
+          label="Shadows"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="-1"
+          show_sign="true"
+          top="505"
+          width="363" />
+        <plus_ps_slider
+          name="s_whites"
+          decimal_digits="1"
+          default_value="0"
+          height="31"
+          increment="0.1"
+          initial_value="0"
+          label="Whites"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="-1"
+          show_sign="true"
+          top="536"
+          width="363" />
+        <plus_ps_slider
+          name="s_blacks"
+          decimal_digits="1"
+          default_value="0"
+          height="31"
+          increment="0.1"
+          initial_value="-0.1"
+          label="Blacks"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="-1"
+          show_sign="true"
+          top="567"
+          width="363" />
+        <plus_ps_header
+          name="h_grading"
+          collapsible="false"
+          divider="top"
+          height="40"
+          icon="palette"
+          label="Color Grading"
+          layout="topleft"
+          left="0"
+          size="right"
+          top="604"
+          width="405" />
+        <plus_ps_switch
+          name="sw_grading"
+          height="40"
+          initial_value="true"
+          layout="topleft"
+          left="353"
+          top="604"
+          width="31" />
+        <plus_ps_label
+          name="l_lut"
+          height="33"
+          label="LUT"
+          layout="topleft"
+          left="21"
+          top="648"
+          width="124" />
+        <plus_ps_combo
+          name="c_lut"
+          height="33"
+          layout="topleft"
+          left="157"
+          top="648"
+          width="227">
+          <plus_ps_combo.item
+            name="cinematic"
+            label="Cinematic 01"
+            value="cinematic" />
+          <plus_ps_combo.item
+            name="warm"
+            label="Warm"
+            value="warm" />
+          <plus_ps_combo.item
+            name="none"
+            label="None"
+            value="none" />
+        </plus_ps_combo>
+        <plus_ps_slider
+          name="s_temperature"
+          decimal_digits="0"
+          height="31"
+          increment="1"
+          initial_value="5"
+          label="Temperature"
+          layout="topleft"
+          left="21"
+          max_value="100"
+          min_value="-100"
+          show_sign="true"
+          top="688"
+          width="363" />
+        <plus_ps_slider
+          name="s_tint"
+          decimal_digits="0"
+          height="31"
+          increment="1"
+          initial_value="0"
+          label="Tint"
+          layout="topleft"
+          left="21"
+          max_value="100"
+          min_value="-100"
+          show_sign="true"
+          top="719"
+          width="363" />
+        <plus_ps_slider
+          name="s_vibrance"
+          decimal_digits="1"
+          height="31"
+          increment="0.1"
+          initial_value="0.2"
+          label="Vibrance"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="-1"
+          show_sign="true"
+          top="750"
+          width="363" />
+        <plus_ps_slider
+          name="s_saturation"
+          decimal_digits="1"
+          height="31"
+          increment="0.1"
+          initial_value="0"
+          label="Saturation"
+          layout="topleft"
+          left="21"
+          max_value="1"
+          min_value="-1"
+          show_sign="true"
+          top="781"
+          width="363" />
+        <plus_ps_header
+          name="h_effects"
+          divider="top"
+          height="40"
+          icon="effects"
+          initial_value="false"
+          label="Effects"
+          layout="topleft"
+          left="0"
+          size="right"
+          top="818"
+          width="405" />
+        <plus_ps_header
+          name="h_output"
+          divider="top"
+          height="40"
+          icon="output"
+          initial_value="false"
+          label="Output"
+          layout="topleft"
+          left="0"
+          size="right"
+          top="858"
+          width="405" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="shutter"
+        height="120"
+        kind="panel"
+        layout="topleft"
+        left="1399"
+        top="948"
+        width="405">
+        <plus_ps_segment
+          name="seg_mode"
+          height="40"
+          layout="topleft"
+          left="10"
+          left_label="Photo"
+          right_label="360°"
+          top="40"
+          width="137" />
+        <plus_ps_shutter
+          name="shutter_button"
+          height="75"
+          layout="topleft"
+          left="158"
+          tool_tip="Take a picture"
+          top="4"
+          width="75" />
+        <plus_ps_icon_button
+          name="ib_settings"
+          height="44"
+          icon="settings"
+          icon_size="26"
+          layout="topleft"
+          left="330"
+          tool_tip="Photo tools"
+          top="28"
+          width="44" />
+        <plus_ps_label
+          name="l_exit"
+          align="right"
+          height="22"
+          kind="hint"
+          label="Press F12 to exit Photo Mode"
+          layout="topleft"
+          left="110"
+          top="90"
+          width="285" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="more_choices"
+        height="430"
+        kind="panel"
+        layout="topleft"
+        left="8"
+        top="1084"
+        width="600">
+        <plus_ps_header
+          name="h_more"
+          height="40"
+          icon="sliders"
+          label="More Parts"
+          layout="topleft"
+          left="0"
+          size="right"
+          top="0"
+          width="600" />
+        <plus_ps_label
+          name="l_seg3"
+          height="22"
+          label="A choice of three"
+          layout="topleft"
+          left="21"
+          top="52"
+          width="558" />
+        <plus_ps_segment
+          name="seg_three"
+          height="33"
+          initial_value="1"
+          labels="Off|Me|Everyone"
+          layout="topleft"
+          left="21"
+          top="78"
+          width="558" />
+        <plus_ps_label
+          name="l_seg7"
+          height="22"
+          label="The quality levels"
+          layout="topleft"
+          left="21"
+          top="122"
+          width="558" />
+        <plus_ps_segment
+          name="seg_levels"
+          height="33"
+          initial_value="3"
+          labels="Low|Low-Mid|Mid|Mid-High|High|High-Ultra|Ultra"
+          layout="topleft"
+          left="21"
+          top="148"
+          width="558" />
+        <plus_ps_label
+          name="l_star"
+          height="22"
+          label="Show on Home (star)"
+          layout="topleft"
+          left="21"
+          top="192"
+          width="558" />
+        <plus_ps_icon_button
+          name="ib_star_off"
+          height="24"
+          layout="topleft"
+          left="21"
+          star="true"
+          toggle="true"
+          tool_tip="Show this on the Home tab"
+          top="218"
+          width="24" />
+        <plus_ps_icon_button
+          name="ib_star_on"
+          height="24"
+          initial_value="true"
+          layout="topleft"
+          left="49"
+          star="true"
+          toggle="true"
+          tool_tip="Show this on the Home tab"
+          top="218"
+          width="24" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="stack_box"
+        height="430"
+        kind="panel"
+        layout="topleft"
+        left="616"
+        top="1084"
+        width="620">
+        <scroll_container
+          name="stack_scroll"
+          border_visible="false"
+          follows="left|top"
+          height="414"
+          layout="topleft"
+          left="0"
+          opaque="false"
+          reserve_scroll_corner="false"
+          top="8"
+          width="620">
+          <panel
+            name="stack_content"
+            background_visible="false"
+            follows="left|top"
+            height="414"
+            layout="topleft"
+            left="0"
+            mouse_opaque="false"
+            top="0"
+            width="610" />
+        </scroll_container>
+      </plus_ps_box>
+      <plus_ps_box
+        name="tabs_box"
+        height="430"
+        kind="panel"
+        layout="topleft"
+        left="1244"
+        top="1084"
+        width="560">
+        <plus_ps_header
+          name="h_tabs"
+          height="40"
+          icon="sliders"
+          label="Sub-tabs"
+          layout="topleft"
+          left="0"
+          size="right"
+          top="0"
+          width="560" />
+        <plus_ps_row
+          name="sub_tabs"
+          height="36"
+          kind="tabs"
+          layout="topleft"
+          left="0"
+          pad="14"
+          spacing="18"
+          top="48"
+          width="560">
+          <plus_ps_tab
+            name="tab_display"
+            height="36"
+            initial_value="true"
+            label="Display"
+            layout="topleft"
+            left="0"
+            top="0"
+            width="110" />
+          <plus_ps_tab
+            name="tab_graphics"
+            height="36"
+            label="Graphics"
+            layout="topleft"
+            left="120"
+            top="0"
+            width="110" />
+          <plus_ps_tab
+            name="tab_other"
+            height="36"
+            label="Other"
+            layout="topleft"
+            left="240"
+            top="0"
+            width="110" />
+        </plus_ps_row>
+        <panel
+          name="page_display"
+          background_visible="false"
+          height="330"
+          layout="topleft"
+          left="0"
+          mouse_opaque="false"
+          top="92"
+          visible="true"
+          width="560">
+          <plus_ps_label
+            name="l_page_display"
+            height="22"
+            label="The page of the first tab."
+            layout="topleft"
+            left="21"
+            top="12"
+            width="518" />
+        </panel>
+        <panel
+          name="page_graphics"
+          background_visible="false"
+          height="330"
+          layout="topleft"
+          left="0"
+          mouse_opaque="false"
+          top="92"
+          visible="false"
+          width="560">
+          <plus_ps_label
+            name="l_page_graphics"
+            height="22"
+            label="The page of the second tab."
+            layout="topleft"
+            left="21"
+            top="12"
+            width="518" />
+        </panel>
+        <panel
+          name="page_other"
+          background_visible="false"
+          height="330"
+          layout="topleft"
+          left="0"
+          mouse_opaque="false"
+          top="92"
+          visible="false"
+          width="560">
+          <plus_ps_label
+            name="l_page_other"
+            height="22"
+            label="The page of the third tab."
+            layout="topleft"
+            left="21"
+            top="12"
+            width="518" />
+        </panel>
+      </plus_ps_box>
+      <plus_ps_box
+        name="compat_box"
+        height="300"
+        kind="panel"
+        layout="topleft"
+        left="8"
+        top="1522"
+        width="1796">
+        <plus_ps_header
+          name="h_compat"
+          height="40"
+          icon="settings"
+          label="Compatible parts (the official widgets: the preferences)"
+          layout="topleft"
+          left="0"
+          size="right"
+          top="0"
+          width="1796" />
+        <plus_ps_check_compat
+          name="cc_on"
+          height="30"
+          initial_value="true"
+          label="Show the tips"
+          layout="topleft"
+          left="21"
+          top="52"
+          width="529" />
+        <plus_ps_check_compat
+          name="cc_off"
+          height="30"
+          label="Check for updates when starting"
+          layout="topleft"
+          left="21"
+          top="82"
+          width="529" />
+        <plus_ps_slider_compat
+          name="sc_distance"
+          decimal_digits="0"
+          height="31"
+          increment="32"
+          initial_value="256"
+          label="Draw Distance"
+          layout="topleft"
+          left="21"
+          max_val="512"
+          min_val="64"
+          top="112"
+          width="529" />
+        <plus_ps_slider_compat
+          name="sc_scale"
+          decimal_digits="3"
+          height="31"
+          increment="0.025"
+          initial_value="1"
+          label="UI Size"
+          layout="topleft"
+          left="21"
+          max_val="1.5"
+          min_val="0.75"
+          ticks="4"
+          top="143"
+          width="529" />
+        <plus_ps_spinner
+          name="sp_cache"
+          decimal_digits="0"
+          height="30"
+          increment="64"
+          initial_value="4096"
+          label="Cache Size (MB)"
+          layout="topleft"
+          left="21"
+          max_val="9984"
+          min_val="64"
+          top="174"
+          width="529" />
+        <plus_ps_text
+          name="tx_note"
+          height="48"
+          kind="hint"
+          layout="topleft"
+          left="21"
+          top="210"
+          value="Text as the official text box: several lines, links such as https://secondlife.com and arguments."
+          width="529"
+          wrap="true" />
+        <plus_ps_button_compat
+          name="bc_clear"
+          height="40"
+          label="Clear Cache"
+          layout="topleft"
+          left="571"
+          top="52"
+          width="254" />
+        <plus_ps_button_compat
+          name="bc_toggle"
+          height="40"
+          initial_value="true"
+          is_toggle="true"
+          label="Toggle (on)"
+          layout="topleft"
+          left="846"
+          top="52"
+          width="254" />
+        <plus_ps_button_compat
+          name="bc_icon"
+          height="40"
+          icon="settings"
+          label="Settings"
+          layout="topleft"
+          left="571"
+          top="100"
+          width="254" />
+        <plus_ps_button_compat
+          name="bc_icon_only"
+          height="40"
+          icon="settings"
+          layout="topleft"
+          left="846"
+          tool_tip="Settings"
+          top="100"
+          width="40" />
+        <plus_ps_text
+          name="tx_label"
+          height="24"
+          kind="label"
+          layout="topleft"
+          left="571"
+          top="152"
+          value="A label (kind label)"
+          width="529" />
+        <plus_ps_text
+          name="tx_white"
+          height="24"
+          kind="white"
+          layout="topleft"
+          left="571"
+          top="176"
+          value="A value (kind white)"
+          width="529" />
+        <plus_ps_text
+          name="tx_dim"
+          height="24"
+          kind="dim"
+          layout="topleft"
+          left="571"
+          top="200"
+          value="Not chosen (kind dim)"
+          width="529" />
+        <plus_ps_text
+          name="tx_sub"
+          height="24"
+          kind="sub"
+          layout="topleft"
+          left="571"
+          top="224"
+          value="A second line (kind sub)"
+          width="529" />
+        <plus_ps_text
+          name="tx_hint"
+          height="24"
+          kind="hint"
+          layout="topleft"
+          left="571"
+          top="248"
+          value="A hint (kind hint)"
+          width="529" />
+        <plus_ps_text
+          name="tx_title"
+          height="24"
+          kind="title"
+          layout="topleft"
+          left="571"
+          top="272"
+          value="A title (kind title)"
+          width="529" />
+        <plus_ps_label
+          name="l_radio_list"
+          height="22"
+          label="A choice in a list (kind list)"
+          layout="topleft"
+          left="1121"
+          top="52"
+          width="529" />
+        <plus_ps_radio
+          name="rc_list"
+          height="90"
+          initial_value="normal"
+          layout="topleft"
+          left="1121"
+          top="78"
+          width="529">
+          <radio_item
+            name="low"
+            height="30"
+            label="Low"
+            layout="topleft"
+            left="0"
+            top="0"
+            value="low"
+            width="529" />
+          <radio_item
+            name="normal"
+            height="30"
+            label="Normal"
+            layout="topleft"
+            left="0"
+            top="30"
+            value="normal"
+            width="529" />
+          <radio_item
+            name="high"
+            height="30"
+            label="High"
+            layout="topleft"
+            left="0"
+            top="60"
+            value="high"
+            width="529" />
+        </plus_ps_radio>
+        <plus_ps_label
+          name="l_radio_bar"
+          height="22"
+          label="A choice on a bar (kind segment)"
+          layout="topleft"
+          left="1121"
+          top="180"
+          width="529" />
+        <plus_ps_radio
+          name="rc_bar"
+          height="33"
+          initial_value="me"
+          kind="segment"
+          layout="topleft"
+          left="1121"
+          top="206"
+          width="529">
+          <radio_item
+            name="nobody"
+            height="33"
+            label="Nobody"
+            layout="topleft"
+            left="0"
+            top="0"
+            value="nobody"
+            width="176" />
+          <radio_item
+            name="me"
+            height="33"
+            label="Me"
+            layout="topleft"
+            left="176"
+            top="0"
+            value="me"
+            width="176" />
+          <radio_item
+            name="everyone"
+            height="33"
+            label="Everyone"
+            layout="topleft"
+            left="352"
+            top="0"
+            value="everyone"
+            width="177" />
+        </plus_ps_radio>
+      </plus_ps_box>
+    </panel>
+  </scroll_container>
+</floater>

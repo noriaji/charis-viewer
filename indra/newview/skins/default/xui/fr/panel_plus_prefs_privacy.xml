@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Privacy panel">
+	<plus_ps_box name="ps_ground">
+		<plus_ps_tabs name="privacy_tab_container">
+			<panel name="privacy_preferences_general">
+				<panel.string name="log_in_to_change">
+					se connecter pour changer
+				</panel.string>
+				<scroll_container name="privacy_general_scroll">
+					<panel name="privacy_general_list">
+						<plus_ps_check_compat name="online_searchresults" label="Afficher mon profil dans les résultats de recherche" />
+						<plus_ps_check_compat name="online_visibility" label="Seuls mes amis et groupes voient quand je suis en ligne" />
+						<plus_ps_check_compat name="auto_disengage_mic_check" label="Fermer le micro à la fin d'un appel" />
+						<plus_ps_button_compat name="clear_cache" label="Vider l'historique" tool_tip="Effacez le cache de l'image de connexion, du dernier lieu, de l'historique des téléportations,  du Web et des textures." />
+						<plus_ps_text name="cache_size_label_l">
+							(endroits, images, web, historique des recherches)
+						</plus_ps_text>
+						<plus_ps_button_compat name="block_list" label="Liste des ignorés" />
+						<plus_ps_text name="block_list_label">
+							(personnes et/ou objets que vous avez ignorés)
+						</plus_ps_text>
+					</panel>
+				</scroll_container>
+			</panel>
+		</plus_ps_tabs>
+	</plus_ps_box>
+</panel>

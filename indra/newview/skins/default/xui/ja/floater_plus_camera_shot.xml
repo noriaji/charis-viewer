@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_camera_shot" title="カメラワーク">
+	<floater.string name="shot_subject_none">今の向きのまま（動かさない）</floater.string>
+	<floater.string name="shot_subject_me">自分（[NAME]）</floater.string>
+	<floater.string name="shot_err_no_avatar">アバターまたはカメラがまだありません。</floater.string>
+	<floater.string name="shot_err_too_close">カメラが被写体に近すぎます。先に少し引いてください。</floater.string>
+	<floater.string name="shot_err_overhead">カメラが被写体の真上か真下にあります。先に少し横へ動かしてください。</floater.string>
+	<floater.string name="shot_err_subject">そのアバターは今は見えません。「更新」を押して選び直してください。</floater.string>
+	<floater.string name="shot_err_flycam">今はフライカム（3D マウス）がカメラを動かしています。先にフライカムを切ってください。</floater.string>
+	<floater.string name="shot_err_mouselook">マウスルック中です。先にマウスルックを解除してください。</floater.string>
+	<floater.string name="shot_idle">待機中。Esc で撮影を止めて、カメラをアバターの後ろに戻します。</floater.string>
+	<floater.string name="shot_running">撮影中… [PERCENT]%</floater.string>
+	<text name="lbl_subject">狙う相手</text>
+	<combo_box name="subject" tool_tip="アバターを選ぶと、動いてもカメラが追いかけます。一番上は、今カメラが向いている所のままです。" />
+	<button name="btn_refresh" label="更新" tool_tip="カメラの近くにいるアバターを探し直します" />
+	<combo_box name="part" tool_tip="アバターのどこを画面の中心に置くか">
+		<combo_box.item name="part_face" label="顔" />
+		<combo_box.item name="part_chest" label="胸" />
+		<combo_box.item name="part_body" label="全身" />
+	</combo_box>
+	<text name="lbl_move">動き</text>
+	<slider name="amount" label="大きさ" tool_tip="どれだけ動かすか。2 なら、ドリーは距離が半分、ズームは倍率が 2 倍（アウトはその逆）" />
+	<slider name="seconds" label="秒数" tool_tip="動きにかける時間" />
+	<combo_box name="ease" tool_tip="動きの始まりと終わりの速さ">
+		<combo_box.item name="ease_smooth" label="ゆっくり始まりゆっくり止まる" />
+		<combo_box.item name="ease_linear" label="一定の速さ" />
+		<combo_box.item name="ease_slowin" label="ゆっくり始まる" />
+		<combo_box.item name="ease_slowout" label="ゆっくり止まる" />
+	</combo_box>
+	<button name="btn_dolly_in" label="ドリーイン" tool_tip="カメラが被写体に近づきます。画角は変えません" />
+	<button name="btn_zoom_in" label="ズームイン" tool_tip="カメラはそのまま、画角を狭めて大きく写します" />
+	<button name="btn_dollyzoom_recede" label="ドリーズーム 離れる" tool_tip="カメラが近づきながら画角を広げます。被写体の大きさは同じまま、背景だけが遠ざかります" />
+	<button name="btn_dolly_out" label="ドリーアウト" tool_tip="カメラが被写体から離れます。画角は変えません" />
+	<button name="btn_zoom_out" label="ズームアウト" tool_tip="カメラはそのまま、画角を広げて広く写します" />
+	<button name="btn_dollyzoom_rush" label="ドリーズーム 迫る" tool_tip="カメラが離れながら画角を狭めます。被写体の大きさは同じまま、背景だけが迫ってきます" />
+	<slider name="orbit_degrees" label="回る角度" tool_tip="被写体の周りをどれだけ回るか。360 で一周です" />
+	<button name="btn_orbit_right" label="右へ回り込む" tool_tip="見ている先（アバターを選んでいればその人）の周りを、カメラから見て右へ回ります（真上から見て左回り）。距離と高さは保ちます。" />
+	<button name="btn_orbit_left" label="左へ回り込む" tool_tip="同じことを、カメラから見て左へ（真上から見て右回り）行います。" />
+	<button name="btn_stop" label="止める" tool_tip="今の位置で撮影を止めます" />
+	<button name="btn_back" label="始めに戻る" tool_tip="直前の撮影を始めた時のカメラの位置・向き・画角に戻します（撮り直し用）" />
+	<text name="status">待機中。</text>
+</floater>

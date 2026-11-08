@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis の窓（元: 公式 Second_Life_Release#d567465e-26.5 の floater_preferences.xml。research/266 prefs-frame）.
+     Charis window: the official names, classes, files, tab groups and functions are kept (LLFloaterPreference and the
+     panels are the official C++, untouched); the look is psui's. The tabs keep the official order: LastPrefTab is
+     the index of the tab shown. A tab's page is its panel's file; research/266 4. replaces them tab by tab with
+     panel_plus_prefs_<tab>.xml (only the filename= of that tab changes here; the model is
+     plus/prefscharis/prefs_tab_template.xml).
+     Size (1080 base): 740 x 640, FIXED until every tab is a Charis page (the official panels not replaced yet are laid out for one size: resized, some drop-downs and buttons moved; set can_resize back to true then). Was: resizable down to 740 x 563 (a smaller screen fits it to itself). From the top:
+     title 18, 8, the search 33 (top 26), 8, the tabs 515 (top 67), 8, OK / Cancel 40 (top 590), 10 = 640.
+     OK / Cancel are plus_ps_button_compat (ui-compat: an LLButton drawn as plus_ps_button, so label_selected stays).
+     Across: 8, the tabs 724 = the rail 150 (TABS_RAIL_WIDTH, plus_ps_tabs' default: no tab_width here, so the
+     languages' old tab_width does not reach it; ja's longest name 9 x 13 + 28) + a page 574, 8.
+     A page is 574 = 14 + a row 529 + 14 + the scroll bar 15 + the scroll container's border 2: its scroll_container's
+     panel is 557 wide (no sideways scroll bar). The least height 563 gives the tabs 438: the official panels not
+     replaced yet are fixed at the top and up to 438 high (graphics1, sound, voice, privacy), so they are not cut
+     (research/266 3. had 520 for pages that all scroll: lower it when every tab is a Charis page). The rail's 15
+     rows are then 29 high. A size saved before (700 x 530) opens at the least height.
+     search_editor on the tabs: when the search is emptied they show again the inner tabs it hid (the official
+     search does not go back into a page's tab container: plus/photoscreen/psui/pstabs.h). -->
+<floater
+ legacy_header_height="18"
+ positioning="centered"
+ can_resize="false"
+ default_tab_group="1"
+ height="640"
+ layout="topleft"
+ min_height="563"
+ min_width="740"
+ name="Preferences"
+ help_topic="preferences"
+ save_rect="true"
+ single_instance="true"
+ title="PREFERENCES"
+ width="740">
+    <plus_ps_box
+     name="search_panel"
+     follows="left|top|right"
+     height="33"
+     kind="glass"
+     layout="topleft"
+     left="14"
+     tab_group="2"
+     top="26"
+     width="712">
+        <search_editor
+         bg_color="Transparent"
+         clear_button_visible="true"
+         cursor_color="PsTextWhite"
+         follows="left|top|right"
+         height="25"
+         highlight_text_field="false"
+         label="Search Settings"
+         layout="topleft"
+         left="4"
+         max_length_bytes="255"
+         name="search_prefs_edit"
+         text_color="PsTextWhite"
+         text_pad_left="6"
+         text_tentative_color="PsTextDim"
+         tool_tip="Type the search term you are interested in here. Results will be displayed for partial fulltext matches within the setting's name or comment."
+         top="4"
+         use_bg_color="true"
+         width="704">
+         <search_editor.commit_callback
+          function="UpdateFilter" />
+         <search_editor.clear_button
+          rect.height="18"
+          rect.width="18"
+          rect.bottom="3" />
+         <search_editor.search_button
+          rect.height="12"
+          rect.width="12"
+          rect.bottom="-1" />
+        </search_editor>
+    </plus_ps_box>
+
+    <plus_ps_tabs
+     follows="all"
+     height="515"
+     layout="topleft"
+     left="8"
+     name="pref core"
+     search_editor="search_prefs_edit"
+     tab_group="1"
+     tab_position="left"
+     top="67"
+     width="724">
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_general.xml"
+         label="General"
+         layout="topleft"
+         help_topic="preferences_general_tab"
+         name="general" />
+        <panel
+         class="panel_preference_graphics"
+         filename="panel_plus_prefs_graphics.xml"
+         label="Graphics"
+         layout="topleft"
+         help_topic="preferences_display_tab"
+         name="display" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_sound.xml"
+         label="Sound &amp; Media"
+         layout="topleft"
+         help_topic="preferences_audio_tab"
+         name="audio" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_voice.xml"
+         label="Voice"
+         layout="topleft"
+         name="voice" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_chat.xml"
+         label="Chat"
+         layout="topleft"
+         help_topic="preferences_chat_tab"
+         name="chat" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_move.xml"
+         label="Move &amp; View"
+         layout="topleft"
+         help_topic="preferences_move_tab"
+         name="move" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_alerts.xml"
+         label="Notifications"
+         layout="topleft"
+         help_topic="preferences_msgs_tab"
+         name="msgs" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_colors.xml"
+         label="Colors"
+         layout="topleft"
+         help_topic="preferences_colors_tab"
+         name="colors" />
+        <panel
+         class="panel_preference_privacy"
+         filename="panel_plus_prefs_privacy.xml"
+         label="Privacy"
+         layout="topleft"
+         help_topic="preferences_im_tab"
+         name="im" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_setup.xml"
+         label="Setup"
+         layout="topleft"
+         help_topic="preferences_input_tab"
+         name="input" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_advanced.xml"
+         label="Advanced"
+         layout="topleft"
+         help_topic="preferences_advanced1_tab"
+         name="advanced1" />
+        <panel
+         class="panel_preference"
+         filename="panel_plus_prefs_upload.xml"
+         label="Uploads"
+         layout="topleft"
+         help_topic="preferences_uploads_tab"
+         name="uploads" />
+        <panel
+         class="panel_preference_controls"
+         filename="panel_plus_prefs_controls.xml"
+         label="Controls"
+         layout="topleft"
+         help_topic="preferences_controls_tab"
+         name="controls" />
+        <panel
+         class="panel_preference_game_control"
+         filename="panel_plus_prefs_game_control.xml"
+         label="Game Controls"
+         layout="topleft"
+         help_topic="preferences_game_control_tab"
+         name="game_control" />
+        <!-- The Charis tab (research/248 7.3, research/263: the class reads the items driven by functions, plus/prefscharis) -->
+        <panel
+         class="plus_panel_preference_charis"
+         filename="panel_preferences_charis.xml"
+         label="Charis"
+         layout="topleft"
+         help_topic="preferences_charis_tab"
+         name="charis" />
+    </plus_ps_tabs>
+
+    <plus_ps_button_compat
+     follows="right|bottom"
+     height="40"
+     label="OK"
+     label_selected="OK"
+     layout="topleft"
+     left="498"
+     name="OK"
+     top="590"
+     width="110">
+        <plus_ps_button_compat.commit_callback
+         function="Pref.OK" />
+    </plus_ps_button_compat>
+    <plus_ps_button_compat
+     follows="right|bottom"
+     height="40"
+     label="Cancel"
+     label_selected="Cancel"
+     layout="topleft"
+     left="616"
+     name="Cancel"
+     top="590"
+     width="110">
+        <plus_ps_button_compat.commit_callback
+         function="Pref.Cancel" />
+    </plus_ps_button_compat>
+</floater>

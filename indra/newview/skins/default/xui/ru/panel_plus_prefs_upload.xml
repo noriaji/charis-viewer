@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="uploads" label="Загрузки">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="uploads_scroll">
+			<panel name="uploads_scroll_panel">
+				<plus_ps_text name="title">
+					Текущие папки назначения для передачи
+				</plus_ps_text>
+				<plus_ps_text name="title_models">
+					Изображения
+				</plus_ps_text>
+				<plus_ps_text name="title_sounds">
+					Звуки
+				</plus_ps_text>
+				<plus_ps_text name="title_animation">
+					Анимация
+				</plus_ps_text>
+				<plus_ps_text name="title_model">
+					Модели
+				</plus_ps_text>
+				<plus_ps_text name="upload_help">
+					Чтобы сменить папку назначения, щелкните ее в инвентаре правой кнопкой мыши и выберите "Использовать по умолчанию для"
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

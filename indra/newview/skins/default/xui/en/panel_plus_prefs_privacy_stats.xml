@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis の窓（元: panel_plus_privacy_stats.xml。research/266 prefs-w-chat）.
+     The on/off box of the settings in the viewer statistics (plus/privacy, PlusSendSettingsStats), in Preferences >
+     Privacy > General under its heading, in the psui look. Included from panel_plus_prefs_privacy.xml (the old
+     panel_plus_privacy_stats.xml stays for the official panel_preferences_privacy.xml until research/266 prefs-clean).
+     Size (1080 base): 529 x 66 = the check 30 + the note 36 (two lines of the small type; ja 63 characters at 38 a
+     line). The note starts under the check's words (the box 21 + 10, psui CHECK_BOX and CHECK_GAP). -->
+<panel
+ background_visible="false"
+ border="false"
+ follows="left|top"
+ height="66"
+ layout="topleft"
+ mouse_opaque="false"
+ name="plus_privacy_stats"
+ width="529">
+    <plus_ps_check_compat
+     name="plus_send_settings_stats"
+     control_name="PlusSendSettingsStats"
+     follows="left|top|right"
+     height="30"
+     label="Send the settings I changed with the viewer statistics"
+     layout="topleft"
+     left="0"
+     tool_tip="Every viewer sends statistics (frame rate, hardware, how long you were logged in) to Second Life while you are logged in. Checked: the ones sent at logout and quit also hold the settings you changed from the default, which helps Linden Lab see what people use. Unchecked: no settings are sent; the rest of the statistics are."
+     top="0"
+     width="529" />
+    <plus_ps_text
+     name="plus_send_settings_stats_note"
+     follows="left|top|right"
+     height="36"
+     kind="hint"
+     layout="topleft"
+     left="31"
+     length="1"
+     mouse_opaque="false"
+     top="30"
+     type="string"
+     width="498"
+     wrap="true">
+(Only on/off, number and color settings. Never text, places, devices, login details, keys or the Charis settings.)
+    </plus_ps_text>
+</panel>

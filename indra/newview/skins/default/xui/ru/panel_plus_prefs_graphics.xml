@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_graphics1.xml, by name. -->
+<panel label="Графика" name="Display panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="graphics_scroll">
+			<panel name="graphics_scroll_panel">
+				<plus_ps_text name="preset_text">
+					(нет)
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText">
+					Низко
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText2">
+					Средне
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText3">
+					Высоко
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText4">
+					Ультра
+				</plus_ps_text>
+				<plus_ps_text name="QualitySpeed">
+					Качество и скорость:
+				</plus_ps_text>
+				<plus_ps_text name="FasterText">
+					Быстрее
+				</plus_ps_text>
+				<plus_ps_text name="BetterText">
+					Качественней
+				</plus_ps_text>
+				<plus_ps_button_compat label="Расширенные настройки..." name="AdvancedSettings"/>
+				<plus_ps_slider_compat label="Максимальная сложность аватара:" tool_tip="Указывает расстояние, начиная с которого визуально сложный аватар рисуется как мармеладный мишка" name="IndirectMaxComplexity"/>
+				<plus_ps_text name="IndirectMaxComplexityText">
+					0
+				</plus_ps_text>
+				<plus_ps_button_compat label="Исключения..." name="RenderExceptionsButton"/>
+				<plus_ps_button_compat label="Сохранить настройки как пресет..." name="PrefSaveButton"/>
+				<plus_ps_button_compat label="Загрузить пресет..." name="PrefLoadButton"/>
+				<plus_ps_button_compat label="Удалить пресет..." name="PrefDeleteButton"/>
+				<plus_ps_button_compat label="Вернуть рекомендуемые настройки" name="Defaults"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

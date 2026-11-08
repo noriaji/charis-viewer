@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="controls_panel" label="操作">
+	<plus_ps_box name="ps_ground">
+		<plus_ps_combo name="key_mode">
+			<plus_ps_combo.item name="third_person" label="三人称視点のとき" />
+			<plus_ps_combo.item name="first_person" label="一人称視点のとき（マウスルック）" />
+			<plus_ps_combo.item name="edit_avatar" label="アバターを編集しているとき" />
+			<plus_ps_combo.item name="sitting" label="座っているとき" />
+			<plus_ps_combo.item name="flycam" label="フライカムのとき" />
+		</plus_ps_combo>
+		<plus_ps_button_compat name="restore_defaults" label="初期設定に戻す" tool_tip="すべての操作モードのキー割り当てを初期設定に戻します。" />
+	</plus_ps_box>
+</panel>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="chat" label="Tekst chat">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="chat_scroll">
+			<panel name="chat_scroll_panel">
+				<panel name="general_chat_settings">
+					<plus_ps_check_compat name="play_typing_animation" label="Afspil skrive animation ved chat" />
+					<plus_ps_check_compat name="bubble_text_chat" label="Boble chat" />
+					<plus_ps_text name="font_size">
+						Skriftstørrelse:
+					</plus_ps_text>
+				</panel>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

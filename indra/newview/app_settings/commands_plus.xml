@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Toolbar buttons of the features ported from other viewers (indra/newview/plus/).
+  Read after commands.xml (LLCommandManager::loadFile(), an official-file hook). The labels are
+  strings of skins/default/xui/<lang>/strings_plus.xml, the icons are declared by the
+  features (plus::declareUIImage()).
+-->
+<commands>
+  <!-- quickprefs: Quick Preferences (from Firestorm's "quickprefs" command) -->
+  <command name="plus_quickprefs"
+           available_in_toybox="true"
+           icon="Plus_Quickprefs_Icon"
+           label_ref="Command_PlusQuickprefs_Label"
+           tooltip_ref="Command_PlusQuickprefs_Tooltip"
+           execute_function="Floater.Toggle"
+           execute_parameters="plus_quickprefs"
+           is_running_function="Floater.IsOpen"
+           is_running_parameters="plus_quickprefs"
+           />
+  <!-- photomode: Photo Tools (plus/photomode). The default left toolbar has it where the snapshot was. -->
+  <command name="plus_photo_tools"
+           available_in_toybox="true"
+           icon="Plus_PhotoTools_Icon"
+           label_ref="Command_PlusPhotoTools_Label"
+           tooltip_ref="Command_PlusPhotoTools_Tooltip"
+           execute_function="Floater.Toggle"
+           execute_parameters="plus_photo_tools"
+           is_running_function="Floater.IsOpen"
+           is_running_parameters="plus_photo_tools"
+           />
+  <!-- photoscreen: the photo screen, a whole-window mode (plus/photoscreen). On while it is on. -->
+  <command name="plus_photo_screen"
+           available_in_toybox="true"
+           icon="Plus_PhotoScreen_Icon"
+           label_ref="Command_PlusPhotoScreen_Label"
+           tooltip_ref="Command_PlusPhotoScreen_Tooltip"
+           execute_function="Plus.PhotoScreen.Toggle"
+           is_running_function="Plus.PhotoScreen.IsOn"
+           />
+  <!-- ao: Animation Overrider (plus/ao; Firestorm's "animationoverride" command) -->
+  <command name="plus_ao"
+           available_in_toybox="true"
+           icon="Plus_AO_Icon"
+           label_ref="Command_PlusAO_Label"
+           tooltip_ref="Command_PlusAO_Tooltip"
+           execute_function="Floater.Toggle"
+           execute_parameters="plus_ao"
+           is_running_function="Floater.IsOpen"
+           is_running_parameters="plus_ao"
+           />
+  <!-- grouptitles: Group Titles and Auto Region (plus/grouptitles; Firestorm's "group_titles" command) -->
+  <command name="plus_group_titles"
+           available_in_toybox="true"
+           icon="Plus_GroupTitles_Icon"
+           label_ref="Command_PlusGroupTitles_Label"
+           tooltip_ref="Command_PlusGroupTitles_Tooltip"
+           execute_function="Floater.Toggle"
+           execute_parameters="plus_group_titles"
+           is_running_function="Floater.IsOpen"
+           is_running_parameters="plus_group_titles"
+           />
+</commands>

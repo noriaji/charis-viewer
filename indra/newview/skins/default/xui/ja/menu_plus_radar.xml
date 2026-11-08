@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<context_menu name="plus_radar_menu">
+	<menu_item_call label="プロフィールを見る" name="profile"/>
+	<menu_item_call label="フレンドになる" name="add_friend"/>
+	<menu_item_call label="フレンドをやめる" name="remove_friend"/>
+	<menu_item_call label="IM" name="im"/>
+	<menu_item_call label="通話" name="call"/>
+	<menu_item_call label="地図で見る" name="map"/>
+	<menu_item_call label="追跡する" name="track"/>
+	<menu_item_call label="そこへテレポート" name="teleport_to"/>
+	<menu_item_call label="ズームして見る" name="zoom"/>
+	<menu_item_call label="テレポートを送る" name="offer_teleport"/>
+	<menu_item_call label="テレポートを頼む" name="request_teleport"/>
+	<menu_item_call label="アイテムを渡す" name="share"/>
+	<menu_item_call label="支払う" name="pay"/>
+	<menu_item_call label="グループに招待" name="invite_group"/>
+	<menu_item_call label="ブロック／解除" name="block"/>
+	<menu_item_call label="名前をコピー" name="copy_name"/>
+	<menu_item_call label="ID をコピー" name="copy_id"/>
+	<menu_item_call label="すべて選択" name="select_all"/>
+</context_menu>

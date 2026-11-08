@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- ja: the words only. Places and sizes come from en/panel_plus_photoscreen_top.xml (LLXMLNode::updateNode matches by name). -->
+<panel name="plus_photoscreen_top">
+    <plus_ps_row name="chips">
+        <plus_ps_chip_combo name="chip_look" tool_tip="ルック（色づくり）" />
+        <plus_ps_chip_combo name="chip_res" tool_tip="写真の大きさ" />
+        <plus_ps_chip_combo name="chip_aspect" tool_tip="写真の縦横比（世界もこの形で表示されます）" />
+        <plus_ps_chip_combo name="chip_grid" tool_tip="構図の線" />
+    </plus_ps_row>
+</panel>

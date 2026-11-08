@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_photo_sky_row">
+	<text name="grip" tool_tip="ドラッグで並べ替えます">::</text>
+	<button name="star" tool_tip="お気に入りに入れる／外す" />
+	<panel name="swatch" tool_tip="水の色（水中の霞の色）" />
+	<button name="apply" label="名前"/>
+	<text name="folder">
+		フォルダ
+	</text>
+	<button name="unpin" label="外す" />
+</panel>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_colors.xml, by name. -->
+<panel label="Couleurs" name="colors_panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="colors_scroll">
+			<panel name="colors_scroll_panel">
+				<plus_ps_text name="effects_color_textbox">
+					Mes effets (faisceau de sélection) :
+				</plus_ps_text>
+				<plus_ps_box name="glass_effect_color_swatch">
+					<color_swatch tool_tip="Cliquer pour ouvrir le sélecteur de couleurs." name="effect_color_swatch"/>
+				</plus_ps_box>
+				<plus_ps_text name="font_colors">
+					Couleurs pour le chat :
+				</plus_ps_text>
+				<plus_ps_text name="text_box1">
+					Moi
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					Autres résidents
+				</plus_ps_text>
+				<plus_ps_text name="text_box3">
+					Objets
+				</plus_ps_text>
+				<plus_ps_text name="text_box4">
+					Système
+				</plus_ps_text>
+				<plus_ps_text name="text_box5">
+					Erreurs
+				</plus_ps_text>
+				<plus_ps_text name="text_box10">
+					Direct
+				</plus_ps_text>
+				<plus_ps_text name="text_box7">
+					Propriétaire
+				</plus_ps_text>
+				<plus_ps_text name="text_box9">
+					URL
+				</plus_ps_text>
+				<plus_ps_text name="bubble_chat">
+					Couleur de fond des noms (bulles de chat comprises) :
+				</plus_ps_text>
+				<plus_ps_box name="glass_background">
+					<color_swatch tool_tip="Choisir une couleur pour les noms." name="background"/>
+				</plus_ps_box>
+				<plus_ps_slider_compat label="Opacité :" tool_tip="Choisir une opacité pour les noms." name="bubble_chat_opacity"/>
+				<plus_ps_text name="floater_opacity">
+					Opacité des fenêtres flottantes :
+				</plus_ps_text>
+				<plus_ps_slider_compat label="Actives :" name="active"/>
+				<plus_ps_slider_compat label="Inactives :" name="inactive"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

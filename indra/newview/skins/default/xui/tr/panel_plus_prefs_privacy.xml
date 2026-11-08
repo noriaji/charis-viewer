@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Privacy panel">
+	<plus_ps_box name="ps_ground">
+		<plus_ps_tabs name="privacy_tab_container">
+			<panel name="privacy_preferences_general">
+				<panel.string name="log_in_to_change">
+					değiştirmek için oturum açın
+				</panel.string>
+				<scroll_container name="privacy_general_scroll">
+					<panel name="privacy_general_list">
+						<plus_ps_check_compat name="online_searchresults" label="Profil bilgilerimi Arama sonuçlarında göster" />
+						<plus_ps_check_compat name="online_visibility" label="Çevrimiçi olduğumu sadece arkadaşlar ve gruplar bilsin" />
+						<plus_ps_check_compat name="auto_disengage_mic_check" label="Aramaları sonlandırırken mikrofonu kapat" />
+						<plus_ps_button_compat name="clear_cache" label="Geçmişi Temizle" tool_tip="Oturum açma görüntüsünü, son konumu, ışınlama geçmişini, web ve doku önbelleğini temizleyin." />
+						<plus_ps_text name="cache_size_label_l">
+							(Konumlar, görüntüler, web, arama geçmişi)
+						</plus_ps_text>
+						<plus_ps_button_compat name="block_list" label="Listeyi engelle" />
+						<plus_ps_text name="block_list_label">
+							(Engellediğiniz Kişiler ve/veya Nesneler)
+						</plus_ps_text>
+					</panel>
+				</scroll_container>
+			</panel>
+		</plus_ps_tabs>
+	</plus_ps_box>
+</panel>

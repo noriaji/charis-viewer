@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="popups" label="Pop-ups">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="popups_scroll">
+			<panel name="popups_scroll_panel">
+				<plus_ps_text name="tell_me_label">
+					Me prévenir :
+				</plus_ps_text>
+				<plus_ps_check_compat name="notify_money_spend_checkbox" label="Quand je dépense des L$" />
+				<plus_ps_check_compat name="notify_money_received_checkbox" label="Quand je reçois des L$" />
+				<plus_ps_check_compat name="friends_online_notify_checkbox" label="Quand mes amis se connectent ou se déconnectent" />
+				<plus_ps_text name="show_label">
+					Toujours afficher :
+				</plus_ps_text>
+				<plus_ps_text name="dont_show_label">
+					Ne jamais afficher :
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

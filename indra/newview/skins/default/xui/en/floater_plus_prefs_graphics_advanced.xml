@@ -1,0 +1,2401 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis の窓（元: Charis vk-main 42eeff2887 の floater_preferences_graphics_advanced.xml。research/267 gfxadv-ui）.
+     Preferences > Graphics > Advanced Settings... in the Charis look. plus/prefscharis registers the official floater
+     (prefs_graphics_advanced, LLFloaterPreferenceGraphicsAdvanced, untouched) again with this file; the official file
+     is left as it is, to compare with (tools/ui-parity-diff.py, research/ui-ledger/map.json). Every name, class,
+     control_name, function, choice and range of the official window is here; the widgets the code looks up by type
+     are the compat widgets (plus_ps_*_compat, plus_ps_spinner, plus_ps_text, plus_ps_combo, plus_ps_tabs: the official
+     classes drawn as psui); all the sliders are compat sliders, so that changing one clears the graphics preset in
+     use (hasDirtyChilds) as before. The two colour swatches are the official widget in a glass box.
+     Origin: the tabs (their names, order and grouping) and the depth of field rows and their translations follow
+     Firestorm's graphics preferences (panel_preferences_graphics1.xml; The Phoenix Firestorm Project, Inc.,
+     LGPL 2.1; Firestorm commit 47f2f32fdf; research/238). The Charis tab holds Charis's own picture settings.
+     Translations: every language wraps its rows in the same chain of names (graphics_tabs / the tab / *_scroll /
+     *_scroll_panel, and glass_<swatch> around a swatch): LLXMLNode::updateNode matches names under the matched
+     parent only. The grounds (*_ground) are siblings before the scroll containers, out of that chain.
+     Size (1080 base; research/267 2.2): 960 x 736 (the General page's left column is 611 tall, in a page of 616 with its border: no vertical scroll bar at
+     the default size; the user asked for it 2026-11-03), resizable down to 960 x 440 (the columns are of a fixed width;
+     a lower window scrolls the page; a smaller screen fits the window to itself). At 440 (research/275 L076): the
+     tabs (follows all) are 652 - 296 = 356, so a page is 320 and every page scrolls in its scroll_container; the
+     bottom row (follows bottom) is at top 390, ending 10 above the window's bottom. From the top: title 18, 8, the
+     tabs 652 (top 26: the strip 36 and a page 616), 8, the bottom row 40 (top 686), 10. Across: 8, the tabs 944, 8.
+     A page is 944: its scroll_container's panel is 927 wide (944 less the scroll bar 15 and the border 2: no
+     sideways scroll bar). Two columns at 14 and 474, 439 wide each (14 + 439 + 21 + 439 + 14 = 927); the tabs of
+     one column (Hardware, Depth of Field) use the left one, the depth of field switch the whole width (899).
+     Rows: headings 40, checks 30, sliders 31, drop-down rows 33, notes 18, the frame rate row 40, 10 between
+     sections, 10 above and 14 below.
+       A slider: the label 200 (label_width; ja at most 14 characters) | the bar | 12 | the value box 58 (text_width).
+       The sliders whose value the code writes as words or a number (show_text false) are 369 wide and their text
+       is at 381, 58 wide, where the value box would be. Draw distance: the slider 415 and "m" at 419.
+       A drop-down row: the label 196 (ja at most 15 characters) | 12 | the drop-down 231 at 208. OIT: its label
+       on a row of 18 above, the drop-down 260 at 20. A colour row: the label 196 | 12 | the palette 140 | 12 |
+       the swatch's glass box 52 x 32 (the swatch 44 x 24 at 4 / 4).
+       The frame rate limit: the spinner 310 (the label 220) | 12 | Match 117 x 40.
+     Heights (the pages are 616 at the default size):
+       General left: 10 + 40 + 4 x 30 + 10 + Shadows 40 + 5 x 33 + 30 + 10 + Reflections and mirrors 40 + 4 x 33 + 14 = 611;
+       right: 10 + 40 + 5 x 31 + 10 + 40 + 33 + 3 x 31 + 10 + 40 + 5 x 31 + 14 = 600.
+       Hardware: 10 + 33 + 30 + 33 + the restart note 18 + 33 + 30 + 30 + 14 = 231.
+       Rendering left: 10 + 40 + 40 + 30 + 10 + 40 + 33 + 14 = 217; right: 10 + 40 + 30 + 31 + 31 + 33 + 33 + 31 + 14 = 253.
+       Depth of field: 10 + 30 + 30 + 5 x 31 + 14 = 239.
+       Charis left: 10 + 40 + 33 + 2 x 31 + 10 + 40 + 30 + 33 + 2 x 31 + 30 + 31 + 14 = 395;
+       right: 10 + 40 + 30 + 18 + 33 + 30 + 10 + 40 + 30 + 31 + 33 + 30 + 30 + 31 + 33 + 14 = 443.
+     The bottom row: Reset to recommended settings 260 at 14, OK and Cancel 120 at 698 and 826 (14 from the right).
+       de, es, fr, it, pl, pt and ru give the reset button width 400 in their files: their labels are 31 (ru) to 41
+       (de, es, fr, pt) letters, up to about 300 at the Medium font with the button's padding (research/275 L075; 260
+       cut de's). It ends at 414, well left of OK. en (29 letters), tr (21) and ja / zh (under 12 characters) keep
+       260. -->
+<floater
+ name="prefs_graphics_advanced"
+ can_resize="true"
+ height="736"
+ help_topic="Preferences_Graphics_Advanced"
+ layout="topleft"
+ legacy_header_height="18"
+ min_height="440"
+ min_width="960"
+ save_rect="true"
+ single_instance="true"
+ title="ADVANCED GRAPHICS PREFERENCES"
+ width="960">
+    <plus_ps_tabs
+     name="graphics_tabs"
+     follows="all"
+     height="652"
+     layout="topleft"
+     left="8"
+     tab_position="top"
+     top="26"
+     width="944">
+        <panel
+         name="General"
+         background_visible="false"
+         follows="all"
+         height="616"
+         label="General"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="36"
+         width="944">
+            <plus_ps_box
+             name="general_ground"
+             follows="all"
+             height="616"
+             kind="panel"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="944" />
+            <scroll_container
+             name="general_scroll"
+             follows="all"
+             height="616"
+             layout="topleft"
+             left="0"
+             opaque="false"
+             reserve_scroll_corner="false"
+             top="0"
+             width="944">
+                <panel
+                 name="general_scroll_panel"
+                 background_visible="false"
+                 follows="left|top"
+                 height="611"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="0"
+                 width="927">
+                    <!-- Left: the shaders, the shadows (Charis heading: the rows moved here from the Graphics page) and the reflections -->
+                    <plus_ps_text
+                     name="ShadersText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="10"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Shaders
+                    </plus_ps_text>
+                    <plus_ps_check_compat
+                     name="TransparentWater"
+                     control_name="RenderTransparentWater"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Transparent Water"
+                     layout="topleft"
+                     left="14"
+                     top="50"
+                     width="439">
+                        <plus_ps_check_compat.commit_callback
+                         function="Pref.RenderOptionUpdate" />
+                    </plus_ps_check_compat>
+                    <plus_ps_check_compat
+                     name="UseSSAO"
+                     control_name="RenderDeferredSSAO"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Screen Space Ambient Occlusion"
+                     layout="topleft"
+                     left="14"
+                     top="80"
+                     width="439">
+                        <plus_ps_check_compat.commit_callback
+                         function="Pref.RenderOptionUpdate" />
+                    </plus_ps_check_compat>
+                    <plus_ps_check_compat
+                     name="ScreenSpaceReflections"
+                     control_name="RenderScreenSpaceReflections"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Screen Space Reflections"
+                     layout="topleft"
+                     left="14"
+                     top="110"
+                     width="439">
+                        <plus_ps_check_compat.commit_callback
+                         function="Pref.RenderOptionUpdate" />
+                    </plus_ps_check_compat>
+                    <plus_ps_check_compat
+                     name="Mirrors"
+                     control_name="RenderMirrors"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="Mirrors"
+                     layout="topleft"
+                     left="14"
+                     top="140"
+                     width="439">
+                        <plus_ps_check_compat.commit_callback
+                         function="Pref.RenderOptionUpdate" />
+                    </plus_ps_check_compat>
+                    <plus_ps_header
+                     name="h_shadows"
+                     follows="left|top"
+                     height="40"
+                     label="Shadows"
+                     layout="topleft"
+                     left="14"
+                     size="sub"
+                     top="180"
+                     width="439" />
+                    <plus_ps_text
+                     name="RenderShadowDetailText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="220"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Shadows:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="ShadowDetail"
+                     control_name="RenderShadowDetail"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     top="220"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="None"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Sun/Moon"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Sun/Moon + Projectors"
+                         value="2" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="PlusShadowDistanceText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="253"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Shadow distance:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="PlusShadowDistance"
+                     control_name="PlusShadowDistance"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     tool_tip="How far the sun's shadows reach, and how sharp they stay there. Far and Very far use finer shadow maps (more video memory)."
+                     top="253"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Near (96 m)"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Normal (192 m)"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Far (384 m)"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="Very far (512 m)"
+                         value="3" />
+                        <plus_ps_combo.item
+                         name="official"
+                         label="Default"
+                         value="-1" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="PlusShadowPrecisionText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="286"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Shadow detail:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="PlusShadowPrecision"
+                     control_name="PlusShadowPrecision"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     tool_tip="How thin a shadow (legs, railings, hair) stays at a distance. Fine and Very fine use finer shadow maps (more video memory)."
+                     top="286"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Normal"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Fine"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Very fine"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="official"
+                         label="Default"
+                         value="-1" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="PlusShadowFocusText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="319"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Shadow focus:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="PlusShadowFocus"
+                     control_name="PlusShadowFocus"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     tool_tip="Where the finest shadows go. The subject: your avatar (or what the camera is pointed at) and its shadow get the finest shadow map the screen allows, wherever it stands; things much nearer or farther get coarser ones. Snapshots always use the subject."
+                     top="319"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="1"
+                         label="The subject"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Even from the camera"
+                         value="0" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="PlusShadowSoftnessText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="352"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Shadow edges:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="PlusShadowSoftness"
+                     control_name="PlusShadowSoftness"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     tool_tip="How sharp or soft the edges of the sun's shadows are. Kept in snapshots; does not change the preset in use."
+                     top="352"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Sharp"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Slightly sharp"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Normal"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="Slightly soft"
+                         value="3" />
+                        <plus_ps_combo.item
+                         name="4"
+                         label="Soft"
+                         value="4" />
+                        <plus_ps_combo.item
+                         name="official"
+                         label="Default"
+                         value="-1" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="PlusShadowWorldLock"
+                     control_name="PlusShadowWorldLock"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     enabled_control="PlusShadowStabilize"
+                     label="Steady light through thin gaps"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="Keeps the light through thin gaps (a fence's slits) from coming and going as the camera moves, by not turning the shadows' grid with the camera. The shadows get a little coarser. Not available at some graphics levels."
+                     top="385"
+                     width="439" />
+                    <plus_ps_header
+                     name="h_reflections"
+                     follows="left|top"
+                     height="40"
+                     label="Reflections and mirrors"
+                     layout="topleft"
+                     left="14"
+                     size="sub"
+                     top="425"
+                     width="439" />
+                    <plus_ps_text
+                     name="ReflectionDetailText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="465"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Reflection Detail:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="ReflectionDetail"
+                     control_name="RenderReflectionProbeDetail"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     top="465"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Static Only"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Static+Dynamic"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Realtime"
+                         value="2" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="ReflectionProbeText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="498"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Reflection Coverage:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="ReflectionLevel"
+                     control_name="RenderReflectionProbeLevel"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     top="498"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="None"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Manual only"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Manual + terrain"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="Full scene"
+                         value="3" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="MirrorResolutionText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="531"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Mirror Resolution:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="MirrorResolution"
+                     control_name="RenderHeroProbeResolution"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     top="531"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="256"
+                         value="256" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="512"
+                         value="512" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="1024"
+                         value="1024" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="2048"
+                         value="2048" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="HeroProbeUpdateText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="564"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Mirror Update Rate:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="HeroProbeUpdateRate"
+                     control_name="RenderHeroProbeUpdateRate"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     top="564"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="6"
+                         label="Low"
+                         value="6" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="Medium"
+                         value="3" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="High"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Ultra"
+                         value="1" />
+                    </plus_ps_combo>
+                    <!-- Right: the view, the avatars and the level of detail -->
+                    <plus_ps_text
+                     name="GeneralText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="10"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        View
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="DrawDistance"
+                     control_name="RenderFarClip"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="8"
+                     initial_value="160"
+                     label="Draw distance:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="512"
+                     min_val="64"
+                     text_width="58"
+                     top="50"
+                     width="415" />
+                    <plus_ps_text
+                     name="DrawDistanceMeterText2"
+                     follows="left|top"
+                     height="31"
+                     layout="topleft"
+                     left="893"
+                     length="1"
+                     top="50"
+                     type="string"
+                     width="20">
+                        m
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="MaxParticleCount"
+                     control_name="RenderMaxPartCount"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="256"
+                     initial_value="4096"
+                     label="Max. particle count:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="8192"
+                     text_width="58"
+                     top="81"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="GlowResolution"
+                     control_name="RenderGlowResolutionPow"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="8"
+                     label="Glow quality:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="9"
+                     min_val="8"
+                     show_text="false"
+                     top="112"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateSliderText"
+                         parameter="GlowResolutionText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="GlowResolutionText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="112"
+                     type="string"
+                     width="58">
+                        Low
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="MaxLights"
+                     control_name="RenderLocalLightCount"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="256"
+                     label="Max. nearby lights:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="8192"
+                     min_val="0"
+                     text_width="58"
+                     top="143"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="RenderExposure"
+                     control_name="RenderExposure"
+                     decimal_digits="1"
+                     follows="left|top"
+                     height="31"
+                     increment="0.1"
+                     initial_value="160"
+                     label="Exposure:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="4.0"
+                     min_val="0.5"
+                     show_text="true"
+                     text_width="58"
+                     top="174"
+                     width="439" />
+                    <plus_ps_text
+                     name="AvatarText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="215"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Avatar
+                    </plus_ps_text>
+                    <plus_ps_text
+                     name="AvatarComplexityModeLabel"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="255"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Avatar display:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="AvatarComplexityMode"
+                     control_name="RenderAvatarComplexityMode"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="682"
+                     top="255"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Limit by complexity"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Always show friends"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Only show friends"
+                         value="2" />
+                    </plus_ps_combo>
+                    <plus_ps_slider_compat
+                     name="IndirectMaxComplexity"
+                     control_name="IndirectMaxComplexity"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="101"
+                     label="Maximum complexity:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="101"
+                     min_val="1"
+                     show_text="false"
+                     tool_tip="Controls at what point a visually complex avatar is drawn as a JellyDoll"
+                     top="288"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateIndirectMaxComplexity"
+                         parameter="IndirectMaxComlexityText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="IndirectMaxComplexityText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="288"
+                     type="string"
+                     width="58">
+                        0
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="IndirectMaxNonImpostors"
+                     control_name="IndirectMaxNonImpostors"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="12"
+                     label="Max. # animated avatars:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="66"
+                     min_val="1"
+                     show_text="false"
+                     top="319"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateIndirectMaxNonImpostors"
+                         parameter="IndirectNonImpostorsText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="IndirectMaxNonImpostorsText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="319"
+                     type="string"
+                     width="58">
+                        0
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="AvatarPhysicsDetail"
+                     control_name="RenderAvatarPhysicsLODFactor"
+                     follows="left|top"
+                     height="31"
+                     increment=".05"
+                     initial_value="100"
+                     label="Physics:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     show_text="false"
+                     top="350"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateSliderText"
+                         parameter="AvatarPhysicsDetailText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="AvatarPhysicsDetailText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="350"
+                     type="string"
+                     width="58">
+                        Low
+                    </plus_ps_text>
+                    <plus_ps_text
+                     name="MeshText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="391"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Level of detail (LOD)
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="ObjectMeshDetail"
+                     control_name="RenderVolumeLODFactor"
+                     follows="left|top"
+                     height="31"
+                     increment="0.125"
+                     initial_value="160"
+                     label="Objects:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="4"
+                     min_val="0"
+                     show_text="false"
+                     top="431"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateSliderText"
+                         parameter="ObjectMeshDetailText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="ObjectMeshDetailText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="431"
+                     type="string"
+                     width="58">
+                        Low
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="FlexibleMeshDetail"
+                     control_name="RenderFlexTimeFactor"
+                     follows="left|top"
+                     height="31"
+                     initial_value="160"
+                     label="Flexiprims:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     show_text="false"
+                     top="462"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateSliderText"
+                         parameter="FlexibleMeshDetailText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="FlexibleMeshDetailText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="462"
+                     type="string"
+                     width="58">
+                        Low
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="TreeMeshDetail"
+                     control_name="RenderTreeLODFactor"
+                     follows="left|top"
+                     height="31"
+                     increment="0.125"
+                     initial_value="160"
+                     label="Trees:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     show_text="false"
+                     top="493"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateSliderText"
+                         parameter="TreeMeshDetailText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="TreeMeshDetailText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="493"
+                     type="string"
+                     width="58">
+                        Low
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="AvatarMeshDetail"
+                     control_name="RenderAvatarLODFactor"
+                     follows="left|top"
+                     height="31"
+                     increment="0.125"
+                     initial_value="160"
+                     label="Avatars:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     show_text="false"
+                     top="524"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateSliderText"
+                         parameter="AvatarMeshDetailText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="AvatarMeshDetailText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="524"
+                     type="string"
+                     width="58">
+                        Low
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="TerrainMeshDetail"
+                     control_name="RenderTerrainLODFactor"
+                     follows="left|top"
+                     height="31"
+                     increment="0.125"
+                     initial_value="160"
+                     label="Terrain:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="2"
+                     min_val="1"
+                     show_text="false"
+                     top="555"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateSliderText"
+                         parameter="TerrainMeshDetailText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="TerrainMeshDetailText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="555"
+                     type="string"
+                     width="58">
+                        Low
+                    </plus_ps_text>
+                </panel>
+            </scroll_container>
+        </panel>
+        <panel
+         name="Hardware Settings"
+         background_visible="false"
+         follows="all"
+         height="616"
+         label="Hardware"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="36"
+         width="944">
+            <plus_ps_box
+             name="hardware_ground"
+             follows="all"
+             height="616"
+             kind="panel"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="944" />
+            <scroll_container
+             name="hardware_scroll"
+             follows="all"
+             height="616"
+             layout="topleft"
+             left="0"
+             opaque="false"
+             reserve_scroll_corner="false"
+             top="0"
+             width="944">
+                <panel
+                 name="hardware_scroll_panel"
+                 background_visible="false"
+                 follows="left|top"
+                 height="231"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="0"
+                 width="927">
+                    <plus_ps_text
+                     name="af strength label"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="10"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Anisotropic Filtering:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="anisotropic_filter"
+                     control_name="RenderAnisotropicLevel"
+                     follows="left|top"
+                     height="33"
+                     label="Anisotropic Filtering"
+                     layout="topleft"
+                     left="222"
+                     top="10"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="disabled"
+                         label="Disabled"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="2x"
+                         label="2x"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="4x"
+                         label="4x"
+                         value="4" />
+                        <plus_ps_combo.item
+                         name="8x"
+                         label="8x"
+                         value="8" />
+                        <plus_ps_combo.item
+                         name="16x"
+                         label="16x"
+                         value="16" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="texture compression"
+                     control_name="RenderCompressTextures"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Enable Texture Compression (requires restart)"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="Compresses textures in video memory, allowing for higher resolution textures to be loaded at the cost of some color quality."
+                     top="43"
+                     width="439" />
+                    <plus_ps_text
+                     name="antialiasing label"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="73"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Antialiasing:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="fsaa"
+                     control_name="RenderFSAAType"
+                     follows="left|top"
+                     height="33"
+                     initial_value="false"
+                     label="Antialiasing"
+                     layout="topleft"
+                     left="222"
+                     top="73"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="FSAADisabled"
+                         label="Disabled"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="FXAA"
+                         label="FXAA"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="SMAA"
+                         label="SMAA"
+                         value="2" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="antialiasing restart"
+                     follows="left|top"
+                     height="18"
+                     kind="hint"
+                     layout="topleft"
+                     left="222"
+                     length="1"
+                     top="106"
+                     type="string"
+                     width="231">
+                        (requires restart)
+                    </plus_ps_text>
+                    <plus_ps_text
+                     name="antialiasing quality label"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="124"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Antialiasing Quality:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="fsaa quality"
+                     control_name="RenderFSAASamples"
+                     follows="left|top"
+                     height="33"
+                     initial_value="false"
+                     label="Antialiasing"
+                     layout="topleft"
+                     left="222"
+                     top="124"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="Low"
+                         label="Low"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="Medium"
+                         label="Medium"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="High"
+                         label="High"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="Ultra"
+                         label="Ultra"
+                         value="3" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="taa"
+                     control_name="PlusTAA"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="Temporal AA (TAA: smooths thin lines)"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="Temporal anti-aliasing: mixes the last few frames into this one, so thin lines and edges that stay jagged or flicker smooth out where the view is still. It comes after the anti-aliasing above, which stays as it is set (FXAA or SMAA and TAA are both used). Moving things may leave a faint trail. Saved snapshots are taken without it. Light; takes effect at once, no restart."
+                     top="157"
+                     width="439" />
+                    <!-- HiDPI last: it is hidden on Windows, so it leaves no gap -->
+                    <plus_ps_check_compat
+                     name="use HiDPI"
+                     control_name="RenderHiDPI"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Enable support for HiDPI displays (requires restart)"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="Enable OpenGL for High-Resolution Drawing."
+                     top="187"
+                     width="439" />
+                </panel>
+            </scroll_container>
+        </panel>
+        <panel
+         name="Rendering"
+         background_visible="false"
+         follows="all"
+         height="616"
+         label="Rendering"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="36"
+         width="944">
+            <plus_ps_box
+             name="rendering_ground"
+             follows="all"
+             height="616"
+             kind="panel"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="944" />
+            <scroll_container
+             name="rendering_scroll"
+             follows="all"
+             height="616"
+             layout="topleft"
+             left="0"
+             opaque="false"
+             reserve_scroll_corner="false"
+             top="0"
+             width="944">
+                <panel
+                 name="rendering_scroll_panel"
+                 background_visible="false"
+                 follows="left|top"
+                 height="253"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="0"
+                 width="927">
+                    <!-- Left: the frame rate (plus/fpslimit) and the textures -->
+                    <plus_ps_text
+                     name="FrameRateText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="10"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Frame rate
+                    </plus_ps_text>
+                    <plus_ps_spinner
+                     name="fpslimit"
+                     control_name="PlusFpsLimit"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="40"
+                     increment="1"
+                     initial_value="0"
+                     label="Frame rate limit (0 = none):"
+                     label_width="220"
+                     layout="topleft"
+                     left="14"
+                     max_val="1000"
+                     min_val="0"
+                     tool_tip="The most frames per second the viewer makes. 0 = no limit. Lowers the load and heat of the graphics card when VSync is off. With VSync on, a value above the monitor's refresh rate does nothing."
+                     top="50"
+                     width="310" />
+                    <plus_ps_button_compat
+                     name="fpslimit_match"
+                     follows="left|top"
+                     height="40"
+                     label="Match"
+                     layout="topleft"
+                     left="336"
+                     tool_tip="Match the monitor's refresh rate: sets the limit to the refresh rate of the monitor this window is on. With VSync on, a 59.94 Hz style rate (59, 119, 143, 239 as Windows reports it) is set one higher (60, 120, 144, 240), so that VSync sets the pace without a hitch."
+                     top="50"
+                     width="117">
+                        <plus_ps_button_compat.commit_callback
+                         function="Plus.FpsLimit.MatchMonitor" />
+                    </plus_ps_button_compat>
+                    <plus_ps_check_compat
+                     name="vsync"
+                     control_name="RenderVSyncEnable"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Enable VSync"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="Synchronizes the frame rate to the refresh rate of the monitor, which results in smooth performance."
+                     top="90"
+                     width="439" />
+                    <plus_ps_text
+                     name="Texture Rendering"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="130"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Textures
+                    </plus_ps_text>
+                    <plus_ps_text
+                     name="MaxTextureResolutionLabel"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="170"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Maximum LOD resolution:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="MaxTextureResolution"
+                     control_name="RenderMaxTextureResolution"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     tool_tip="Maximum resolution for 'level of detail' textures"
+                     top="170"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="512"
+                         label="512"
+                         value="512" />
+                        <plus_ps_combo.item
+                         name="1024"
+                         label="1024"
+                         value="1024" />
+                        <plus_ps_combo.item
+                         name="2048"
+                         label="2048"
+                         value="2048" />
+                    </plus_ps_combo>
+                    <!-- Right: the rest of the rendering -->
+                    <plus_ps_text
+                     name="Miscellaneous Rendering"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="10"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Miscellaneous
+                    </plus_ps_text>
+                    <plus_ps_check_compat
+                     name="VintageMode"
+                     control_name="RenderDisableVintageMode"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="HDR and Emissive"
+                     layout="topleft"
+                     left="474"
+                     top="50"
+                     width="439">
+                        <plus_ps_check_compat.commit_callback
+                         function="Pref.RenderOptionUpdate" />
+                    </plus_ps_check_compat>
+                    <plus_ps_slider_compat
+                     name="RenderPostProcess"
+                     control_name="RenderHighPrecisionPostProcess"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="160"
+                     label="Post Process Quality:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="1"
+                     min_val="0"
+                     show_text="false"
+                     top="80"
+                     width="369">
+                        <plus_ps_slider_compat.commit_callback
+                         function="Pref.UpdateSliderText"
+                         parameter="PostProcessText" />
+                    </plus_ps_slider_compat>
+                    <plus_ps_text
+                     name="PostProcessText"
+                     follows="left|top"
+                     halign="right"
+                     height="31"
+                     kind="white"
+                     layout="topleft"
+                     left="855"
+                     length="1"
+                     top="80"
+                     type="string"
+                     width="58">
+                        Low
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="RenderSharpness"
+                     control_name="RenderCASSharpness"
+                     decimal_digits="1"
+                     follows="left|top"
+                     height="31"
+                     increment="0.1"
+                     initial_value="160"
+                     label="Sharpening:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="1.0"
+                     min_val="0.0"
+                     show_text="true"
+                     text_width="58"
+                     top="111"
+                     width="439" />
+                    <plus_ps_text
+                     name="ReflectionProbeCount"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="142"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Max Reflection Probes:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="ProbeCount"
+                     control_name="RenderReflectionProbeCount"
+                     follows="left|top"
+                     height="33"
+                     label="Max. Reflection Probes:"
+                     layout="topleft"
+                     left="682"
+                     top="142"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="1"
+                         label="None"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="32"
+                         label="Low"
+                         value="32" />
+                        <plus_ps_combo.item
+                         name="64"
+                         label="Medium"
+                         value="64" />
+                        <plus_ps_combo.item
+                         name="128"
+                         label="High"
+                         value="128" />
+                        <plus_ps_combo.item
+                         name="256"
+                         label="Ultra"
+                         value="256" />
+                    </plus_ps_combo>
+                    <plus_ps_text
+                     name="TonemapTypeText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="175"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Tone Mapper:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="TonemapType"
+                     control_name="RenderTonemapType"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="682"
+                     top="175"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Khronos Neutral"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="ACES"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Reinhard (keeps hue)"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="Hable (film look)"
+                         value="3" />
+                        <plus_ps_combo.item
+                         name="4"
+                         label="Hejl (film look, soft)"
+                         value="4" />
+                    </plus_ps_combo>
+                    <plus_ps_slider_compat
+                     name="TonemapMix"
+                     control_name="RenderTonemapMix"
+                     decimal_digits="1"
+                     follows="left|top"
+                     height="31"
+                     increment="0.1"
+                     initial_value="1"
+                     label="Tone Mapping Mix:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="1.0"
+                     min_val="0.0"
+                     show_text="true"
+                     text_width="58"
+                     tool_tip="Mix between linear and tone mapped colors"
+                     top="208"
+                     width="439" />
+                </panel>
+            </scroll_container>
+        </panel>
+        <panel
+         name="DOF panel"
+         background_visible="false"
+         follows="all"
+         height="616"
+         label="Depth of Field"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="36"
+         width="944">
+            <plus_ps_box
+             name="dof_ground"
+             follows="all"
+             height="616"
+             kind="panel"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="944" />
+            <scroll_container
+             name="dof_scroll"
+             follows="all"
+             height="616"
+             layout="topleft"
+             left="0"
+             opaque="false"
+             reserve_scroll_corner="false"
+             top="0"
+             width="944">
+                <panel
+                 name="dof_scroll_panel"
+                 background_visible="false"
+                 follows="left|top"
+                 height="239"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="0"
+                 width="927">
+                    <plus_ps_check_compat
+                     name="UseDoF"
+                     control_name="RenderDepthOfField"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Enable depth of field (the view is blurred except where the camera is focused)"
+                     layout="topleft"
+                     left="14"
+                     top="10"
+                     width="899">
+                        <plus_ps_check_compat.commit_callback
+                         function="Pref.RenderOptionUpdate" />
+                    </plus_ps_check_compat>
+                    <!-- From Firestorm's "Depth of Field" tab (the official settings, ranges as there), grayed out while depth of field is off -->
+                    <plus_ps_check_compat
+                     name="RenderDepthOfFieldInEditMode"
+                     control_name="RenderDepthOfFieldInEditMode"
+                     enabled_control="RenderDepthOfField"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="Also while editing"
+                     layout="topleft"
+                     left="34"
+                     tool_tip="Keeps depth of field on while you build or edit objects."
+                     top="40"
+                     width="419" />
+                    <plus_ps_slider_compat
+                     name="CameraFNum"
+                     control_name="CameraFNumber"
+                     decimal_digits="1"
+                     enabled_control="RenderDepthOfField"
+                     follows="left|top"
+                     height="31"
+                     increment=".5"
+                     initial_value="9.5"
+                     label="Camera f-number:"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="64"
+                     min_val="1"
+                     text_width="58"
+                     tool_tip="The f-number of the camera for depth of field: lower blurs more of what is out of focus."
+                     top="70"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="CameraFocal"
+                     control_name="CameraFocalLength"
+                     decimal_digits="0"
+                     enabled_control="RenderDepthOfField"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="50"
+                     label="Focal length (mm):"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="1000"
+                     min_val="1"
+                     text_width="58"
+                     tool_tip="The focal length of the camera for depth of field, in millimetres."
+                     top="101"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="Camera FOV"
+                     control_name="CameraFieldOfView"
+                     decimal_digits="0"
+                     enabled_control="RenderDepthOfField"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="60"
+                     label="Field of view (degrees):"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="200"
+                     min_val="10"
+                     text_width="58"
+                     tool_tip="The vertical field of view of the camera for depth of field, in degrees."
+                     top="132"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="CameraFocusTrans"
+                     control_name="CameraFocusTransitionTime"
+                     decimal_digits="2"
+                     enabled_control="RenderDepthOfField"
+                     follows="left|top"
+                     height="31"
+                     increment="0.01"
+                     initial_value="0.5"
+                     label="Focus transition time:"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="10"
+                     min_val="0.1"
+                     text_width="58"
+                     tool_tip="How long the focus takes to move from one place to the next, in seconds."
+                     top="163"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="CameraDoFResScale"
+                     control_name="CameraDoFResScale"
+                     decimal_digits="3"
+                     enabled_control="RenderDepthOfField"
+                     follows="left|top"
+                     height="31"
+                     increment="0.025"
+                     initial_value="0.70"
+                     label="Depth of field quality:"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="1"
+                     min_val="0.25"
+                     text_width="58"
+                     tool_tip="The quality of the blur: higher looks better, lower is faster."
+                     top="194"
+                     width="439" />
+                </panel>
+            </scroll_container>
+        </panel>
+        <panel
+         name="Charis panel"
+         background_visible="false"
+         follows="all"
+         height="616"
+         label="Charis"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="36"
+         width="944">
+            <plus_ps_box
+             name="charis_ground"
+             follows="all"
+             height="616"
+             kind="panel"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="944" />
+            <scroll_container
+             name="charis_scroll"
+             follows="all"
+             height="616"
+             layout="topleft"
+             left="0"
+             opaque="false"
+             reserve_scroll_corner="false"
+             top="0"
+             width="944">
+                <panel
+                 name="charis_scroll_panel"
+                 background_visible="false"
+                 follows="left|top"
+                 height="443"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="0"
+                 width="927">
+                    <!-- Left: upscaling (plus/upscale), GTAO and SSGI (plus/gtao: the rows under GTAO are enabled by the code) -->
+                    <plus_ps_text
+                     name="UpscaleText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="10"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Upscaling
+                    </plus_ps_text>
+                    <plus_ps_text
+                     name="PlusUpscaleText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="50"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Upscaling:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="PlusUpscale"
+                     control_name="PlusUpscale"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     tool_tip="Draws the world smaller than the window and brings it up to the window's size, for more frames per second where the graphics card sets the pace. The HUD, name tags and the UI stay sharp; snapshots are taken at the full size, and while the photo screen or the photo tools (not minimized) are open the world is drawn at the full size too, so the frame rate drops there."
+                     top="50"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Off"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="AMD FSR 1"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Plain stretch (to compare)"
+                         value="2" />
+                    </plus_ps_combo>
+                    <plus_ps_slider_compat
+                     name="PlusUpscaleScale"
+                     control_name="PlusUpscaleScale"
+                     decimal_digits="2"
+                     enabled_control="PlusUpscale"
+                     follows="left|top"
+                     height="31"
+                     increment="0.01"
+                     initial_value="0.67"
+                     label="Render scale:"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="1"
+                     min_val="0.5"
+                     text_width="58"
+                     tool_tip="The share of the window's width and height the world is drawn at: 0.77 quality, 0.67 balanced, 0.59 faster, 0.5 fastest."
+                     top="83"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="PlusUpscaleSharpness"
+                     control_name="PlusUpscaleSharpness"
+                     decimal_digits="2"
+                     enabled_control="PlusUpscale"
+                     follows="left|top"
+                     height="31"
+                     increment="0.05"
+                     initial_value="0.5"
+                     label="Sharpening:"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="1"
+                     min_val="0"
+                     text_width="58"
+                     tool_tip="How much the upscaled picture is sharpened (0: not at all, 1: the most). A matter of taste."
+                     top="114"
+                     width="439" />
+                    <plus_ps_text
+                     name="AOText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="155"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Ambient occlusion and indirect light
+                    </plus_ps_text>
+                    <plus_ps_check_compat
+                     name="PlusGtao"
+                     control_name="PlusGtao"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="GTAO (finer shade in corners)"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="Ground-truth ambient occlusion in place of the standard one: the shade in corners, under furniture and where surfaces meet. Needs Screen Space Ambient Occlusion (General tab), which it replaces. Costs graphics card time (see the quality)."
+                     top="195"
+                     width="439">
+                        <plus_ps_check_compat.commit_callback
+                         function="Pref.RenderOptionUpdate" />
+                    </plus_ps_check_compat>
+                    <plus_ps_text
+                     name="PlusGtaoQualityText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="225"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        GTAO quality:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="PlusGtaoQuality"
+                     control_name="PlusGtaoQuality"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="222"
+                     tool_tip="Low and Medium work on a quarter of the pixels (8 and 24 samples); High on every pixel. Higher is finer and slower."
+                     top="225"
+                     width="231">
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Low"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Medium"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="High"
+                         value="3" />
+                    </plus_ps_combo>
+                    <plus_ps_slider_compat
+                     name="PlusGtaoStrength"
+                     control_name="PlusGtaoStrength"
+                     decimal_digits="1"
+                     follows="left|top"
+                     height="31"
+                     increment="0.1"
+                     initial_value="1"
+                     label="GTAO strength:"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="4"
+                     min_val="0"
+                     text_width="58"
+                     tool_tip="How dark occluded places get: 1 as measured, 2 darker, 0 none."
+                     top="258"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="PlusGtaoRadius"
+                     control_name="PlusGtaoRadius"
+                     decimal_digits="2"
+                     follows="left|top"
+                     height="31"
+                     increment="0.05"
+                     initial_value="0.75"
+                     label="GTAO reach (m):"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="5"
+                     min_val="0.1"
+                     text_width="58"
+                     tool_tip="How far away a surface still shades another, in metres. Larger: broader, softer shade."
+                     top="289"
+                     width="439" />
+                    <plus_ps_check_compat
+                     name="PlusSsgi"
+                     control_name="PlusSsgi"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="Indirect light (SSGI)"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="The colour of nearby lit surfaces (sunny ground, a red wall) comes back into the shade beside them. Needs GTAO, Screen Space Ambient Occlusion, HDR and the reflection probes."
+                     top="320"
+                     width="439">
+                        <plus_ps_check_compat.commit_callback
+                         function="Pref.RenderOptionUpdate" />
+                    </plus_ps_check_compat>
+                    <plus_ps_slider_compat
+                     name="PlusSsgiStrength"
+                     control_name="PlusSsgiStrength"
+                     decimal_digits="2"
+                     follows="left|top"
+                     height="31"
+                     increment="0.05"
+                     initial_value="1"
+                     label="Indirect light strength:"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="1"
+                     min_val="0"
+                     text_width="58"
+                     tool_tip="How much of the light nearby surfaces send back is added (1: all that is gathered)."
+                     top="350"
+                     width="439" />
+                    <!-- Right: reflections and OIT (enabled by the code), then the object appear / disappear effects (plus/objectfx) -->
+                    <plus_ps_text
+                     name="CharisReflectionText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="10"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Reflections and transparency
+                    </plus_ps_text>
+                    <plus_ps_check_compat
+                     name="PlusSSR"
+                     control_name="PlusSSR"
+                     enabled_control="RenderScreenSpaceReflections"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="Reflections: New Method"
+                     layout="topleft"
+                     left="474"
+                     tool_tip="Screen-space reflections, new method: reflections reach farther, and slightly rough floors get blurred ones too. Needs Screen Space Reflections (General tab) on. A little slower. Glass, alpha and water keep the standard reflections."
+                     top="50"
+                     width="439" />
+                    <plus_ps_text
+                     name="OITModeText"
+                     follows="left|top"
+                     height="18"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="80"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Exact transparency order (OIT):
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="OITMode"
+                     control_name="RenderOITMode"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="494"
+                     tool_tip="Draws overlapping transparent surfaces (hair, eyelashes, glass, smoke) in their true order, so hair edges no longer cut holes in what is behind them. Grayed out on graphics cards that lack the features OIT needs."
+                     top="98"
+                     width="260">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Off"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Avatars only"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Everything"
+                         value="2" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="OITSnapshotFull"
+                     control_name="RenderOITSnapshotFull"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="Take snapshots with full OIT"
+                     layout="topleft"
+                     left="474"
+                     tool_tip="Snapshots are rendered with OIT on everything, whatever the setting above is. Slower to take."
+                     top="131"
+                     width="439" />
+                    <!-- ObjectFxText is where Plus.ObjectFx.ShowPrefs scrolls to, down to the bottom of PlusDerezPalette (the group's last row; both are children of this panel). The swatches are not bound by control_name: plus/objectfx shows and writes them -->
+                    <plus_ps_text
+                     name="ObjectFxText"
+                     follows="left|top"
+                     height="40"
+                     kind="title"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="171"
+                     type="string"
+                     use_ellipses="true"
+                     width="439">
+                        Object appear / disappear effects
+                    </plus_ps_text>
+                    <plus_ps_check_compat
+                     name="PlusMaterialize"
+                     control_name="PlusMaterialize"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Materialize objects as their textures arrive"
+                     layout="topleft"
+                     left="474"
+                     tool_tip="While its textures load, an object is drawn as glowing lines; when they arrive, a band of light sweeps up it and leaves the real surfaces behind. Objects whose textures are already at hand (the cache) show at once, without it. Needs the wireframe while textures load (the debug setting RenderGrayTextureWireframe, on by default)."
+                     top="211"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="PlusMaterializeSeconds"
+                     control_name="PlusMaterializeSeconds"
+                     decimal_digits="1"
+                     enabled_control="PlusMaterialize"
+                     follows="left|top"
+                     height="31"
+                     increment="0.1"
+                     initial_value="1.2"
+                     label="Materialize time (s):"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="4"
+                     min_val="0.4"
+                     text_width="58"
+                     tool_tip="How long the band of light takes to sweep from the bottom of an object to its top, in seconds."
+                     top="241"
+                     width="439" />
+                    <plus_ps_text
+                     name="PlusMaterializePaletteText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="272"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Glow colour:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="PlusMaterializePalette"
+                     control_name="PlusMaterializePalette"
+                     enabled_control="PlusMaterialize"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="682"
+                     tool_tip="The colour of the lines and of the band of light. Custom: the colour of the swatch on the right."
+                     top="272"
+                     width="140">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Cyan"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Orange"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Magenta"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="Green"
+                         value="3" />
+                        <plus_ps_combo.item
+                         name="4"
+                         label="Custom"
+                         value="4" />
+                    </plus_ps_combo>
+                    <plus_ps_box
+                     name="glass_PlusMaterializeColor"
+                     follows="left|top"
+                     height="32"
+                     kind="glass"
+                     layout="topleft"
+                     left="834"
+                     mouse_opaque="false"
+                     top="272"
+                     width="52">
+                        <color_swatch
+                         name="PlusMaterializeColor"
+                         can_apply_immediately="true"
+                         enabled_control="PlusMaterialize"
+                         follows="left|top"
+                         height="24"
+                         label_height="0"
+                         layout="topleft"
+                         left="4"
+                         tool_tip="A colour of your own for the lines and the band of light. Picking one sets the glow colour to Custom. Its brightness is used as it is; a colour close to black gives cyan."
+                         top="4"
+                         width="44">
+                            <color_swatch.init_callback
+                             function="Plus.ObjectFx.InitColor3"
+                             parameter="PlusMaterializeColor PlusMaterializePalette" />
+                            <color_swatch.commit_callback
+                             function="Plus.ObjectFx.SetColor3"
+                             parameter="PlusMaterializeColor PlusMaterializePalette" />
+                            <color_swatch.caption_text
+                             height="0" />
+                        </color_swatch>
+                    </plus_ps_box>
+                    <plus_ps_check_compat
+                     name="PlusMaterializeAvatar"
+                     control_name="PlusMaterializeAvatar"
+                     enabled_control="PlusMaterialize"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Materialize avatars too"
+                     layout="topleft"
+                     left="474"
+                     tool_tip="An avatar drawn as glowing lines while it loads (yours after login, others whose clothes are not loaded yet) is swept once by the band of light from its feet to its head when it has everything, and the real body, clothes and attachments appear. Up to 8 avatars at once; avatars already at hand show at once."
+                     top="305"
+                     width="439" />
+                    <plus_ps_check_compat
+                     name="PlusDerez"
+                     control_name="PlusDerez"
+                     follows="left|top"
+                     height="30"
+                     initial_value="true"
+                     label="Crumble objects as they vanish"
+                     layout="topleft"
+                     left="474"
+                     tool_tip="When an object near you is deleted or returned (yours or someone else's), it breaks into small glowing cubes that drift up and fade, instead of vanishing at once. Not for attachments, avatars, physical objects or teleports."
+                     top="335"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="PlusDerezSeconds"
+                     control_name="PlusDerezSeconds"
+                     decimal_digits="1"
+                     enabled_control="PlusDerez"
+                     follows="left|top"
+                     height="31"
+                     increment="0.1"
+                     initial_value="1.2"
+                     label="Crumble time (s):"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="4"
+                     min_val="0.4"
+                     text_width="58"
+                     tool_tip="How long a vanishing object takes to crumble away, in seconds."
+                     top="365"
+                     width="439" />
+                    <plus_ps_text
+                     name="PlusDerezPaletteText"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="474"
+                     length="1"
+                     top="396"
+                     type="string"
+                     use_ellipses="true"
+                     width="196">
+                        Glow colour:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="PlusDerezPalette"
+                     control_name="PlusDerezPalette"
+                     enabled_control="PlusDerez"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="682"
+                     tool_tip="The colour of the glowing edge where the object breaks apart. Custom: the colour of the swatch on the right."
+                     top="396"
+                     width="140">
+                        <plus_ps_combo.item
+                         name="0"
+                         label="Cyan"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="1"
+                         label="Orange"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="2"
+                         label="Magenta"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="3"
+                         label="Green"
+                         value="3" />
+                        <plus_ps_combo.item
+                         name="4"
+                         label="Custom"
+                         value="4" />
+                    </plus_ps_combo>
+                    <plus_ps_box
+                     name="glass_PlusDerezColor"
+                     follows="left|top"
+                     height="32"
+                     kind="glass"
+                     layout="topleft"
+                     left="834"
+                     mouse_opaque="false"
+                     top="396"
+                     width="52">
+                        <color_swatch
+                         name="PlusDerezColor"
+                         can_apply_immediately="true"
+                         enabled_control="PlusDerez"
+                         follows="left|top"
+                         height="24"
+                         label_height="0"
+                         layout="topleft"
+                         left="4"
+                         tool_tip="A glow colour of your own for objects that crumble away. Picking one sets the glow colour to Custom."
+                         top="4"
+                         width="44">
+                            <color_swatch.init_callback
+                             function="Plus.ObjectFx.InitColor3"
+                             parameter="PlusDerezColor PlusDerezPalette" />
+                            <color_swatch.commit_callback
+                             function="Plus.ObjectFx.SetColor3"
+                             parameter="PlusDerezColor PlusDerezPalette" />
+                            <color_swatch.caption_text
+                             height="0" />
+                        </color_swatch>
+                    </plus_ps_box>
+                </panel>
+            </scroll_container>
+        </panel>
+    </plus_ps_tabs>
+    <!-- The bottom row: Reset to recommended settings at the left, OK / Cancel at the right (no line above it: the
+         old divider at top 584 was left from the 508 high window and cut across the pages at this size) -->
+    <plus_ps_button_compat
+     name="Defaults"
+     follows="left|bottom"
+     height="40"
+     label="Reset to recommended settings"
+     layout="topleft"
+     left="14"
+     top="686"
+     width="260">
+        <plus_ps_button_compat.commit_callback
+         function="Pref.HardwareDefaults" />
+    </plus_ps_button_compat>
+    <plus_ps_button_compat
+     name="OK"
+     follows="right|bottom"
+     height="40"
+     label="OK"
+     label_selected="OK"
+     layout="topleft"
+     left="698"
+     top="686"
+     width="120">
+        <plus_ps_button_compat.commit_callback
+         function="Pref.OK"
+         parameter="closeadvanced" />
+    </plus_ps_button_compat>
+    <plus_ps_button_compat
+     name="Cancel"
+     follows="right|bottom"
+     height="40"
+     label="Cancel"
+     label_selected="Cancel"
+     layout="topleft"
+     left="826"
+     top="686"
+     width="120">
+        <plus_ps_button_compat.commit_callback
+         function="Pref.Cancel"
+         parameter="closeadvanced" />
+    </plus_ps_button_compat>
+    <!-- These two check boxes are dummies and will never be displayed (the official ones, as there). They are here so the control variables are saved in a preset file (LLFloaterPreference::getControlNames). -->
+    <check_box
+     name="RenderAvatarMaxComplexity"
+     control_name="RenderAvatarMaxComplexity"
+     follows="left|top"
+     height="0"
+     label="RenderAvatarMaxComplexity"
+     layout="topleft"
+     left="0"
+     top="0"
+     visible="false"
+     width="0" />
+    <check_box
+     name="RenderAvatarMaxNonImpostors"
+     control_name="RenderAvatarMaxNonImpostors"
+     follows="left|top"
+     height="0"
+     label="RenderAvatarMaxNonImpostors"
+     layout="topleft"
+     left="0"
+     top="0"
+     visible="false"
+     width="0" />
+</floater>

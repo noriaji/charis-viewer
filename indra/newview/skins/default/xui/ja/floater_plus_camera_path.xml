@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_camera_path" title="カメラ演出">
+	<floater.string name="path_err_no_camera">アバターまたはカメラがまだありません。</floater.string>
+	<floater.string name="path_err_full">点は 32 個までです。</floater.string>
+	<floater.string name="path_err_busy">ほかのものが動いています。先に止めてください。</floater.string>
+	<floater.string name="path_err_spin_point">最初の点以外を選んでください。回転は、その点へカメラが動く間に起こります。</floater.string>
+	<floater.string name="list_motion_orbit">回り込み</floater.string>
+	<floater.string name="list_orbit">[LAPS]周</floater.string>
+	<floater.string name="list_orbits">[LAPS]周</floater.string>
+	<floater.string name="list_spin">[TURNS]回転</floater.string>
+	<floater.string name="list_spins">[TURNS]回転</floater.string>
+	<floater.string name="path_err_spin_max">この点の回転は、すでに上限（8 回転）です。</floater.string>
+	<floater.string name="path_err_empty">点がありません。カメラを動かして「点を追加」を押してください。</floater.string>
+	<floater.string name="path_err_flycam">今はフライカム（3D マウス）がカメラを動かしています。先にフライカムを切ってください。</floater.string>
+	<floater.string name="path_err_name">保存する名前を入れてください。</floater.string>
+	<floater.string name="path_err_write">演出を保存できませんでした。</floater.string>
+	<floater.string name="path_err_read">演出を読み込めませんでした。</floater.string>
+	<floater.string name="path_err_script">カメラ台本として読めませんでした（JSON の書き方を確かめてください）。</floater.string>
+	<floater.string name="path_err_short">動く時間がありません。先に移動か待ちに秒数を入れてください。</floater.string>
+	<floater.string name="path_err_export_busy">撮影ボタンが使用中です。少し待ってからやり直してください。</floater.string>
+	<floater.string name="path_err_too_long">コマが多すぎます（36000 コマまで）。1 秒あたりのコマ数を下げるか、演出を短くしてください。</floater.string>
+	<floater.string name="path_err_name_reserved">その名前は Windows が使うため保存できません。別の名前にしてください。</floater.string>
+	<floater.string name="path_idle">待機中。Esc で演出を止めて、カメラをアバターの後ろに戻します。</floater.string>
+	<floater.string name="path_playing">再生中… [TIME] / [TOTAL] 秒</floater.string>
+	<floater.string name="path_counting">あと [NUMBER] 秒で始まります…</floater.string>
+	<floater.string name="path_in_place">その場で揺らしています。止める／Esc で終わります。</floater.string>
+	<floater.string name="path_exporting">連番を撮影中… [FRAME] / [FRAMES]</floater.string>
+	<floater.string name="path_total">全体 [TOTAL] 秒</floater.string>
+	<floater.string name="path_other_region">この演出は別のリージョン（[REGION]）で作られました。地図上の同じ場所を通ります。</floater.string>
+	<floater.string name="path_start">開始</floater.string>
+	<floater.string name="path_cut">カット</floater.string>
+	<floater.string name="path_seconds">[SECONDS] 秒</floater.string>
+	<floater.string name="path_point_default">点 [NUMBER]</floater.string>
+	<floater.string name="path_chosen_none">選んだ点</floater.string>
+	<floater.string name="path_chosen">選んだ点: [NUMBER]（傾き [DEGREES]°）</floater.string>
+	<floater.string name="motion_smooth">なめらか</floater.string>
+	<floater.string name="motion_linear">一定の速さ</floater.string>
+	<floater.string name="motion_ease">ゆっくり出てゆっくり止まる</floater.string>
+	<floater.string name="list_motion_smooth">なめらか</floater.string>
+	<floater.string name="list_motion_linear">一定</floater.string>
+	<floater.string name="list_motion_ease">ゆっくり</floater.string>
+	<floater.string name="subject_none">保存した向きのまま</floater.string>
+	<floater.string name="subject_me">自分（[NAME]）</floater.string>
+	<floater.string name="subject_far">ほかのアバター（近くにいません）</floater.string>
+	<combo_box name="saved" tool_tip="保存した演出と台本（.json で終わる名前は台本です）" />
+	<button name="btn_load" label="開く" tool_tip="選んだ保存済みの演出や台本を開きます（今開いている演出は置き換わります）" />
+	<button name="btn_delete_file" label="消去" tool_tip="選んだ保存済みの演出や台本のファイルを削除します" />
+	<line_editor name="path_name" tool_tip="保存する名前" />
+	<button name="btn_save" label="保存" tool_tip="この名前で演出を保存します" />
+	<button name="btn_new" label="新規" tool_tip="空の演出から始めます" />
+	<check_box name="loop" label="ループ" tool_tip="最後の点のあと、カットで最初の点に戻ります" />
+	<tab_container name="tabs">
+		<panel name="tab_points" label="点">
+			<scroll_list name="points" tool_tip="カメラは上の点から順に通ります。点を選ぶと内容を変えられます。">
+				<scroll_list.columns name="num" label="番号" />
+				<scroll_list.columns name="point_name" label="名前" />
+				<scroll_list.columns name="seconds" label="時間" />
+				<scroll_list.columns name="motion" label="動き" />
+				<scroll_list.columns name="hold" label="待ち" />
+			</scroll_list>
+			<button name="btn_add" label="点を追加" tool_tip="今のカメラを最後の点として追加します（キー: K）" />
+			<button name="btn_overwrite" label="点を上書き" tool_tip="選んだ点を、今のカメラの位置・向き・画角で置き換えます" />
+			<button name="btn_goto" label="点へ移動" tool_tip="選んだ点の位置にカメラを動かして確かめます" />
+			<button name="btn_remove" label="点を削除" tool_tip="選んだ点を演出から外します" />
+			<button name="btn_up" label="上へ" tool_tip="選んだ点を前へ（早く通るように）動かします" />
+			<button name="btn_down" label="下へ" tool_tip="選んだ点を後ろへ（遅く通るように）動かします" />
+			<button name="btn_copy" label="点を複製" tool_tip="選んだ点のコピーを、すぐ後ろに作ります" />
+			<text name="lbl_point">選んだ点</text>
+			<line_editor name="name" tool_tip="点の名前（空のままでもかまいません）" />
+			<combo_box name="motion" tool_tip="前の点からこの点まで、カメラがどう動くか">
+				<combo_box.item name="motion_smooth" label="なめらか" />
+				<combo_box.item name="motion_linear" label="一定の速さ" />
+				<combo_box.item name="motion_ease" label="ゆっくり出てゆっくり止まる" />
+				<combo_box.item name="motion_orbit" label="被写体の周りを回る" />
+			</combo_box>
+			<spinner name="seconds" label="時間（秒）" tool_tip="前の点からこの点まで、カメラが動く時間。0 秒ならカット（その場でぱっと切り替わる）です。" />
+			<spinner name="hold" label="待ち（秒）" tool_tip="この点で、先へ進む前にカメラが止まっている時間" />
+			<spinner name="spin" label="回転" tool_tip="この点へ動く間に、画面を余分に回す回数。1 なら 1 回転、-1 なら逆向きに 1 回転します。" />
+			<combo_box name="subject" tool_tip="アバターを選ぶと、その人が動いてもカメラが向きを追いかけます。一番上は、保存した向きのままです。" />
+			<combo_box name="part" tool_tip="アバターのどこを見るか">
+				<combo_box.item name="part_face" label="顔" />
+				<combo_box.item name="part_chest" label="胸" />
+				<combo_box.item name="part_body" label="全身" />
+			</combo_box>
+			<button name="btn_refresh_subjects" label="探す" tool_tip="カメラの近くにいるアバターを探し直します" />
+			<spinner name="orbit" label="周回" tool_tip="「被写体の周りを回る」動きで、前の点から近いほうを回る分に足す周回数（+ か -）。同じ場所の 2 つの点に 1 周を入れると、ぐるっと一周します。上で選んだアバター、無ければこの点が見ている先の周りを回ります。" />
+		</panel>
+		<panel name="tab_effects" label="演出">
+			<text name="lbl_shake">手振れ</text>
+			<combo_box name="shake_kind" tool_tip="演出の全体にカメラの揺れを足します">
+				<combo_box.item name="shake_none" label="なし" />
+				<combo_box.item name="shake_handheld" label="手持ち（ゆったり）" />
+				<combo_box.item name="shake_walking" label="歩きながら" />
+				<combo_box.item name="shake_running" label="走りながら" />
+				<combo_box.item name="shake_quake" label="地震" />
+			</combo_box>
+			<button name="btn_shake_weak" label="弱" tool_tip="小さな揺れ" />
+			<button name="btn_shake_medium" label="中" tool_tip="ふつうの揺れ" />
+			<button name="btn_shake_strong" label="強" tool_tip="大きな揺れ" />
+			<slider name="shake_amount" label="大きさ" tool_tip="揺れの強さ" />
+			<slider name="shake_speed" label="速さ" tool_tip="揺れの速さ" />
+			<spinner name="shake_seed" label="種" tool_tip="同じ種なら毎回同じ揺れになります。撮り直しても同じ画になります。" />
+			<button name="btn_shake_seed" label="別の揺れ" tool_tip="種を変えて、別の揺れ方にします" />
+			<button name="btn_inplace" label="その場で揺らす" tool_tip="カメラを今の場所に止めて揺らします。揺れの確かめや、動かない画の撮影用です（止める／Esc で終わり）" />
+			<spinner name="countdown" label="カウント（秒）" tool_tip="演出が始まる前に「3、2、1」と音で数えます。先に録画を始められます。0 ならすぐ始まります。" />
+			<check_box name="show_route" label="経路を画面に出す" tool_tip="このウィンドウを開いていて何も再生していない間、演出の線と点を世界の上に描きます。写真や動画には写りません。" />
+			<text name="lbl_spin">画面を 1 回転させる</text>
+			<spinner name="spin_seconds" label="秒数" tool_tip="1 回転にかける時間" />
+			<button name="btn_spin_right" label="右回り" tool_tip="カメラを右へ傾けながら 1 回転して、元の傾きに戻ります（水平線が左回りに回ります）。カメラを動かしながらでも使えます。" />
+			<button name="btn_spin_point" label="選んだ点に一回転を入れる" tool_tip="選んだ点に 1 回転を保存します（「点」タブの「回転」でも変えられます）。演出を再生するたびに、その点へカメラが動く間に画面が 1 回転します。" />
+			<button name="btn_spin_left" label="左回り" tool_tip="カメラを左へ傾けながら 1 回転して、元の傾きに戻ります（水平線が右回りに回ります）。" />
+			<text name="lbl_export">1 コマずつ撮影（連番）</text>
+			<combo_box name="export_fps" tool_tip="動画 1 秒あたりの枚数">
+				<combo_box.item name="fps_24" label="24 コマ／秒" />
+				<combo_box.item name="fps_30" label="30 コマ／秒" />
+				<combo_box.item name="fps_60" label="60 コマ／秒" />
+			</combo_box>
+			<button name="btn_export" label="連番を撮る" tool_tip="演出を 1 コマずつ進めて、撮影ツールの大きさ・形式で写真を撮り、新しいフォルダに frame_00001.png… と並べます。時間はかかりますが、どのコマも正確です。止めるで中断します。" />
+		</panel>
+	</tab_container>
+	<slider name="tilt" label="カメラの傾き" tool_tip="今のカメラを傾けます（度。右に傾けるのが +）。撮影ツールやカメラのキーと同じ傾きです。点には、追加した時のカメラの傾きが保存されます。" />
+	<button name="btn_level" label="水平に戻す" tool_tip="カメラをすぐ水平（傾き 0）に戻します" />
+	<button name="btn_play" label="再生" tool_tip="最初の点から演出を再生します（キー: J）" />
+	<button name="btn_stop" label="止める" tool_tip="今の位置で演出を止めます（キー: J）" />
+	<text name="time">全体 0 秒</text>
+	<text name="status">待機中。</text>
+</floater>

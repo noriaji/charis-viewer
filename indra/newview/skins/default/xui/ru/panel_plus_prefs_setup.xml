@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Input panel" label="Конфигурация">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="setup_scroll">
+			<panel name="setup_scroll_panel">
+				<plus_ps_text name="Network:">
+					Сеть:
+				</plus_ps_text>
+				<plus_ps_text name="Maximum bandwidth">
+					Макс. ширина канала
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					Кбит/с
+				</plus_ps_text>
+				<plus_ps_check_compat name="connection_port_enabled" label="Выбор порта" />
+				<plus_ps_spinner name="connection_port" label="Номер порта:" />
+				<plus_ps_text name="Web:">
+					Браузер:
+				</plus_ps_text>
+				<plus_ps_radio name="preferred_browser_behavior">
+					<radio_item name="internal" label="Используйте встроенный браузер для всех ссылок" tool_tip="Будет использоваться браузер, заданный в системе по умолчанию. Не рекомендуется, если [APP_NAME] работает в полноэкранном режиме." />
+					<radio_item name="external" label="Для ссылок Second Life следует использовать только встроенный браузер" tool_tip="Используйте встроенный браузер для справки, веб-ссылок и т.д. Для ссылок LindenLab/Second Life следует использовать только встроенный браузер." />
+					<radio_item name="external_all" label="Для всех ссылок следует использовать встроенный браузер" tool_tip="Для просмотра справки, ссылок на веб-страницы и т. д. будет использоваться встроенный браузер. Этот браузер открывается как новое окно в [APP_NAME]." />
+				</plus_ps_radio>
+				<plus_ps_check_compat name="browser_javascript_enabled" label="Разрешить Javascript" />
+				<plus_ps_text name="Software updates:">
+					Обновления ПО:
+				</plus_ps_text>
+				<plus_ps_combo name="updater_service_combobox">
+					<plus_ps_combo.item name="Install_automatically" label="Автоматическая установка каждого обновления" />
+					<plus_ps_combo.item name="Install_ask" label="Когда необязательное обновление будет готово к установке, запросите меня" />
+					<plus_ps_combo.item name="Install_manual" label="Установка только обязательных обновлений" />
+				</plus_ps_combo>
+				<plus_ps_check_compat name="update_willing_to_test" label="Устанавливать бета-версии" />
+				<plus_ps_check_compat name="update_show_release_notes" label="Показать заметки о выпуске после обновления" />
+				<plus_ps_text name="Proxy Settings:">
+					Настройки прокси-сервера:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_proxy" label="Задать настройки" label_selected="Обзор" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

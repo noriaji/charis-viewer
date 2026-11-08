@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Texts of plus/presets (the Charis features on the official quality levels, research/183).
+  Never shown: the viewer reads its strings.
+-->
+<panel
+ name="plus_presets"
+ visible="false"
+ height="10"
+ width="10">
+    <panel.string name="applying">Applying the graphics settings. The viewer stands still for a few seconds (up to about 20 seconds the first time a combination is used, while its shaders are prepared).</panel.string>
+    <!-- the quality levels' names, for the notices (as the quality slider names them) -->
+    <panel.string name="level_0">Low</panel.string>
+    <panel.string name="level_1">Low-Mid</panel.string>
+    <panel.string name="level_2">Mid</panel.string>
+    <panel.string name="level_3">Mid-High</panel.string>
+    <panel.string name="level_4">High</panel.string>
+    <panel.string name="level_5">High-Ultra</panel.string>
+    <panel.string name="level_6">Ultra</panel.string>
+    <!-- once, after the first login with this version: the Charis presets were retired (research/183) -->
+    <panel.string name="migrated">The Charis graphics presets are now part of the quality slider (Preferences > Graphics, the photo tools' Quality tab: seven levels from Low to Ultra). The preset you used is now the "[LEVEL]" level; your draw distance and avatar limits are as they were.</panel.string>
+    <panel.string name="migrated_custom">The Charis graphics presets are now part of the quality slider (Preferences > Graphics, the photo tools' Quality tab: seven levels from Low to Ultra). Your graphics settings are as they were.</panel.string>
+</panel>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Cool Morning</string><key>ja</key><string>涼しい朝</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Cool, clear air with soft shadows.</string><key>ja</key><string>ひんやり澄んだ空気。影はやわらかく。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>20</integer>
+  </map>
+</llsd>

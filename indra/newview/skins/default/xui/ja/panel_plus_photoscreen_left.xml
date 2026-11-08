@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- ja: the words only. Places and sizes come from en/panel_plus_photoscreen_left.xml (LLXMLNode::updateNode matches by name). -->
+<panel name="plus_photoscreen_left">
+    <string name="SecScene">シーン</string>
+    <string name="Location">場所</string>
+    <string name="LocationTip">今いる区画です。クリックで「土地情報」を開きます。</string>
+    <string name="LocationNone">（区画が分かりません）</string>
+    <string name="TimeOfDay">時刻</string>
+    <string name="TimeTip">夜明け・正午・夕暮れ・真夜中（「世界」→「環境」と同じ）。土地の空に戻すのは「空」のカードから。</string>
+    <string name="Time0">6:00</string>
+    <string name="Time1">12:00</string>
+    <string name="Time2">18:00</string>
+    <string name="Time3">0:00</string>
+    <string name="TimeOther">--</string>
+    <string name="Sky">空</string>
+    <string name="SkyTip">使っている空です。クリックで空の一覧（全て・お気に入り・履歴）から選べます。もう一度で閉じます。</string>
+    <string name="SkyLand">土地の空</string>
+    <string name="SkyCustom">カスタムの空</string>
+    <string name="SkyBackLand">空を土地の設定に戻す</string>
+    <string name="WaterBackLand">水を土地の設定に戻す</string>
+    <string name="Water">水</string>
+    <string name="WaterTip">使っている水です。クリックで水の一覧（全て・お気に入り・履歴）から選べます。もう一度で閉じます。</string>
+    <string name="WaterLand">土地の水</string>
+    <string name="WaterCustom">カスタムの水</string>
+    <string name="ListAll">全て</string>
+    <string name="ListFav">お気に入り</string>
+    <string name="ListRecent">履歴</string>
+    <string name="LandTip">土地（リージョン・区画）の設定に戻します</string>
+    <string name="RowTip">クリック（Enter）で適用。右の星（Shift+Enter）でお気に入りに追加・解除（撮影ツールと共通）</string>
+    <string name="Missing">[NAME]（見つかりません）</string>
+    <string name="MissingTip">インベントリにありません（削除・ごみ箱・まだ読み込み中）。星を押すと一覧から外せます。</string>
+    <string name="MissingTipRecent">インベントリにありません（削除・ごみ箱・まだ読み込み中）。新しく使うと一覧から押し出されます。</string>
+    <string name="EmptyFav">お気に入りはまだありません。「全て」の行の星で追加できます。</string>
+    <string name="ListMore">ほか [COUNT] 件（撮影ツールで検索）</string>
+    <string name="EmptyRecent">まだ何も使っていません。ここや撮影ツールで選んだものが並びます。</string>
+    <string name="FavFull">お気に入りがいっぱいです。先にどれかの星を外してください。</string>
+    <string name="ItemGone">その空・水はもうインベントリにありません。</string>
+    <string name="SecDisplay">環境</string>
+    <string name="ShowHud">HUD を表示</string>
+    <string name="ShowHudTip">HUD の装着物を写します。撮影モードを抜けると元に戻ります。</string>
+    <string name="ShowParticles">パーティクルを表示</string>
+    <string name="ShowParticlesTip">煙や光の粒など。撮影モードを抜けると表示に戻ります。</string>
+    <string name="ShowShadows">影を表示</string>
+    <string name="MaxLod">最高の細かさ（LOD）</string>
+    <string name="SecAvatar">アバター</string>
+    <string name="Complexity">複雑さ [N]</string>
+    <string name="StopAO">AO を止める</string>
+    <string name="StopAOTip">撮っている間にポーズが変わらないよう、AO（アニメーション・オーバーライダー）を切ります</string>
+    <string name="ResetAvatar">アバターを元に戻す</string>
+    <string name="ResetAvatarTip">ここで切った AO を戻し、世界の停止を解き、目線を通常に戻します</string>
+    <string name="SecLook">見え方</string>
+    <string name="SecPose">ポーズ</string>
+    <string name="OpenPoser">ポーザーを開く</string>
+    <string name="OpenPoserTip">ポーザーを開きます（ポーズの読み込みと保存はポーザーで）</string>
+    <string name="SavedPoses">保存したポーズ</string>
+    <string name="NoPoses">保存したポーズはまだありません。ポーズはポーザーで作って保存します。</string>
+    <string name="SecMotion">動き</string>
+    <string name="SecLight">光</string>
+    <string name="SecShadow">影</string>
+    <string name="SecLensFx">レンズ効果</string>
+    <string name="SecAir">霧と光の筋</string>
+    <string name="SecLens">カメラ</string>
+    <string name="CamOrbit">回転</string>
+    <string name="CamOrbitTip">押した方向へ、見ている所を中心にカメラが回ります。端を押すほど速く、真ん中の点で元に戻ります。</string>
+    <string name="CamPan">移動</string>
+    <string name="CamPanTip">押した方向へ、カメラが上下左右に動きます。端を押すほど速く、真ん中の点で元に戻ります。</string>
+    <string name="CamZoom">ズーム</string>
+    <string name="CamZoomTip">上へ動かすと寄り、下へ動かすと引きます（矢印キーでも動きます）。</string>
+    <string name="CamZoomInTip">寄る（押している間ずっと）</string>
+    <string name="CamZoomOutTip">引く（押している間ずっと）</string>
+    <string name="Tilt">傾き</string>
+    <string name="TiltTip">カメラを横に傾けます。＋ が右、0 が水平です。撮影ツールの「傾き」と同じ設定です。</string>
+    <string name="TiltLeftTip">左へ傾けます（押している間ずっと傾きます）</string>
+    <string name="TiltRightTip">右へ傾けます（押している間ずっと傾きます）</string>
+    <string name="TiltValueTip">今の傾き（度。＋ が右）</string>
+    <string name="TiltLevel">水平</string>
+    <string name="TiltLevelTip">傾きをなくして水平に戻します</string>
+    <string name="PreciseCamera">数値で角度方位を指定</string>
+    <string name="PreciseCameraTip">「カメラの位置」を開きます。カメラの位置と見る先を数値で打ち込めます。</string>
+    <string name="SecFlycam">フライカム</string>
+    <string name="Flycam">フライカム（キーボードとマウス）</string>
+    <string name="FlycamTip">カメラがアバターを離れて自由に飛びます。[KEY] でも切り替えられます。</string>
+    <string name="FlycamKeys0">W A S D で移動、Space / C で上下、矢印キーで向き、ホイールで速さ、Q / E で傾き。</string>
+    <string name="FlycamKeys1">W A S D で移動、Space / C で上下。右ボタンを押しながら見回し、ホイールで速さ、Q / E で傾き。</string>
+    <string name="FlycamKeys2">W A S D で移動、Space / C で上下。マウスで見回し（Alt でカーソル）、ホイールで速さ、Q / E で傾き。</string>
+    <string name="SecGuide">構図ガイド</string>
+    <string name="SecQuality">画質</string>
+    <string name="QualityLevel">画質の段階</string>
+    <string name="QualityLevelTip">低〜超高の 7 段です。環境設定の画質スライダー、撮影ツールの「画質」タブと同じ設定です。切り替える時に少し止まります。</string>
+    <string name="QualityLevel0">低</string>
+    <string name="QualityLevel1">低〜中</string>
+    <string name="QualityLevel2">中</string>
+    <string name="QualityLevel3">中〜高</string>
+    <string name="QualityLevel4">高</string>
+    <string name="QualityLevel5">高〜超高</string>
+    <string name="QualityLevel6">超高</string>
+    <string name="SecQualityAA">アンチエイリアス</string>
+    <string name="SecQualityShading">陰影と光のにじみ</string>
+    <string name="SecQualityReflect">反射と水</string>
+    <string name="SecQualityDetail">細かさと数</string>
+    <plus_ps_box name="rail">
+        <scroll_container name="rail_scroll">
+            <panel name="rail_tabs">
+                <plus_ps_left_rail_tab name="tab_quality" label="画質" tool_tip="全体の画質と重さ: 7 段の画質、描画距離、物の細かさ、撮影時にきれいに。アンチエイリアス、陰影、反射と水、細かさ" />
+                <plus_ps_left_rail_tab name="tab_scene" label="シーン" tool_tip="場所・時刻・空と、写すものの表示" />
+                <plus_ps_left_rail_tab name="tab_avatar" label="アバター" tool_tip="自分のアバター: AO・世界の停止・目線・見え方" />
+                <plus_ps_left_rail_tab name="tab_environment" label="環境" tool_tip="水・雨と雪・霧・星・光の筋" />
+                <plus_ps_left_rail_tab name="tab_lighting" label="ライティング" tool_tip="光の向き・影・間接光" />
+                <plus_ps_left_rail_tab name="tab_pose" label="ポーズと&#10;アニメ" tool_tip="ポーザーと保存したポーズ" />
+                <plus_ps_left_rail_tab name="tab_camera" label="カメラ" tool_tip="カメラ操作・フライカム・構図ガイド" />
+                <plus_ps_left_rail_tab name="tab_effects" label="エフェクト" tool_tip="レンズフレア・光芒・グレア・霧・光の筋" />
+            </panel>
+        </scroll_container>
+        <plus_ps_left_rail_tab name="tab_conv" label="会話" tool_tip="IM とグループチャットをここで読んで返事できます。数字はまだ読んでいない数です。" />
+    </plus_ps_box>
+</panel>

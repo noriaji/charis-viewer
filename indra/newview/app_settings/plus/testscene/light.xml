@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test scene (plus/testscene, research/171). Keys: indra/newview/plus/testscene/testscenedef.cpp. The same seed and keys build the same scene. -->
+<llsd>
+<map>
+  <key>description</key>
+  <string>A light scene: a few hundred objects, for checking that the test scene works and for the cost of a quiet place.</string>
+  <key>seed</key>
+  <integer>1</integer>
+  <key>center</key>
+  <string>agent</string>
+  <key>height</key>
+  <real>60.0</real>
+  <key>radius</key>
+  <real>32.0</real>
+  <key>vertical</key>
+  <real>16.0</real>
+  <key>clusters</key>
+  <integer>0</integer>
+  <key>cluster_radius</key>
+  <real>8.0</real>
+  <key>prims</key>
+  <integer>300</integer>
+  <key>shapes</key>
+  <array><string>box</string><string>cylinder</string><string>sphere</string></array>
+  <key>size_min</key>
+  <real>0.5</real>
+  <key>size_max</key>
+  <real>3.0</real>
+  <key>textures</key>
+  <integer>48</integer>
+  <key>texture_size</key>
+  <integer>256</integer>
+  <key>texture_per_face</key>
+  <boolean>false</boolean>
+  <key>fullbright</key>
+  <real>0.0</real>
+  <key>meshes</key>
+  <integer>60</integer>
+  <key>mesh_kinds</key>
+  <integer>4</integer>
+  <key>alpha_sheets</key>
+  <integer>40</integer>
+  <key>alpha</key>
+  <real>0.5</real>
+  <key>alpha_textures</key>
+  <integer>8</integer>
+  <key>sheet_size_min</key>
+  <real>1.0</real>
+  <key>sheet_size_max</key>
+  <real>3.0</real>
+  <key>texanim</key>
+  <real>0.25</real>
+  <key>texanim_rate</key>
+  <real>0.5</real>
+</map>
+</llsd>

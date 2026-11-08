@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_shaderreload">
+	<panel.string name="preparing">シェーダーを準備しています…</panel.string>
+	<panel.string name="percent">[PERCENT]%</panel.string>
+	<panel.string name="switching">新しいシェーダーに切り替えています…</panel.string>
+	<panel.string name="failed">一部のシェーダーを準備できませんでした（詳しくはログに）</panel.string>
+</panel>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<menu label="RLVa" name="rlva_menu_items">
+	<menu label="デバッグ" name="RLVa Debug">
+		<menu_item_check label="トップレベルの RLVa メニューを表示" name="Show Top-level RLVa Menu"/>
+		<menu_item_check label="受けた命令をチャットに表示" name="Show Debug Messages"/>
+		<menu_item_check label="解除済み・重複の命令は表示しない" name="Hide Unset or Duplicate Messages"/>
+		<menu_item_check label="内部の不整合を通知する" name="Show Assertion Failures"/>
+		<menu_item_check label="@getoutfit の返事から鍵の服を外す" name="Hide Locked Layers"/>
+		<menu_item_check label="@getattach の返事から鍵の装着物を外す" name="Hide Locked Attachments"/>
+		<menu_item_check label="古い装着点の名前も受ける" name="Enable Legacy Naming"/>
+		<menu_item_check label="#RLV の外の物の着脱も許す" name="Enable Shared Wear"/>
+		<menu_item_check label="着た時に装着点を名前へ足す" name="Rename Shared Items on Wear"/>
+	</menu>
+	<menu_item_check label="(( )) の発言は通す" name="Allow OOC Chat"/>
+	<menu_item_check label="伏せた発言を「...」で出す" name="Show Filtered Chat"/>
+	<menu_item_check label="転送中も入力中を見せる" name="Show Redirected Chat Typing"/>
+	<menu_item_check label="転送する長い発言を分ける" name="Split Long Redirected Chat"/>
+	<menu_item_check label="一時装着からの命令を受ける" name="Allow Temporary Attachments"/>
+	<menu_item_check label="#RLV への受け渡しを断る" name="Forbid Give to #RLV"/>
+	<menu_item_check label="鍵の無い物は置き換えて着る" name="Wear Replaces Unlocked"/>
+</menu>

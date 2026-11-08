@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The photo tools' page "subject" (floater_plus_photo_tools.xml, research/265).
+  Avatar: the focus, the eyes to the camera and their tuning (folded at first; phototools_blocks.cpp),
+  then the rows of the tab.
+  The parts of content_subject are put under each other by the code in the order of their tops (the
+  hidden ones take no room); a block keeps its height, a column (rows_*) gets the height of its rows.
+  Blocks are 583 wide at 10, columns 597 at 0 (the content: the page less the scroll bar).
+-->
+<panel
+ name="page_subject"
+ background_visible="false"
+ follows="all"
+ height="688"
+ layout="topleft"
+ mouse_opaque="false"
+ width="612">
+    <scroll_container
+     name="scroll_subject"
+     border_visible="false"
+     follows="all"
+     height="688"
+     ignore_arrow_keys="true"
+     layout="topleft"
+     left="0"
+     opaque="false"
+     reserve_scroll_corner="false"
+     top="0"
+     width="612">
+        <panel
+         name="content_subject"
+         background_visible="false"
+         follows="left|top"
+         height="688"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="0"
+         width="597">
+            <panel
+             name="sec_focus"
+             background_visible="false"
+             follows="left|top"
+             height="94"
+             layout="topleft"
+             left="10"
+             top="0"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_focus"
+                 width="200">
+                    Focus
+                </text>
+                <radio_group
+                 follows="left|top|right"
+                 height="20"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="20"
+                 name="focus_mode"
+                 tool_tip="Where the blur (depth of field) is sharp. It follows the target when it or the camera moves.">
+                    <!-- five in one line at the window's least width (476 px for the group) -->
+                    <radio_item height="18" label="Normal"       layout="topleft" left="0"   top="0" width="70"  name="focus_normal"  value="0" tool_tip="As the viewer does it: the point you zoom in on with Alt." />
+                    <radio_item height="18" label="Under Mouse"  layout="topleft" left="74"  top="0" width="100" name="focus_cursor"  value="1" tool_tip="The point under the mouse cursor, while it is over the picture." />
+                    <radio_item height="18" label="My Face"      layout="topleft" left="178" top="0" width="76"  name="focus_self"    value="2" tool_tip="Your own avatar." />
+                    <radio_item height="18" label="Their Face"   layout="topleft" left="258" top="0" width="88"  name="focus_other"   value="3" tool_tip="Someone near you, chosen below." />
+                    <radio_item height="18" label="Clicked Spot" layout="topleft" left="350" top="0" width="120" name="focus_click"   value="4" tool_tip="Click a place of the world to focus there; click again to move it. While choosing, clicks do not touch objects. Esc stops choosing (the focus stays)." />
+                </radio_group>
+                <combo_box
+                 follows="left|top|right"
+                 height="20"
+                 layout="topleft"
+                 left="8"
+                 right="-140"
+                 top="44"
+                 name="focus_who"
+                 tool_tip="Who the focus follows (people near the camera, nearest first)" />
+                <combo_box
+                 follows="top|right"
+                 height="20"
+                 layout="topleft"
+                 right="-6"
+                 top="44"
+                 width="128"
+                 name="focus_part"
+                 tool_tip="Which part of the avatar is sharp" />
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="14"
+                 layout="topleft"
+                 left="8"
+                 right="-176"
+                 top="72"
+                 use_ellipses="true"
+                 name="focus_status">
+                    Normal focus
+                </text>
+                <button
+                 follows="top|right"
+                 height="20"
+                 label="Turn Blur On"
+                 layout="topleft"
+                 right="-6"
+                 top="68"
+                 width="164"
+                 visible="false"
+                 name="btn_focus_blur"
+                 tool_tip="Depth of field (blur) is off, so there is no focus to set. This turns it on; the viewer stops for a few seconds." />
+            </panel>
+            <panel
+             name="sec_gaze"
+             background_visible="false"
+             follows="left|top"
+             height="72"
+             layout="topleft"
+             left="10"
+             top="94"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_gaze"
+                 width="200">
+                    Eyes to the Camera
+                </text>
+                <radio_group
+                 follows="left|top|right"
+                 height="20"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="20"
+                 name="gaze_mode">
+                    <radio_item height="18" label="Normal"  layout="topleft" left="0"   top="0" width="80" name="gaze_normal"   value="0" />
+                    <radio_item height="18" label="Only Me" layout="topleft" left="84"  top="0" width="100" name="gaze_me"      value="1" />
+                    <radio_item height="18" label="Everyone" layout="topleft" left="188" top="0" width="100" name="gaze_everyone" value="2" />
+                </radio_group>
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="14"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="44"
+                 name="gaze_note">
+                    Not available in this version yet.
+                </text>
+            </panel>
+            <panel
+             name="head_gaze_adv"
+             background_visible="false"
+             follows="left|top"
+             height="24"
+             layout="topleft"
+             left="10"
+             top="166"
+             width="583">
+                <button
+                 follows="left|top|right"
+                 height="20"
+                 label="+ Eye Tuning"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="2"
+                 name="btn_toggle_gaze" />
+            </panel>
+            <panel
+             name="body_gaze_adv"
+             background_visible="false"
+             follows="left|top"
+             height="162"
+             layout="topleft"
+             left="10"
+             top="190" visible="false"
+             width="583">
+                <slider
+                 control_name="PlusGazeEyeLimit"
+                 decimal_digits="0"
+                 follows="left|top|right"
+                 height="16"
+                 increment="1"
+                 label="Eye Range"
+                 label_width="90"
+                 layout="topleft"
+                 left="4"
+                 right="-6"
+                 top="4"
+                 min_val="0"
+                 max_val="60"
+                 name="sl_gz_eye"
+                 tool_tip="How far the eyes alone may turn (degrees). 0: the head does all the turning."
+                 show_text="true" />
+                <slider
+                 control_name="PlusGazeHeadMax"
+                 decimal_digits="0"
+                 follows="left|top|right"
+                 height="16"
+                 increment="1"
+                 label="Head Range"
+                 label_width="90"
+                 layout="topleft"
+                 left="4"
+                 right="-6"
+                 top="26"
+                 min_val="0"
+                 max_val="60"
+                 name="sl_gz_head"
+                 tool_tip="How far the head may turn for what the eyes cannot reach (degrees). 0: eyes only."
+                 show_text="true" />
+                <slider
+                 control_name="PlusGazeConvergence"
+                 decimal_digits="2"
+                 follows="left|top|right"
+                 height="16"
+                 increment="0.05"
+                 label="Eyes Cross"
+                 label_width="90"
+                 layout="topleft"
+                 left="4"
+                 right="-6"
+                 top="48"
+                 min_val="0"
+                 max_val="1"
+                 name="sl_gz_conv"
+                 tool_tip="1: each eye aims at the camera from its own place (cross-eyed when close), 0: both eyes parallel."
+                 show_text="true" />
+                <slider
+                 control_name="PlusGazeEyeBiasL"
+                 decimal_digits="1"
+                 follows="left|top|right"
+                 height="16"
+                 increment="0.5"
+                 label="Left Eye Shift"
+                 label_width="90"
+                 layout="topleft"
+                 left="4"
+                 right="-6"
+                 top="70"
+                 min_val="-20"
+                 max_val="20"
+                 name="sl_gz_biasl"
+                 tool_tip="Turn the left eye sideways (degrees, + toward the avatar's left). For a mesh eye that looks outward."
+                 show_text="true" />
+                <slider
+                 control_name="PlusGazeEyeBiasR"
+                 decimal_digits="1"
+                 follows="left|top|right"
+                 height="16"
+                 increment="0.5"
+                 label="Right Eye Shift"
+                 label_width="90"
+                 layout="topleft"
+                 left="4"
+                 right="-6"
+                 top="92"
+                 min_val="-20"
+                 max_val="20"
+                 name="sl_gz_biasr"
+                 tool_tip="Turn the right eye sideways (degrees, + toward the avatar's left)."
+                 show_text="true" />
+                <check_box
+                 control_name="PlusGazeFovAdaptive"
+                 follows="left|top|right"
+                 height="16"
+                 label="Reach follows the field of view"
+                 layout="topleft"
+                 left="6"
+                 right="-6"
+                 top="116"
+                 name="chk_gz_fov"
+                 tool_tip="Wide pictures: the head turns far enough that people at the edge still look at the lens." />
+                <slider
+                 control_name="PlusGazeHeadMaxAbs"
+                 decimal_digits="0"
+                 follows="left|top|right"
+                 height="16"
+                 increment="1"
+                 label="Head Limit (wide)"
+                 label_width="90"
+                 layout="topleft"
+                 left="4"
+                 right="-6"
+                 top="138"
+                 min_val="0"
+                 max_val="60"
+                 name="sl_gz_headabs"
+                 tool_tip="The most the head may turn when the field of view raises the limit (degrees)."
+                 show_text="true" />
+            </panel>
+            <panel name="rows_subject" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="352" width="597" />
+        </panel>
+    </scroll_container>
+</panel>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="アドバンス">
+	<panel.string name="aspect_ratio_text">
+		[NUM]:[DEN]
+	</panel.string>
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_header name="h_cache" label="キャッシュ" />
+				<plus_ps_spinner name="cachesizespinner" label="キャッシュの容量（896〜32768 MB）" />
+				<plus_ps_text name="text_box5">
+					MB
+				</plus_ps_text>
+				<plus_ps_button_compat name="clear_cache" label="キャッシュを消去" label_selected="キャッシュを消去" />
+				<plus_ps_text name="Cache location">
+					キャッシュの保存先：
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_cache" label="参照…" label_selected="参照…" />
+				<plus_ps_button_compat name="default_cache_location" label="既定の場所に戻す" label_selected="既定の場所に戻す" />
+				<plus_ps_header name="h_size" label="表示の大きさ" />
+				<plus_ps_text name="UI Size:">
+					UI の大きさ：
+				</plus_ps_text>
+				<plus_ps_text name="HUD Size:">
+					HUD の大きさ：
+				</plus_ps_text>
+				<plus_ps_header name="h_login" label="ログインとメニュー" />
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="ビューワを同時に複数起動できるようにする" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="ログイン画面でグリッドを選べるようにする" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="「アドバンス」メニューを表示する" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="「開発」メニューを表示する" />
+				<plus_ps_header name="h_more" label="ほかの設定" />
+				<plus_ps_button_compat name="remembered_usernames" label="記憶したユーザー名…" />
+				<plus_ps_button_compat name="default_creation_permissions" label="新しく作る物の既定の権限…" />
+				<plus_ps_button_compat name="scripting_development" label="スクリプトの開発…" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

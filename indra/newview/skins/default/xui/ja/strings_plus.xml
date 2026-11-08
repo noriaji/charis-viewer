@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<strings>
+	<string name="Command_PlusQuickprefs_Label">
+		簡易設定
+	</string>
+	<string name="Command_PlusQuickprefs_Tooltip">
+		よく使う設定をまとめて変えられるウィンドウを開きます
+	</string>
+	<string name="Command_PlusPhotoTools_Label">
+		撮影ツール
+	</string>
+	<string name="Command_PlusPhotoTools_Tooltip">
+		撮影ツール: プリセット・空・カメラ位置・画質の設定と、撮影ボタン
+	</string>
+	<string name="Command_PlusPhotoScreen_Label">
+		撮影モード
+	</string>
+	<string name="Command_PlusPhotoScreen_Tooltip">
+		撮影モード: 画面全体を撮影用に切り替える。窓やバーは隠れ、出ると元に戻ります
+	</string>
+	<string name="PlusPhotoKeyRoll">
+		傾き [DEGREES]°
+	</string>
+	<string name="PlusPhotoKeyLevel">
+		水平
+	</string>
+	<string name="PlusPhotoKeyGuide">
+		構図ガイド: [KIND]
+	</string>
+	<string name="PlusPhotoKeyGuideOff">
+		構図ガイド: オフ
+	</string>
+	<string name="PlusCameraPathAdded">
+		カメラの点 [NUMBER] を追加
+	</string>
+	<string name="PlusCameraPathFull">
+		カメラ演出の点は 32 個までです
+	</string>
+	<string name="PlusCameraPathNoCamera">
+		まだカメラがありません
+	</string>
+	<string name="PlusFlycamSpeed">
+		フライカムの速さ ×[SPEED]
+	</string>
+	<string name="PlusCameraPathFlycam">
+		フライカムが入っています。先に切ってください。
+	</string>
+	<string name="PlusCameraPathExporting">
+		連番を撮影中です。先に止めてください。
+	</string>
+	<string name="PlusCameraPathEmpty">
+		カメラ演出に点がありません
+	</string>
+	<string name="PlusCameraPathPlaying">
+		カメラ演出: 再生
+	</string>
+	<string name="PlusCameraPathStopped">
+		カメラ演出: 停止
+	</string>
+	<string name="PlusCameraPathCount">
+		[NUMBER]
+	</string>
+	<string name="PlusCameraPathGo">
+		スタート！
+	</string>
+	<string name="PlusCameraPathExportMove">
+		撮った写真を連番のフォルダに移せませんでした
+	</string>
+	<string name="PlusCameraPathExportDone">
+		連番の写真を [FOLDER] に保存しました
+	</string>
+	<string name="PlusPhotoShotErrTake">
+		写真を撮れませんでした（メモリが足りないのかもしれません）。
+	</string>
+	<string name="PlusPhotoShotErrEncode">
+		写真を画像ファイルにできませんでした。
+	</string>
+	<string name="PlusPhotoShotErrSave">
+		写真を [PATH] に保存できませんでした。
+	</string>
+	<string name="PlusPhotoShotTooLarge">
+		写真の 1 辺は [MAX] ピクセルまでです。
+	</string>
+	<string name="PlusPhotoShotOnly4K">
+		ここでは GPU のメモリの量を読めないので、4K までの大きさだけ撮れます。
+	</string>
+	<string name="PlusPhotoShotNoMemory">
+		GPU のメモリが足りません。約 [NEEDED] GB 要りますが、空きは [FREE] GB です。
+	</string>
+	<string name="Command_PlusAO_Label">
+		AO
+	</string>
+	<string name="Command_PlusAO_Tooltip">
+		アニメーション置き換え: 立ち・歩き・座りなどの標準アニメを別のものに差し替えます
+	</string>
+	<string name="Command_PlusGroupTitles_Label">
+		グループ称号
+	</string>
+	<string name="Command_PlusGroupTitles_Tooltip">
+		アクティブなグループの称号を切り替えます。リージョンごとの自動切り替え（自動リージョン）もここで設定します
+	</string>
+	<string name="PlusGroupChatRefusedTip">
+		このグループのチャットは受け取らない設定です。グループのプロフィールの「グループチャット」で変えられます。
+	</string>
+	<string name="PlusOutfitBackupAsk">
+		前回終了時の服装が、サーバーに保存されていないようです。
+	</string>
+	<string name="PlusOutfitBackupItems">
+		・着ている物: [COUNT] 点の違い
+	</string>
+	<string name="PlusOutfitBackupOrder">
+		・着ている物: 重ね順の違い
+	</string>
+	<string name="PlusOutfitBackupPlaces">
+		・装着物の位置・回転・大きさ: [COUNT] 個の違い
+	</string>
+	<string name="PlusOutfitBackupAskQuestion">
+		前回終了時の服装に戻しますか？（「キャンセル」を押すと、今の服装のまま続けます）
+	</string>
+	<string name="PlusOutfitBackupDone">
+		前回終了時の服装に戻しました。
+	</string>
+	<string name="PlusOutfitBackupMissing">
+		インベントリにない [COUNT] 点は除きました。
+	</string>
+	<string name="PlusOutfitBackupNotPlaced">
+		[COUNT] 個の装着物は位置を戻せませんでした（着けられなかったか、改変できない物です）。
+	</string>
+	<string name="PlusOutfitBackupRlv">
+		RLV の制限のため、着たままになった物が [KEPT] 点、着られなかった物が [DROPPED] 点あります。
+	</string>
+	<string name="PlusOutfitBackupFailed">
+		着替えを戻せませんでした（サーバー側で着ている物が変わりませんでした）。控えは残してあるので、次のログインでもう一度尋ねます。それまでに着替えると、控えはその着替えで置き換わります。
+	</string>
+	<string name="PlusRadarChatEnter">
+		が声の届く範囲に入りました（[DISTANCE] m）。
+	</string>
+	<string name="PlusRadarChatLeave">
+		が声の届く範囲から出ました。
+	</string>
+	<string name="PlusRadarDrawEnter">
+		が描画距離に入りました（[DISTANCE] m）。
+	</string>
+	<string name="PlusRadarDrawLeave">
+		が描画距離から出ました。
+	</string>
+	<string name="PlusRadarRegionEnter">
+		がリージョンに入ってきました。
+	</string>
+	<string name="PlusRadarRegionEnterDistance">
+		がリージョンに入ってきました（[DISTANCE] m）。
+	</string>
+	<string name="PlusRadarRegionLeave">
+		がリージョンから出ていきました。
+	</string>
+	<string name="PlusProtectedFolderMoveRefused">
+		フォルダ「[NAME]」は保護されているので、移動も削除もしませんでした。先に保護を外してください（右クリック、または Charis メニューの「保護したフォルダ」）。
+	</string>
+	<string name="PlusProtectedFolderTrashRefused">
+		フォルダ「[NAME]」には保護したフォルダ「[INSIDE]」が入っているので、ごみ箱へ移しませんでした。先に「[INSIDE]」を外へ出すか、保護を外してください。
+	</string>
+	<string name="PlusProtectedFolderRemoveRefused">
+		フォルダ「[NAME]」には保護したフォルダ「[INSIDE]」が入っているので、削除も空にもしませんでした。先に「[INSIDE]」を外へ出すか、保護を外してください。
+	</string>
+	<string name="PlusProtectedFolderNoMoveTip">
+		保護したフォルダなので、移動できません。
+	</string>
+	<string name="PlusProtectedFolderNoTrashTip">
+		保護したフォルダ「[INSIDE]」が入っているので、ごみ箱へは移せません。
+	</string>
+	<string name="PlusProtectedFolderEmptyTrash">
+		ごみ箱に、保護したフォルダが入っています: [NAMES]。ごみ箱の中では保護が効かないので、空にすると完全に削除され、保護も外れます。ごみ箱を空にしますか？
+	</string>
+	<string name="PlusKeywordsAlert">
+		キーワード「[WORD]」: [NAME]: [TEXT]
+	</string>
+	<string name="PlusFpsStatusBarToolTip">
+		1 秒あたりのフレーム数。クリックで統計を開きます。
+	</string>
+	<string name="PlusMcpBadPort">
+		MCP サーバー: ポート [PORT]（設定 [SETTING]）は 1024〜65535 にしてください。
+	</string>
+	<string name="PlusMcpStartFailed">
+		MCP サーバーを起動できませんでした: [ERROR]。[SETTING] を変えるか、そのポートを使っているほかのプログラムを閉じてください。
+	</string>
+	<string name="PlusMcpListening">
+		MCP サーバー: [URL]
+	</string>
+	<string name="PlusMcpConnectionFile">
+		URL とトークン: [PATH]
+	</string>
+	<string name="PlusMcpCannotWrite">
+		[PATH] に書き込めませんでした
+	</string>
+	<string name="PlusMcpStopped">
+		MCP サーバーを止めました。
+	</string>
+	<string name="PlusMcpNewToken">
+		MCP: 新しいトークンを [PATH] に書きました。MCP クライアントの設定も書き換えてください。
+	</string>
+	<string name="PlusMcpNewTokenStopped">
+		MCP: 新しいトークンを作り、前のトークンは [PATH] から消しました。サーバーは止まっているので、新しいトークンはサーバーを起動した時に書きます。その時に MCP クライアントの設定を書き換えてください。
+	</string>
+	<string name="PlusMcpTokenNotWritten">
+		MCP: [PATH] に書き込めませんでした
+	</string>
+	<string name="PlusMcpTokenDropped">
+		MCP クライアントがそのポートのプログラムにトークンを送ったかもしれないので、念のため今のトークンは使わないことにしました。サーバーが起動した時に新しいトークンを [PATH] に書くので、その時に MCP クライアントの設定を書き換えてください。
+	</string>
+	<string name="PlusMcpServedElsewhere">
+		この Windows ユーザーのほかのビューワが、このポートで MCP サーバーを動かしています。[PATH] はそのままにしたので、MCP クライアントは引き続きそちらのビューワにつながります。
+	</string>
+	<string name="PlusMcpNewTokenElsewhere">
+		MCP: この Windows ユーザーのほかのビューワが、このポートで MCP サーバーを動かしています。新しいトークンはそちらのビューワで作ってください（[PATH] はそのままにしました）。
+	</string>
+	<string name="PlusInvCacheConfirm">
+		インベントリのキャッシュを消しますか？次のログインの時に消して、インベントリを全部サーバーから読み直します。そのログインはいつもより時間がかかります。インベントリの中身は消えません。
+	</string>
+	<string name="PlusInvCacheMarked">
+		次のログインの時に、インベントリのキャッシュを消します。都合のよい時にログアウトして、ログインし直してください。
+	</string>
+	<string name="PlusInvCacheLoginFirst">
+		インベントリのキャッシュはアカウントごとにあります。ログインしてから押してください。
+	</string>
+	<string name="PlusInvCacheNotWritten">
+		インベントリのキャッシュを消す印を付けられませんでした（キャッシュのフォルダに書き込めません）。
+	</string>
+	<string name="PlusTtsSampleMale">
+		こんにちは、男性の声の試し読みです。
+	</string>
+	<string name="PlusTtsSampleFemale">
+		こんにちは、女性の声の試し読みです。
+	</string>
+	<string name="PlusTtsSampleNeutral">
+		性別がわからない人の声は、こうなります。
+	</string>
+	<string name="PlusTtsUnknownUser">
+		ユーザー
+	</string>
+	<string name="PlusTtsLink">
+		リンク
+	</string>
+	<string name="PlusTtsRestLeftOut">
+		。以下省略
+	</string>
+	<string name="PlusTtsNameAndText">
+		[NAME]、[TEXT]
+	</string>
+  <!-- keeps the official LLSettingsDictionary label lookup from logging "Missing String" -->
+  <string name="sky">sky</string>
+  <string name="water">water</string>
+  <string name="day">day</string>
+	<string name="PlusTimeConvClockHint">クリックで時刻を変換（SL・世界標準時・日本時間など）</string>
+	<string name="PlusPsResetDefault">既定値に戻す</string>
+	<string name="PhotoScreenDetail_Tab_focus">
+		ピント
+	</string>
+	<string name="PhotoScreenDetail_Tab_camera">
+		カメラ
+	</string>
+	<string name="PhotoScreenDetail_Tab_color">
+		光と色
+	</string>
+	<string name="PhotoScreenDetail_Tab_sky">
+		空と水
+	</string>
+	<string name="PhotoScreenDetail_Tab_avatar">
+		アバター
+	</string>
+	<string name="PhotoScreenDetail_Tab_save">
+		保存
+	</string>
+	<string name="PhotoScreenDetail_Sec_camera">
+		カメラ
+	</string>
+	<string name="PhotoScreenDetail_Sec_exposure">
+		露出と階調
+	</string>
+	<string name="PhotoScreenDetail_Sec_color">
+		カラー
+	</string>
+	<string name="PhotoScreenDetail_Sec_effects">
+		エフェクト
+	</string>
+	<string name="PhotoScreenDetail_Sec_output">
+		出力
+	</string>
+	<string name="PhotoScreenDetail_FocalLength">
+		焦点距離 (mm)
+	</string>
+	<string name="PhotoScreenDetail_FocalLengthTip">
+		画角を 35mm 判のレンズの焦点距離で表したもの（ビューワの画角と同じ）
+	</string>
+	<string name="PhotoScreenDetail_ShotSize">
+		写真の大きさ
+	</string>
+	<string name="PhotoScreenDetail_ShotAspect">
+		写真の縦横比
+	</string>
+	<string name="PhotoScreenDetail_ChipSize0">
+		窓と同じ
+	</string>
+	<string name="PhotoScreenDetail_ChipSize1">
+		2K
+	</string>
+	<string name="PhotoScreenDetail_ChipSize2">
+		4K
+	</string>
+	<string name="PhotoScreenDetail_ChipSize3">
+		6K
+	</string>
+	<string name="PhotoScreenDetail_ChipSize4">
+		8K
+	</string>
+	<string name="PhotoScreenDetail_Aspect0">
+		自由
+	</string>
+	<string name="PhotoScreenDetail_Aspect1">
+		16:9
+	</string>
+	<string name="PhotoScreenDetail_Aspect2">
+		3:2
+	</string>
+	<string name="PhotoScreenDetail_Aspect3">
+		4:3
+	</string>
+	<string name="PhotoScreenDetail_Aspect4">
+		1:1
+	</string>
+	<string name="PhotoScreenDetail_Aspect5">
+		9:16
+	</string>
+	<string name="PhotoScreenDetail_Aspect6">
+		2:3
+	</string>
+	<string name="PhotoScreenDetail_Gaze">
+		カメラ目線
+	</string>
+	<string name="PhotoScreenDetail_Gaze0">
+		標準
+	</string>
+	<string name="PhotoScreenDetail_Gaze1">
+		自分だけ
+	</string>
+	<string name="PhotoScreenDetail_Gaze2">
+		全員
+	</string>
+	<string name="PhotoScreenDetail_Freeze">
+		世界を止める
+	</string>
+	<string name="PhotoScreenDetail_FreezeTip">
+		世界の動きを止めて、構図を決めやすくします。もう一度押すと動き出します
+	</string>
+	<string name="PhotoScreenDetail_Open360">
+		360° 撮影...
+	</string>
+	<string name="PhotoScreenDetail_OpenTools">
+		撮影ツールを開く...
+	</string>
+	<string name="PhotoScreenDetail_GridOff">
+		グリッドなし
+	</string>
+	<string name="PhotoScreenDetail_Grid1">
+		三分割
+	</string>
+	<string name="PhotoScreenDetail_Grid2">
+		黄金比
+	</string>
+	<string name="PhotoScreenDetail_Grid3">
+		中央十字
+	</string>
+	<string name="PhotoScreenDetail_Grid4">
+		対角線
+	</string>
+	<string name="PhotoScreenDetail_Grid5">
+		4 分割
+	</string>
+	<string name="PhotoScreenDetail_Grid6">
+		6 分割
+	</string>
+	<string name="PhotoScreenDetail_Grid7">
+		水平線
+	</string>
+	<string name="PhotoScreenDetail_LookNone">
+		ルックなし
+	</string>
+	<string name="PhotoScreenDetail_LookChip">
+		ルック: [NAME]
+	</string>
+	<string name="PhotoScreenDetail_PartEyes">
+		目
+	</string>
+	<string name="PhotoScreenDetail_PartChest">
+		胸
+	</string>
+	<string name="PhotoScreenDetail_PartBody">
+		全身
+	</string>
+	<string name="PhotoScreenDetail_Nobody">
+		（相手を選んでください）
+	</string>
+	<string name="PhotoScreenDetail_FrameLocked">
+		[WHO] ・ [PART] ・ [DIST] m
+	</string>
+	<string name="PhotoScreenDetail_FrameSelf">
+		自分 ・ [PART] ・ [DIST] m
+	</string>
+	<string name="PhotoScreenDetail_FrameCursor">
+		カーソルの下
+	</string>
+	<string name="PhotoScreenDetail_Readout">
+		F [F]   1/[SHUTTER]   ISO [ISO]   [MM] mm
+	</string>
+	<string name="PhotoScreenDetail_Preset_portrait">
+		ポートレート
+	</string>
+	<string name="PhotoScreenDetail_Preset_backlight">
+		逆光
+	</string>
+	<string name="PhotoScreenDetail_Preset_sunset">
+		夕景
+	</string>
+	<string name="PhotoScreenDetail_Preset_night">
+		夜景
+	</string>
+	<string name="PhotoScreenDetail_Preset_studio">
+		スタジオ
+	</string>
+	<string name="PhotoScreenDetail_Preset_natural">
+		自然光
+	</string>
+	<string name="PhotoScreenDetail_EmptyCamera">
+		このリージョンには、保存したカメラ位置がまだありません。右のボタンで今の位置を保存できます。
+	</string>
+	<string name="PhotoScreenDetail_EmptyPose">
+		ポーズがまだありません。ポーズはポーザーで作って保存します。右のボタンでポーザーが開きます。
+	</string>
+	<string name="PhotoScreenDetail_EmptyMy">
+		自分のプリセットがまだありません。右のボタンで今の設定を保存できます。
+	</string>
+	<string name="PhotoScreenDetail_OpenPoser">
+		ポーザーを開く
+	</string>
+	<string name="PhotoScreenDetail_NameMy">
+		マイプリセット [N]
+	</string>
+	<string name="PhotoScreenDetail_CardTip">
+		[NAME]
+	</string>
+	<string name="PhotoScreenDetail_CardDelete">
+		このプリセットを削除
+	</string>
+	<string name="PhotoScreenDetail_ChatTip">
+		Enter で近くのチャットに発言します
+	</string>
+	<string name="PhotoScreenDetail_ChatMe">
+		[NAME][TEXT]
+	</string>
+	<!-- shortcutbar: ナビゲーションバーの下の行（plus/shortcutbar） -->
+	<string name="PlusShortcutBarEmpty">メニューの項目を右クリックして「ショートカットバーに追加」を選ぶと、ここに並びます</string>
+	<string name="PlusShortcutBarMore">続き ▼</string>
+	<string name="PlusShortcutBarNotSaved">ショートカットバーの保存ファイルが読めず、退避もできなかったため、今回のバーの変更は保存されません（詳しくはログ）。</string>
+	<string name="PlusSLURLOtherViewer">ブラウザの secondlife:// のリンクは、このビューワではなく [NAME] で開く設定になっています。このビューワで開くには、［環境設定］→［セットアップ］の［このビューワで開く］を押してください。</string>
+	<string name="PlusSLURLNotRegistered">ブラウザの secondlife:// のリンクを開くビューワが登録されていません。このビューワで開くには、［環境設定］→［セットアップ］の［このビューワで開く］を押してください。</string>
+	<string name="PlusSLURLOtherCharis">別のフォルダの Charis Viewer</string>
+	<!-- gamecontrol-ja: the "Active mode" line of Preferences > Game Controls (llpanelpreferencegamecontrol.cpp) -->
+	<string name="GameControlActiveMode">今のモード: [MODE]</string>
+	<string name="GameControlModeAvatar">アバターの移動</string>
+	<string name="GameControlModeMouselook">一人称視点</string>
+	<string name="GameControlModeFlycam">フライカム</string>
+	<string name="GameControlModeSitting">座っている</string>
+	<string name="GameControlModeCursor">マウスカーソル</string>
+	<string name="GameControlModeNone">なし</string>
+	<!-- rlv (RLVa, research/248) -->
+	<string name="RLVaPendingRestart">（再起動後に反映）</string>
+	<string name="RLVaToggleMessageLogin">RLVa を[STATE]にしました（再起動は不要です）</string>
+	<string name="RLVaToggleMessageRestart">再起動すると RLVa が[STATE]になります</string>
+	<string name="RLVaToggleEnabled">有効</string>
+	<string name="RLVaToggleDisabled">無効</string>
+	<string name="RLVaStatusDisabled">（無効）</string>
+	<string name="AboutPositionRLVShowLoc">あなたは、[REGION]にいます。
+[SERVER_VERSION]
+[SERVER_RELEASE_NOTES_URL]</string>
+	<string name="AboutRLV">RestrainedLove API：[RLV_VERSION]</string>
+	<string name="inventory_item_offered_rlv">[NAME] にインベントリのアイテムを渡しました</string>
+</strings>

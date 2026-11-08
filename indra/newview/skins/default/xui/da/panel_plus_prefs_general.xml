@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_general.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="general_panel" label="Generelt">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="general_scroll">
+            <panel name="general_scroll_panel">
+                <plus_ps_text name="language_textbox">
+                    Sprog:
+                </plus_ps_text>
+                <plus_ps_combo name="language_combobox">
+                    <plus_ps_combo.item name="English" label="English (Engelsk)" />
+                    <plus_ps_combo.item name="Danish" label="Dansk - Beta" />
+                    <plus_ps_combo.item name="Deutsch(German)" label="Deutsch (Tysk) - Beta" />
+                    <plus_ps_combo.item name="Spanish" label="Español (Spansk) - Beta" />
+                    <plus_ps_combo.item name="French" label="Français (Fransk) - Beta" />
+                    <plus_ps_combo.item name="Polish" label="Polski (Polsk) - Beta" />
+                    <plus_ps_combo.item name="Portugese" label="Português (Portugisisk) - Beta" />
+                    <plus_ps_combo.item name="(Japanese)" label="日本語 (Japansk) - Beta" />
+                </plus_ps_combo>
+                <plus_ps_text name="language_textbox2">
+                    (Kræver genstart)
+                </plus_ps_text>
+                <plus_ps_text name="maturity_desired_prompt">
+                    Jeg ønsker adgang til inhold med rating:
+                </plus_ps_text>
+                <plus_ps_combo name="maturity_desired_combobox">
+                    <plus_ps_combo.item name="Desired_Adult" label="PG, Mature og Adult" />
+                    <plus_ps_combo.item name="Desired_Mature" label="PG og Mature" />
+                    <plus_ps_combo.item name="Desired_PG" label="PG" />
+                </plus_ps_combo>
+                <plus_ps_text name="name_tags_textbox">
+                    Navneskilte:
+                </plus_ps_text>
+                <plus_ps_radio name="Name_Tag_Preference">
+                    <radio_item name="radio" label="Skjul" />
+                    <radio_item name="radio2" label="Vis" />
+                    <radio_item name="radio3" label="Vis et øjeblik" />
+                </plus_ps_radio>
+                <plus_ps_check_compat name="show_my_name_checkbox1" label="Mit navn" />
+                <plus_ps_check_compat name="show_slids" label="Brugernavne" tool_tip="Vis brugernavne, som bobsmith123" />
+                <plus_ps_check_compat name="display_names_check" label="Vis visningsnavne" tool_tip="Vælg for at bruge visningsnavne i chat, IM, navne-tags m.v." />
+                <plus_ps_check_compat name="show_friends" label="Fremhæv venner" tool_tip="Fremhæv navne-tags for dine venner" />
+                <plus_ps_text name="inworld_typing_rg_label">
+                    Trykker bogstav taster:
+                </plus_ps_text>
+                <plus_ps_radio name="inworld_typing_preference">
+                    <radio_item name="radio_start_chat" label="Starter lokal chat" />
+                    <radio_item name="radio_move" label="Påvirker bevægelse (f.eks. WASD)" />
+                </plus_ps_radio>
+                <plus_ps_text name="title_afk_text">
+                    Tid inden "væk":
+                </plus_ps_text>
+                <plus_ps_combo name="afk" label="Timeout før 'væk':">
+                    <plus_ps_combo.item name="item0" label="2 minutter" />
+                    <plus_ps_combo.item name="item1" label="5 minutter" />
+                    <plus_ps_combo.item name="item2" label="10 minutter" />
+                    <plus_ps_combo.item name="item3" label="30 minutter" />
+                    <plus_ps_combo.item name="item4" label="aldrig" />
+                </plus_ps_combo>
+                <plus_ps_text name="text_box3">
+                    Optaget autosvar:
+                </plus_ps_text>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

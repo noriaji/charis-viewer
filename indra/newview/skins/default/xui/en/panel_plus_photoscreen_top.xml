@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The chips over the world of the detailed photo screen (research/221 8.): look, size, shape and composition lines, at the
+  world's top left (photodetail_center.cpp places the panel; the code fills the lists and fits each chip to its text).
+  The look and the size, the shape and the lines open their lists with a click. The panel takes no mouse between the chips.
+-->
+<panel
+ background_visible="false"
+ follows="left|top|right"
+ height="40"
+ layout="topleft"
+ left="0"
+ top="900"
+ mouse_opaque="false"
+ name="plus_photoscreen_top"
+ width="800">
+    <plus_ps_row
+     follows="left|top|right"
+     height="40"
+     layout="topleft"
+     left="0"
+     name="chips"
+     spacing="10"
+     top="0"
+     width="800">
+        <plus_ps_chip_combo follows="left|top" height="40" icon="film" chevron="true" layout="topleft" left="0" top="0" width="150" name="chip_look" tool_tip="Look (color grading)" />
+        <plus_ps_chip_combo follows="left|top" height="40" icon="resolution" layout="topleft" left="160" top="0" width="90" name="chip_res" tool_tip="Size of the photo" />
+        <plus_ps_chip_combo follows="left|top" height="40" icon="ratio" layout="topleft" left="260" top="0" width="100" name="chip_aspect" tool_tip="Shape of the photo; the world is shown in this shape" />
+        <plus_ps_chip_combo follows="left|top" height="40" icon="grid" chevron="true" layout="topleft" left="370" top="0" width="110" name="chip_grid" tool_tip="Composition lines" />
+    </plus_ps_row>
+</panel>

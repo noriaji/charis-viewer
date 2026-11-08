@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_colors.xml, by name. -->
+<panel label="Renkler" name="colors_panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="colors_scroll">
+			<panel name="colors_scroll_panel">
+				<plus_ps_text name="effects_color_textbox">
+					Efektlerim (seçim ışını):
+				</plus_ps_text>
+				<plus_ps_box name="glass_effect_color_swatch">
+					<color_swatch tool_tip="Renk Seçiciyi açmak için tıklayın" name="effect_color_swatch"/>
+				</plus_ps_box>
+				<plus_ps_text name="font_colors">
+					Sohbet font renkleri:
+				</plus_ps_text>
+				<plus_ps_text name="text_box1">
+					Ben
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					Diğerleri
+				</plus_ps_text>
+				<plus_ps_text name="text_box3">
+					Nesneler
+				</plus_ps_text>
+				<plus_ps_text name="text_box4">
+					Sistem
+				</plus_ps_text>
+				<plus_ps_text name="text_box5">
+					Hatalar
+				</plus_ps_text>
+				<plus_ps_text name="text_box10">
+					Doğrudan
+				</plus_ps_text>
+				<plus_ps_text name="text_box7">
+					Sahip
+				</plus_ps_text>
+				<plus_ps_text name="text_box9">
+					URL'ler
+				</plus_ps_text>
+				<plus_ps_text name="bubble_chat">
+					Ad etiketinin arka plan rengi (ayrıca Balon Sohbeti de etkiler):
+				</plus_ps_text>
+				<plus_ps_box name="glass_background">
+					<color_swatch tool_tip="Ad etiketi rengini seç" name="background"/>
+				</plus_ps_box>
+				<plus_ps_slider_compat label="Geçirgenlik:" tool_tip="Ad etiketi geçirgenliğini seç" name="bubble_chat_opacity"/>
+				<plus_ps_text name="floater_opacity">
+					Gezdirici Geçirgenliği:
+				</plus_ps_text>
+				<plus_ps_slider_compat label="Etkin:" name="active"/>
+				<plus_ps_slider_compat label="Etkin değil:" name="inactive"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

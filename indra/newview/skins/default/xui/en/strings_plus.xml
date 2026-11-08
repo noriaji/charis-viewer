@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+  Strings of the features ported from other viewers (indra/newview/plus/). Read after
+  strings.xml (llappviewer.cpp, an official-file hook); the other languages' files override
+  these by name, as they do strings.xml.
+-->
+<strings>
+  <!-- quickprefs: the toolbar button (app_settings/commands_plus.xml) -->
+  <string name="Command_PlusQuickprefs_Label">Quick prefs</string>
+  <string name="Command_PlusQuickprefs_Tooltip">Quick preferences for changing often used settings</string>
+  <!-- photomode: the toolbar button (app_settings/commands_plus.xml) -->
+  <string name="Command_PlusPhotoTools_Label">Photo tools</string>
+  <string name="Command_PlusPhotoTools_Tooltip">Photo tools: presets, sky, camera positions, picture settings and the photo button</string>
+  <!-- photoscreen: the toolbar button (app_settings/commands_plus.xml) and the photo tools' button -->
+  <string name="Command_PlusPhotoScreen_Label">Photo screen</string>
+  <string name="Command_PlusPhotoScreen_Tooltip">Photo screen: the whole window for taking pictures; the windows and bars go away and come back when you leave</string>
+  <!-- photomode: what the keys of the photo tools did, shown for a moment over the screen (plus/photomode/photokeys.cpp) -->
+  <string name="PlusPhotoKeyRoll">Tilt [DEGREES]°</string>
+  <string name="PlusPhotoKeyLevel">Level</string>
+  <string name="PlusPhotoKeyGuide">Guide: [KIND]</string>
+  <string name="PlusPhotoKeyGuideOff">Guide: off</string>
+  <!-- camerapath: what the keys of the camera path did, shown for a moment over the screen (plus/camerapath/camerapath.cpp) -->
+  <string name="PlusCameraPathAdded">Camera point [NUMBER] added</string>
+  <string name="PlusCameraPathFull">The camera path has the most points it can (32)</string>
+  <string name="PlusCameraPathNoCamera">There is no camera yet</string>
+  <string name="PlusCameraPathFlycam">The flycam is on. Turn it off first.</string>
+  <string name="PlusFlycamSpeed">Flycam speed x[SPEED]</string>
+  <string name="PlusCameraPathExporting">Frames are being taken. Stop that first.</string>
+  <string name="PlusCameraPathEmpty">The camera path has no points</string>
+  <string name="PlusCameraPathPlaying">Camera path: playing</string>
+  <string name="PlusCameraPathStopped">Camera path: stopped</string>
+  <string name="PlusCameraPathCount">[NUMBER]</string>
+  <string name="PlusCameraPathGo">Go!</string>
+  <string name="PlusCameraPathExportMove">A picture could not be moved into the folder of the frames.</string>
+  <string name="PlusCameraPathExportDone">The pictures of the frames are in [FOLDER]</string>
+  <!-- photomode: why a picture of the photo button was not taken or cannot be (plus/photomode/photoshot.cpp) -->
+  <string name="PlusPhotoShotErrTake">The picture could not be taken (not enough memory?).</string>
+  <string name="PlusPhotoShotErrEncode">The picture could not be encoded.</string>
+  <string name="PlusPhotoShotErrSave">The picture could not be saved to [PATH]</string>
+  <string name="PlusPhotoShotTooLarge">The viewer takes at most [MAX] pixels on a side.</string>
+  <string name="PlusPhotoShotOnly4K">The GPU memory cannot be read here, so only sizes up to 4K are allowed.</string>
+  <string name="PlusPhotoShotNoMemory">Not enough GPU memory: about [NEEDED] GB are needed, [FREE] GB are free.</string>
+  <!-- ao: the toolbar button (app_settings/commands_plus.xml) -->
+  <string name="Command_PlusAO_Label">AO</string>
+  <string name="Command_PlusAO_Tooltip">Animation overrider: replaces your stand, walk, sit and other default animations</string>
+  <!-- grouptitles: the toolbar button (app_settings/commands_plus.xml) -->
+  <string name="Command_PlusGroupTitles_Label">Group Titles</string>
+  <string name="Command_PlusGroupTitles_Tooltip">Change active group tag, and the one used in each region (Auto Region)</string>
+  <!-- groupwhitelist: the tip when the chat of a refused group is opened -->
+  <string name="PlusGroupChatRefusedTip">You have set this group's chat not to be received. Change it under "Group chat" in the group's profile.</string>
+  <!-- outfitbackup: the question at login and the result -->
+  <string name="PlusOutfitBackupAsk">What you wore at the end of your last session does not seem to have been saved on the server.</string>
+  <string name="PlusOutfitBackupItems">- Worn items: [COUNT] different</string>
+  <string name="PlusOutfitBackupOrder">- Worn items: the layer order differs</string>
+  <string name="PlusOutfitBackupPlaces">- Position, rotation or size of attachments: [COUNT] different</string>
+  <string name="PlusOutfitBackupAskQuestion">Put it back as it was at the end of the last session? (Cancel keeps what you wear now.)</string>
+  <string name="PlusOutfitBackupDone">Your outfit was put back as it was at the end of the last session.</string>
+  <string name="PlusOutfitBackupMissing">[COUNT] item(s) no longer in your inventory were left out.</string>
+  <string name="PlusOutfitBackupNotPlaced">[COUNT] attachment(s) could not be put back in place (not worn, or not modifiable).</string>
+  <string name="PlusOutfitBackupRlv">RLV restrictions: [KEPT] worn item(s) stayed on, [DROPPED] item(s) were not worn.</string>
+  <string name="PlusOutfitBackupFailed">Your outfit could not be put back: the server did not change what you wear. The copy is kept, and you will be asked again at your next login. If you change what you wear before then, that replaces the copy.</string>
+  <!-- radar: the lines in the nearby chat; each follows the link that shows the resident's name (plus/radar/radar.cpp) -->
+  <string name="PlusRadarChatEnter">entered chat range ([DISTANCE] m).</string>
+  <string name="PlusRadarChatLeave">left chat range.</string>
+  <string name="PlusRadarDrawEnter">entered draw distance ([DISTANCE] m).</string>
+  <string name="PlusRadarDrawLeave">left draw distance.</string>
+  <string name="PlusRadarRegionEnter">entered the region.</string>
+  <string name="PlusRadarRegionEnterDistance">entered the region ([DISTANCE] m).</string>
+  <string name="PlusRadarRegionLeave">left the region.</string>
+  <!-- protectedfolders: shown when a protected folder is refused a delete or move (plus/protectedfolders) -->
+  <string name="PlusProtectedFolderMoveRefused">The folder "[NAME]" is protected, so it was not moved or deleted. Unprotect it first (right-click it, or Charis > Protected Folders).</string>
+  <string name="PlusProtectedFolderTrashRefused">The folder "[NAME]" holds the protected folder "[INSIDE]", so it was not moved to the Trash. Move "[INSIDE]" out of it or unprotect it first.</string>
+  <string name="PlusProtectedFolderRemoveRefused">The folder "[NAME]" holds the protected folder "[INSIDE]", so it was not deleted or emptied. Move "[INSIDE]" out of it or unprotect it first.</string>
+  <string name="PlusProtectedFolderNoMoveTip">This folder is protected: it cannot be moved.</string>
+  <string name="PlusProtectedFolderNoTrashTip">It holds the protected folder "[INSIDE]": it cannot go to the Trash.</string>
+  <string name="PlusProtectedFolderEmptyTrash">The Trash holds folders you protected: [NAMES]. Protection does not hold in the Trash, so emptying it deletes them for good, and they are no longer protected. Empty the Trash?</string>
+  <!-- keywords: the notice on the screen (PlusKeywordsToast) -->
+  <string name="PlusKeywordsAlert">Keyword "[WORD]": [NAME]: [TEXT]</string>
+  <!-- fpscorner: the tooltip of the FPS in the status bar (plus/fpscorner) -->
+  <string name="PlusFpsStatusBarToolTip">Frames per second. Click to open Statistics.</string>
+  <!-- posermcp: the notices of the MCP server (plus/posermcp) -->
+  <string name="PlusMcpBadPort">MCP server: the port [PORT] (setting [SETTING]) must be between 1024 and 65535.</string>
+  <string name="PlusMcpStartFailed">MCP server could not start: [ERROR]. Change [SETTING] or close the program using that port.</string>
+  <string name="PlusMcpListening">MCP server: [URL]</string>
+  <string name="PlusMcpConnectionFile">URL and token: [PATH]</string>
+  <string name="PlusMcpCannotWrite">Could not write [PATH]</string>
+  <string name="PlusMcpStopped">MCP server stopped.</string>
+  <string name="PlusMcpNewToken">MCP: new token written to [PATH]. Update your MCP client settings.</string>
+  <string name="PlusMcpNewTokenStopped">MCP: a new token was made, and the old one was taken out of [PATH]. The server is stopped: the new token is written there when it starts; update your MCP client settings then.</string>
+  <string name="PlusMcpTokenNotWritten">MCP: could not write [PATH]</string>
+  <string name="PlusMcpTokenDropped">The token was revoked, in case your MCP client sent it to the program on that port. A new one is written to [PATH] when the server starts; update your MCP client settings then.</string>
+  <string name="PlusMcpServedElsewhere">Another viewer of this Windows user is running the MCP server on this port: [PATH] is left as it is, and your MCP client keeps using that viewer.</string>
+  <string name="PlusMcpNewTokenElsewhere">MCP: another viewer of this Windows user is running the MCP server on this port. Make the new token in that viewer ([PATH] is left as it is).</string>
+  <!-- invcache: Preferences > Advanced > Clear Inventory Cache (plus/invcache) -->
+  <string name="PlusInvCacheConfirm">Clear the inventory cache? It is deleted at your next login, and the whole inventory is loaded from the server again, so that login takes longer than usual. Nothing in your inventory is deleted.</string>
+  <string name="PlusInvCacheMarked">The inventory cache will be deleted at your next login. Log out and log in again when you are ready.</string>
+  <string name="PlusInvCacheLoginFirst">The inventory cache is kept for each account: log in first, then press the button.</string>
+  <string name="PlusInvCacheNotWritten">Could not mark the inventory cache for deletion (the cache folder could not be written).</string>
+  <!-- Text to speech: the sample read by the Try button -->
+  <string name="PlusTtsSampleMale">Hello, this is how the male voice sounds.</string>
+  <string name="PlusTtsSampleFemale">Hello, this is how the female voice sounds.</string>
+  <string name="PlusTtsSampleNeutral">And this is the voice for people whose gender is not known.</string>
+  <!-- Text to speech: words said in place of what cannot be read as it is, in the viewer's language -->
+  <string name="PlusTtsUnknownUser">someone</string>
+  <string name="PlusTtsLink">link</string>
+  <string name="PlusTtsRestLeftOut">. The rest is left out.</string>
+  <string name="PlusTtsNameAndText">[NAME], [TEXT]</string>
+  <!-- keeps the official LLSettingsDictionary label lookup from logging "Missing String" -->
+  <string name="sky">sky</string>
+  <string name="water">water</string>
+  <string name="day">day</string>
+  <!-- timeconv: added to the tool tip of the status bar clock -->
+  <string name="PlusTimeConvClockHint">Click to convert the time (SL / UTC / local)</string>
+  <!-- psui: the tip of a slider's "D" button (plus/photoscreen/psui/pswidgets.cpp, research/272) -->
+  <string name="PlusPsResetDefault">Reset to default</string>
+  <!-- photoscreen-detail: the detailed photo screen's panels (plus/photoscreen/photodetail.cpp) -->
+  <string name="PhotoScreenDetail_Tab_focus">Focus</string>
+  <string name="PhotoScreenDetail_Tab_camera">Camera</string>
+  <string name="PhotoScreenDetail_Tab_color">Light &amp; Color</string>
+  <string name="PhotoScreenDetail_Tab_sky">Sky &amp; Water</string>
+  <string name="PhotoScreenDetail_Tab_avatar">Avatar</string>
+  <string name="PhotoScreenDetail_Tab_save">Save</string>
+  <string name="PhotoScreenDetail_Sec_camera">Camera</string>
+  <string name="PhotoScreenDetail_Sec_exposure">Exposure &amp; Tone</string>
+  <string name="PhotoScreenDetail_Sec_color">Color</string>
+  <string name="PhotoScreenDetail_Sec_effects">Effects</string>
+  <string name="PhotoScreenDetail_Sec_output">Output</string>
+  <string name="PhotoScreenDetail_FocalLength">Focal length (mm)</string>
+  <string name="PhotoScreenDetail_FocalLengthTip">The angle of view as a 35 mm lens gives it (the viewer's Field of View)</string>
+  <string name="PhotoScreenDetail_ShotSize">Photo size</string>
+  <string name="PhotoScreenDetail_ShotAspect">Photo shape</string>
+  <string name="PhotoScreenDetail_ChipSize0">Window</string>
+  <string name="PhotoScreenDetail_ChipSize1">2K</string>
+  <string name="PhotoScreenDetail_ChipSize2">4K</string>
+  <string name="PhotoScreenDetail_ChipSize3">6K</string>
+  <string name="PhotoScreenDetail_ChipSize4">8K</string>
+  <string name="PhotoScreenDetail_Aspect0">Free</string>
+  <string name="PhotoScreenDetail_Aspect1">16:9</string>
+  <string name="PhotoScreenDetail_Aspect2">3:2</string>
+  <string name="PhotoScreenDetail_Aspect3">4:3</string>
+  <string name="PhotoScreenDetail_Aspect4">1:1</string>
+  <string name="PhotoScreenDetail_Aspect5">9:16</string>
+  <string name="PhotoScreenDetail_Aspect6">2:3</string>
+  <string name="PhotoScreenDetail_Gaze">Eyes to the camera</string>
+  <string name="PhotoScreenDetail_Gaze0">Normal</string>
+  <string name="PhotoScreenDetail_Gaze1">Only me</string>
+  <string name="PhotoScreenDetail_Gaze2">Everyone</string>
+  <string name="PhotoScreenDetail_Freeze">Stop the world</string>
+  <string name="PhotoScreenDetail_FreezeTip">Stops movement in the world so a moment can be framed; the next press lets it go on</string>
+  <string name="PhotoScreenDetail_Open360">360° photo...</string>
+  <string name="PhotoScreenDetail_OpenTools">Open the photo tools...</string>
+  <string name="PhotoScreenDetail_GridOff">Grid: off</string>
+  <string name="PhotoScreenDetail_Grid1">Thirds</string>
+  <string name="PhotoScreenDetail_Grid2">Golden ratio</string>
+  <string name="PhotoScreenDetail_Grid3">Center cross</string>
+  <string name="PhotoScreenDetail_Grid4">Diagonals</string>
+  <string name="PhotoScreenDetail_Grid5">4 x 4</string>
+  <string name="PhotoScreenDetail_Grid6">6 x 6</string>
+  <string name="PhotoScreenDetail_Grid7">Horizon</string>
+  <string name="PhotoScreenDetail_LookNone">No look</string>
+  <string name="PhotoScreenDetail_LookChip">Look: [NAME]</string>
+  <string name="PhotoScreenDetail_PartEyes">Eyes</string>
+  <string name="PhotoScreenDetail_PartChest">Chest</string>
+  <string name="PhotoScreenDetail_PartBody">Whole body</string>
+  <string name="PhotoScreenDetail_Nobody">(choose someone)</string>
+  <string name="PhotoScreenDetail_FrameLocked">[WHO] · [PART] · [DIST] m</string>
+  <string name="PhotoScreenDetail_FrameSelf">You · [PART] · [DIST] m</string>
+  <string name="PhotoScreenDetail_FrameCursor">Under the cursor</string>
+  <string name="PhotoScreenDetail_Readout">F [F]   1/[SHUTTER]   ISO [ISO]   [MM] mm</string>
+  <string name="PhotoScreenDetail_Preset_portrait">Portrait</string>
+  <string name="PhotoScreenDetail_Preset_backlight">Backlight</string>
+  <string name="PhotoScreenDetail_Preset_sunset">Sunset</string>
+  <string name="PhotoScreenDetail_Preset_night">Night</string>
+  <string name="PhotoScreenDetail_Preset_studio">Studio</string>
+  <string name="PhotoScreenDetail_Preset_natural">Natural light</string>
+  <string name="PhotoScreenDetail_EmptyCamera">No camera positions saved in this region yet. Save the view now with the button at the right.</string>
+  <string name="PhotoScreenDetail_EmptyPose">No poses yet. Poses are made and saved in the poser; the button at the right opens it.</string>
+  <string name="PhotoScreenDetail_EmptyMy">No presets of your own yet. Save the current settings with the button at the right.</string>
+  <string name="PhotoScreenDetail_OpenPoser">Open the poser</string>
+  <string name="PhotoScreenDetail_NameMy">My preset [N]</string>
+  <string name="PhotoScreenDetail_CardTip">[NAME]</string>
+  <string name="PhotoScreenDetail_CardDelete">Delete this preset</string>
+  <string name="PhotoScreenDetail_ChatTip">Press Enter to say it in the nearby chat</string>
+  <string name="PhotoScreenDetail_ChatMe">[NAME][TEXT]</string>
+  <!-- shortcutbar: the row under the navigation bar (plus/shortcutbar) -->
+  <string name="PlusShortcutBarEmpty">Right-click an item in a menu and choose "Add to the Shortcut Bar" to put it here</string>
+  <string name="PlusShortcutBarMore">More ▼</string>
+  <string name="PlusShortcutBarNotSaved">The Shortcut Bar's list file could not be read and could not be put aside, so changes to the bar are not saved this time (see the log).</string>
+  <!-- slurlhandler: the notice at start (plus/slurlhandler, PlusSLURLCheckAtStart) -->
+  <string name="PlusSLURLOtherViewer">secondlife:// links from the browser open in [NAME], not in this viewer. To open them here: Preferences &gt; Setup, "Open them with this viewer".</string>
+  <string name="PlusSLURLNotRegistered">No viewer opens secondlife:// links from the browser. To open them here: Preferences &gt; Setup, "Open them with this viewer".</string>
+  <string name="PlusSLURLOtherCharis">a Charis Viewer in another folder</string>
+  <!-- gamecontrol-ja: the "Active mode" line of Preferences > Game Controls (llpanelpreferencegamecontrol.cpp) -->
+  <string name="GameControlActiveMode">Active mode: [MODE]</string>
+  <string name="GameControlModeAvatar">Moving Avatar</string>
+  <string name="GameControlModeMouselook">Mouselook</string>
+  <string name="GameControlModeFlycam">FlyCam</string>
+  <string name="GameControlModeSitting">Sitting</string>
+  <string name="GameControlModeCursor">Mouse Cursor</string>
+  <string name="GameControlModeNone">None</string>
+  <!-- rlv (RLVa, research/248) -->
+  <string name="RLVaPendingRestart">(pending restart)</string>
+  <string name="RLVaToggleMessageLogin">RLVa has been [STATE] (no restart required)</string>
+  <string name="RLVaToggleMessageRestart">RLVa will be [STATE] after you restart</string>
+  <string name="RLVaToggleEnabled">enabled</string>
+  <string name="RLVaToggleDisabled">disabled</string>
+  <string name="RLVaStatusDisabled">(disabled)</string>
+  <string name="AboutPositionRLVShowLoc">You are in [REGION]
+[SERVER_VERSION]
+[SERVER_RELEASE_NOTES_URL]</string>
+  <string name="AboutRLV">RestrainedLove API: [RLV_VERSION]</string>
+  <string name="inventory_item_offered_rlv">Inventory item offered to [NAME]</string>
+</strings>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_sound.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="Preference Media panel" label="Звуки">
+    <panel.string name="middle_mouse">
+        среднюю кнопку мыши
+    </panel.string>
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="sound_scroll">
+            <panel name="sound_scroll_panel">
+                <plus_ps_slider_compat name="System Volume" label="Общая громкость" />
+                <plus_ps_slider_compat name="UI Volume" label="Кнопки" />
+                <plus_ps_slider_compat name="Wind Volume" label="Окружение" />
+                <plus_ps_slider_compat name="SFX Volume" label="Звуковые эффекты" />
+                <plus_ps_slider_compat name="Music Volume" label="Потоковая музыка" />
+                <plus_ps_check_compat name="enable_music" label="Включено" />
+                <plus_ps_slider_compat name="Media Volume" label="Медиа" />
+                <plus_ps_check_compat name="enable_media" label="Включено" />
+                <plus_ps_slider_compat name="Voice Volume" label="Голосовой чат" />
+                <plus_ps_check_compat name="enable_voice_check" label="Включено" />
+                <plus_ps_check_compat name="media_show_on_others_btn" label="Воспроизводить медиа, присоединенные к другому аватару" tool_tip="Снятие флажка скроет медиа, присоединенные к другому аватару" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

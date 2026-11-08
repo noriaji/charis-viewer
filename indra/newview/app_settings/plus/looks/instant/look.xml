@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Instant Photo</string><key>ja</key><string>インスタント写真</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Faded, yellow-green shadows and warm whites, like an instant print.</string><key>ja</key><string>色あせて、影は黄緑、白は暖かく。インスタント写真のプリント風。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>180</integer>
+  </map>
+</llsd>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="prefs_graphics_advanced" title="PREFERENZE AVANZATE GRAFICA">
+	<!-- plus: gfx-tabs (research/238). The rows sit in the tabs of en, wrapped the same way
+	     (tab_container / panel / scroll_container / panel), or the translation does not apply. -->
+	<tab_container name="graphics_tabs">
+		<panel label="Generale" name="General">
+			<scroll_container name="general_scroll">
+				<panel name="general_scroll_panel">
+					<text name="ShadersText">
+						Shader
+					</text>
+					<check_box initial_value="true" label="Acqua trasparente" name="TransparentWater"/>
+					<check_box initial_value="true" label="Occlusione ambientale" name="UseSSAO"/>
+					<text name="RenderShadowDetailText">
+						Ombre:
+					</text>
+					<combo_box name="ShadowDetail">
+						<combo_box.item label="Nessuno" name="0"/>
+						<combo_box.item label="Sole/Luna" name="1"/>
+						<combo_box.item label="Sole/Luna + Proiettori" name="2"/>
+					</combo_box>
+					<slider label="Distanza visualizzazione:" name="DrawDistance"/>
+					<text name="DrawDistanceMeterText2">
+						m
+					</text>
+					<slider label="Numero massimo particelle:" name="MaxParticleCount"/>
+					<text name="AvatarText">
+						Avatar
+					</text>
+					<slider label="Complessità massima:" name="IndirectMaxComplexity" tool_tip="Definisce il punto in cui un avatar dall'aspetto complesso viene visualizzato come JellyDoll"/>
+					<text name="IndirectMaxComplexityText">
+						0
+					</text>
+					<slider label="N. max di non impostori:" name="IndirectMaxNonImpostors"/>
+					<text name="IndirectMaxNonImpostorsText">
+						0
+					</text>
+					<slider label="Fisica:" name="AvatarPhysicsDetail"/>
+					<text name="AvatarPhysicsDetailText">
+						Basso
+					</text>
+					<text name="MeshText">
+						Livello dei dettagli (LOD)
+					</text>
+					<slider label="Oggetti:" name="ObjectMeshDetail"/>
+					<text name="ObjectMeshDetailText">
+						Basso
+					</text>
+					<slider label="Prim flessibili:" name="FlexibleMeshDetail"/>
+					<text name="FlexibleMeshDetailText">
+						Basso
+					</text>
+					<slider label="Alberi:" name="TreeMeshDetail"/>
+					<text name="TreeMeshDetailText">
+						Basso
+					</text>
+					<slider label="Avatar:" name="AvatarMeshDetail"/>
+					<text name="AvatarMeshDetailText">
+						Basso
+					</text>
+					<slider label="Terreno:" name="TerrainMeshDetail"/>
+					<text name="TerrainMeshDetailText">
+						Basso
+					</text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Impostazioni Hardware" name="Hardware Settings">
+			<scroll_container name="hardware_scroll">
+				<panel name="hardware_scroll_panel">
+					<check_box initial_value="true" label="Attiva compressione texture (richiede riavvio)" name="texture compression" tool_tip="Comprime le texture nella memoria video, consentendo il caricamento di texture a risoluzione maggiore al prezzo di una perdita di qualità del colore."/>
+					<text name="antialiasing label">
+						Antialiasing:
+					</text>
+					<combo_box label="Antialiasing" name="fsaa">
+						<combo_box.item label="Disattivato" name="FSAADisabled"/>
+					</combo_box>
+					<text name="antialiasing restart">
+						(richiede il riavvio)
+					</text>
+					<check_box initial_value="true" label="Abilita assistenza per display HiDPI (riavvio necessario)" name="use HiDPI" tool_tip="Abilita OpenGL per disegni ad alta risoluzione."/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Rendering" name="Rendering">
+			<scroll_container name="rendering_scroll">
+				<panel name="rendering_scroll_panel">
+					<text name="Texture Rendering">
+						Rendering texture
+					</text>
+					<text name="Miscellaneous Rendering">
+						Altre impostazioni
+					</text>
+					<slider label="Qualità dopo l'elaborazione:" name="RenderPostProcess"/>
+					<text name="PostProcessText">
+						Basso
+					</text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Profondità di Campo" name="DOF panel">
+			<scroll_container name="dof_scroll">
+				<panel name="dof_scroll_panel">
+					<check_box initial_value="true" label="Abilita Profondità di Campo (PdC: sfoca la vista tranne che nella direzione della camera)" name="UseDoF"/>
+					<check_box name="RenderDepthOfFieldInEditMode" label="Abilita in modalità Costruzione"/>
+					<slider name="CameraFNum" label="F-Number Camera:" tool_tip="Il valore F è un valore della profondità di campo."/>
+					<slider name="CameraFocal" label="Lunghezza focale (mm):" tool_tip="A che distanza avviene la messa a fuoco (in millimetri)."/>
+					<slider name="Camera FOV" label="Campo visivo (gradi):" tool_tip="Campo verticale di visualizzazione della camera (in gradi)."/>
+					<slider name="CameraFocusTrans" label="Tempo di transizione:" tool_tip="Tempo necessario per passare la focalizzazione da un'oggetto ad un'altro."/>
+					<slider name="CameraDoFResScale" label="Qualità resa PdC:" tool_tip="Influisce sulla qualità della sfocatura e le prestazioni di resa. (alto = migliore qualità, basso = migliori prestazioni)."/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Charis" name="Charis panel">
+			<scroll_container name="charis_scroll">
+				<panel name="charis_scroll_panel">
+				</panel>
+			</scroll_container>
+		</panel>
+	</tab_container>
+	<!-- /plus -->
+	<button label="Ripristina impostazioni consigliate" name="Defaults"/>
+	<button label="OK" label_selected="OK" name="OK"/>
+	<button label="Annulla" label_selected="Annulla" name="Cancel"/>
+	<check_box label="RenderAvatarMaxComplexity" name="RenderAvatarMaxComplexity"/>
+	<check_box label="RenderAvatarMaxNonImpostors" name="RenderAvatarMaxNonImpostors"/>
+</floater>

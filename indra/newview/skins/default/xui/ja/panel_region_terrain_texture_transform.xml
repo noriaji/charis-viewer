@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Terrain" label="地形">
+	<text name="region_text_lbl">
+		地域：
+	</text>
+	<text name="detail_texture_text">
+		地形テクスチャ
+	</text>
+	<text name="detail_material_text">
+		地形のマテリアル
+	</text>
+	<check_box name="terrain_material_type" label="PBR メタリック・ラフネス" tool_tip="チェックすると、地形に PBR のメタリック・ラフネスのマテリアルを使います。外すとテクスチャを使います。"/>
+	<text name="height_text_lbl">
+		1（低）
+	</text>
+	<text name="height_text_lbl4">
+		4（高）
+	</text>
+	<layout_stack name="terrain_features_stack">
+		<layout_panel name="frame_settings_terrain">
+			<tab_container name="terrain_tabs">
+				<panel name="terrain_elevation_panel" label="高さ"/>
+				<panel name="terrain_transform_panel" label="変形"/>
+			</tab_container>
+		</layout_panel>
+	</layout_stack>
+	<button name="apply_btn" label="適用"/>
+</panel>

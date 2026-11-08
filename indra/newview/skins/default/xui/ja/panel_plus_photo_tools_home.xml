@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="page_home">
+	<scroll_container name="scroll_home">
+		<panel name="content_home">
+			<panel name="sec_preset">
+				<text name="title_preset" tool_tip="プリセットは、明るさ・色味・光の向き・影の濃さ・コントラスト・グレア・背景ぼかしをまとめて変えます。「秋の路地」はルックと画面の効果、影の柔らかさも変えます（ほかのプリセットで戻ります。「すべて元に戻す」は撮影ツールを開いた時の値へ戻します）。変化は控えめなので、「比べる」を押して前後を見比べ、気になる所はそれぞれの項目で詰めてください。">プリセット</text>
+				<button name="preset_portrait" label="ポートレート" tool_tip="顔をやわらかく見せます。光の向きを 30 度（カメラの少し横から当たる順光）にし、影を明るく起こし、コントラストを少し下げ、色味をやや暖かく、背景を大きくぼかします（被写界深度がオンの時）。顔のアップや上半身に。" />
+				<button name="preset_backlight" label="逆光" tool_tip="太陽をカメラの正面（光の向き 180 度、被写体の後ろ）へ回して輪郭を光らせ、暗くなる顔は明るさと影の起こしで補い、グレアを強にします。太陽の高さは変えないので、日が低い空で使うと効きます。" />
+				<button name="preset_sunset" label="夕景" tool_tip="色味を強くオレンジ寄りにし、太陽を斜め後ろ（光の向き 150 度）へ回して、コントラストと影を少し強め、グレアを中にします。太陽の高さは変えないので、夕方の空を選んでから押すと夕景らしくなります。" />
+				<button name="preset_night" label="夜景" tool_tip="色味を青く寄せ、暗い所が見えるよう明るさを上げ、コントラストと影を強め、グレアを強にして街灯や看板の光をにじませます。光の向きは変えないので、夜の空を選んでから使ってください。" />
+				<button name="preset_studio" label="スタジオ" tool_tip="色味を付けず（自分のルックに戻し）、グレアを切って、太陽を斜め前（光の向き 60 度）から当てて形をくっきり見せます。背景ぼかしは一番強め（被写界深度がオンの時）。服や小物の紹介写真に。" />
+				<button name="preset_natural" label="自然光" tool_tip="明るさ・影・コントラストを既定に戻し、色味なし、グレアは弱にします。光の向きは変えません。ほかのプリセットを試した後の基準に戻す時や、見たままの素直な写真に。" />
+				<button name="preset_autumn" label="秋の路地" tool_tip="ルック「秋の路地」（紅葉の赤と橙を濃く）に、明瞭度 35・質感 20、弱いハレーションと周辺減光を足し、影をやや濃く、コントラストを少し上げ、グレアは弱にします。影のふちは木漏れ日が残る柔らかさにします。光の向きと画質（影の距離など）は変えないので、低い午後の空を空の一覧から先に選んでください。ほかのプリセットを押すと、ルックと効果は元に戻ります。「すべて元に戻す」は、撮影ツールを開いた時の値へ戻します。" />
+				<combo_box name="my_preset_list" label="自分のプリセット" tool_tip="自分で保存したプリセット。選ぶとすぐ適用します" />
+				<line_editor name="ed_my_name" label="名前" tool_tip="保存する名前（未入力なら番号を付けます）。一覧にある名前で保存すると、そのプリセットを上書きします。" />
+				<button name="btn_my_save" label="保存" tool_tip="今の設定を、この名前のプリセットとして保存します" />
+				<button name="btn_my_delete" label="削除" tool_tip="リストで選んだプリセットを消します" />
+			</panel>
+			<panel name="sec_home_sky">
+				<text name="title_home_sky">空</text>
+				<button name="btn_home_sky_prev" tool_tip="同じフォルダの前の空" />
+				<button name="btn_home_sky_next" tool_tip="同じフォルダの次の空" />
+				<button name="btn_home_sky_land" label="土地の空に戻す" tool_tip="その土地の空に戻します（水面はそのまま）" />
+				<button name="btn_home_sky_open" label="選ぶ…" tool_tip="空と水面の一覧を開きます（空と天気のタブ）" />
+			</panel>
+			<panel name="sec_home_water">
+				<text name="title_home_water">水面</text>
+				<button name="btn_home_water_prev" tool_tip="同じフォルダの前の水面" />
+				<button name="btn_home_water_next" tool_tip="同じフォルダの次の水面" />
+				<button name="btn_home_water_land" label="土地の水面" tool_tip="その土地の水面に戻します（空はそのまま）" />
+			</panel>
+			<panel name="sec_home_actions">
+				<button name="btn_home_shoot" label="撮影" tool_tip="下の大きさと形で今すぐ撮影して保存します。このウィンドウは開いたままです。" />
+				<button name="btn_freeze" label="世界を止める" tool_tip="アバター・物・パーティクル・雲・水をその場で止めます。もう一度押すと再開します。止めている間もカメラ、空、ここの設定は使えます。アバターのポーズ調整はできません。このウィンドウを閉じた時とテレポートで、世界は自動で再開します。" />
+				<button name="btn_home_camera" label="カメラ位置…" tool_tip="カメラのタブへ移ります" />
+				<button name="btn_home_photoscreen" label="撮影モードへ…" tool_tip="撮影モードに入ります（画面全体を撮影用に）。窓やバーは隠れ、出ると元に戻ります。" />
+				<check_box name="chk_freeze_appearance" label="光や色の変化も止める（雷・点滅など）" tool_tip="世界を止めている間、スクリプトで切り替わる光・色・グロー・テクスチャ（雷の光、点滅する看板など）を、止めた瞬間の見た目のままにします。再開すると最新の状態に追いつきます。新しく現れた物、アバターと服装、編集中の物は止めません。オフにすると動きだけを止めます。" />
+			</panel>
+			<panel name="sec_home_shot">
+				<combo_box name="home_shot_size" tool_tip="撮影する大きさ（長辺）" />
+				<combo_box name="home_shot_aspect" tool_tip="撮影する縦横の形" />
+			</panel>
+			<panel name="sec_home_lod">
+				<check_box name="chk_home_lod" label="カメラを離しても細かさを変えない" tool_tip="距離による詳細度の切り替え（RenderDynamicLOD）を切ります。近くで見た時の細かさのままになるので、カメラを引いても物が崩れません。オフで通常に戻ります。" />
+				<text name="lod_note">全部を細かいまま描くので、重くなることがあります。</text>
+			</panel>
+			<panel name="sec_home_guide">
+				<button name="btn_home_guide" label="ガイド" tool_tip="構図の補助線を画面の上に出します。撮影の形が画面と違う時は、写る範囲の枠も出ます。写真には写りません。" />
+				<combo_box name="home_guide_kind" tool_tip="ガイドの線の種類" />
+			</panel>
+		</panel>
+	</scroll_container>
+</panel>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<context_menu name="Attachment Pie">
+	<menu_item_call label="触る" name="Attachment Object Touch"/>
+	<menu_item_call name="Show original" label="インベントリで表示"/>
+	<menu_item_call name="Add to favorites" label="お気に入りに追加"/>
+	<menu_item_call name="Remove from favorites" label="お気に入りから削除"/>
+	<menu_item_call name="NowWearing" label="着用中…"/>
+	<!-- plus avatarattach: 装着物の一覧（plus/avatarattach） -->
+	<menu_item_call label="装着物の一覧…" name="PlusAvatarAttachments"/>
+	<!-- /plus -->
+	<menu_item_call label="編集…" name="Edit..."/>
+	<menu_item_call name="EditGLTFMaterial" label="PBR マテリアルを編集"/>
+	<menu_item_call label="取り外す" name="Detach"/>
+	<!-- plus attachopen -->
+	<menu_item_call label="開く" name="Open"/>
+	<!-- /plus -->
+	<menu_item_call label="座る" name="Sit Down Here"/>
+	<menu_item_call label="立ち上がる" name="Stand Up"/>
+	<menu_item_call label="アウトフィットを変更" name="Change Outfit"/>
+	<menu_item_call label="アウトフィットを編集" name="Edit Outfit"/>
+	<context_menu name="Take Off &gt;" label="脱ぐ">
+		<context_menu name="Clothes &gt;" label="服装">
+			<menu_item_call name="Shirt" label="シャツ"/>
+			<menu_item_call name="Pants" label="ズボン"/>
+			<menu_item_call name="Skirt" label="スカート"/>
+			<menu_item_call name="Shoes" label="靴"/>
+			<menu_item_call name="Socks" label="靴下"/>
+			<menu_item_call name="Jacket" label="上着"/>
+			<menu_item_call name="Gloves" label="手袋"/>
+			<menu_item_call name="Self Undershirt" label="下着（上半身）"/>
+			<menu_item_call name="Self Underpants" label="下着（下半身）"/>
+			<menu_item_call name="Self Tattoo" label="タトゥ"/>
+			<menu_item_call name="Self Physics" label="物理作用"/>
+			<menu_item_call name="Self Alpha" label="アルファ"/>
+			<menu_item_call name="All Clothes" label="すべての服装"/>
+		</context_menu>
+		<context_menu name="Detach Self" label="取り外す"/>
+		<menu_item_call name="Detach All" label="すべて取り外す"/>
+	</context_menu>
+	<menu_item_call name="Sit stand" label="座る／立つ"/>
+	<menu_item_call name="Fly land" label="飛行／歩行"/>
+	<menu_item_call name="Stop Animating My Avatar" label="アニメーション停止"/>
+	<menu_item_call label="シェイプの編集" name="Edit My Shape"/>
+	<menu_item_call label="ホバー高さ" name="Hover Height"/>
+	<menu_item_call name="Edit Shape" label="シェイプ…"/>
+	<menu_item_call label="スケルトンをリセット" name="Reset Skeleton"/>
+	<menu_item_call label="スケルトンとアニメーションをリセット" name="Reset Skeleton And Animations"/>
+	<menu_item_call label="フレンド…" name="Friends..."/>
+	<menu_item_call label="グループ…" name="Groups..."/>
+	<menu_item_call label="プロフィール…" name="Profile..."/>
+	<menu_item_call label="テクスチャのデバッグ…" name="Debug..."/>
+	<menu_item_call label="XMLとしてダンプ" name="Dump XML"/>
+	<menu_item_call label="下に置く" name="Drop"/>
+	<menu_item_call label="パーティクルの所有者をブロック" name="Mute Particle"/>
+</context_menu>

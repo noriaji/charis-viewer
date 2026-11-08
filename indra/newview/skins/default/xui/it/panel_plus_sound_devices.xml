@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="Impostazioni dispositivo">
+    <panel.string name="default_text">
+        Predefinito
+    </panel.string>
+    <string name="name_no_device">
+        Nessun dispositivo
+    </string>
+    <string name="name_default_system_device">
+        Dispositivo di sistema predefinito
+    </string>
+    <plus_ps_text name="Input">
+        Input
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        Output
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        Volume microfono:
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="Cambia il livello del microfono utilizzando questa barra" />
+    <plus_ps_text name="wait_text">
+        Attendi
+    </plus_ps_text>
+</panel>

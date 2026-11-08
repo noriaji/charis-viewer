@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel label="Charis" name="charis">
+  <plus_ps_box name="body">
+    <plus_ps_tabs name="charis_tabs">
+      <panel name="page_display" label="表示" tool_tip="画面・窓・バーの表示の設定です。">
+        <scroll_container name="scroll_display">
+          <panel name="list_display">
+            <plus_ps_check name="c_chat_console" label="チャットコンソール（左下に周りのチャットを出す）" tool_tip="チャットの窓を閉じている間、周りのチャットを画面の左下に出します。「コミュニケーション」メニューにもあります。" />
+            <plus_ps_check name="c_inv_folder_icons" label="インベントリのフォルダを種類ごとに色分けする" tool_tip="インベントリのフォルダに、種類ごとの色と印を付けます。" />
+            <plus_ps_check name="c_borderless" label="ボーダーレス全画面（ウィンドウを画面いっぱいに）" tool_tip="枠のないウィンドウで画面いっぱいに表示します。すぐに切り替わります。" />
+            <plus_ps_check name="c_shortcut_bar" label="ショートカットバー（メニュー項目を右クリックで追加）" tool_tip="ナビゲーションバーの下に、選んだメニュー項目を並べます。メニューバーの項目を右クリックすると追加できます。" />
+            <plus_ps_check name="c_fps" label="フレームレート（FPS）を表示する" tool_tip="フレームレートを、ステータスバーか画面の隅に出します。押すとすぐ決まります（取り消しでは戻りません）。" />
+            <plus_ps_label name="l_fps_position" label="表示する場所" />
+            <plus_ps_combo name="cb_fps_position" tool_tip="場所を選ぶと、表示もオンになります。押すとすぐ決まります（取り消しでは戻りません）。">
+              <plus_ps_combo.item name="status_bar" label="ステータスバー" />
+              <plus_ps_combo.item name="top_right" label="画面の右上" />
+              <plus_ps_combo.item name="top_left" label="画面の左上" />
+              <plus_ps_combo.item name="bottom_left" label="画面の左下" />
+              <plus_ps_combo.item name="bottom_right" label="画面の右下" />
+            </plus_ps_combo>
+            <plus_ps_check name="c_ui_frame" label="重い時に UI を軽くする（操作中は世界の描画を間引く）" tool_tip="PC が重い時、UI を操作している間は世界の描画を間引いて、UI の動きを保ちます。最初からオンです。おかしな時はオフにしてください。" />
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel name="page_graphics" label="画質・演出" tool_tip="画質と演出の設定です。">
+        <scroll_container name="scroll_graphics">
+          <panel name="list_graphics">
+            <plus_ps_button name="b_gl_recommended" label="この PC へのおすすめにする" tool_tip="この PC へのおすすめの画質にして、「撮影時にきれいにする」もオンにします。画質の段は「グラフィック」タブと撮影ツールの「画質」タブにあります。" />
+            <plus_ps_button name="b_gl_advanced" label="グラフィック詳細設定…" tool_tip="グラフィックの設定をすべて開きます（Charis のタブもあります）。" />
+            <plus_ps_check name="c_snapshot_boost" label="撮影時にきれいにする（撮る瞬間だけ画質を最大に）" tool_tip="撮る瞬間だけ画質を最大に上げます。撮影ツールの「画質」タブにもあります。" />
+            <plus_ps_check name="c_cloud_shafts" label="雲間の光の筋（ゴッドレイ）" tool_tip="雲の切れ間から差す光の筋を、ひと押しで出します。撮影ツールの「空と天気」タブ、撮影モードと同じスイッチです。" />
+            <plus_ps_check name="c_derez" label="消える物を光る欠片にして崩す" tool_tip="時間と色は「グラフィック詳細設定」&gt; Charis &gt;「物の出現・消滅の演出」で変えられます。" />
+            <plus_ps_button name="b_objectfx" label="物の出現・消滅の演出…" tool_tip="「グラフィック詳細設定」の Charis タブを、物の演出のところで開きます。" />
+            <plus_ps_label name="l_dgc" label="DGC（GPU が描画命令を作る）" />
+            <plus_ps_combo name="cb_dgc" tool_tip="変更は次回の起動から効きます。環境変数 LLRHI_GPU_DRIVEN_DGC で決めている間は変えられません。">
+              <plus_ps_combo.item name="auto" label="自動（NVIDIA のみ）" />
+              <plus_ps_combo.item name="on" label="オン" />
+              <plus_ps_combo.item name="off" label="オフ" />
+            </plus_ps_combo>
+            <plus_ps_label name="note_dgc_1" label="変更は次回の起動から。AMD・Intel では未確認です。" />
+            <plus_ps_label name="note_dgc_2" label="オンにして不具合があれば、オフに戻してください。" />
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel name="page_controls" label="操作" tool_tip="窓・セーフモード・チャットの読み上げ・AO の設定です。">
+        <scroll_container name="scroll_controls">
+          <panel name="list_controls">
+            <plus_ps_check name="c_detach_on_drag" label="ビューワの外へ動かした窓を別窓にする" tool_tip="ビューワの外へドラッグした窓を、独立した窓にします（どのモニターにも置けます）。オフの時は、各窓の切り離しボタンで別窓にします。" />
+            <plus_ps_check name="c_safe_mode_next" label="次回もセーフモードで起動する" tool_tip="オフにするまで、毎回セーフモードで起動します。起動前に読むファイルが見つからない時は変えられません（理由はログに出ます）。" />
+            <plus_ps_label name="note_safe_mode" label="起動時に Shift を押すと、その 1 回だけセーフモードで起動します。" />
+            <plus_ps_header name="h_chat" label="チャット・音" />
+            <plus_ps_button name="b_tts" label="チャットの読み上げ…" tool_tip="届いたチャットを、話す人ごとの声で読み上げます。設定の窓を開きます。" />
+            <plus_ps_header name="h_ao" label="AO（アニメーションの置き換え）" />
+            <plus_ps_check name="c_ao_enabled" label="AO を使う" tool_tip="アカウントごとに覚えます。ログインしてから変えられます。AO の窓は Charis メニュー &gt;「AO（アニメーションの置き換え）」です。" />
+            <plus_ps_check name="c_ao_stands" label="立ちも置き換える" tool_tip="アカウントごとに覚えます。ログインしてから変えられます。AO の窓は Charis メニュー &gt;「AO（アニメーションの置き換え）」です。" />
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel name="page_ai" label="AI（MCP）" tool_tip="AI アシスタントからポーザーとインベントリ検索を使う設定（MCP）です。">
+        <scroll_container name="scroll_ai">
+          <panel name="list_ai">
+            <plus_ps_check name="c_mcp_server" label="MCP サーバー（ポーザー・インベントリ検索、AI 用）" tool_tip="AI アシスタント向けの窓口を、この PC の中だけに開きます（ポーザーとインベントリ検索）。最初はオフです。押すとすぐ決まります（取り消しでは戻りません）。" />
+            <plus_ps_check name="c_mcp_ui_snapshot" label="UI 込みの撮影を許す（IM・チャットも写る）" tool_tip="オフの時、MCP からの撮影には UI・IM・チャット・インベントリが写りません。押すとすぐ決まります（取り消しでは戻りません）。" />
+            <plus_ps_button name="b_mcp_new_token" label="MCP のトークンを作り直す" tool_tip="トークンを作り直します。古いトークンを持つ AI アシスタントは、新しいトークンを読み直す必要があります。" />
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel name="page_rlva" label="RLVa" tool_tip="RLVa（RestrainedLove API）の設定です。">
+        <scroll_container name="scroll_rlva">
+          <panel name="list_rlva">
+            <plus_ps_header name="h_rlva" label="RLVa（RestrainedLove API）" />
+            <plus_ps_check name="c_rlva" label="スクリプトによるビューワの制限を許す（RLVa）" tool_tip="オンの間、ビューワは自分の物体からの RLV の命令に従います。" />
+            <plus_ps_label name="note_restart" label="変更は次のログインから（ログイン後なら再起動後）です。" />
+            <plus_ps_label name="note_what_1" label="自分の物体と着けたリレーが、チャット・IM・TP・" />
+            <plus_ps_label name="note_what_2" label="名前・場所・服・座ることを制限できます。" />
+            <plus_ps_label name="note_privacy_1" label="IM を送れる人なら誰でも、RLV を使っていることと" />
+            <plus_ps_label name="note_privacy_2" label="版を知ることができます。" />
+            <plus_ps_label name="note_privacy_3" label="RLV の問い合わせへの返事は、近くのスクリプトが" />
+            <plus_ps_label name="note_privacy_4" label="聞けるチャンネルで送られます。" />
+            <plus_ps_label name="note_escape" label="切って再起動すると、制限は全部外れます。" />
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel name="page_other" label="その他" tool_tip="ほかのビューワからの設定の引き継ぎと、開発用の設定です。">
+        <scroll_container name="scroll_other">
+          <panel name="list_other">
+            <plus_ps_header name="h_import" label="設定の引き継ぎ" />
+            <plus_ps_button name="b_import" label="ほかのビューワから設定を引き継ぐ…" tool_tip="設定を引き継ぐビューワを選ぶ窓を開きます。" />
+            <plus_ps_header name="h_dev" label="開発用" />
+            <plus_ps_check name="c_shadow_diag" label="影の診断をログに出す" tool_tip="自分のアバターの影について、数秒ごとにログへ 1 行書きます。" />
+            <plus_ps_check name="c_skin_sss_debug" label="肌と目の印を表示する" tool_tip="肌をマゼンタ、目をシアンで塗って見せます。" />
+            <plus_ps_button name="b_comparison" label="比較用: 公式の中〜高・256m" tool_tip="公式ビューワと速さを比べる時の設定にします。中〜高の段（Charis の機能はすべてオフ）、部分的な OIT、公式の LOD と異方性フィルタ、描画距離 256m です。" />
+            <plus_ps_button name="b_ps_gallery" label="撮影モードの部品見本…" tool_tip="撮影モードの部品を、完成イメージの寸法で並べて見せます。" />
+            <plus_ps_label name="note_comparison_on" label="今は比較用の設定です（公式の中〜高・256m）。" />
+          </panel>
+        </scroll_container>
+      </panel>
+    </plus_ps_tabs>
+  </plus_ps_box>
+</panel>

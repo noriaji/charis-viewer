@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_radar" title="レーダー">
+	<floater.string name="counter">周り [TOTAL] 人 | 同じリージョン [REGION] 人 | 声が届く範囲 [CHAT] 人</floater.string>
+	<floater.string name="mark_parcel">&#9670;</floater.string>
+	<floater.string name="mark_region">&#9671;</floater.string>
+	<floater.string name="mark_sitting">座</floater.string>
+	<floater.string name="age_hidden">非公開</floater.string>
+	<floater.string name="age_unknown">不明</floater.string>
+	<floater.string name="no_focus">この人は描画距離の外にいるので、カメラを寄せられません。</floater.string>
+	<floater.string name="no_position">この人の位置が分かりません（地上から高すぎます）。</floater.string>
+	<floater.string name="col_name">名前</floater.string>
+	<floater.string name="col_region">同所</floater.string>
+	<floater.string name="col_sitting">座り</floater.string>
+	<floater.string name="col_age">年齢</floater.string>
+	<floater.string name="col_payment">支払</floater.string>
+	<floater.string name="col_seen">滞在</floater.string>
+	<floater.string name="col_range">距離</floater.string>
+	<floater.string name="tip_region">&#9670; 同じ区画、&#9671; 同じリージョン</floater.string>
+	<floater.string name="tip_sitting">座っている人</floater.string>
+	<floater.string name="tip_age">アカウントを作ってからの日数</floater.string>
+	<floater.string name="tip_payment">支払い情報: $ 登録済み、$$ 使用実績あり</floater.string>
+	<floater.string name="tip_seen">レーダーが見つけてからの時間</floater.string>
+	<floater.string name="tip_range">距離（m）。赤: 声が届く範囲、黄: 叫びが届く範囲、太字: 描画されている人</floater.string>
+	<tab_container name="radar_tabs">
+		<panel label="一覧" name="list_panel">
+			<search_editor label="名前で絞り込む" name="quick_filter" tool_tip="この文字を含む名前だけを残します（大文字・小文字は区別しません）"/>
+			<text name="counter">周り 0 人 | 同じリージョン 0 人 | 声が届く範囲 0 人</text>
+		</panel>
+		<panel label="設定" name="settings_panel">
+			<text name="name_label">名前:</text>
+			<combo_box name="name_format" tool_tip="一覧での名前の書き方です（表示名を使うには、表示名がオンである必要があります）">
+				<combo_box.item label="表示名" name="fmt_display" value="0"/>
+				<combo_box.item label="ユーザー名" name="fmt_user" value="1"/>
+				<combo_box.item label="表示名（ユーザー名）" name="fmt_display_user" value="2"/>
+				<combo_box.item label="ユーザー名（表示名）" name="fmt_user_display" value="3"/>
+			</combo_box>
+			<check_box label="範囲内だけ（m）:" name="limit_range" tool_tip="この距離より近い人だけを一覧に出します"/>
+			<check_box label="ブロックした人も一覧に出す" name="show_muted"/>
+			<text name="report_label">次のとき、周辺チャットにお知らせを出す:</text>
+			<check_box label="誰かが声の届く範囲（20 m）に入ったとき" name="report_chat_enter"/>
+			<check_box label="誰かが声の届く範囲から出たとき" name="report_chat_leave"/>
+			<check_box label="誰かが描画距離に入ったとき" name="report_draw_enter"/>
+			<check_box label="誰かが描画距離から出たとき" name="report_draw_leave"/>
+			<check_box label="誰かが今いるリージョンに入ってきたとき" name="report_region_enter"/>
+			<check_box label="誰かが今いるリージョンから出ていったとき" name="report_region_leave"/>
+			<text name="columns_label">一覧に出す列:</text>
+			<check_box label="同所（区画／リージョン）" name="col_region"/>
+			<check_box label="座っている" name="col_sitting"/>
+			<check_box label="年齢" name="col_age"/>
+			<check_box label="支払い情報" name="col_payment"/>
+			<check_box label="滞在時間" name="col_seen"/>
+			<check_box label="距離" name="col_range"/>
+		</panel>
+	</tab_container>
+</floater>

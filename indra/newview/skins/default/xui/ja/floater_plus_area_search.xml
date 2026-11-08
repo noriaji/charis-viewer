@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_area_search" title="エリアサーチ">
+	<floater.string name="counter_blank">一覧 | 問い合わせ中 | 対象</floater.string>
+	<floater.string name="counter_filled">一覧 [LISTED] | 問い合わせ中 [PENDING] | 対象 [TOTAL]</floater.string>
+	<floater.string name="cost_label">L$ [COST]</floater.string>
+	<floater.string name="regex_error">この正規表現は使えません: [ERROR]</floater.string>
+	<floater.string name="owner_mine">（自分の物だけ）</floater.string>
+	<floater.string name="col_distance">距離</floater.string>
+	<floater.string name="col_name">名前</floater.string>
+	<floater.string name="col_description">説明</floater.string>
+	<floater.string name="col_price">価格</floater.string>
+	<floater.string name="col_land_impact">LI</floater.string>
+	<floater.string name="col_prim_count">プリム</floater.string>
+	<floater.string name="col_owner">所有者</floater.string>
+	<floater.string name="col_group">グループ</floater.string>
+	<floater.string name="col_creator">作成者</floater.string>
+	<floater.string name="col_last_owner">前の所有者</floater.string>
+	<floater.string name="tip_distance">自分のアバターからの距離</floater.string>
+	<floater.string name="tip_price">売り物のときの値段</floater.string>
+	<floater.string name="tip_land_impact">ランドインパクト（区画の上限に数えられる量）</floater.string>
+	<floater.string name="tip_prim_count">オブジェクトを構成するプリムの数</floater.string>
+	<floater.string name="tip_group">オブジェクトに設定されたグループ</floater.string>
+	<floater.string name="tip_last_owner">一つ前の所有者</floater.string>
+	<tab_container name="area_search_tabs">
+		<panel label="一覧" name="list_panel">
+			<search_editor label="一覧を絞り込む: 名前・説明・所有者・グループ・作成者" name="quick_filter" tool_tip="どれかの欄にこの文字を含む行だけを残します（大文字・小文字は区別しません）。「検索」「絞り込み」タブの条件と合わせて効きます。"/>
+			<button label="更新" name="btn_refresh" tool_tip="覚えている内容を捨てて、すべてのオブジェクトをシミュレーターに問い合わせ直します"/>
+			<text name="counter">一覧 | 問い合わせ中 | 対象</text>
+			<check_box label="ビーコンを表示" name="beacons" tool_tip="一覧のオブジェクトにビーコンと名前を表示します"/>
+		</panel>
+		<panel label="検索" name="find_panel">
+			<text name="name_label">名前:</text>
+			<text name="desc_label">説明:</text>
+			<text name="owner_label">所有者:</text>
+			<text name="group_label">グループ:</text>
+			<text name="creator_label">作成者:</text>
+			<text name="last_owner_label">前の所有者:</text>
+			<check_box label="正規表現を使う（文字列全体が一致したものだけ）" name="regular_expression"/>
+			<text name="find_help">一部だけでも、大文字・小文字が違っていても見つかります。空の欄は条件に使いません。欄の中で Enter を押しても検索します。</text>
+			<button label="検索" name="btn_search"/>
+			<button label="消去" name="btn_clear"/>
+		</panel>
+		<panel label="絞り込み" name="filter_panel">
+			<text name="only_label">次の条件のオブジェクトだけを表示:</text>
+			<check_box label="ロック済み" name="filter_locked"/>
+			<check_box label="物理" name="filter_physical"/>
+			<check_box label="ファントム" name="filter_phantom"/>
+			<check_box label="一時的" name="filter_temporary"/>
+			<check_box label="装着物" name="filter_attachment"/>
+			<check_box label="共有メディア" name="filter_moap"/>
+			<check_box label="コピー可" name="filter_perm_copy" tool_tip="所有者がコピーできるもの"/>
+			<check_box label="修正可" name="filter_perm_modify" tool_tip="所有者が修正できるもの"/>
+			<check_box label="再販・譲渡可" name="filter_perm_transfer" tool_tip="所有者が人に渡せるもの"/>
+			<check_box label="反射プローブ" name="filter_reflection_probe" tool_tip="手動で置いたプローブだけで、自動のものは含みません。ミラーのプローブは、グラフィック設定でミラーがオンのときだけです。"/>
+			<check_box label="今いる区画のみ" name="filter_agent_parcel_only" tool_tip="自分が立っている区画にあるもの"/>
+			<check_box label="売り物（L$）" name="filter_for_sale"/>
+			<check_box label="距離（m）" name="filter_distance"/>
+			<text name="click_label">クリック時の動作:</text>
+			<combo_box name="click_action" tool_tip="オブジェクトをクリックしたときの動作">
+				<combo_box.item label="（指定しない）" name="click_blank"/>
+				<combo_box.item label="どれか（設定あり）" name="click_any"/>
+				<combo_box.item label="触る" name="click_touch"/>
+				<combo_box.item label="座る" name="click_sit"/>
+				<combo_box.item label="買う" name="click_buy"/>
+				<combo_box.item label="支払う" name="click_pay"/>
+				<combo_box.item label="開く" name="click_open"/>
+				<combo_box.item label="再生" name="click_play"/>
+				<combo_box.item label="メディアを開く" name="click_open_media"/>
+				<combo_box.item label="ズーム" name="click_zoom"/>
+			</combo_box>
+			<text name="exclude_label">次のオブジェクトは除く:</text>
+			<check_box label="装着物" name="exclude_attachment"/>
+			<check_box label="物理" name="exclude_physical"/>
+			<check_box label="一時的" name="exclude_temporary"/>
+			<check_box label="反射プローブ" name="exclude_reflection_probes"/>
+			<check_box label="子プリム" name="exclude_childprim" tool_tip="リンクされたプリムのうち、ルート以外"/>
+			<check_box label="隣のリージョン" name="exclude_neighbor_region"/>
+			<check_box label="装着物を含める" name="include_attached" tool_tip="アバターが着けている物（アタッチメント・HUD。自分のも他人のも）も一覧に出します。オフの時は出しません。地面に置かれた物（アニメッシュも）はどちらでも出ます。すぐに反映されます。"/>
+			<button label="適用" name="btn_apply"/>
+			<button label="既定として保存" name="btn_save_default" tool_tip="次からこの条件でウィンドウを開きます"/>
+		</panel>
+		<panel label="表示" name="options_panel">
+			<text name="columns_label">表示する列:</text>
+			<check_box label="距離" name="col_distance"/>
+			<check_box label="名前" name="col_name"/>
+			<check_box label="説明" name="col_description"/>
+			<check_box label="価格" name="col_price"/>
+			<check_box label="ランドインパクト" name="col_land_impact"/>
+			<check_box label="プリム数" name="col_prim_count"/>
+			<check_box label="所有者" name="col_owner"/>
+			<check_box label="グループ" name="col_group"/>
+			<check_box label="作成者" name="col_creator"/>
+			<check_box label="前の所有者" name="col_last_owner"/>
+			<text name="double_click_label">ダブルクリックで地図に位置を示し、さらに:</text>
+			<check_box label="カメラを寄せる" name="double_click_zoom" tool_tip="Esc でカメラがアバターに戻ります"/>
+			<check_box label="触る" name="double_click_touch"/>
+			<check_box label="買う" name="double_click_buy"/>
+			<check_box label="座る" name="double_click_sit"/>
+			<text name="range_label" tool_tip="自分からこの距離以内の物だけを一覧に出します（「距離（m）」の条件は、その内側でさらに絞ります）。サーバーにも、この距離までの物を送ってもらいます（描画距離のほうが遠い時は描画距離まで。描画はされず、一覧に出るだけです）。0 なら距離で絞らず（無制限。読み込み済みとキャッシュにある物すべて）、サーバーへの要求は描画距離までです。広くするほどメモリと一覧が埋まるまでの時間が増えます。">探す範囲（m、0 は制限なし）:</text>
+		</panel>
+	</tab_container>
+</floater>

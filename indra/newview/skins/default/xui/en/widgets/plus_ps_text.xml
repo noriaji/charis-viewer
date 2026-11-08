@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The defaults of plus_ps_text (plus/photoscreen/psui/pscompat.h, research/266 ui-compat): text.xml's, less its colours (PsText draws
+     them from the style table) and parse_urls (a page that wants links writes parse_urls="true"). Without this file a PsText got
+     LLTextBase's own defaults (allow_scroll and mouse_opaque true): a long text grew a scroll bar and took the clicks. -->
+<plus_ps_text name="plus_ps_text"
+              mouse_opaque="false"
+              tab_stop="false"
+              allow_scroll="false"
+              h_pad="0"
+              v_pad="0"
+              halign="left"
+              font_shadow="none"
+              use_ellipses="false"
+              bg_visible="false"
+              border_visible="false"
+              sound_flags="0"
+              max_length="4096" />

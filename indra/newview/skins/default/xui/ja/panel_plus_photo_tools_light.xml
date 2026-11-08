@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="page_light">
+	<scroll_container name="scroll_light">
+		<panel name="content_light">
+			<panel name="sec_sky">
+				<button name="btn_sky_cur_star" tool_tip="今の空をお気に入りに入れます" />
+				<button name="btn_skytab_all" label="すべて" tool_tip="インベントリとライブラリのフォルダのまま、すべての空" />
+				<button name="btn_skytab_fav" label="お気に入り" tool_tip="星を付けた空。矢印はこの並びで進みます。" />
+				<button name="btn_skytab_recent" label="最近" tool_tip="最後に使った 10 件" />
+				<button name="btn_sky_fav_sort" label="名前順" tool_tip="お気に入りの空を名前の順に並べます" />
+				<text name="title_sky">空</text>
+				<button name="btn_sky_list_toggle" label="空を選ぶ" tool_tip="空の一覧を開く／閉じる" />
+				<text name="sky_current">今:</text>
+				<button name="btn_sky_land" label="土地の空に戻す" tool_tip="その土地の空に戻します（水面はそのまま）" />
+				<filter_editor name="flt_sky" label="空を検索" />
+				<button name="btn_sky_prev" tool_tip="同じフォルダの前の空" />
+				<button name="btn_sky_next" tool_tip="同じフォルダの次の空" />
+				<button name="btn_sky_edit" label="空を調整…" tool_tip="今使っている空を編集します" />
+				<button name="btn_sky_undo" label="空も水も戻す" tool_tip="空と水面の両方を、土地の設定に戻します" />
+			</panel>
+			<panel name="sec_water">
+				<text name="title_water">水面</text>
+				<button name="btn_water_list_toggle" label="水面を選ぶ" tool_tip="水面の一覧を開く／閉じる" />
+				<text name="water_current">今:</text>
+				<button name="btn_water_land" label="土地の水面に戻す" tool_tip="その土地の水面に戻します（空はそのまま）" />
+				<button name="btn_water_cur_star" tool_tip="今の水面をお気に入りに入れます" />
+				<button name="btn_watertab_all" label="すべて" tool_tip="インベントリとライブラリのフォルダのまま、すべての水面" />
+				<button name="btn_watertab_fav" label="お気に入り" tool_tip="星を付けた水面。矢印はこの並びで進みます。" />
+				<button name="btn_watertab_recent" label="最近" tool_tip="最後に使った 10 件" />
+				<button name="btn_water_fav_sort" label="名前順" tool_tip="お気に入りの水面を名前の順に並べます" />
+				<filter_editor name="flt_water" label="水面を検索" />
+				<button name="btn_water_prev" tool_tip="同じフォルダの前の水面" />
+				<button name="btn_water_next" tool_tip="同じフォルダの次の水面" />
+				<text name="water_note">水面を選んでも、空はそのままです。</text>
+			</panel>
+		</panel>
+	</scroll_container>
+</panel>

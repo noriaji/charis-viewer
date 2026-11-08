@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Input panel" label="Configurar">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="setup_scroll">
+			<panel name="setup_scroll_panel">
+				<plus_ps_text name="Network:">
+					Red:
+				</plus_ps_text>
+				<plus_ps_text name="Maximum bandwidth">
+					Ancho de banda máximo
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					kbps
+				</plus_ps_text>
+				<plus_ps_check_compat name="connection_port_enabled" label="Personalizar el puerto" />
+				<plus_ps_spinner name="connection_port" label="Nº del puerto:" />
+				<plus_ps_text name="Web:">
+					Web:
+				</plus_ps_text>
+				<plus_ps_radio name="preferred_browser_behavior">
+					<radio_item name="internal" label="Usar el navegador incorporado para todos los enlaces" tool_tip="Usa el navegador predeterminado para obtener ayuda, visitar enlaces web, etc. No es aconsejable si estás a pantalla completa." />
+					<radio_item name="external" label="Usar el navegador integrado solo para los enlaces de Second Life" tool_tip="Usa el navegador predeterminado para obtener ayuda, visitar enlaces web, etc. Se utilizará el navegador incorporado sólo para los enlaces LindenLab/Second Life." />
+					<radio_item name="external_all" label="Usar el navegador incorporado para todos los vínculos" tool_tip="Usa el navegador incorporado para ayuda, enlaces web, etc. Este navegador se abre en una nueva ventana dentro de [APP_NAME]." />
+				</plus_ps_radio>
+				<plus_ps_check_compat name="browser_javascript_enabled" label="Activar Javascript" />
+				<plus_ps_text name="Software updates:">
+					Actualizaciones de software:
+				</plus_ps_text>
+				<plus_ps_combo name="updater_service_combobox">
+					<plus_ps_combo.item name="Install_automatically" label="Instalar cada actualización automáticamente" />
+					<plus_ps_combo.item name="Install_ask" label="Preguntarme cuando una actualización opcional está disponible para instalar" />
+					<plus_ps_combo.item name="Install_manual" label="Instalar sólo actualizaciones obligatorias" />
+				</plus_ps_combo>
+				<plus_ps_check_compat name="update_willing_to_test" label="Admitir candidatos a la versión comercial a la hora de realizar actualizaciones" />
+				<plus_ps_check_compat name="update_show_release_notes" label="Mostrar las notas de la versión después de la actualización" />
+				<plus_ps_text name="Proxy Settings:">
+					Configuración de proxy:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_proxy" label="Ajustar la configuración de proxy" label_selected="Elegir" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

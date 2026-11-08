@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_general.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="general_panel" label="基本設定">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="general_scroll">
+            <panel name="general_scroll_panel">
+                <plus_ps_text name="language_textbox">
+                    語言：
+                </plus_ps_text>
+                <plus_ps_combo name="language_combobox">
+                    <plus_ps_combo.item name="English" label="英語" />
+                    <plus_ps_combo.item name="Danish" label="Dansk（丹麥語）- 試用版" />
+                    <plus_ps_combo.item name="Deutsch(German)" label="Deutsch（德語）- 試用版" />
+                    <plus_ps_combo.item name="Spanish" label="Español（西班牙語）- 試用版" />
+                    <plus_ps_combo.item name="French" label="Français（法語）- 試用版" />
+                    <plus_ps_combo.item name="Italian" label="Italiano（義大利語）- 試用版" />
+                    <plus_ps_combo.item name="Polish" label="Polski（波蘭語）- 試用版" />
+                    <plus_ps_combo.item name="Portugese" label="Português（葡萄牙語）- 試用版" />
+                    <plus_ps_combo.item name="Russian" label="Русский（俄羅斯語）- 測試版" />
+                    <plus_ps_combo.item name="Turkish" label="Türkçe（土耳其語）- 試用版" />
+                    <plus_ps_combo.item name="(Japanese)" label="日本語（日語）- 試用版" />
+                    <plus_ps_combo.item name="Traditional Chinese" label="正體中文 - 測試版" />
+                </plus_ps_combo>
+                <plus_ps_text name="language_textbox2">
+                    （須重新啟動）
+                </plus_ps_text>
+                <plus_ps_text name="maturity_desired_prompt">
+                    我想要能進出內容分級的地區為：
+                </plus_ps_text>
+                <plus_ps_combo name="maturity_desired_combobox">
+                    <plus_ps_combo.item name="Desired_Adult" label="一般普級，適度成人，完全成人" />
+                    <plus_ps_combo.item name="Desired_Mature" label="一般普級與適度成人" />
+                    <plus_ps_combo.item name="Desired_PG" label="一般普級" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="favorites_on_login_check" label="登入時顯示最愛的地點" />
+                <plus_ps_text name="favorites_check_extra_text">
+                    （使用此電腦的其他人也會看到）
+                </plus_ps_text>
+                <plus_ps_text name="name_tags_textbox">
+                    名稱標籤：
+                </plus_ps_text>
+                <plus_ps_radio name="Name_Tag_Preference">
+                    <radio_item name="radio" label="關閉" />
+                    <radio_item name="radio2" label="啟動" />
+                    <radio_item name="radio3" label="簡短顯示" />
+                </plus_ps_radio>
+                <plus_ps_check_compat name="show_my_name_checkbox1" label="我的名字" />
+                <plus_ps_check_compat name="show_slids" label="使用者名稱" tool_tip="顯示使用者名稱，就像 bobsmith123 這類的" />
+                <plus_ps_check_compat name="display_names_check" label="察看顯示名稱" tool_tip="若勾選，將在聊天、IM 和名稱標籤等處使用顯示名稱。" />
+                <plus_ps_check_compat name="show_friends" label="高亮標示朋友" tool_tip="高亮顯示你朋友的名稱標籤" />
+                <plus_ps_text name="inworld_typing_rg_label">
+                    按下字母鍵：
+                </plus_ps_text>
+                <plus_ps_radio name="inworld_typing_preference">
+                    <radio_item name="radio_start_chat" label="開始本地聊天" />
+                    <radio_item name="radio_move" label="影響移動（例如 WASD鍵）" />
+                </plus_ps_radio>
+                <plus_ps_text name="title_afk_text">
+                    離開逾時設定：
+                </plus_ps_text>
+                <plus_ps_combo name="afk" label="離開逾時設定：">
+                    <plus_ps_combo.item name="item0" label="2 分鐘" />
+                    <plus_ps_combo.item name="item1" label="5 分鐘" />
+                    <plus_ps_combo.item name="item2" label="10 分鐘" />
+                    <plus_ps_combo.item name="item3" label="30 分鐘" />
+                    <plus_ps_combo.item name="item4" label="絕不" />
+                </plus_ps_combo>
+                <plus_ps_text name="text_box3">
+                    「請勿打擾」預設回應：
+                </plus_ps_text>
+                <plus_ps_box name="dnd_response_glass">
+                    <text_editor name="do_not_disturb_response">
+                        log_in_to_change
+                    </text_editor>
+                </plus_ps_box>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

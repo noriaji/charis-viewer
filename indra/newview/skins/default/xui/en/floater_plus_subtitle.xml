@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Subtitles (plus/subtitle, research/137): the voice you hear, as text. While this window is open the
+  voice is listened to and recognized on this PC (Whisper, CPU only; nothing leaves it unless
+  "Translate" is on); closing it stops that. The recognition model (about 490 MB) is not shipped: the
+  button fetches it the first time. Threads and language apply when the window is opened again.
+  min_width is the width the rows are laid out for: narrower, the radio's label (ja) is cut and the
+  status line leaves the model button no room (research/275 L082).
+-->
+<floater
+ positioning="specified"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="308"
+ min_height="250"
+ min_width="480"
+ width="480"
+ layout="topleft"
+ name="plus_subtitle"
+ title="SUBTITLES (VOICE)">
+    <floater.string name="loading">Getting ready... (the first time can take a minute)</floater.string>
+    <floater.string name="ready">Listening to the voice you hear (nearby and group voice).</floater.string>
+    <floater.string name="dropped">Recognition could not keep up: [SECONDS] s skipped. Use fewer threads or close busy programs.</floater.string>
+    <floater.string name="error">The recognizer reported a problem (see the log).</floater.string>
+    <floater.string name="exited">The recognizer stopped. Close and reopen this window.</floater.string>
+    <floater.string name="start_failed">Could not start the recognizer (see the log).</floater.string>
+    <floater.string name="no_helper">charis-subtitle.exe is missing next to the viewer.</floater.string>
+    <floater.string name="unknown_speaker">?</floater.string>
+    <floater.string name="and_others"> + others</floater.string>
+    <floater.string name="translate_unconfigured">Translation is on, but no translation service is set up in Preferences > Chat.</floater.string>
+    <floater.string name="translated_mark">=></floater.string>
+    <floater.string name="radio_label">Radio</floater.string>
+    <floater.string name="radio_listening">Also listening to the parcel's internet radio while nobody is speaking.</floater.string>
+    <floater.string name="radio_failed">Could not listen to the radio (see the log). Needs Windows 10 version 2004 or later.</floater.string>
+    <floater.string name="no_model">The recognition model (490 MB) is not here yet. Get it with the button, or put it where shown below.</floater.string>
+    <floater.string name="model_place">To put the model in by hand, place the file here: [PATH]</floater.string>
+    <floater.string name="download_label">Get the model</floater.string>
+    <floater.string name="cancel_label">Cancel</floater.string>
+    <floater.string name="downloading">Downloading the model... [PERCENT]%</floater.string>
+    <floater.string name="verifying">Checking the downloaded model...</floater.string>
+    <floater.string name="download_cancelled">The download was cancelled.</floater.string>
+    <floater.string name="download_cannot_start">Could not start the download (see the log).</floater.string>
+    <floater.string name="download_failed">The download failed (see the log). Try again with the button.</floater.string>
+    <floater.string name="translate_local_unsupported">Translating on this PC covers English into Japanese, Chinese, Spanish, French, German, Russian, Italian and Portuguese, and Japanese into English; other sentences are left as they are.</floater.string>
+    <floater.string name="translate_local_missing">The translation models are not here yet. Get them with the button.</floater.string>
+    <floater.string name="translate_local_no_helper">charis-translate.exe is missing next to the viewer.</floater.string>
+    <floater.string name="translate_local_failed">The translator on this PC could not be started (see the log).</floater.string>
+    <floater.string name="translate_fetch_label">Get translation models</floater.string>
+    <floater.string name="translate_fetching">Downloading the translation models... [PERCENT]%</floater.string>
+    <floater.string name="translate_fetch_unpacking">Unpacking the translation models...</floater.string>
+    <floater.string name="translate_fetch_done">The translation models are ready.</floater.string>
+    <floater.string name="translate_fetch_not_published">The translation models cannot be fetched yet (no download address).</floater.string>
+    <text
+     follows="left|top|right"
+     height="30"
+     layout="topleft"
+     left="10"
+     name="status"
+     top="26"
+     width="350"
+     word_wrap="true" />
+    <button
+     follows="right|top"
+     height="22"
+     label="Get the model"
+     layout="topleft"
+     left_pad="6"
+     name="download_model"
+     top_delta="0"
+     width="110"
+     tool_tip="Downloads the recognition model (about 490 MB) from Hugging Face. Press again to cancel." />
+    <text_editor
+     follows="all"
+     height="90"
+     layout="topleft"
+     left="10"
+     max_length="65536"
+     name="log"
+     parse_urls="false"
+     trusted_content="false"
+     read_only="true"
+     top="60"
+     width="460"
+     word_wrap="true" />
+    <check_box
+     control_name="PlusSubtitleTranslate"
+     follows="left|bottom|right"
+     height="16"
+     label="Translate"
+     layout="topleft"
+     left="10"
+     name="translate"
+     top_pad="4"
+     width="460" />
+    <combo_box
+     control_name="PlusSubtitleTranslateService"
+     follows="left|bottom"
+     height="20"
+     layout="topleft"
+     left="10"
+     name="translate_service"
+     top_pad="4"
+     width="140"
+     tool_tip="How sentences are translated. Service: the translation service set in Preferences > Chat (the text goes to it). This PC: with models fetched here (English into Japanese, Chinese, Spanish, French, German, Russian, Italian, Portuguese; Japanese into English); nothing is sent anywhere.">
+        <combo_box.item label="Translate: service" name="service" value="service" />
+        <combo_box.item label="Translate: this PC" name="local" value="local" />
+    </combo_box>
+    <combo_box
+     control_name="PlusSubtitleTranslateTo"
+     follows="left|bottom"
+     height="20"
+     layout="topleft"
+     left_pad="6"
+     name="translate_to"
+     top_delta="0"
+     width="150"
+     tool_tip="The language sentences are translated into. The first one: the language the chat translation uses (Preferences > Chat).">
+        <combo_box.item label="Into: as chat" name="chat" value="" />
+        <combo_box.item label="Japanese" name="ja" value="ja" />
+        <combo_box.item label="English" name="en" value="en" />
+        <combo_box.item label="Chinese" name="zh" value="zh" />
+        <combo_box.item label="Spanish" name="es" value="es" />
+        <combo_box.item label="French" name="fr" value="fr" />
+        <combo_box.item label="German" name="de" value="de" />
+        <combo_box.item label="Russian" name="ru" value="ru" />
+        <combo_box.item label="Italian" name="it" value="it" />
+        <combo_box.item label="Portuguese" name="pt" value="pt" />
+    </combo_box>
+    <combo_box
+     control_name="PlusTranslateDialect"
+     follows="left|bottom"
+     height="20"
+     layout="topleft"
+     left="10"
+     name="dialect"
+     top_pad="4"
+     width="140"
+     tool_tip="Translations into Japanese can be written in a dialect (a game; only the translated text changes, never what was spoken).">
+        <combo_box.item label="Dialect: standard" name="standard" value="" />
+        <combo_box.item label="Kansai" name="kansai" value="kansai" />
+        <combo_box.item label="Hakata" name="hakata" value="hakata" />
+        <combo_box.item label="Tohoku" name="tohoku" value="tohoku" />
+    </combo_box>
+    <button
+     follows="left|bottom"
+     height="20"
+     label="Get translation models"
+     layout="topleft"
+     left_pad="6"
+     name="download_translate_model"
+     top_delta="0"
+     width="150"
+     tool_tip="Downloads the models that translate into the chosen language on this PC (60 to 240 MB each). Press again to cancel. The sources and licenses of the models:" />
+    <check_box
+     control_name="PlusSubtitleStream"
+     follows="left|bottom|right"
+     height="16"
+     label="Also write out the parcel's internet radio (when nobody is speaking)"
+     layout="topleft"
+     left="10"
+     name="radio"
+     top_pad="4"
+     width="460"
+     tool_tip="Listens to the sound of the stream player only, so nothing else is mixed in. It does not connect to the station a second time. Sentences are cut by loudness, and music can give wrong text. Windows 10 version 2004 or later." />
+    <spinner
+     control_name="PlusSubtitleThreads"
+     decimal_digits="0"
+     follows="left|bottom"
+     height="20"
+     increment="1"
+     label="Threads"
+     label_width="50"
+     layout="topleft"
+     left="10"
+     max_val="16"
+     min_val="1"
+     name="threads"
+     top_pad="6"
+     width="110"
+     tool_tip="How many processor threads recognition uses. More is quicker; fewer is lighter. Applies when this window is opened again." />
+    <combo_box
+     control_name="PlusSubtitleLanguage"
+     follows="left|bottom"
+     height="20"
+     layout="topleft"
+     left_pad="12"
+     name="language"
+     top_delta="0"
+     width="160"
+     tool_tip="The language spoken. Auto finds it out for each sentence (slower, and less exact). Applies when this window is opened again.">
+        <combo_box.item label="Language: Auto" name="auto" value="auto" />
+        <combo_box.item label="Japanese" name="ja" value="ja" />
+        <combo_box.item label="English" name="en" value="en" />
+        <combo_box.item label="Chinese" name="zh" value="zh" />
+        <combo_box.item label="Korean" name="ko" value="ko" />
+        <combo_box.item label="Spanish" name="es" value="es" />
+        <combo_box.item label="French" name="fr" value="fr" />
+        <combo_box.item label="German" name="de" value="de" />
+        <combo_box.item label="Portuguese" name="pt" value="pt" />
+        <combo_box.item label="Russian" name="ru" value="ru" />
+    </combo_box>
+</floater>

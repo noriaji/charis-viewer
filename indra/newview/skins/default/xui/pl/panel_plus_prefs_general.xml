@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_general.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="general_panel" label="Ogólne">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="general_scroll">
+            <panel name="general_scroll_panel">
+                <plus_ps_text name="language_textbox">
+                    Język:
+                </plus_ps_text>
+                <plus_ps_combo name="language_combobox">
+                    <plus_ps_combo.item name="English" label="English (Angielski)" />
+                    <plus_ps_combo.item name="Danish" label="Dansk (Duński) - Beta" />
+                    <plus_ps_combo.item name="Deutsch(German)" label="Deutsch (Niemiecki) - Beta" />
+                    <plus_ps_combo.item name="Spanish" label="Español (Hiszpański) - Beta" />
+                    <plus_ps_combo.item name="French" label="Français (Francuski) - Beta" />
+                    <plus_ps_combo.item name="Italian" label="Italiano (Włoski) - Beta" />
+                    <plus_ps_combo.item name="Polish" label="Polski - Beta" />
+                    <plus_ps_combo.item name="Portugese" label="Português (Portugalski) - Beta" />
+                    <plus_ps_combo.item name="Russian" label="Русский (Rosyjski) - Beta" />
+                    <plus_ps_combo.item name="Turkish" label="Türkçe (Turecki) - Beta" />
+                    <plus_ps_combo.item name="(Japanese)" label="日本語 (Japoński) - Beta" />
+                    <plus_ps_combo.item name="Traditional Chinese" label="正體中文 (Tradycyjny chiński) - Beta" />
+                </plus_ps_combo>
+                <plus_ps_text name="language_textbox2">
+                    (Restart wymagany)
+                </plus_ps_text>
+                <plus_ps_text name="maturity_desired_prompt">
+                    Chcę mieć dostęp do miejsc:
+                </plus_ps_text>
+                <plus_ps_combo name="maturity_desired_combobox">
+                    <plus_ps_combo.item name="Desired_Adult" label="General, Moderate oraz Adult" />
+                    <plus_ps_combo.item name="Desired_Mature" label="General oraz Moderate" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="favorites_on_login_check" label="Pokaż moje ulubione landmarki przy logowaniu" />
+                <plus_ps_text name="favorites_check_extra_text">
+                    (Inni używający tego komputera również będą je widzieć)
+                </plus_ps_text>
+                <plus_ps_text name="name_tags_textbox">
+                    Imiona:
+                </plus_ps_text>
+                <plus_ps_radio name="Name_Tag_Preference">
+                    <radio_item name="radio" label="Wyłącz" />
+                    <radio_item name="radio2" label="Włącz" />
+                    <radio_item name="radio3" label="Pokaż na chwilę" />
+                </plus_ps_radio>
+                <plus_ps_check_compat name="show_my_name_checkbox1" label="Pokaż moje imię" />
+                <plus_ps_check_compat name="show_slids" label="Nazwy użytkowników" tool_tip="Pokaż nazwy kont użytkowników, np. bobsmith123" />
+                <plus_ps_check_compat name="display_names_check" label="Imiona Wyświetlane" tool_tip="Pokaż Imiona Wyświetlane (Display Names) w czacie, IM, tagach ponad awatarami itd." />
+                <plus_ps_check_compat name="show_friends" label="Podświetl znajomych" tool_tip="Podświetlaj imiona Twoich znajomych" />
+                <plus_ps_text name="inworld_typing_rg_label">
+                    Naciskanie liter:
+                </plus_ps_text>
+                <plus_ps_radio name="inworld_typing_preference">
+                    <radio_item name="radio_start_chat" label="Rozpoczyna czat" />
+                    <radio_item name="radio_move" label="Wpływa na ruch (tzn. WASD)" />
+                </plus_ps_radio>
+                <plus_ps_text name="title_afk_text">
+                    Zasypiaj po czasie:
+                </plus_ps_text>
+                <plus_ps_combo name="afk" label="Limit dla Zaśnięcia:">
+                    <plus_ps_combo.item name="item0" label="2 minuty" />
+                    <plus_ps_combo.item name="item1" label="5 minut" />
+                    <plus_ps_combo.item name="item2" label="10 minut" />
+                    <plus_ps_combo.item name="item3" label="30 minut" />
+                    <plus_ps_combo.item name="item4" label="Nigdy" />
+                </plus_ps_combo>
+                <plus_ps_text name="text_box3">
+                    Autoodpowiedź trybu zajętości:
+                </plus_ps_text>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

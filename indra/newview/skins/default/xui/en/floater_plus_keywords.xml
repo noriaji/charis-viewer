@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Chat keywords (plus/keywords, from Firestorm's keyword alerts): a line of chat that holds one of the
+  listed words gets a color, a sound and/or a notice. The boxes are bound to the per-account settings
+  PlusKeywords* (settings_plus.xml).
+-->
+<floater
+ positioning="specified"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="442"
+ width="440"
+ layout="topleft"
+ name="plus_keywords"
+ title="CHAT KEYWORDS">
+    <floater.string name="try_hint">Type a line here to see whether the list catches it.</floater.string>
+    <floater.string name="try_hit">Caught: [WORD]</floater.string>
+    <floater.string name="try_miss">Not caught.</floater.string>
+    <check_box
+     control_name="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Keyword alerts on"
+     layout="topleft"
+     left="12"
+     name="on"
+     top="26"
+     width="410" />
+    <check_box
+     control_name="PlusKeywordsInChat"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Look in nearby chat"
+     layout="topleft"
+     left="28"
+     name="in_chat"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusKeywordsInIM"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Look in IMs and group chat"
+     layout="topleft"
+     left="28"
+     name="in_im"
+     top_pad="4"
+     width="394" />
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="12"
+     name="list_label"
+     top_pad="10"
+     width="410">
+        Words (separated by commas):
+    </text>
+    <line_editor
+     control_name="PlusKeywordsList"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="12"
+     max_length_chars="2048"
+     name="list"
+     top_pad="2"
+     width="416" />
+    <check_box
+     control_name="PlusKeywordsOwnName"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Add my own names (display name, user name, first name)"
+     layout="topleft"
+     left="28"
+     name="own_name"
+     top_pad="8"
+     width="394" />
+    <check_box
+     control_name="PlusKeywordsSpeakerName"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Look in the speaker's name too"
+     layout="topleft"
+     left="28"
+     name="speaker"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusKeywordsCaseSensitive"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Match case"
+     layout="topleft"
+     left="28"
+     name="case"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusKeywordsWholeWords"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Whole words only (Japanese is always found anywhere)"
+     layout="topleft"
+     left="28"
+     name="whole"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusKeywordsFoldWidth"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Ignore full / half width and hiragana / katakana"
+     layout="topleft"
+     left="28"
+     name="fold"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusKeywordsChangeColor"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Color the line"
+     layout="topleft"
+     left="12"
+     name="change_color"
+     top_pad="12"
+     width="150" />
+    <color_swatch
+     control_name="PlusKeywordsColor"
+     enabled_control="PlusKeywordsOn"
+     border.border_thickness="0"
+     follows="left|top"
+     height="16"
+     label_height="0"
+     layout="topleft"
+     left="170"
+     name="color"
+     top_delta="0"
+     width="30" />
+    <check_box
+     control_name="PlusKeywordsPlaySound"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Play a sound"
+     layout="topleft"
+     left="12"
+     name="play_sound"
+     top_pad="6"
+     width="410" />
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="28"
+     name="sound_label"
+     top_pad="6"
+     width="90">
+        Sound UUID:
+    </text>
+    <line_editor
+     control_name="PlusKeywordsSound"
+     enabled_control="PlusKeywordsPlaySound"
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left_pad="4"
+     max_length_chars="64"
+     name="sound"
+     top_delta="-4"
+     width="226" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Play"
+     layout="topleft"
+     left_pad="4"
+     name="sound_preview"
+     tool_tip="Play this sound."
+     width="40" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Reset"
+     layout="topleft"
+     left_pad="2"
+     name="sound_default"
+     tool_tip="Back to the standard sound."
+     width="44" />
+    <check_box
+     control_name="PlusKeywordsToast"
+     enabled_control="PlusKeywordsOn"
+     follows="left|top"
+     height="16"
+     label="Show a notice on the screen"
+     layout="topleft"
+     left="12"
+     name="toast"
+     top_pad="10"
+     width="410" />
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="12"
+     name="try_label"
+     top_pad="14"
+     width="410">
+        Try a line:
+    </text>
+    <line_editor
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="12"
+     max_length_chars="512"
+     name="try_text"
+     top_pad="2"
+     width="416" />
+    <text
+     follows="left|top"
+     height="32"
+     layout="topleft"
+     left="12"
+     name="try_result"
+     top_pad="4"
+     width="416"
+     word_wrap="true" />
+</floater>

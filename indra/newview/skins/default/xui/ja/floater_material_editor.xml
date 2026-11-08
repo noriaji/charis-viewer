@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="material editor">
+	<string name="no_upload_fee_string">
+		アップロード料金なし
+	</string>
+	<string name="upload_fee_string">
+		アップロード料金 L$[FEE]
+	</string>
+	<string name="material_override_title">
+		マテリアルの編集
+	</string>
+	<panel name="button_panel">
+		<text name="unsaved_changes">
+			未保存の変更があります
+		</text>
+		<button name="save" label="保存"/>
+		<button name="save_as" label="名前を付けて保存…"/>
+		<text name="total_upload_fee">
+			アップロード料金の合計：L$ [FEE]
+		</text>
+		<button name="cancel" label="キャンセル"/>
+	</panel>
+</floater>

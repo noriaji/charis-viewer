@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Charis window (from: panel_plus_import_settings.xml; research/266 4. prefs-w-setup). The button that opens the
+     window bringing the settings of another viewer over (plus/importsettings), in Preferences > Setup under
+     "Adjust proxy settings" (panel_plus_prefs_setup.xml). 360 x 40: one button (the en words 42 x 7 = 294). -->
+<panel
+ name="plus_import_settings"
+ background_visible="false"
+ border="false"
+ follows="left|top"
+ height="40"
+ layout="topleft"
+ mouse_opaque="false"
+ width="360">
+    <plus_ps_button_compat
+     name="plus_import_settings_open"
+     follows="left|top"
+     height="40"
+     label="Bring settings over from another viewer..."
+     layout="topleft"
+     left="0"
+     tool_tip="Brings over the settings, saved logins, key bindings and chat logs from the official viewer, Firestorm or another Charis Viewer on this computer. That viewer's files are only read."
+     top="0"
+     width="360">
+        <plus_ps_button_compat.commit_callback
+         function="Plus.ImportSettings.Open" />
+    </plus_ps_button_compat>
+</panel>

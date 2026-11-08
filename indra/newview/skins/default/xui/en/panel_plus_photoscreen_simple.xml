@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The simple view of the photo screen (plus/photoscreen/panel_simple.cpp): everything is laid on the world, which fills
+  the window. A rail of tabs on the left, the panel of the tab open beside it, the strip at the bottom middle, a line to
+  type chat in at the bottom left. No numbers to set: only choices. The positions of the four blocks are set in the code
+  (they follow the window); the sizes here are fixed: rail 92 x 248, panel 292 wide (the code sets its height, 300 to
+  440), strip 520 x 30, chat line 280 x 22. Inside the panel a page is 280 wide; the pages' fixed rows are at most 276
+  high, the lists take what is left. A row the page wide is given width="280" (follows right keeps it so): right="-0"
+  is read as 0, the page's left edge, and makes the row 0 wide.
+-->
+<panel
+ background_visible="false"
+ follows="all"
+ height="100"
+ layout="topleft"
+ mouse_opaque="false"
+ name="plus_photoscreen_simple"
+ width="100">
+    <panel.string name="focus_auto_off">Auto (the viewer's own choice)</panel.string>
+    <panel.string name="focus_blur_off">The background blur is off, so there is nothing to focus.</panel.string>
+    <panel.string name="focus_lost">[WHO] is not in sight; the viewer's own focus is used meanwhile.</panel.string>
+    <panel.string name="focus_nobody">Choose someone from the list.</panel.string>
+    <panel.string name="focus_click_none">There is no spot to focus on yet. In the detailed view, press Click to Set the Spot, then click a place in the world.</panel.string>
+    <panel.string name="focus_click_wait">Click a place in the world to focus there (Esc stops choosing).</panel.string>
+    <panel.string name="focus_click_behind">The clicked spot is behind the camera. Choose a spot in sight again.</panel.string>
+    <panel.string name="focus_locked">Focus: [WHO]</panel.string>
+    <panel.string name="focus_auto">Focus: automatic</panel.string>
+    <panel.string name="focus_cursor">Focus: under the cursor</panel.string>
+    <panel.string name="focus_click">Focus: the place clicked</panel.string>
+    <panel.string name="frame_click">The place clicked</panel.string>
+    <panel.string name="focus_self">my face</panel.string>
+    <panel.string name="focus_face_of">[WHO]'s face</panel.string>
+    <panel.string name="focus_someone">The person</panel.string>
+    <panel.string name="who_self">you</panel.string>
+    <panel.string name="strip_mood">Mood: [MOOD]</panel.string>
+    <panel.string name="strip_mood_none">Mood: none</panel.string>
+    <panel.string name="comp_ok">Framed on [WHO]. Use "Back" to return the camera.</panel.string>
+    <panel.string name="comp_no_target">There is nobody to frame. Choose a person in Focus (yours or someone near), in sight.</panel.string>
+    <panel.string name="comp_no_camera">The camera cannot be moved now.</panel.string>
+    <panel.string name="comp_idle">Puts the camera at the right distance and height for the person in Focus.</panel.string>
+    <panel.string name="cam_none">Nothing kept here yet.</panel.string>
+    <panel.string name="cam_kept">A position is kept for this region.</panel.string>
+    <panel.string name="cam_saved">Kept.</panel.string>
+    <panel.string name="cam_other_region">The kept position is of another region.</panel.string>
+    <panel.string name="flycam_keys_0">W A S D fly, Space / C up and down, the arrow keys turn, the wheel sets the speed, Q / E tilt.</panel.string>
+    <panel.string name="flycam_keys_1">W A S D fly, Space / C up and down. Hold the right button to look around; the wheel sets the speed, Q / E tilt.</panel.string>
+    <panel.string name="flycam_keys_2">W A S D fly, Space / C up and down. The mouse looks around (Alt for the cursor); the wheel sets the speed, Q / E tilt.</panel.string>
+    <panel.string name="strip_flycam">Flycam on ([KEY] to leave)</panel.string>
+    <panel.string name="flycam_tip">The camera leaves the avatar and flies free. [KEY] also turns it on and off.</panel.string>
+    <panel.string name="sky_none">No skies or waters found in your inventory.</panel.string>
+    <panel.string name="sky_land">the region's own</panel.string>
+    <panel.string name="sky_other">(changed by hand)</panel.string>
+    <panel.string name="blur_switching">Turning the blur on; the viewer stands still for a few seconds.</panel.string>
+    <panel.string name="mood_changed_title">You changed some settings after choosing the mood [MOOD]. Choosing a mood sets brightness, blur, tone and more again. Go on?</panel.string>
+    <!-- the left rail -->
+    <panel
+     background_visible="true"
+     bg_alpha_color="0 0 0 0.45"
+     follows="left|top"
+     height="248"
+     layout="topleft"
+     left="8"
+     top="100"
+     name="rail"
+     width="92">
+        <button
+         follows="left|top"
+         height="34"
+         is_toggle="true"
+         label="Focus"
+         layout="topleft"
+         left="4"
+         top="4"
+         width="84"
+         name="tab_focus"
+         tool_tip="Who the photo is focused on" />
+        <button
+         follows="left|top"
+         height="34"
+         is_toggle="true"
+         label="Mood"
+         layout="topleft"
+         left="4"
+         top="44"
+         width="84"
+         name="tab_mood"
+         tool_tip="The look of the light: brightness, blur and tone together" />
+        <button
+         follows="left|top"
+         height="34"
+         is_toggle="true"
+         label="Framing"
+         layout="topleft"
+         left="4"
+         top="84"
+         width="84"
+         name="tab_comp"
+         tool_tip="Full body, bust, face and more: puts the camera at the right place for the person" />
+        <button
+         follows="left|top"
+         height="34"
+         is_toggle="true"
+         label="Sky"
+         layout="topleft"
+         left="4"
+         top="124"
+         width="84"
+         name="tab_sky"
+         tool_tip="The sky and the water" />
+        <button
+         follows="left|top"
+         height="34"
+         is_toggle="true"
+         label="Spot"
+         layout="topleft"
+         left="4"
+         top="164"
+         width="84"
+         name="tab_cam"
+         tool_tip="Keep the camera's position and come back to it" />
+        <button
+         follows="left|top"
+         height="34"
+         is_toggle="true"
+         label="Talk"
+         layout="topleft"
+         left="4"
+         top="204"
+         width="84"
+         name="tab_conv"
+         tool_tip="IMs and group chats: read and answer them here. The number is what is not read yet." />
+    </panel>
+    <!-- the panel of the open tab -->
+    <panel
+     background_visible="true"
+     bg_alpha_color="0 0 0 0.55"
+     follows="left|top"
+     height="400"
+     layout="topleft"
+     left="108"
+     top="100"
+     name="body"
+     width="292">
+        <panel
+         background_visible="false"
+         follows="all"
+         layout="topleft"
+         left="6"
+         right="-6"
+         top="6"
+         bottom="-6"
+         name="page_focus">
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             font="SansSerifBold"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="0"
+             name="title_focus"
+             width="280">
+                Who to focus on
+            </text>
+            <button
+             follows="left|top|right"
+             height="24"
+             is_toggle="true"
+             label="Auto"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="20"
+             name="btn_focus_auto"
+             tool_tip="The viewer decides, as it does without this panel" />
+            <button
+             follows="left|top|right"
+             height="24"
+             is_toggle="true"
+             label="My face"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="48"
+             name="btn_focus_self"
+             tool_tip="Focus on your own face, wherever the camera goes" />
+            <button
+             follows="left|top|right"
+             height="24"
+             is_toggle="true"
+             label="Someone else's face (pick below)"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="76"
+             name="btn_focus_other"
+             tool_tip="Focus on the face of the person chosen in the list" />
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="106"
+             name="lbl_nearby"
+             text_color="LtGray"
+             width="280">
+                People nearby
+            </text>
+            <scroll_list
+             background_visible="true"
+             draw_border="true"
+             follows="all"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="124"
+             bottom="-66"
+             name="list_nearby"
+             tool_tip="Click a name to focus on that person's face">
+                <scroll_list.columns
+                 name="name"
+                 relative_width="1" />
+            </scroll_list>
+            <text
+             type="string"
+             length="1"
+             follows="left|bottom|right"
+             height="34"
+             layout="topleft"
+             left="0"
+             bottom="-30"
+             name="focus_status"
+             word_wrap="true"
+             width="280">
+            </text>
+            <button
+             follows="left|bottom|right"
+             height="24"
+             label="Turn the blur on"
+             layout="topleft"
+             left="0"
+             width="280"
+             bottom="-2"
+             name="btn_blur_on"
+             tool_tip="Turn on Depth of Field (the background blur). The viewer stands still for a few seconds." />
+        </panel>
+        <panel
+         background_visible="false"
+         follows="all"
+         layout="topleft"
+         left="6"
+         right="-6"
+         top="6"
+         bottom="-6"
+         name="page_mood">
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             font="SansSerifBold"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="0"
+             name="title_mood"
+             width="280">
+                Mood
+            </text>
+            <button
+             follows="left|top|right"
+             height="26"
+             is_toggle="true"
+             label="Portrait"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="20"
+             name="mood_portrait"
+             tool_tip="Soft light for faces, a blurred background. For close-ups and upper-body shots." />
+            <button
+             follows="left|top|right"
+             height="26"
+             is_toggle="true"
+             label="Backlight"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="50"
+             name="mood_backlight"
+             tool_tip="The sun behind the person: a glowing outline" />
+            <button
+             follows="left|top|right"
+             height="26"
+             is_toggle="true"
+             label="Sunset"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="80"
+             name="mood_sunset"
+             tool_tip="Warm orange tones. Choose an evening sky first." />
+            <button
+             follows="left|top|right"
+             height="26"
+             is_toggle="true"
+             label="Night"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="110"
+             name="mood_night"
+             tool_tip="Bluish, with lights that glow. Choose a night sky first." />
+            <button
+             follows="left|top|right"
+             height="26"
+             is_toggle="true"
+             label="Studio"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="140"
+             name="mood_studio"
+             tool_tip="Even light with a crisp shape. For showing clothes and things." />
+            <button
+             follows="left|top|right"
+             height="26"
+             is_toggle="true"
+             label="Natural"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="170"
+             name="mood_natural"
+             tool_tip="Plain, as seen. The place to start over from." />
+            <button
+             follows="left|top|right"
+             height="26"
+             is_toggle="true"
+             label="Autumn Alley"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="200"
+             name="mood_autumn"
+             tool_tip="Deep autumn reds, crisp stone and bark, shadow edges soft enough for dappled light. The sun is left alone: choose a low afternoon sky from the sky list." />
+            <text
+             type="string"
+             length="1"
+             follows="left|top|right"
+             height="50"
+             layout="topleft"
+             left="0"
+             top="234"
+             name="mood_hint"
+             text_color="LtGray"
+             word_wrap="true"
+             width="280">
+                A mood sets brightness, blur and tone together. To fine-tune each, go back to the detailed view.
+            </text>
+        </panel>
+        <panel
+         background_visible="false"
+         follows="all"
+         layout="topleft"
+         left="6"
+         right="-6"
+         top="6"
+         bottom="-6"
+         name="page_comp">
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             font="SansSerifBold"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="0"
+             name="title_comp"
+             width="280">
+                Framing
+            </text>
+            <button
+             follows="left|top|right"
+             height="26"
+             label="Full body"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="20"
+             name="comp_full" />
+            <button
+             follows="left|top|right"
+             height="26"
+             label="Knees up"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="50"
+             name="comp_knee" />
+            <button
+             follows="left|top|right"
+             height="26"
+             label="Bust"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="80"
+             name="comp_bust" />
+            <button
+             follows="left|top|right"
+             height="26"
+             label="Face"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="110"
+             name="comp_face" />
+            <button
+             follows="left|top|right"
+             height="26"
+             label="Low angle"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="140"
+             name="comp_low"
+             tool_tip="The whole body from below, looking up" />
+            <button
+             follows="left|top|right"
+             height="26"
+             label="High angle"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="170"
+             name="comp_high"
+             tool_tip="The whole body from above, looking down" />
+            <button
+             follows="left|top|right"
+             height="24"
+             label="Back to the previous camera"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="206"
+             name="comp_undo"
+             tool_tip="Put the camera back where it was before the last framing" />
+            <text
+             type="string"
+             length="1"
+             follows="left|top|right"
+             height="52"
+             layout="topleft"
+             left="0"
+             top="236"
+             name="comp_status"
+             text_color="LtGray"
+             word_wrap="true"
+             width="280">
+            </text>
+        </panel>
+        <panel
+         background_visible="false"
+         follows="all"
+         layout="topleft"
+         left="6"
+         right="-6"
+         top="6"
+         bottom="-6"
+         name="page_sky">
+            <button
+             follows="left|top"
+             height="24"
+             is_toggle="true"
+             label="Sky"
+             layout="topleft"
+             left="0"
+             top="0"
+             width="136"
+             name="btn_sky_kind_sky" />
+            <button
+             follows="left|top"
+             height="24"
+             is_toggle="true"
+             label="Water"
+             layout="topleft"
+             left="144"
+             top="0"
+             width="136"
+             name="btn_sky_kind_water" />
+            <line_editor
+             follows="left|top|right"
+             height="22"
+             label="Search"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="30"
+             max_length_chars="40"
+             name="ed_sky_search"
+             tool_tip="Narrows the list by name" />
+            <scroll_list
+             background_visible="true"
+             draw_border="true"
+             follows="all"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="56"
+             bottom="-70"
+             name="list_sky"
+             tool_tip="Click to put it on">
+                <scroll_list.columns
+                 name="name"
+                 relative_width="1" />
+            </scroll_list>
+            <button
+             follows="left|bottom"
+             height="24"
+             label="&lt;"
+             layout="topleft"
+             left="0"
+             bottom="-38"
+             width="60"
+             name="btn_sky_prev"
+             tool_tip="The one before in the list" />
+            <text
+             type="string"
+             length="1"
+             follows="left|bottom|right"
+             halign="center"
+             height="24"
+             layout="topleft"
+             left="64"
+             right="-64"
+             bottom="-38"
+             name="sky_current"
+             use_ellipses="true"
+             width="152">
+            </text>
+            <button
+             follows="right|bottom"
+             height="24"
+             label="&gt;"
+             layout="topleft"
+             left="220"
+             bottom="-38"
+             width="60"
+             name="btn_sky_next"
+             tool_tip="The next one in the list" />
+            <button
+             follows="left|bottom|right"
+             height="24"
+             label="Back to the region's own"
+             layout="topleft"
+             left="0"
+             width="280"
+             bottom="-8"
+             name="btn_sky_land"
+             tool_tip="Put the region's own sky or water back" />
+        </panel>
+        <panel
+         background_visible="false"
+         follows="all"
+         layout="topleft"
+         left="6"
+         right="-6"
+         top="6"
+         bottom="-6"
+         name="page_cam">
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             font="SansSerifBold"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="0"
+             name="title_cam"
+             width="280">
+                Camera spot
+            </text>
+            <button
+             follows="left|top|right"
+             height="28"
+             label="Keep this position"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="22"
+             name="btn_cam_save"
+             tool_tip="Keep where the camera is now, to come back to" />
+            <button
+             follows="left|top|right"
+             height="28"
+             label="Go back to the kept position"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="56"
+             name="btn_cam_go"
+             tool_tip="Move the camera to the position kept" />
+            <text
+             type="string"
+             length="1"
+             follows="left|top|right"
+             height="40"
+             layout="topleft"
+             left="0"
+             top="92"
+             name="cam_status"
+             text_color="LtGray"
+             word_wrap="true"
+             width="280">
+            </text>
+            <!-- the flycam (photo-flycam): pressed while it is on; the keys under it -->
+            <button
+             follows="left|top|right"
+             height="28"
+             is_toggle="true"
+             label="Flycam (keyboard and mouse)"
+             layout="topleft"
+             left="0"
+             width="280"
+             top="140"
+             name="btn_flycam"
+             tool_tip="The camera leaves the avatar and flies free." />
+            <text
+             type="string"
+             length="1"
+             follows="left|top|right"
+             height="56"
+             layout="topleft"
+             left="0"
+             top="174"
+             name="flycam_keys"
+             text_color="LtGray"
+             word_wrap="true"
+             width="280">
+            </text>
+        </panel>
+        <!-- the conversations: the panel of photoconv_panel.cpp is made in it (panel_plus_photoscreen_conv.xml) -->
+        <panel
+         background_visible="false"
+         follows="all"
+         layout="topleft"
+         left="6"
+         right="-6"
+         top="6"
+         bottom="-6"
+         name="page_conv" />
+    </panel>
+    <!-- the strip at the bottom middle: what is set, and the thirds -->
+    <panel
+     background_visible="true"
+     bg_alpha_color="0 0 0 0.45"
+     follows="left|bottom"
+     height="30"
+     layout="topleft"
+     left="300"
+     bottom="-8"
+     name="strip"
+     width="520">
+        <text
+         type="string"
+         length="1"
+         follows="left|top"
+         halign="center"
+         height="22"
+         layout="topleft"
+         left="8"
+         top="6"
+         name="strip_text"
+         use_ellipses="true"
+         width="420">
+        </text>
+        <button
+         follows="left|top"
+         height="22"
+         is_toggle="true"
+         label="Thirds"
+         layout="topleft"
+         left="436"
+         top="4"
+         width="76"
+         name="btn_thirds"
+         tool_tip="Show the lines that divide the picture in thirds, to place the person on" />
+    </panel>
+    <!-- chat: the lines of the nearby chat are shown by the chat console; this is where to type -->
+    <line_editor
+     commit_on_focus_lost="false"
+     follows="left|bottom"
+     height="22"
+     label="Chat (Enter to send)"
+     layout="topleft"
+     left="8"
+     bottom="-8"
+     max_length_chars="1023"
+     name="ed_chat"
+     tool_tip="Type to the people nearby. While you type, the camera and photo keys are not used: Esc or a click on the world gives them back."
+     width="280" />
+</panel>

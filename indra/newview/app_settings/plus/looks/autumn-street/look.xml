@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Autumn Alley</string><key>ja</key><string>秋の路地</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Warm low sun, deep reds and oranges, shadows leaning to teal and a firm contrast: an alley in autumn leaves.</string><key>ja</key><string>低い日差しの暖かさに、紅葉の赤と橙を濃く。影はほんのり青緑、コントラストは強め。紅葉の路地に。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>36</integer>
+  </map>
+</llsd>

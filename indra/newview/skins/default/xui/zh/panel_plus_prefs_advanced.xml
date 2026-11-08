@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="進階">
+	<panel.string name="aspect_ratio_text">
+		[NUM]:[DEN]
+	</panel.string>
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_spinner name="cachesizespinner" label="快取大小 (256 - 9984MB)" />
+				<plus_ps_text name="text_box5">
+					MB
+				</plus_ps_text>
+				<plus_ps_button_compat name="clear_cache" label="清除快取" label_selected="清除快取" />
+				<plus_ps_text name="Cache location">
+					快取位置：
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_cache" label="瀏覽" label_selected="瀏覽" />
+				<plus_ps_button_compat name="default_cache_location" label="預設位置" label_selected="預設位置" />
+				<plus_ps_text name="UI Size:">
+					使用者界面尺寸：
+				</plus_ps_text>
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="允許同時執行多個瀏覽器" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="登入時顯示網格選擇" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="顯示進階選單" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="顯示開發選單" />
+				<plus_ps_button_compat name="default_creation_permissions" label="預設的創建權限" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+  Hair sway items for the context menu of your own attachments
+  (indra/newview/plus/hairsway/hairdetect.cpp moves them to the end of
+  menu_attachment_self.xml's menu once the menus exist). They set, by hand,
+  whether this attachment sways as hair (PlusHairSwayManual, per account).
+-->
+<menu
+ name="plus_hairsway_items">
+    <menu_item_separator
+     name="HairSwaySeparator" />
+    <menu_item_check
+     label="Hair Sway: Sway as Hair"
+     name="HairSwayManualHair">
+        <menu_item_check.on_check
+         function="Plus.HairSway.IsManual"
+         parameter="hair" />
+        <menu_item_check.on_click
+         function="Plus.HairSway.SetManual"
+         parameter="hair" />
+        <menu_item_check.on_visible
+         function="Plus.HairSway.IsOwnAttachment" />
+    </menu_item_check>
+    <menu_item_check
+     label="Hair Sway: Do Not Sway"
+     name="HairSwayManualNot">
+        <menu_item_check.on_check
+         function="Plus.HairSway.IsManual"
+         parameter="not" />
+        <menu_item_check.on_click
+         function="Plus.HairSway.SetManual"
+         parameter="not" />
+        <menu_item_check.on_visible
+         function="Plus.HairSway.IsOwnAttachment" />
+    </menu_item_check>
+    <menu_item_check
+     label="Hair Sway: Automatic"
+     name="HairSwayManualAuto">
+        <menu_item_check.on_check
+         function="Plus.HairSway.IsManual"
+         parameter="auto" />
+        <menu_item_check.on_click
+         function="Plus.HairSway.SetManual"
+         parameter="auto" />
+        <menu_item_check.on_visible
+         function="Plus.HairSway.IsOwnAttachment" />
+    </menu_item_check>
+</menu>

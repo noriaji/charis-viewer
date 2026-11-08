@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Group titles (plus/grouptitles/grouptitlesfloater.cpp; from Firestorm's floater_fs_group_titles.xml, its names kept).
+     Opened by the People window's Groups tab and the toolbar button plus_group_titles.
+     Size (1080 base): 560 x 460, the body 442 high under the title bar (18). In the body, from the top:
+       12 + the filter 33 + 8 + the list 217 (follows all) + 8 + "Auto Region" 24 + 4 + the region buttons 40 + 4
+       + the check 30 + 10 + the buttons 40 + 12 = 442. Below the list everything follows the bottom.
+     At the smallest height (360, the body 342) the list is 117 high (the heading and three rows).
+     Widths: rows at left 14, 532 wide; three region buttons of 172 with 8 between them (14, 194, 374); Info at
+     14 (172), Activate at 326 (172) and Refresh at 506 (40) follow the right. min_width = width: the three
+     region buttons need it. ja: the longest button text (7 characters, about 100) fits in 172; the check's
+     (24 characters, about 330) in 532. -->
+<floater
+ name="plus_group_titles"
+ title="Group Titles"
+ width="560"
+ height="460"
+ min_width="560"
+ min_height="360"
+ layout="topleft"
+ legacy_header_height="18"
+ positioning="cascading"
+ save_rect="true"
+ single_instance="true"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ can_drag_on_left="false">
+    <floater.string name="NoGroupTitle" value="&lt;No group title&gt;"/>
+    <floater.string name="ClearAllRegions" value="Clear All Regions"/>
+    <!-- the row of a title given to regions whose group you are not in (only its regions can be cleared) -->
+    <floater.string name="UnknownTitle" value="(title of a group you are not in)"/>
+    <floater.string name="NotMember" value="(not a member)"/>
+
+    <plus_ps_box
+     name="body"
+     kind="panel"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="560"
+     height="442">
+        <plus_ps_box
+         name="filter_box"
+         kind="glass"
+         follows="left|top|right"
+         layout="topleft"
+         left="14"
+         top="12"
+         width="532"
+         height="33">
+            <filter_editor
+             name="filter_input"
+             bg_color="Transparent"
+             cursor_color="PsTextWhite"
+             follows="left|top|right"
+             height="25"
+             highlight_text_field="false"
+             label="Filter Group Titles"
+             layout="topleft"
+             left="4"
+             max_length_chars="60"
+             text_color="PsTextWhite"
+             text_pad_left="6"
+             text_tentative_color="PsTextDim"
+             tool_tip="Show only the titles whose title or group holds these letters (Ctrl+F)"
+             top="4"
+             use_bg_color="true"
+             width="524" />
+        </plus_ps_box>
+
+        <plus_ps_box
+         name="list_box"
+         kind="glass"
+         follows="all"
+         layout="topleft"
+         left="14"
+         top="53"
+         width="532"
+         height="217">
+            <scroll_list
+             name="title_list"
+             background_visible="false"
+             draw_heading="true"
+             follows="all"
+             layout="topleft"
+             left="2"
+             top="2"
+             width="528"
+             height="213">
+                <column
+                 name="grouptitle"
+                 dynamic_width="true"
+                 sort_column="title_sort_column"
+                 label="Title"/>
+                <column
+                 name="groupname"
+                 dynamic_width="true"
+                 sort_column="name_sort_column"
+                 label="Group"/>
+                <column
+                 name="regionname"
+                 label="Auto Region"
+                 tool_tip="The regions where this title is made active when you arrive"
+                 width="150" />
+                <column
+                 name="role_id"
+                 width="-1"/>
+                <column
+                 name="group_id"
+                 width="-1"/>
+                <column
+                 name="title_sort_column"
+                 width="-1"/>
+                <column
+                 name="name_sort_column"
+                 width="-1"/>
+            </scroll_list>
+        </plus_ps_box>
+
+        <plus_ps_text
+         name="auto_region_label"
+         kind="white"
+         follows="left|bottom"
+         layout="topleft"
+         left="14"
+         length="1"
+         top="278"
+         type="string"
+         width="532"
+         height="24">
+            Auto Region: arriving in a region makes its title active
+        </plus_ps_text>
+        <plus_ps_button_compat
+         name="btnSetRegion"
+         label="This Region"
+         tool_tip="Give the selected title to the region you are in"
+         follows="left|bottom"
+         layout="topleft"
+         left="14"
+         top="306"
+         width="172"
+         height="40" />
+        <plus_ps_button_compat
+         name="btnSetRegionManual"
+         label="Type Region..."
+         tool_tip="Type the name of a region to give the selected title to (it is looked up on the map first)"
+         follows="left|bottom"
+         layout="topleft"
+         left="194"
+         top="306"
+         width="172"
+         height="40" />
+        <plus_ps_button_compat
+         name="btnClearRegion"
+         label="Clear Region"
+         tool_tip="Take the selected title away from its region (with several, choose which)"
+         follows="left|bottom"
+         layout="topleft"
+         left="374"
+         top="306"
+         width="172"
+         height="40" />
+        <plus_ps_check_compat
+         name="none_on_unassigned"
+         label="Set to 'none' in unassigned regions"
+         tool_tip="In a region without a title, no group is active (no title over your head)"
+         follows="left|bottom|right"
+         layout="topleft"
+         left="14"
+         top="350"
+         width="532"
+         height="30" />
+
+        <plus_ps_button_compat
+         name="btnInfo"
+         label="Info"
+         tool_tip="Show info about group of selected title"
+         follows="left|bottom"
+         layout="topleft"
+         left="14"
+         top="390"
+         width="172"
+         height="40" />
+        <plus_ps_button_compat
+         name="btnActivate"
+         label="Activate"
+         tool_tip="Activate selected group title"
+         follows="right|bottom"
+         layout="topleft"
+         left="326"
+         top="390"
+         width="172"
+         height="40" />
+        <plus_ps_button_compat
+         name="btnRefresh"
+         icon="rotate_cw"
+         label=""
+         tool_tip="Refresh list of available group titles"
+         follows="right|bottom"
+         layout="topleft"
+         left="506"
+         top="390"
+         width="40"
+         height="40" />
+    </plus_ps_box>
+</floater>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Made by indra/newview/plus/photoscreen/psui/make_ui_tokens.py from tokens.txt (research/239 (12)).
+     Do not edit: change tokens.txt and run python -I make_ui_tokens.py. -->
+<!-- Laid over skins/default/textures/textures.xml: these names get the images of charis/ -->
+<textures version="101">
+  <texture name="Window_Background" file_name="charis/window.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
+  <texture name="Window_NoTitle_Background" file_name="charis/window.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
+  <texture name="Toast_Background" file_name="charis/window.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
+  <texture name="Inspector_Background" file_name="charis/window.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
+  <texture name="Window_Foreground" file_name="charis/window_focus.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
+  <texture name="Window_NoTitle_Foreground" file_name="charis/window_focus.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
+  <texture name="Toast_Over" file_name="charis/window_focus.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
+  <texture name="Tooltip" file_name="charis/tooltip.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="PushButton_Off" file_name="charis/button_off.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="PushButton_Over" file_name="charis/button_over.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="PushButton_Disabled" file_name="charis/button_disabled.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="PushButton_Selected" file_name="charis/button_on.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="PushButton_On" file_name="charis/button_on.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="PushButton_On_Selected" file_name="charis/button_on_press.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="PushButton_Selected_Press" file_name="charis/button_on_press.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="PushButton_Selected_Disabled" file_name="charis/button_on_disabled.png" preload="true" scale.left="8" scale.top="24" scale.right="24" scale.bottom="8" />
+  <texture name="ScrollThumb_Vert" file_name="charis/scroll_thumb_v.png" preload="true" scale.left="0" scale.top="27" scale.right="15" scale.bottom="5" />
+  <texture name="ScrollTrack_Vert" file_name="charis/scroll_track_v.png" preload="true" scale.left="0" scale.top="27" scale.right="15" scale.bottom="5" />
+  <texture name="ScrollThumb_Horiz" file_name="charis/scroll_thumb_h.png" preload="true" scale.left="5" scale.top="15" scale.right="27" scale.bottom="0" />
+  <texture name="ScrollTrack_Horiz" file_name="charis/scroll_track_h.png" preload="true" scale.left="5" scale.top="15" scale.right="27" scale.bottom="0" />
+  <texture name="Icon_Close_Foreground" file_name="charis/title_close.png" preload="true" />
+  <texture name="Icon_Close_Press" file_name="charis/title_close_press.png" preload="true" />
+  <texture name="Icon_Minimize_Foreground" file_name="charis/title_minimize.png" preload="true" />
+  <texture name="Icon_Minimize_Press" file_name="charis/title_minimize_press.png" preload="true" />
+  <texture name="Icon_Restore_Foreground" file_name="charis/title_restore.png" preload="true" />
+  <texture name="Icon_Restore_Press" file_name="charis/title_restore_press.png" preload="true" />
+  <texture name="Icon_Dock_Foreground" file_name="charis/title_dock.png" preload="true" />
+  <texture name="Icon_Dock_Press" file_name="charis/title_dock_press.png" preload="true" />
+  <texture name="Icon_Help_Foreground" file_name="charis/title_help.png" preload="true" />
+  <texture name="Icon_Help_Press" file_name="charis/title_help_press.png" preload="true" />
+</textures>

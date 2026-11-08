@@ -1,0 +1,783 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis の窓（元: 公式 Second_Life_Release#d567465e-26.5 の panel_preferences_chat.xml。research/266 prefs-w-chat）.
+     Charis window: Preferences > Chat in the psui look. The official file stays as it is (the ledger's source:
+     research/ui-ledger/map.json); every name, control_name, function and choice of it is here. The C++ asks for
+     delete_transcripts / clear_log (LLButton), voice_call_friends_only_check (LLCheckBoxCtrl), the six IM drop-downs
+     (LLComboBox), notifications_alert (LLTextBox), log_path_string, log_path_button, chat_font_size and
+     conversation_log_combo by name: they are the compat widgets of those types (or the official line editor).
+     The official sections (general_chat_settings, im_notification_settings, play_sound_settings, log_settings) are
+     kept as the panels of the sections here; the headings h_* are Charis's.
+     Size (1080 base; a preferences page, plus/prefscharis/prefs_tab_template.xml): 574 x 515, a scroll_container
+     with a panel 557 wide. Rows at left 14, 529 wide. From the top:
+       10
+       general_chat_settings 163 = heading 40 + 3 checks 90 + the font size row 33
+       10
+       im_notification_settings 322 = heading 40 + check 30 + the e-mail link 24 + 6 + 6 rows (drop-down and its
+                                      "Play sound") 198 + the note 24
+       10
+       play_sound_settings 154 = heading 40 + the label 24 + 3 rows of checks (two columns) 90
+       10
+       log_settings 165 = heading 40 + the drop-down row 33 + 6 + buttons 40 + 6 + the location row 40
+       10
+       heading 40 + 6 + the three buttons 40
+       14
+     = 954 (scrolls). An IM row: the label 14..164 (ja 12 characters), the drop-down 170..390, "Play sound" 398..543
+     (ja 7 characters and the box, 122; de 136). ja: at most 38 characters on a line; the longest drop-down item is 14 characters (182 + the arrow). -->
+<panel
+ border="true"
+ follows="all"
+ height="515"
+ label="Text Chat"
+ layout="topleft"
+ left="0"
+ name="chat"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="chat_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="chat_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="954"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+
+                <!-- Chat: 163 -->
+                <panel
+                 name="general_chat_settings"
+                 background_visible="false"
+                 border="false"
+                 follows="left|top"
+                 height="163"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="10"
+                 width="557">
+                    <plus_ps_header
+                     name="h_chat"
+                     divider="none"
+                     follows="left|top|right"
+                     height="40"
+                     label="Chat"
+                     layout="topleft"
+                     left="14"
+                     size="sub"
+                     top="0"
+                     width="529" />
+                    <plus_ps_check_compat
+                     name="auto_complete_gestures"
+                     control_name="ChatAutocompleteGestures"
+                     follows="left|top|right"
+                     height="30"
+                     initial_value="true"
+                     label="Auto-complete gestures in nearby chat"
+                     layout="topleft"
+                     left="14"
+                     top="40"
+                     width="529" />
+                    <plus_ps_check_compat
+                     name="play_typing_animation"
+                     control_name="PlayTypingAnim"
+                     follows="left|top|right"
+                     height="30"
+                     initial_value="true"
+                     label="Play typing animation when chatting"
+                     layout="topleft"
+                     left="14"
+                     top="70"
+                     width="529" />
+                    <plus_ps_check_compat
+                     name="bubble_text_chat"
+                     control_name="UseChatBubbles"
+                     follows="left|top|right"
+                     height="30"
+                     label="Bubble Chat"
+                     layout="topleft"
+                     left="14"
+                     top="100"
+                     width="529" />
+                    <plus_ps_text
+                     name="font_size"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     top="130"
+                     width="317">
+                        Font size:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="chat_font_size"
+                     control_name="ChatFontSize"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="343"
+                     top="130"
+                     width="200">
+                        <plus_ps_combo.item
+                         name="Small"
+                         label="Small"
+                         value="0" />
+                        <plus_ps_combo.item
+                         name="Medium"
+                         label="Medium"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="Large"
+                         label="Large"
+                         value="2" />
+                    </plus_ps_combo>
+                </panel>
+
+                <!-- Instant messages and notifications: 322 -->
+                <panel
+                 name="im_notification_settings"
+                 background_visible="false"
+                 border="false"
+                 follows="left|top"
+                 height="322"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="183"
+                 width="557">
+                    <plus_ps_header
+                     name="h_im"
+                     divider="top"
+                     follows="left|top|right"
+                     height="40"
+                     label="Instant messages and notifications"
+                     layout="topleft"
+                     left="14"
+                     size="sub"
+                     top="0"
+                     width="529" />
+                    <plus_ps_check_compat
+                     name="voice_call_friends_only_check"
+                     enabled="false"
+                     follows="left|top|right"
+                     height="30"
+                     label="Only friends and groups can call or IM me"
+                     layout="topleft"
+                     left="14"
+                     top="40"
+                     width="529" />
+                    <plus_ps_text
+                     name="email_settings"
+                     follows="left|top|right"
+                     height="24"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     parse_urls="true"
+                     skip_link_underline="true"
+                     top="70"
+                     type="string"
+                     width="529">
+                        [https://accounts.secondlife.com/change_email Email me IMs when I'm offline]
+                    </plus_ps_text>
+
+                    <plus_ps_text
+                     name="friend_ims"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     top="100"
+                     width="150">
+                        Friend IMs:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="FriendIMOptions"
+                     control_name="NotificationFriendIMOptions"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="170"
+                     top="100"
+                     width="220">
+                        <plus_ps_combo.item
+                         name="OpenConversationsWindow"
+                         label="Open Conversations window"
+                         value="openconversations" />
+                        <plus_ps_combo.item
+                         name="PopUpMessage"
+                         label="Pop up the message"
+                         value="toast" />
+                        <plus_ps_combo.item
+                         name="FlashToolbarButton"
+                         label="Flash toolbar button"
+                         value="flash" />
+                        <plus_ps_combo.item
+                         name="NoAction"
+                         label="No action"
+                         value="noaction" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="play_sound_friend_im"
+                     control_name="PlaySoundFriendIM"
+                     follows="left|top"
+                     height="33"
+                     label="Play sound"
+                     layout="topleft"
+                     left="398"
+                     top="100"
+                     width="145" />
+
+                    <plus_ps_text
+                     name="non_friend_ims"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     top="133"
+                     width="150">
+                        Non-friend IMs:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="NonFriendIMOptions"
+                     control_name="NotificationNonFriendIMOptions"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="170"
+                     top="133"
+                     width="220">
+                        <plus_ps_combo.item
+                         name="OpenConversationsWindow"
+                         label="Open Conversations window"
+                         value="openconversations" />
+                        <plus_ps_combo.item
+                         name="PopUpMessage"
+                         label="Pop up the message"
+                         value="toast" />
+                        <plus_ps_combo.item
+                         name="FlashToolbarButton"
+                         label="Flash toolbar button"
+                         value="flash" />
+                        <plus_ps_combo.item
+                         name="NoAction"
+                         label="No action"
+                         value="noaction" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="play_sound_non_friend_im"
+                     control_name="PlaySoundNonFriendIM"
+                     follows="left|top"
+                     height="33"
+                     label="Play sound"
+                     layout="topleft"
+                     left="398"
+                     top="133"
+                     width="145" />
+
+                    <plus_ps_text
+                     name="conference_ims"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     top="166"
+                     width="150">
+                        Conference IMs:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="ConferenceIMOptions"
+                     control_name="NotificationConferenceIMOptions"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="170"
+                     top="166"
+                     width="220">
+                        <plus_ps_combo.item
+                         name="OpenConversationsWindow"
+                         label="Open Conversations window"
+                         value="openconversations" />
+                        <plus_ps_combo.item
+                         name="PopUpMessage"
+                         label="Pop up the message"
+                         value="toast" />
+                        <plus_ps_combo.item
+                         name="FlashToolbarButton"
+                         label="Flash toolbar button"
+                         value="flash" />
+                        <plus_ps_combo.item
+                         name="NoAction"
+                         label="No action"
+                         value="noaction" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="play_sound_conference_im"
+                     control_name="PlaySoundConferenceIM"
+                     follows="left|top"
+                     height="33"
+                     label="Play sound"
+                     layout="topleft"
+                     left="398"
+                     top="166"
+                     width="145" />
+
+                    <plus_ps_text
+                     name="group_chat"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     top="199"
+                     width="150">
+                        Group chat:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="GroupChatOptions"
+                     control_name="NotificationGroupChatOptions"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="170"
+                     top="199"
+                     width="220">
+                        <plus_ps_combo.item
+                         name="OpenConversationsWindow"
+                         label="Open Conversations window"
+                         value="openconversations" />
+                        <plus_ps_combo.item
+                         name="PopUpMessage"
+                         label="Pop up the message"
+                         value="toast" />
+                        <plus_ps_combo.item
+                         name="FlashToolbarButton"
+                         label="Flash toolbar button"
+                         value="flash" />
+                        <plus_ps_combo.item
+                         name="NoAction"
+                         label="No action"
+                         value="noaction" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="play_sound_group_chat_im"
+                     control_name="PlaySoundGroupChatIM"
+                     follows="left|top"
+                     height="33"
+                     label="Play sound"
+                     layout="topleft"
+                     left="398"
+                     top="199"
+                     width="145" />
+
+                    <plus_ps_text
+                     name="nearby_chat"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     top="232"
+                     width="150">
+                        Nearby chat:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="NearbyChatOptions"
+                     control_name="NotificationNearbyChatOptions"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="170"
+                     top="232"
+                     width="220">
+                        <plus_ps_combo.item
+                         name="OpenConversationsWindow"
+                         label="Open Conversations window"
+                         value="openconversations" />
+                        <plus_ps_combo.item
+                         name="PopUpMessage"
+                         label="Pop up the message"
+                         value="toast" />
+                        <plus_ps_combo.item
+                         name="FlashToolBarButton"
+                         label="Flash toolbar button"
+                         value="flash" />
+                        <plus_ps_combo.item
+                         name="NoAction"
+                         label="No action"
+                         value="noaction" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="play_sound_nearby_chat_im"
+                     control_name="PlaySoundNearbyChatIM"
+                     follows="left|top"
+                     height="33"
+                     label="Play sound"
+                     layout="topleft"
+                     left="398"
+                     top="232"
+                     width="145" />
+
+                    <plus_ps_text
+                     name="object_ims"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     top="265"
+                     width="150">
+                        Object IMs:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="ObjectIMOptions"
+                     control_name="NotificationObjectIMOptions"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="170"
+                     top="265"
+                     width="220">
+                        <plus_ps_combo.item
+                         name="OpenConversationsWindow"
+                         label="Open Conversations window"
+                         value="openconversations" />
+                        <plus_ps_combo.item
+                         name="PopUpMessage"
+                         label="Pop up the message"
+                         value="toast" />
+                        <plus_ps_combo.item
+                         name="FlashToolBarButton"
+                         label="Flash toolbar button"
+                         value="flash" />
+                        <plus_ps_combo.item
+                         name="NoAction"
+                         label="No action"
+                         value="noaction" />
+                    </plus_ps_combo>
+                    <plus_ps_check_compat
+                     name="play_sound_object_im"
+                     control_name="PlaySoundObjectIM"
+                     follows="left|top"
+                     height="33"
+                     label="Play sound"
+                     layout="topleft"
+                     left="398"
+                     top="265"
+                     width="145" />
+
+                    <!-- shown by the C++ (onNotificationsChange) only while every IM drop-down above is "No action" -->
+                    <plus_ps_text
+                     name="notifications_alert"
+                     follows="left|top|right"
+                     height="24"
+                     kind="hint"
+                     layout="topleft"
+                     left="14"
+                     top="298"
+                     visible="true"
+                     width="529">
+                        To temporarily stop all notifications, use Communicate &gt; Do Not Disturb.
+                    </plus_ps_text>
+                </panel>
+
+                <!-- Sounds: 154 -->
+                <panel
+                 name="play_sound_settings"
+                 background_visible="false"
+                 border="false"
+                 follows="left|top"
+                 height="154"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="515"
+                 width="557">
+                    <plus_ps_header
+                     name="h_sounds"
+                     divider="top"
+                     follows="left|top|right"
+                     height="40"
+                     label="Sounds"
+                     layout="topleft"
+                     left="14"
+                     size="sub"
+                     top="0"
+                     width="529" />
+                    <plus_ps_text
+                     name="play_sound"
+                     follows="left|top"
+                     height="24"
+                     layout="topleft"
+                     left="14"
+                     top="40"
+                     visible="true"
+                     width="529">
+                        Play sound:
+                    </plus_ps_text>
+                    <plus_ps_check_compat
+                     name="new_conversation"
+                     control_name="PlaySoundNewConversation"
+                     follows="left|top"
+                     height="30"
+                     label="New conversation"
+                     layout="topleft"
+                     left="14"
+                     top="64"
+                     width="260" />
+                    <plus_ps_check_compat
+                     name="teleport_offer"
+                     control_name="PlaySoundTeleportOffer"
+                     follows="left|top"
+                     height="30"
+                     label="Teleport offer"
+                     layout="topleft"
+                     left="283"
+                     top="64"
+                     width="260" />
+                    <plus_ps_check_compat
+                     name="incoming_voice_call"
+                     control_name="PlaySoundIncomingVoiceCall"
+                     follows="left|top"
+                     height="30"
+                     label="Incoming voice call"
+                     layout="topleft"
+                     left="14"
+                     top="94"
+                     width="260" />
+                    <plus_ps_check_compat
+                     name="inventory_offer"
+                     control_name="PlaySoundInventoryOffer"
+                     follows="left|top"
+                     height="30"
+                     label="Inventory offer"
+                     layout="topleft"
+                     left="283"
+                     top="94"
+                     width="260" />
+                    <plus_ps_check_compat
+                     name="chat_mention"
+                     control_name="PlaySoundChatMention"
+                     follows="left|top"
+                     height="30"
+                     label="Chat mention"
+                     layout="topleft"
+                     left="14"
+                     top="124"
+                     width="260" />
+                    <!-- the official section's line under it: the headings draw the lines here -->
+                    <view_border
+                     name="cost_text_border"
+                     bevel_style="none"
+                     height="0"
+                     layout="topleft"
+                     left="14"
+                     top="153"
+                     visible="false"
+                     width="529" />
+                </panel>
+
+                <!-- Conversation logs: 165 -->
+                <panel
+                 name="log_settings"
+                 background_visible="false"
+                 border="false"
+                 follows="left|top"
+                 height="165"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="679"
+                 width="557">
+                    <plus_ps_header
+                     name="h_logs"
+                     divider="top"
+                     follows="left|top|right"
+                     height="40"
+                     label="Conversation logs"
+                     layout="topleft"
+                     left="14"
+                     size="sub"
+                     top="0"
+                     width="529" />
+                    <plus_ps_text
+                     name="logging_label"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="14"
+                     top="40"
+                     width="317">
+                        Save:
+                    </plus_ps_text>
+                    <plus_ps_combo
+                     name="conversation_log_combo"
+                     control_name="KeepConversationLogTranscripts"
+                     enabled="false"
+                     follows="left|top"
+                     height="33"
+                     layout="topleft"
+                     left="343"
+                     top="40"
+                     width="200">
+                        <plus_ps_combo.item
+                         name="log_and_transcripts"
+                         label="Log and transcripts"
+                         value="2" />
+                        <plus_ps_combo.item
+                         name="log_only"
+                         label="Log only"
+                         value="1" />
+                        <plus_ps_combo.item
+                         name="no_log_or_transcript"
+                         label="No log or transcripts"
+                         value="0" />
+                    </plus_ps_combo>
+                    <plus_ps_button_compat
+                     name="clear_log"
+                     enabled="false"
+                     follows="left|top"
+                     height="40"
+                     label="Clear log..."
+                     layout="topleft"
+                     left="14"
+                     top="79"
+                     width="260">
+                        <plus_ps_button_compat.commit_callback
+                         function="Pref.ClearLog" />
+                    </plus_ps_button_compat>
+                    <plus_ps_button_compat
+                     name="delete_transcripts"
+                     enabled="false"
+                     follows="left|top"
+                     height="40"
+                     label="Delete transcripts..."
+                     layout="topleft"
+                     left="283"
+                     top="79"
+                     width="260">
+                        <plus_ps_button_compat.commit_callback
+                         function="Pref.DeleteTranscripts" />
+                    </plus_ps_button_compat>
+                    <plus_ps_text
+                     name="log_location_label"
+                     follows="left|top"
+                     height="40"
+                     layout="topleft"
+                     left="14"
+                     top="125"
+                     width="96">
+                        Location:
+                    </plus_ps_text>
+                    <!-- the folder of the logs: read-only (the C++ disables it; Browse... changes it) -->
+                    <plus_ps_box
+                     name="log_path_box"
+                     follows="left|top|right"
+                     height="34"
+                     kind="glass"
+                     layout="topleft"
+                     left="116"
+                     top="128"
+                     width="297">
+                        <line_editor
+                         name="log_path_string"
+                         control_name="InstantMessageLogPath"
+                         bg_color="Transparent"
+                         cursor_color="PsTextWhite"
+                         draw_focus_border="false"
+                         follows="left|top|right"
+                         height="26"
+                         layout="topleft"
+                         left="4"
+                         max_length_bytes="4096"
+                         text_color="PsTextWhite"
+                         text_pad_left="6"
+                         text_readonly_color="PsTextLabel"
+                         text_tentative_color="PsTextDim"
+                         top="4"
+                         use_bg_color="true"
+                         width="289">
+                            <line_editor.border
+                             visible="false" />
+                        </line_editor>
+                    </plus_ps_box>
+                    <plus_ps_button_compat
+                     name="log_path_button"
+                     enabled="false"
+                     follows="left|top"
+                     height="40"
+                     label="Browse..."
+                     label_selected="Browse"
+                     layout="topleft"
+                     left="423"
+                     top="125"
+                     width="120">
+                        <plus_ps_button_compat.commit_callback
+                         function="Pref.LogPath" />
+                    </plus_ps_button_compat>
+                </panel>
+
+                <!-- Translation and typing aids: 86 -->
+                <plus_ps_header
+                 name="h_tools"
+                 divider="top"
+                 follows="left|top|right"
+                 height="40"
+                 label="Translation and typing aids"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="854"
+                 width="529" />
+                <plus_ps_button_compat
+                 name="ok_btn"
+                 follows="left|top"
+                 height="40"
+                 label="Translation..."
+                 layout="topleft"
+                 left="14"
+                 top="900"
+                 width="170">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.TranslationSettings" />
+                </plus_ps_button_compat>
+                <plus_ps_button_compat
+                 name="autoreplace_showgui"
+                 commit_callback.function="Pref.AutoReplace"
+                 follows="left|top"
+                 height="40"
+                 label="Auto-Replace..."
+                 layout="topleft"
+                 left="193"
+                 top="900"
+                 width="170" />
+                <plus_ps_button_compat
+                 name="spellcheck_showgui"
+                 commit_callback.function="Pref.SpellChecker"
+                 follows="left|top"
+                 height="40"
+                 label="Spell Checking..."
+                 layout="topleft"
+                 left="372"
+                 top="900"
+                 width="171" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

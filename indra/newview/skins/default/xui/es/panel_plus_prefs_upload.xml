@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="uploads" label="Subidas">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="uploads_scroll">
+			<panel name="uploads_scroll_panel">
+				<plus_ps_text name="title">
+					Carpetas de destino actuales para las subidas
+				</plus_ps_text>
+				<plus_ps_text name="title_models">
+					Imágenes
+				</plus_ps_text>
+				<plus_ps_text name="title_sounds">
+					Sonidos
+				</plus_ps_text>
+				<plus_ps_text name="title_animation">
+					Animaciones
+				</plus_ps_text>
+				<plus_ps_text name="title_model">
+					Modelos
+				</plus_ps_text>
+				<plus_ps_text name="upload_help">
+					Para cambiar una carpeta de destino, pulsa con el botón derecho en ella en el inventario y elige "Usar como valor predeterminado para"
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

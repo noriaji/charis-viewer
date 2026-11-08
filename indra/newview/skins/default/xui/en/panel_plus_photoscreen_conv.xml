@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The photo screen's conversations tab (plus/photoscreen/photoconv_panel.cpp, research/247 first stage): in the
+  detailed mode's left panel (the rail's last tab) and on the simple mode's "Talk" page. The code lays the parts
+  out for the panel's height (ConvPanel::layout()): the heading 52, the list's rows 30 each (up to five shown,
+  the rest scrolled), a line 9, the conversation's name 24 and kind 18, its last messages (the rest, at least 72;
+  made in the code), the line to type in 30 at the bottom (its line editor made in
+  the code, its colours from the style table). The sizes below are the 280 x 500 of a first look.
+  The list's rows, the note when there is none and the messages are made in the code with the words below.
+-->
+<panel
+ background_visible="false"
+ follows="all"
+ height="500"
+ layout="topleft"
+ left="0"
+ top="0"
+ mouse_opaque="false"
+ name="plus_photoscreen_conv"
+ width="280">
+    <string name="Empty">No conversations yet. The IMs and group chats you get are listed here.</string>
+    <string name="KindIM">IM</string>
+    <string name="KindGroup">Group chat</string>
+    <string name="KindConference">Conference</string>
+    <string name="Connecting">[KIND] - connecting...</string>
+    <string name="QuietTip">Not counted on the badge: your notification settings say "no action" for this kind of chat, or it is muted.</string>
+    <string name="NoneChosen">Choose a conversation</string>
+    <string name="To">To [NAME]</string>
+    <string name="InputTip">Type your answer and press Enter. It goes only to the conversation shown above.</string>
+    <string name="Me">You</string>
+    <string name="NotSent">Not sent (still connecting)</string>
+    <string name="Ended">This conversation has ended</string>
+    <string name="EndedTip">This conversation has ended. Choosing another one in the list, or opening this tab again, throws away the words left here; they never go to someone else.</string>
+    <string name="Refused">This conversation cannot take text.</string>
+    <plus_ps_header
+     collapsible="false"
+     follows="left|top|right"
+     height="52"
+     icon="message"
+     label="Conversations"
+     layout="topleft"
+     left="0"
+     name="conv_head"
+     top="0"
+     width="280" />
+    <scroll_container
+     border_visible="false"
+     follows="left|top|right"
+     height="150"
+     layout="topleft"
+     left="6"
+     name="conv_list_scroll"
+     opaque="false"
+     reserve_scroll_corner="false"
+     top="52"
+     width="268">
+        <panel
+         background_visible="false"
+         follows="left|top"
+         height="150"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         name="conv_list"
+         top="0"
+         width="268" />
+    </scroll_container>
+    <plus_ps_divider
+     follows="left|top|right"
+     height="9"
+     layout="topleft"
+     left="0"
+     name="conv_divider"
+     top="202"
+     width="280" />
+    <plus_ps_label
+     follows="left|top|right"
+     height="24"
+     kind="white"
+     label="Choose a conversation"
+     layout="topleft"
+     left="14"
+     name="conv_peer"
+     top="211"
+     width="252" />
+    <plus_ps_label
+     follows="left|top|right"
+     height="18"
+     kind="sub"
+     layout="topleft"
+     left="14"
+     name="conv_peer_sub"
+     top="235"
+     width="252" />
+    <plus_ps_box
+     follows="left|bottom|right"
+     height="30"
+     kind="glass"
+     layout="topleft"
+     left="14"
+     name="conv_input_box"
+     top="462"
+     width="252">
+        <plus_ps_icon_button
+         follows="right|top"
+         height="30"
+         icon="send"
+         icon_size="19"
+         layout="topleft"
+         left="220"
+         name="conv_send"
+         tool_tip="Send to the conversation shown above (Enter)"
+         top="0"
+         width="32" />
+    </plus_ps_box>
+</panel>

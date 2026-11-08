@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_inv_detail">
+	<panel.string name="acquired_24h">[year,datetime,slt]年[mth,datetime,slt][day,datetime,slt]日 [hour,datetime,slt]:[min,datetime,slt]</panel.string>
+	<panel.string name="acquired_12h">[year,datetime,slt]年[mth,datetime,slt][day,datetime,slt]日 [ampm,datetime,slt][hour12,datetime,slt]:[min,datetime,slt]</panel.string>
+	<panel.string name="l_type">種類</panel.string>
+	<panel.string name="l_creator">作成者</panel.string>
+	<panel.string name="l_owner">持ち主</panel.string>
+	<panel.string name="l_acquired">入手日</panel.string>
+	<panel.string name="l_perm_you">あなたの権限</panel.string>
+	<panel.string name="l_perm_next">次の持ち主</panel.string>
+	<panel.string name="l_description">説明</panel.string>
+	<panel.string name="l_contents">中身の数</panel.string>
+	<panel.string name="l_uuid">UUID</panel.string>
+	<panel.string name="perm_modify">変更</panel.string>
+	<panel.string name="perm_copy">コピー</panel.string>
+	<panel.string name="perm_transfer">譲渡</panel.string>
+	<panel.string name="yes">○</panel.string>
+	<panel.string name="no">×</panel.string>
+	<panel.string name="you">あなた</panel.string>
+	<panel.string name="group">グループ</panel.string>
+	<panel.string name="folder">フォルダ</panel.string>
+	<panel.string name="none">なし</panel.string>
+	<panel.string name="unknown">不明</panel.string>
+	<panel.string name="loading">読み込み中...</panel.string>
+	<panel.string name="nothing">項目を選ぶと、ここに詳細が出ます。</panel.string>
+	<panel.string name="more_selected">ほか [N] 件を選択中</panel.string>
+	<button name="detail_properties_btn" label="プロパティ" tool_tip="選んだ項目のプロパティを開きます"/>
+	<button name="detail_open_btn" label="別窓で開く" tool_tip="選んだフォルダを新しいインベントリの窓で開きます"/>
+	<button name="detail_copy_uuid_btn" label="UUIDをコピー" tool_tip="選んだ項目の ID をクリップボードへコピーします"/>
+</panel>

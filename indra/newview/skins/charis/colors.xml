@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Made by indra/newview/plus/photoscreen/psui/make_ui_tokens.py from tokens.txt (research/239 (12)).
+     Do not edit: change tokens.txt and run python -I make_ui_tokens.py. -->
+<colors>
+
+  <!-- The tokens (pstokens.h has the same values): the XUI windows use these names -->
+  <color name="PsGround" value="0.0471 0.0667 0.102 1" />
+  <color name="PsPanelTop" value="0.0784 0.1059 0.1569 0.96" />
+  <color name="PsPanelBottom" value="0.0353 0.0667 0.1098 0.96" />
+  <color name="PsPanelMid" value="0.0588 0.0863 0.1333 1" />
+  <color name="PsPanelBorder" value="0.1098 0.1451 0.2 1" />
+  <color name="PsDividerLeft" value="0.1059 0.1373 0.1804 1" />
+  <color name="PsDividerRight" value="0.1961 0.2392 0.298 1" />
+  <color name="PsTextWhite" value="0.9569 0.9686 0.9843 1" />
+  <color name="PsTextLabel" value="0.7255 0.7647 0.8118 1" />
+  <color name="PsTextDim" value="0.5569 0.5961 0.6353 1" />
+  <color name="PsTextSub" value="0.6745 0.7176 0.7765 1" />
+  <color name="PsTextHint" value="0.6196 0.6706 0.7333 1" />
+  <color name="PsIconLight" value="0.8353 0.8667 0.9098 1" />
+  <color name="PsAccent" value="0.2353 0.5686 0.9373 1" />
+  <color name="PsAccentLine" value="0.5137 0.7961 1 1" />
+  <color name="PsFocusRing" value="0.2353 0.5686 0.9373 0.7" />
+  <color name="PsRail" value="0.0431 0.0784 0.1294 1" />
+  <color name="PsRailIconColor" value="0.6706 0.7255 0.8235 1" />
+  <color name="PsRailText" value="0.7255 0.7647 0.8118 1" />
+  <color name="PsRailSelLeft" value="0.0902 0.3098 0.6039 1" />
+  <color name="PsRailSelRight" value="0.0549 0.1961 0.3647 1" />
+  <color name="PsRailSelBar" value="0.5137 0.7961 1 1" />
+  <color name="PsRailSelText" value="0.9098 0.9843 1 1" />
+  <color name="PsRailHover" value="1 1 1 0.05" />
+  <color name="PsRailPress" value="0 0 0 0.1" />
+  <color name="PsHeadIconColor" value="0.8353 0.8667 0.9098 1" />
+  <color name="PsHeadChevronColor" value="0.5569 0.5961 0.6353 1" />
+  <color name="PsLabel" value="0.7255 0.7647 0.8118 1" />
+  <color name="PsCheckOff" value="0.0667 0.1059 0.1529 1" />
+  <color name="PsCheckBorder" value="0.2039 0.2314 0.2824 1" />
+  <color name="PsCheckBorderHover" value="0.2902 0.3333 0.4 1" />
+  <color name="PsCheckOn" value="0.3529 0.6275 0.9333 1" />
+  <color name="PsCheckMarkColor" value="1 1 1 1" />
+  <color name="PsCheckText" value="0.7882 0.8196 0.8627 1" />
+  <color name="PsSliderFillLeft" value="0.4902 0.5294 0.6196 1" />
+  <color name="PsSliderFillRight" value="0.702 0.7373 0.8118 1" />
+  <color name="PsSliderEmpty" value="0.2118 0.2431 0.302 1" />
+  <color name="PsKnobTop" value="0.8157 0.8549 0.9412 1" />
+  <color name="PsKnobBottom" value="0.6667 0.7137 0.8157 1" />
+  <color name="PsSliderTick" value="0.2902 0.3333 0.4 1" />
+  <color name="PsValueFill" value="0.0471 0.0706 0.1059 1" />
+  <color name="PsDefaultBtnColor" value="0.5569 0.5961 0.6353 1" />
+  <color name="PsDefaultBtnColorHover" value="0.9569 0.9686 0.9843 1" />
+  <color name="PsDefaultBtnFillHover" value="1 1 1 0.05" />
+  <color name="PsSwitchOn" value="0.251 0.5608 0.902 1" />
+  <color name="PsSwitchOff" value="0.2118 0.2431 0.302 1" />
+  <color name="PsSwitchKnobOn" value="1 1 1 1" />
+  <color name="PsSwitchKnobOff" value="0.5569 0.5961 0.6353 1" />
+  <color name="PsComboFill" value="0.1255 0.1647 0.251 0.8" />
+  <color name="PsComboBorder" value="0.2275 0.2667 0.3451 1" />
+  <color name="PsListBg" value="0.0784 0.1059 0.1569 1" />
+  <color name="PsListSelected" value="0.102 0.2549 0.4471 1" />
+  <color name="PsChipFill" value="0.0549 0.0667 0.098 0.7" />
+  <color name="PsChipIconColor" value="0.8353 0.8667 0.9098 1" />
+  <color name="PsHistFill" value="0.102 0.1294 0.1961 0.75" />
+  <color name="PsHistBorder" value="0.251 0.2863 0.3922 0.6" />
+  <color name="PsHistR" value="0.8863 0.3216 0.2902 0.45" />
+  <color name="PsHistG" value="0.2745 0.7529 0.4157 0.45" />
+  <color name="PsHistB" value="0.2392 0.498 0.9412 0.45" />
+  <color name="PsHistLuma" value="0.851 0.8667 0.902 0.55" />
+  <color name="PsHistBase" value="0.3529 0.3882 0.4706 1" />
+  <color name="PsReadoutText" value="0.9725 0.9725 0.9804 1" />
+  <color name="PsReadoutShade" value="0 0 0 0.35" />
+  <color name="PsIconbtnColor" value="0.949 0.9686 1 1" />
+  <color name="PsIconbtnHoverColor" value="1 1 1 0.1" />
+  <color name="PsSegBorder" value="0.2157 0.3882 0.5255 1" />
+  <color name="PsSegBorderDim" value="0.149 0.2078 0.2902 1" />
+  <color name="PsSegOnLeft" value="0.1686 0.3176 0.5216 1" />
+  <color name="PsSegOnRight" value="0.1176 0.2196 0.3451 1" />
+  <color name="PsSegOff" value="0.1137 0.1569 0.2196 1" />
+  <color name="PsShutterRing" value="0.9294 0.9569 1 1" />
+  <color name="PsShutterTop" value="0.9686 0.9765 0.9882 1" />
+  <color name="PsShutterBottom" value="0.8941 0.9098 0.9412 1" />
+  <color name="PsCardFill" value="0.0471 0.0824 0.1333 1" />
+  <color name="PsCardBorder" value="0.1647 0.2 0.2588 1" />
+  <color name="PsPlaceholder" value="0.0784 0.1059 0.1569 1" />
+  <color name="PsPlaceholderIcon" value="0.3529 0.3882 0.4706 1" />
+  <color name="PsButtonFill" value="0.0549 0.0902 0.1294 1" />
+  <color name="PsButtonBorder" value="0.2 0.2275 0.2706 1" />
+  <color name="PsButtonFillHover" value="0.0824 0.1255 0.1882 1" />
+  <color name="PsButtonBorderHover" value="0.2902 0.3333 0.4 1" />
+  <color name="PsButtonFillPress" value="0.0392 0.0667 0.102 1" />
+  <color name="PsTabTextOn" value="0.9294 0.9961 1 1" />
+  <color name="PsTabLineEdge" value="0.2353 0.5686 0.9373 1" />
+  <color name="PsTabLineMid" value="0.6627 0.8549 0.9882 1" />
+  <color name="PsTabGlowColor" value="0.2353 0.5686 0.9373 0.25" />
+  <color name="PsPresetHoverBorder" value="0.5137 0.7961 1 1" />
+  <color name="PsPresetSelectedBorder" value="0.2353 0.5686 0.9373 1" />
+  <color name="PsPresetCloseFill" value="0 0 0 0.6" />
+  <color name="PsAddFill" value="0.0431 0.0706 0.1176 1" />
+  <color name="PsAddBorder" value="0.1412 0.1686 0.2118 1" />
+  <color name="PsListRowText" value="0.7882 0.8196 0.8627 1" />
+  <color name="PsListStarOn" value="0.949 0.7569 0.3059 1" />
+  <color name="PsListStarOff" value="0.3529 0.3882 0.4706 1" />
+  <color name="PsBadgeFill" value="0.2353 0.5686 0.9373 1" />
+  <color name="PsBadgeQuiet" value="0.2118 0.2431 0.302 1" />
+  <color name="PsBadgeText" value="1 1 1 1" />
+  <color name="PsConvOwnText" value="0.6745 0.7176 0.7765 1" />
+  <color name="PsConvSystemText" value="0.5569 0.5961 0.6353 1" />
+  <color name="PsPanelBg" value="0.0588 0.0863 0.1333 1" />
+  <color name="PsFieldBg" value="0.0471 0.0706 0.1059 1" />
+  <color name="PsFieldBorder" value="0.2039 0.2314 0.2824 1" />
+  <color name="PsSelectionBg" value="0.102 0.2549 0.4471 1" />
+  <color name="PsHoverBg" value="1 1 1 0.05" />
+  <color name="PsLinkText" value="0.5137 0.7961 1 1" />
+  <color name="PsDividerLine" value="0.1961 0.2392 0.298 1" />
+  <color name="PsWindowTop" value="0.0784 0.1059 0.1569 0.96" />
+  <color name="PsWindowBottom" value="0.0353 0.0667 0.1098 0.96" />
+  <color name="PsWindowBorder" value="0.1098 0.1451 0.2 1" />
+  <color name="PsWindowBorderFocus" value="0.1961 0.2392 0.298 1" />
+  <color name="PsTitleIcon" value="0.8353 0.8667 0.9098 1" />
+  <color name="PsTitleIconPress" value="0.5137 0.7961 1 1" />
+  <color name="PsTooltipFill" value="0.0784 0.1059 0.1569 1" />
+  <color name="PsTooltipBorder" value="0.1098 0.1451 0.2 1" />
+  <color name="PsButtonOnTop" value="0.1686 0.3176 0.5216 1" />
+  <color name="PsButtonOnBottom" value="0.1176 0.2196 0.3451 1" />
+  <color name="PsButtonOnBorder" value="0.2157 0.3882 0.5255 1" />
+  <color name="PsScrollThumb" value="0.2902 0.3333 0.4 1" />
+  <color name="PsScrollTrack" value="0.0471 0.0667 0.102 0.35" />
+  <color name="PsHighlightBg" value="0.102 0.2549 0.4471 1" />
+  <color name="PsRowHoverBg" value="0.1137 0.1569 0.2196 1" />
+  <color name="PsSearchHitFill" value="0.2353 0.5686 0.9373 0.18" />
+  <color name="PsSearchHitRing" value="0.5137 0.7961 1 0.8" />
+
+  <!-- Official names the Charis look changes -->
+  <color name="DkGray" reference="PsGround" />
+  <color name="DkGray_66" value="0.0471 0.0667 0.102 0.66" />  <!-- GROUND/0.66 -->
+  <color name="DkGray2" value="0.0784 0.1059 0.1569 1" />  <!-- PANEL_TOP/1 -->
+  <color name="DkGray0" reference="PsDividerRight" />
+  <color name="PanelGray" reference="PsDividerRight" />
+  <color name="MouseGray" reference="PsSegOff" />
+  <color name="DkGrayLogin" reference="PsGround" />
+  <color name="PanelDark" reference="PsGround" />
+  <color name="LtGray" reference="PsTextLabel" />
+  <color name="LtGray_35" value="0.7255 0.7647 0.8118 0.35" />  <!-- TEXT_LABEL/0.35 -->
+  <color name="LtGray_50" value="0.7255 0.7647 0.8118 0.5" />  <!-- TEXT_LABEL/0.5 -->
+  <color name="Gray" reference="PsTextDim" />
+  <color name="EmphasisColor" reference="PsAccentLine" />
+  <color name="EmphasisColor_35" value="0.2353 0.5686 0.9373 0.35" />  <!-- ACCENT/0.35 -->
+  <color name="ColorDropShadow" value="0.0471 0.0667 0.102 0" />  <!-- GROUND/0 -->
+  <color name="FocusColor" reference="PsAccent" />
+  <color name="HTMLLinkColor" reference="PsLinkText" />
+  <color name="MenuDefaultBgColor" reference="PsListBg" />
+  <color name="MenuPopupBgColor" reference="PsListBg" />
+  <color name="MenuItemHighlightBgColor" reference="PsHighlightBg" />
+  <color name="ComboListBgColor" reference="PsListBg" />
+  <color name="ScrollSelectedBGColor" reference="PsSelectionBg" />
+  <color name="ScrollHoveredColor" reference="PsRowHoverBg" />
+  <color name="SysWellItemSelected" reference="PsSelectionBg" />
+  <color name="AlertBoxColor" reference="PsListBg" />
+  <color name="PieMenuBgColor" value="0.0784 0.1059 0.1569 0.59" />  <!-- LIST_BG/0.59 -->
+  <color name="ResizebarBody" reference="PsPanelBorder" />
+  <color name="ResizebarBorderLight" reference="PsDividerRight" />
+  <color name="ResizebarBorderDark" reference="PsDividerLeft" />
+  <color name="ToolTipBgColor" reference="PsTooltipFill" />
+  <color name="ToolTipBorderColor" reference="PsTooltipBorder" />
+  <color name="ToolTipTextColor" reference="PsTextWhite" />
+  <color name="SearchableControlHighlightBgColor" reference="PsSearchHitFill" />
+  <color name="SearchableControlHighlightFontColor" reference="PsAccentLine" />
+
+  <!-- Official names that refer to a palette name above: read again here so they follow it -->
+  <color name="AccordionHeaderTextColor" reference="LtGray" />
+  <color name="ButtonLabelColor" reference="LtGray" />
+  <color name="ChatHistoryTextColor" reference="LtGray" />
+  <color name="ConversationFriendColor" reference="EmphasisColor" />
+  <color name="FilterTextColor" reference="EmphasisColor" />
+  <color name="FloaterButtonImageColor" reference="LtGray" />
+  <color name="FloaterDefaultBackgroundColor" reference="DkGray_66" />
+  <color name="FloaterFocusBackgroundColor" reference="DkGray2" />
+  <color name="GroupNotifyDimmedTextColor" reference="LtGray" />
+  <color name="InventoryBackgroundColor" reference="DkGray2" />
+  <color name="InventoryItemLibraryColor" reference="EmphasisColor" />
+  <color name="InventoryItemLinkColor" reference="LtGray_50" />
+  <color name="InventoryMouseOverColor" reference="LtGray_35" />
+  <color name="InventorySearchStatusColor" reference="EmphasisColor" />
+  <color name="LabelTextColor" reference="LtGray" />
+  <color name="MenuBarBgColor" reference="DkGray" />
+  <color name="MenuItemDisabledColor" reference="LtGray_50" />
+  <color name="MenuItemEnabledColor" reference="LtGray" />
+  <color name="MultiSliderTrackColor" reference="LtGray" />
+  <color name="PanelDefaultBackgroundColor" reference="DkGray" />
+  <color name="PanelFocusBackgroundColor" reference="DkGray2" />
+  <color name="ScrollUnselectedColor" reference="LtGray" />
+  <color name="SelectedOutfitTextColor" reference="EmphasisColor" />
+  <color name="TimeTextColor" reference="LtGray" />
+  <color name="InspectorTipTextColor" reference="LtGray" />
+  <color name="MenuBarStreamingBgColor" reference="DkGray" />
+  <color name="StatusUserOffline" reference="LtGray_35" />
+  <color name="GroupHiddenInProfile" reference="Gray" />
+
+  <!-- Official names that would follow a palette name but stay as the official skin has them -->
+  <color name="ColorPaletteEntry02" value="0.5 0.5 0.5 1" />
+  <color name="ColorPaletteEntry18" value="0.75 0.75 0.75 1" />
+  <color name="ContextSilhouetteColor" value="0.3 0.82 1 1" />
+  <color name="NameTagFriend" value="0.3 0.82 1 1" />
+  <color name="ObjectBubbleColor" value="0.125 0.125 0.125 .66" />
+  <color name="ObjectChatColor" value="0.3 0.82 1 1" />
+  <color name="SystemChatColor" value="0.75 0.75 0.75 1" />
+  <color name="TextBgWriteableColor" value="0.75 0.75 0.75 1" />
+  <color name="TextFgReadOnlyColor" value="0.75 0.75 0.75 1" />
+  <color name="OutputMonitorMutedColor" value="0.169 0.169 0.169 1" />
+
+</colors>

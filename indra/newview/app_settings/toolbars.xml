@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<toolbars>
+  <bottom_toolbar
+    button_display_mode="icons_with_text">
+    <command name="chat"/>
+    <command name="speak"/>
+    <command name="destinations"/>
+    <command name="people"/>
+    <command name="profile"/>
+    <command name="map"/>
+    <command name="move"/>
+    <command name="view"/>
+    <!-- plus: quickprefs and ao (the Quick Preferences and Animation Overrider buttons, app_settings/commands_plus.xml) -->
+    <command name="plus_quickprefs"/>
+    <command name="plus_ao"/>
+    <!-- /plus -->
+  </bottom_toolbar>
+  <left_toolbar
+    button_display_mode="icons_only">
+    <command name="avatar"/>
+    <command name="appearance"/>
+    <command name="inventory"/>
+    <command name="search"/>
+    <command name="places"/>
+    <command name="voice"/>
+    <command name="minimap"/>
+    <!-- plus: photo tools in the snapshot's place (upstream: <command name="snapshot"/>) -->
+    <command name="plus_photo_tools"/>
+    <command name="plus_photo_screen"/>
+    <!-- /plus -->
+    <!-- plus: the Graphics speed button is removed (upstream: <command name="performance"/>) -->
+    <!-- /plus -->
+  </left_toolbar>
+  <right_toolbar
+    button_display_mode="icons_only">
+  </right_toolbar>
+</toolbars>

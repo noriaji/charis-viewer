@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_voice.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="voice_panel">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="voice_scroll">
+            <panel name="voice_scroll_panel">
+                <plus_ps_slider_compat name="Voice Volume" label="語音聊天" />
+                <plus_ps_check_compat name="enable_voice_check" label="已啟用" />
+                <plus_ps_text name="Listen from">
+                    傾聽位置：
+                </plus_ps_text>
+                <plus_ps_check_compat name="enable_lip_sync" label="說話時同步移動化身嘴唇" />
+                <plus_ps_check_compat name="push_to_talk_toggle_check" label="切換說話 / 靜音，當我按下：" tool_tip="在切換模式下，按下再放開啟動鍵一次，即可打開或關閉麥克風。 不在切換狀態時，麥克風只有在啟動鍵被按下時才會放送你的聲音。" />
+                <plus_ps_check_compat name="gesture_audio_play_btn" label="播放來自姿勢的聲音" tool_tip="勾選即可聽到來自姿勢的聲音" />
+                <plus_ps_button_compat name="device_settings_btn" label="輸入 / 輸出設備" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

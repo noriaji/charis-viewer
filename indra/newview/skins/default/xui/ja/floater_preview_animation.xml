@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="preview_anim">
+	<floater.string name="Title">
+		アニメーション：[NAME]
+	</floater.string>
+	<text name="desc txt">
+		説明：
+	</text>
+	<text name="adv_trigger">
+		アドバンス
+	</text>
+	<button label="インワールドで再生" label_selected="停止" name="Inworld" tool_tip="他人から見えるように再生します。"/>
+	<text name="desc inworld">
+		ほかの人にも見える
+	</text>
+	<button label="ローカル再生" label_selected="停止" name="Locally" tool_tip="自分だけが見えるように再生します。"/>
+	<text name="desc local">
+		自分だけに見える
+	</text>
+</floater>

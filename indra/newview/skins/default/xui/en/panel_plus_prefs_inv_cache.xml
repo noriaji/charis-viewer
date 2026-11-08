@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Charis window (from: panel_plus_inv_cache.xml; research/266 4. prefs-w-setup). The button that clears the
+     inventory cache at the next login (plus/invcache), in Preferences > Advanced beside "Remembered Usernames"
+     (panel_plus_prefs_advanced.xml). 260 x 40: one button. -->
+<panel
+ name="plus_inv_cache"
+ background_visible="false"
+ border="false"
+ follows="left|top"
+ height="40"
+ layout="topleft"
+ mouse_opaque="false"
+ width="260">
+    <plus_ps_button_compat
+     name="plus_inv_cache_clear"
+     follows="left|top"
+     height="40"
+     label="Clear Inventory Cache"
+     layout="topleft"
+     left="0"
+     tool_tip="Deletes this account's saved copy of your inventory at your next login, so the whole inventory is loaded from the server again (the login takes longer). Try it when folders look empty or items are missing. Nothing in your inventory is deleted."
+     top="0"
+     width="260">
+        <plus_ps_button_compat.commit_callback
+         function="Plus.InvCache.Clear" />
+    </plus_ps_button_compat>
+</panel>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- 環境設定 > グラフィック（Charis のページ、research/266 prefs-w-view）の ja。en と同じ名前の鎖で文言だけ。訳は公式の ja
+     （panel_preferences_graphics1.xml）から。 -->
+<panel label="グラフィック" name="Display panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="graphics_scroll">
+			<panel name="graphics_scroll_panel">
+				<plus_ps_text name="preset_in_use_label">
+					使用中のプリセット：
+				</plus_ps_text>
+				<plus_ps_text name="preset_text">
+					（なし）
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText">
+					低
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText2">
+					中
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText3">
+					高
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText4">
+					超高
+				</plus_ps_text>
+				<plus_ps_text name="QualitySpeed">
+					品質と速度：
+				</plus_ps_text>
+				<plus_ps_text name="FasterText">
+					速度優先
+				</plus_ps_text>
+				<plus_ps_text name="BetterText">
+					品質優先
+				</plus_ps_text>
+				<plus_ps_slider_compat label="描画距離：" name="DrawDistance"/>
+				<plus_ps_text name="DrawDistanceMeterText2">
+					m
+				</plus_ps_text>
+				<plus_ps_button_compat label="自動調整" name="AutoAdjustmentsButton"/>
+				<plus_ps_button_compat label="詳細設定…" name="AdvancedSettings"/>
+				<plus_ps_header label="アバター" name="h_avatars"/>
+				<plus_ps_text name="AvatarComplexityModeLabel">
+					アバター表示：
+				</plus_ps_text>
+				<plus_ps_combo name="AvatarComplexityMode">
+					<plus_ps_combo.item label="複雑度で制限" name="0"/>
+					<plus_ps_combo.item label="フレンドは常に表示" name="1"/>
+					<plus_ps_combo.item label="フレンドのみ表示" name="2"/>
+				</plus_ps_combo>
+				<plus_ps_slider_compat label="アバターの最大複雑度：" name="IndirectMaxComplexity" tool_tip="見た目の複雑なアバターを、どの複雑度から JellyDoll（単色の人形）で描くかを決めます。"/>
+				<plus_ps_text name="IndirectMaxComplexityText">
+					0
+				</plus_ps_text>
+				<plus_ps_slider_compat label="動くアバターの最大数：" name="IndirectMaxNonImpostors"/>
+				<plus_ps_text name="IndirectMaxNonImpostorsText">
+					0
+				</plus_ps_text>
+				<plus_ps_button_compat label="例外…" name="RenderExceptionsButton"/>
+				<plus_ps_header label="プリセット" name="h_presets"/>
+				<plus_ps_button_compat label="設定をプリセットとして保存…" name="PrefSaveButton"/>
+				<plus_ps_button_compat label="プリセットを読み込む…" name="PrefLoadButton"/>
+				<plus_ps_button_compat label="プリセットを削除…" name="PrefDeleteButton"/>
+				<plus_ps_button_compat label="推奨設定にリセット" name="Defaults"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

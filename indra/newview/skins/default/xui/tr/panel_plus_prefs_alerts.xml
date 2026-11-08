@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="popups" label="Açılır Uyarılar">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="popups_scroll">
+			<panel name="popups_scroll_panel">
+				<plus_ps_text name="tell_me_label">
+					Bana söyle:
+				</plus_ps_text>
+				<plus_ps_check_compat name="notify_money_spend_checkbox" label="L$ harcadığımda" />
+				<plus_ps_check_compat name="notify_money_received_checkbox" label="L$ aldığımda" />
+				<plus_ps_check_compat name="friends_online_notify_checkbox" label="Arkadaşlarım oturum açtığında veya kapattığında" />
+				<plus_ps_text name="show_label">
+					Daima göster:
+				</plus_ps_text>
+				<plus_ps_text name="dont_show_label">
+					Asla gösterme:
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

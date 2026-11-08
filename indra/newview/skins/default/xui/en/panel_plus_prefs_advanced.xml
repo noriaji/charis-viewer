@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window (from: official panel_preferences_advanced.xml of the work tree = Second_Life_Release#d567465e-26.5
+     with the plus row invcache; research/266 4. prefs-w-setup). The official panel stays as it is (the ledger's
+     source for tools/ui-parity-diff.py); this page has all it does (name, control_name, functions, strings, ranges)
+     in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml). The headings h_* are Charis's.
+     The inventory cache button is Charis's own page now: panel_plus_prefs_inv_cache.xml.
+     Height of the list (1080 base): 10 + Cache heading 40 + size row 40 + 6 + location row 34 + 6 + buttons 40 + 10
+     + Size heading 40 + 2 sliders x 31 + 10 + Login and menus heading 40 + 4 checks x 30 + 10
+     + More settings heading 40 + 2 button rows x 40 + 6 + 14 = 608 (scrolls in 515).
+     Rows at left 14, 529 wide. Cache size: spinner 330 (label 240) | 6 | MB 30 | 13 | Clear 160 (the 40 high row;
+     the spinner and MB in its middle). Location: label 140 | 6 | glass 383 (the line editor in it); the buttons
+     under the glass: Browse 150 | 12 | Default 200. Sliders: label 124 | 12 | slider 393 (value 62). -->
+<panel
+ name="advanced"
+ border="true"
+ follows="all"
+ height="515"
+ label="Advanced"
+ layout="topleft"
+ left="0"
+ top="0"
+ width="574">
+    <panel.string
+     name="aspect_ratio_text">
+        [NUM]:[DEN]
+    </panel.string>
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="advanced_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="advanced_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="608"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <!-- Cache -->
+                <plus_ps_header
+                 name="h_cache"
+                 divider="none"
+                 follows="left|top|right"
+                 height="40"
+                 label="Cache"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="10"
+                 width="529" />
+                <plus_ps_spinner
+                 name="cachesizespinner"
+                 control_name="CacheSize"
+                 decimal_digits="0"
+                 follows="left|top"
+                 height="30"
+                 increment="64"
+                 initial_value="1024"
+                 label="Cache size (896 - 32768MB)"
+                 label_width="240"
+                 layout="topleft"
+                 left="14"
+                 max_val="32768"
+                 min_val="896"
+                 top="55"
+                 width="330" />
+                <plus_ps_text
+                 name="text_box5"
+                 follows="left|top"
+                 height="30"
+                 layout="topleft"
+                 left="350"
+                 length="1"
+                 mouse_opaque="false"
+                 top="55"
+                 type="string"
+                 width="30">
+                    MB
+                </plus_ps_text>
+                <plus_ps_button_compat
+                 name="clear_cache"
+                 follows="left|top"
+                 height="40"
+                 label="Clear Cache"
+                 label_selected="Clear Cache"
+                 layout="topleft"
+                 left="383"
+                 top="50"
+                 width="160">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.ClearCache" />
+                </plus_ps_button_compat>
+                <plus_ps_text
+                 name="Cache location"
+                 follows="left|top"
+                 height="34"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="96"
+                 type="string"
+                 width="140">
+                    Cache location:
+                </plus_ps_text>
+                <!-- the cache folder: read-only (the C++ disables it and puts the whole path in its tool tip;
+                     Browse... changes it) -->
+                <plus_ps_box
+                 name="cache_location_box"
+                 follows="left|top|right"
+                 height="34"
+                 kind="glass"
+                 layout="topleft"
+                 left="160"
+                 top="96"
+                 width="383">
+                    <line_editor
+                     name="cache_location"
+                     control_name="CacheLocationTopFolder"
+                     bg_color="Transparent"
+                     cursor_color="PsTextWhite"
+                     draw_focus_border="false"
+                     follows="left|top|right"
+                     font="SansSerif"
+                     height="26"
+                     layout="topleft"
+                     left="4"
+                     max_length_bytes="4096"
+                     text_color="PsTextWhite"
+                     text_pad_left="6"
+                     text_readonly_color="PsTextLabel"
+                     text_tentative_color="PsTextDim"
+                     top="4"
+                     use_bg_color="true"
+                     width="375">
+                        <line_editor.border
+                         visible="false" />
+                    </line_editor>
+                </plus_ps_box>
+                <plus_ps_button_compat
+                 name="set_cache"
+                 follows="left|top"
+                 height="40"
+                 label="Browse"
+                 label_selected="Browse"
+                 layout="topleft"
+                 left="160"
+                 top="136"
+                 width="150">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.SetCache" />
+                </plus_ps_button_compat>
+                <plus_ps_button_compat
+                 name="default_cache_location"
+                 follows="left|top"
+                 height="40"
+                 label="Default Location"
+                 label_selected="Default Location"
+                 layout="topleft"
+                 left="322"
+                 top="136"
+                 width="200">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.ResetCache" />
+                </plus_ps_button_compat>
+                <!-- Size of the interface -->
+                <plus_ps_header
+                 name="h_size"
+                 divider="top"
+                 follows="left|top|right"
+                 height="40"
+                 label="Interface size"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="186"
+                 width="529" />
+                <plus_ps_text
+                 name="UI Size:"
+                 follows="left|top"
+                 height="31"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="226"
+                 type="string"
+                 width="124">
+                    UI size:
+                </plus_ps_text>
+                <plus_ps_slider_compat
+                 name="ui_scale_slider"
+                 control_name="UIScaleFactor"
+                 decimal_digits="2"
+                 follows="left|top|right"
+                 height="31"
+                 increment="0.025"
+                 initial_value="1"
+                 layout="topleft"
+                 left="150"
+                 max_val="4.0"
+                 min_val="0.75"
+                 top="226"
+                 width="393" />
+                <plus_ps_text
+                 name="HUD Size:"
+                 follows="left|top"
+                 height="31"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="257"
+                 type="string"
+                 width="124">
+                    HUD Scale:
+                </plus_ps_text>
+                <plus_ps_slider_compat
+                 name="hud_scale_slider"
+                 control_name="HUDScaleFactor"
+                 decimal_digits="2"
+                 follows="left|top|right"
+                 height="31"
+                 increment="0.1"
+                 initial_value="1"
+                 layout="topleft"
+                 left="150"
+                 max_val="2.0"
+                 min_val="1.0"
+                 top="257"
+                 width="393" />
+                <!-- Login and menus -->
+                <plus_ps_header
+                 name="h_login"
+                 divider="top"
+                 follows="left|top|right"
+                 height="40"
+                 label="Login and menus"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="298"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="allow_multiple_viewer_check"
+                 control_name="AllowMultipleViewers"
+                 follows="left|top|right"
+                 height="30"
+                 label="Allow Multiple Viewers"
+                 layout="topleft"
+                 left="14"
+                 top="338"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="show_grid_selection_check"
+                 control_name="ForceShowGrid"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show Grid Selection at login"
+                 layout="topleft"
+                 left="14"
+                 top="368"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="show_advanced_menu_check"
+                 control_name="UseDebugMenus"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show Advanced Menu"
+                 layout="topleft"
+                 left="14"
+                 top="398"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="show_develop_menu_check"
+                 control_name="QAMode"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show Develop Menu"
+                 layout="topleft"
+                 left="14"
+                 top="428"
+                 width="529" />
+                <!-- More settings (buttons that open windows or ask) -->
+                <plus_ps_header
+                 name="h_more"
+                 divider="top"
+                 follows="left|top|right"
+                 height="40"
+                 label="More settings"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="468"
+                 width="529" />
+                <plus_ps_button_compat
+                 name="remembered_usernames"
+                 follows="left|top"
+                 height="40"
+                 label="Remembered Usernames"
+                 layout="topleft"
+                 left="14"
+                 top="508"
+                 width="260">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.RememberedUsernames" />
+                </plus_ps_button_compat>
+                <!-- Clear the inventory cache at the next login (plus/invcache) -->
+                <panel
+                 name="plus_inv_cache"
+                 filename="panel_plus_prefs_inv_cache.xml"
+                 follows="left|top"
+                 height="40"
+                 layout="topleft"
+                 left="283"
+                 top="508"
+                 width="260" />
+                <plus_ps_button_compat
+                 name="default_creation_permissions"
+                 follows="left|top"
+                 height="40"
+                 label="Default Creation Permissions"
+                 layout="topleft"
+                 left="14"
+                 top="554"
+                 width="260">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.PermsDefault" />
+                </plus_ps_button_compat>
+                <plus_ps_button_compat
+                 name="scripting_development"
+                 follows="left|top"
+                 height="40"
+                 label="Script Development"
+                 layout="topleft"
+                 left="283"
+                 top="554"
+                 width="260">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.Scripting" />
+                </plus_ps_button_compat>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

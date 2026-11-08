@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The flycam on the keyboard and the mouse (plus/flycammouse, research/219): its tab in
+     Preferences > Game Controls, after "Server Data". Included from panel_preferences_game_control.xml.
+     The ranges are the clamps of flycammouse.cpp, the flying speed's too (0.05 to 50, as the wheel); its
+     slider is bound by flycammouse.cpp's callbacks, not control_name, so Cancel leaves the wheel's speed
+     (research/275 L063, L071; as panel_plus_prefs_flycam_mouse.xml). From the top: the intro 6-36, the
+     mouse mode 43-66, the five sliders every 28 from 78 (to 206), the note 218-282, of the tab's about 380. -->
+<panel
+ border="false"
+ follows="all"
+ height="380"
+ label="Flycam Keys"
+ layout="topleft"
+ mouse_opaque="false"
+ name="tab_plus_flycam_mouse"
+ width="509">
+    <text
+     follows="left|top"
+     height="30"
+     layout="topleft"
+     left="9"
+     mouse_opaque="false"
+     name="intro"
+     top="6"
+     width="340"
+     word_wrap="true">
+        The flycam you fly with the keyboard and the mouse (turned on in the Charis menu).
+    </text>
+    <button
+     follows="top|right"
+     height="23"
+     label="Restore Defaults"
+     layout="topleft"
+     name="restore_defaults"
+     right="-8"
+     tool_tip="Puts every setting on this tab back to its default."
+     top="6"
+     width="140">
+        <button.commit_callback
+         function="Plus.FlycamMouse.ResetPrefs" />
+    </button>
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="9"
+     mouse_opaque="false"
+     name="mouse_mode_label"
+     top="47"
+     width="150">
+        Look with the mouse:
+    </text>
+    <combo_box
+     control_name="PlusFlycamMouseMode"
+     follows="left|top"
+     height="23"
+     layout="topleft"
+     left="159"
+     name="mouse_mode"
+     tool_tip="How the mouse turns the flycam. While the right button is held: a short click still opens the right-click menu. All the time: the cursor is hidden while you fly; hold Alt to get it back."
+     top="43"
+     width="250">
+        <combo_box.item
+         label="Off"
+         name="off"
+         value="0" />
+        <combo_box.item
+         label="While the right button is held"
+         name="right_button"
+         value="1" />
+        <combo_box.item
+         label="All the time (Alt for the cursor)"
+         name="always"
+         value="2" />
+    </combo_box>
+    <slider
+     can_edit_text="true"
+     control_name="PlusFlycamMouseSens"
+     decimal_digits="2"
+     follows="left|top"
+     height="16"
+     increment="0.05"
+     initial_value="1"
+     label="Turn speed"
+     label_width="150"
+     layout="topleft"
+     left="9"
+     max_val="10"
+     min_val="0.05"
+     name="mouse_sens"
+     tool_tip="How far the flycam turns for a move of the mouse. 1 turns as far as in mouselook (its mouse sensitivity is used too)."
+     top="78"
+     width="400" />
+    <slider
+     can_edit_text="true"
+     decimal_digits="2"
+     follows="left|top"
+     height="16"
+     increment="0.05"
+     initial_value="1"
+     label="Flying speed"
+     label_width="150"
+     layout="topleft"
+     left="9"
+     max_val="50"
+     min_val="0.05"
+     name="speed"
+     tool_tip="How fast the flycam flies on the keys (1 = normal, up to 50). The mouse wheel also changes it while you fly (hold Shift, Ctrl or Alt to zoom instead); Cancel keeps what the wheel set."
+     top="106"
+     width="400">
+        <slider.init_callback
+         function="Plus.FlycamMouse.BindSpeed" />
+        <slider.commit_callback
+         function="Plus.FlycamMouse.SetSpeed" />
+    </slider>
+    <slider
+     can_edit_text="true"
+     control_name="PlusFlycamBoost"
+     decimal_digits="1"
+     follows="left|top"
+     height="16"
+     increment="0.5"
+     initial_value="3"
+     label="Faster with Shift (x)"
+     label_width="150"
+     layout="topleft"
+     left="9"
+     max_val="20"
+     min_val="1"
+     name="boost"
+     tool_tip="How many times faster the flycam flies while Shift is held."
+     top="134"
+     width="400" />
+    <slider
+     can_edit_text="true"
+     control_name="PlusFlycamSmooth"
+     decimal_digits="2"
+     follows="left|top"
+     height="16"
+     increment="0.05"
+     initial_value="0.15"
+     label="Smoothness (seconds)"
+     label_width="150"
+     layout="topleft"
+     left="9"
+     max_val="2"
+     min_val="0"
+     name="smooth"
+     tool_tip="How gently the flycam starts and stops on the keys: about how long it takes to reach full speed and to come to a stop. 0 starts and stops at once."
+     top="162"
+     width="400" />
+    <slider
+     can_edit_text="true"
+     control_name="PlusFlycamRollSpeed"
+     decimal_digits="0"
+     follows="left|top"
+     height="16"
+     increment="1"
+     initial_value="30"
+     label="Tilt speed (deg/s)"
+     label_width="150"
+     layout="topleft"
+     left="9"
+     max_val="90"
+     min_val="1"
+     name="roll_speed"
+     tool_tip="How fast Q and E tilt the camera, in degrees a second (3 times as fast with Shift)."
+     top="190"
+     width="400" />
+    <text
+     follows="left|top"
+     height="64"
+     layout="topleft"
+     left="9"
+     mouse_opaque="false"
+     name="note"
+     top="218"
+     width="490"
+     word_wrap="true">
+        While you fly: W A S D move, Space and C go up and down, Q and E tilt the camera, Shift flies faster and the mouse wheel changes the speed. The 3D mouse has its own settings (Move &amp; View > 3Dconnexion devices). The gamepad's flycam is set on Action Mappings.
+    </text>
+</panel>

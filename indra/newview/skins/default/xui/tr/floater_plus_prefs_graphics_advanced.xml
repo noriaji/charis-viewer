@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis window (research/267 gfxadv-ui) in this language: the words of floater_preferences_graphics_advanced.xml, by name (the chain of names of en). -->
+<floater name="prefs_graphics_advanced" title="GELİŞMİŞ GRAFİK TERCİHLERİ">
+	<plus_ps_tabs name="graphics_tabs">
+		<panel name="General">
+			<scroll_container name="general_scroll">
+				<panel name="general_scroll_panel">
+					<plus_ps_text name="ShadersText">
+						Gölgelendiriciler:
+					</plus_ps_text>
+					<plus_ps_check_compat initial_value="true" label="Saydam Su" name="TransparentWater"/>
+					<plus_ps_check_compat initial_value="true" label="Ortam Emilimi" name="UseSSAO"/>
+					<plus_ps_text name="RenderShadowDetailText">
+						Gölgeler:
+					</plus_ps_text>
+					<plus_ps_combo name="ShadowDetail">
+						<plus_ps_combo.item label="Yok" name="0"/>
+						<plus_ps_combo.item label="Güneş/Ay" name="1"/>
+						<plus_ps_combo.item label="Güneş/Ay + Projektörler" name="2"/>
+					</plus_ps_combo>
+					<plus_ps_slider_compat label="Çizme mesafesi:" name="DrawDistance"/>
+					<plus_ps_text name="DrawDistanceMeterText2">
+						m
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Maks. parçacık sayısı:" name="MaxParticleCount"/>
+					<plus_ps_text name="AvatarText">
+						Avatar
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Maksimum karmaşıklık:" name="IndirectMaxComplexity" tool_tip="Görsel olarak karmaşık bir avatarın ne zaman JellyDoll olarak çizileceğini belirler"/>
+					<plus_ps_text name="IndirectMaxComplexityText">
+						0
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Düşük grafik özellikli olmayan maks. avatar sayısı:" name="IndirectMaxNonImpostors"/>
+					<plus_ps_text name="IndirectMaxNonImpostorsText">
+						0
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Fizik:" name="AvatarPhysicsDetail"/>
+					<plus_ps_text name="AvatarPhysicsDetailText">
+						Düşük
+					</plus_ps_text>
+					<plus_ps_text name="MeshText">
+						Örgü detayı
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Nesneler:" name="ObjectMeshDetail"/>
+					<plus_ps_text name="ObjectMeshDetailText">
+						Düşük
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Esnek primler:" name="FlexibleMeshDetail"/>
+					<plus_ps_text name="FlexibleMeshDetailText">
+						Düşük
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Ağaçlar:" name="TreeMeshDetail"/>
+					<plus_ps_text name="TreeMeshDetailText">
+						Düşük
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Avatarlar:" name="AvatarMeshDetail"/>
+					<plus_ps_text name="AvatarMeshDetailText">
+						Düşük
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Yüzey:" name="TerrainMeshDetail"/>
+					<plus_ps_text name="TerrainMeshDetailText">
+						Düşük
+					</plus_ps_text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel name="Hardware Settings">
+			<scroll_container name="hardware_scroll">
+				<panel name="hardware_scroll_panel">
+					<plus_ps_check_compat initial_value="true" label="Doku Sıkıştırmasını Etkinleştir (yeniden başlatma gerektirir)" name="texture compression" tool_tip="Video bellekteki dokuları sıkıştırır, renk kalitesinde bazı kayıplar olmasına karşın daha yüksek çözünürlükte dokuların yüklenmesine imkan tanır."/>
+					<plus_ps_text name="antialiasing label">
+						Antialiasing:
+					</plus_ps_text>
+					<plus_ps_combo label="Antialiasing" name="fsaa">
+						<plus_ps_combo.item label="Devre dışı" name="FSAADisabled"/>
+					</plus_ps_combo>
+					<plus_ps_text name="antialiasing restart">
+						(yeniden başlatma gerektirir)
+					</plus_ps_text>
+					<plus_ps_check_compat initial_value="true" label="HiDPI görüntü desteğini etkinleştir (yeniden başlatma gerekir)" name="use HiDPI" tool_tip="Yüksek Çözünürlüklü Çizim için OpenGL'yi etkinleştirin."/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel name="Rendering">
+			<scroll_container name="rendering_scroll">
+				<panel name="rendering_scroll_panel">
+					<plus_ps_slider_compat label="Son işleme kalitesi:" name="RenderPostProcess"/>
+					<plus_ps_text name="PostProcessText">
+						Düşük
+					</plus_ps_text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel name="DOF panel">
+			<scroll_container name="dof_scroll">
+				<panel name="dof_scroll_panel">
+					<plus_ps_check_compat initial_value="true" label="Alan Derinliği" name="UseDoF"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Charis" name="Charis panel">
+			<scroll_container name="charis_scroll">
+				<panel name="charis_scroll_panel">
+				</panel>
+			</scroll_container>
+		</panel>
+	</plus_ps_tabs>
+	<plus_ps_button_compat label="Önerilen ayarlara dön" name="Defaults"/>
+	<plus_ps_button_compat label="Tamam" label_selected="Tamam" name="OK"/>
+	<plus_ps_button_compat label="İptal" label_selected="İptal" name="Cancel"/>
+	<check_box label="RenderAvatarMaxComplexity" name="RenderAvatarMaxComplexity"/>
+	<check_box label="RenderAvatarMaxNonImpostors" name="RenderAvatarMaxNonImpostors"/>
+</floater>

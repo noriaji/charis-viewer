@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Test scene (plus/testscene, research/171). Keys: indra/newview/plus/testscene/testscenedef.cpp. The same seed and keys build the same scene. -->
+<llsd>
+<map>
+  <key>description</key>
+  <string>Calibration target: research/168 (Le'eaf Forest Retreat, about 4200 direct draws in gbuffer, about 800 alpha). First guess; tune the counts with FrameCost 2.</string>
+  <key>seed</key>
+  <integer>1</integer>
+  <key>center</key>
+  <string>agent</string>
+  <key>height</key>
+  <real>80.0</real>
+  <key>radius</key>
+  <real>64.0</real>
+  <key>vertical</key>
+  <real>30.0</real>
+  <key>clusters</key>
+  <integer>24</integer>
+  <key>cluster_radius</key>
+  <real>14.0</real>
+  <key>prims</key>
+  <integer>3000</integer>
+  <key>shapes</key>
+  <array><string>box</string><string>cylinder</string><string>sphere</string><string>prism</string><string>torus</string></array>
+  <key>size_min</key>
+  <real>0.4</real>
+  <key>size_max</key>
+  <real>3.5</real>
+  <key>textures</key>
+  <integer>800</integer>
+  <key>texture_size</key>
+  <integer>256</integer>
+  <key>texture_per_face</key>
+  <boolean>false</boolean>
+  <key>fullbright</key>
+  <real>0.04</real>
+  <key>meshes</key>
+  <integer>900</integer>
+  <key>mesh_kinds</key>
+  <integer>12</integer>
+  <key>alpha_sheets</key>
+  <integer>800</integer>
+  <key>alpha</key>
+  <real>0.55</real>
+  <key>alpha_textures</key>
+  <integer>160</integer>
+  <key>sheet_size_min</key>
+  <real>0.8</real>
+  <key>sheet_size_max</key>
+  <real>3.5</real>
+  <key>texanim</key>
+  <real>0.15</real>
+  <key>texanim_rate</key>
+  <real>0.4</real>
+</map>
+</llsd>

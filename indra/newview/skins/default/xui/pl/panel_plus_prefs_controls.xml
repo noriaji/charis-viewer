@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="controls_panel" label="Sterowanie">
+	<plus_ps_box name="ps_ground">
+		<plus_ps_combo name="key_mode">
+			<plus_ps_combo.item name="third_person" label="W trzeciej osobie" />
+			<plus_ps_combo.item name="first_person" label="W trybie pierwszoosobowym" />
+			<plus_ps_combo.item name="edit_avatar" label="Podczas edycji awatara" />
+			<plus_ps_combo.item name="sitting" label="Siedząc" />
+		</plus_ps_combo>
+		<plus_ps_button_compat name="restore_defaults" label="Przywróć domyślne" tool_tip="Przywraca wartości domyślne dla wszystkich trybów sterowania." />
+	</plus_ps_box>
+</panel>

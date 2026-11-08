@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window (from: official Second_Life_Release#d567465e-26.5 panel_preferences_general.xml;
+     research/266 4. prefs-w-basic). The official panel stays as it is (the ledger's source for
+     tools/ui-parity-diff.py); this page has all it does (name, control_name, functions, strings, choices,
+     ranges) in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml).
+     Height of the list (1080 base): 10 + language 33 + note 18 + time 33 + 10 + maturity 33 + its text 18
+     + favourites 30 + note 18 + 10 + heading 40 + name tags 33 + 4 + checks 30 + 30 + group tags 33 + 10
+     + heading 40 + letter keys 33 + 10 + away 33 + 10 + label 24 + reply 60 + 14 = 617 (scrolls in 515).
+     Rows at left 14, 529 wide: label 230 | 12 | drop-down 287 (the longest language name is 255);
+     two columns of 258; the rating icons (the C++ shows them by the maturity) after its drop-down (223).
+     ja: 38 characters a row. -->
+<panel
+ name="general_panel"
+ border="true"
+ follows="all"
+ height="515"
+ label="General"
+ layout="topleft"
+ left="0"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="general_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="general_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="617"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <plus_ps_text
+                 name="language_textbox"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="10"
+                 type="string"
+                 width="230">
+                    Language:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="language_combobox"
+                 control_name="Language"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="256"
+                 max_chars="135"
+                 top="10"
+                 width="287">
+                    <plus_ps_combo.item
+                     name="English"
+                     enabled="true"
+                     label="English"
+                     value="en" />
+                    <plus_ps_combo.item
+                     name="Danish"
+                     enabled="true"
+                     label="Dansk (Danish) - Beta"
+                     value="da" />
+                    <plus_ps_combo.item
+                     name="Deutsch(German)"
+                     enabled="true"
+                     label="Deutsch (German) - Beta"
+                     value="de" />
+                    <plus_ps_combo.item
+                     name="Spanish"
+                     enabled="true"
+                     label="Español (Spanish) - Beta"
+                     value="es" />
+                    <plus_ps_combo.item
+                     name="French"
+                     enabled="true"
+                     label="Français (French) - Beta"
+                     value="fr" />
+                    <plus_ps_combo.item
+                     name="Italian"
+                     enabled="true"
+                     label="Italiano (Italian) - Beta"
+                     value="it" />
+                    <plus_ps_combo.item
+                     name="Polish"
+                     enabled="true"
+                     label="Polski (Polish) - Beta"
+                     value="pl" />
+                    <plus_ps_combo.item
+                     name="Portugese"
+                     enabled="true"
+                     label="Português (Portuguese) - Beta"
+                     value="pt" />
+                    <plus_ps_combo.item
+                     name="Russian"
+                     enabled="true"
+                     label="Русский (Russian) - Beta"
+                     value="ru" />
+                    <plus_ps_combo.item
+                     name="Turkish"
+                     enabled="true"
+                     label="Türkçe (Turkish) - Beta"
+                     value="tr" />
+                    <plus_ps_combo.item
+                     name="(Japanese)"
+                     enabled="true"
+                     label="日本語 (Japanese) - Beta"
+                     value="ja" />
+                    <plus_ps_combo.item
+                     name="Traditional Chinese"
+                     enabled="true"
+                     label="正體中文 (Traditional Chinese) - Beta"
+                     value="zh" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="language_textbox2"
+                 follows="left|top|right"
+                 height="18"
+                 kind="dim"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="43"
+                 type="string"
+                 width="529">
+                    (Requires restart)
+                </plus_ps_text>
+                <plus_ps_text
+                 name="time_format_textbox"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="61"
+                 type="string"
+                 width="230">
+                    Time Format:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="time_format_combobox"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="256"
+                 max_chars="135"
+                 top="61"
+                 width="287">
+                    <plus_ps_combo.item
+                     name="12H"
+                     enabled="true"
+                     label="1:00 PM"
+                     value="0" />
+                    <plus_ps_combo.item
+                     name="24H"
+                     enabled="true"
+                     label="13:00"
+                     value="1" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="maturity_desired_prompt"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="104"
+                 type="string"
+                 width="230">
+                    I want to access content rated:
+                </plus_ps_text>
+                <plus_ps_text
+                 name="maturity_desired_textbox"
+                 follows="left|top"
+                 height="18"
+                 kind="sub"
+                 layout="topleft"
+                 left="256"
+                 length="1"
+                 top="137"
+                 type="string"
+                 width="287" />
+                <plus_ps_combo
+                 name="maturity_desired_combobox"
+                 control_name="PreferredMaturity"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="256"
+                 top="104"
+                 width="223">
+                    <plus_ps_combo.item
+                     name="Desired_Adult"
+                     label="General, Moderate, Adult"
+                     value="42" />
+                    <plus_ps_combo.item
+                     name="Desired_Mature"
+                     label="General and Moderate"
+                     value="21" />
+                    <plus_ps_combo.item
+                     name="Desired_PG"
+                     label="General"
+                     value="13" />
+                    <plus_ps_combo.commit_callback
+                     function="Pref.MaturitySettings" />
+                </plus_ps_combo>
+                <icon
+                 name="rating_icon_general"
+                 follows="left|top"
+                 height="16"
+                 image_name="Parcel_PG_Dark"
+                 layout="topleft"
+                 left="485"
+                 top="112"
+                 width="18" />
+                <icon
+                 name="rating_icon_moderate"
+                 follows="left|top"
+                 height="16"
+                 image_name="Parcel_M_Dark"
+                 layout="topleft"
+                 left="505"
+                 top="112"
+                 width="18" />
+                <icon
+                 name="rating_icon_adult"
+                 follows="left|top"
+                 height="16"
+                 image_name="Parcel_R_Dark"
+                 layout="topleft"
+                 left="525"
+                 top="112"
+                 width="18" />
+                <plus_ps_check_compat
+                 name="favorites_on_login_check"
+                 control_name="ShowFavoritesOnLogin"
+                 enabled="false"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show favorite locations on login screen"
+                 layout="topleft"
+                 left="14"
+                 top="155"
+                 width="529" />
+                <plus_ps_text
+                 name="favorites_check_extra_text"
+                 follows="left|top|right"
+                 height="18"
+                 kind="dim"
+                 layout="topleft"
+                 left="44"
+                 length="1"
+                 top="185"
+                 type="string"
+                 width="499">
+                    (Others using this computer will also see them)
+                </plus_ps_text>
+                <plus_ps_text
+                 name="name_tags_textbox"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="213"
+                 type="string"
+                 width="529">
+                    Name tags:
+                </plus_ps_text>
+                <plus_ps_radio
+                 name="Name_Tag_Preference"
+                 control_name="AvatarNameTagMode"
+                 follows="left|top|right"
+                 height="33"
+                 kind="segment"
+                 layout="topleft"
+                 left="14"
+                 top="253"
+                 width="529">
+                    <radio_item
+                     name="radio"
+                     height="33"
+                     label="Off"
+                     layout="topleft"
+                     left="0"
+                     top="0"
+                     value="0"
+                     width="176" />
+                    <radio_item
+                     name="radio2"
+                     height="33"
+                     label="On"
+                     layout="topleft"
+                     left="176"
+                     top="0"
+                     value="1"
+                     width="176" />
+                    <radio_item
+                     name="radio3"
+                     height="33"
+                     label="Show briefly"
+                     layout="topleft"
+                     left="352"
+                     top="0"
+                     value="2"
+                     width="177" />
+                </plus_ps_radio>
+                <plus_ps_check_compat
+                 name="show_my_name_checkbox1"
+                 control_name="RenderNameShowSelf"
+                 enabled_control="AvatarNameTagMode"
+                 follows="left|top"
+                 height="30"
+                 label="My name"
+                 layout="topleft"
+                 left="14"
+                 top="290"
+                 width="258" />
+                <plus_ps_check_compat
+                 name="show_slids"
+                 control_name="NameTagShowUsernames"
+                 enabled_control="AvatarNameTagMode"
+                 follows="left|top"
+                 height="30"
+                 label="Usernames"
+                 layout="topleft"
+                 left="285"
+                 tool_tip="Show username, like bobsmith123"
+                 top="290"
+                 width="258" />
+                <plus_ps_check_compat
+                 name="display_names_check"
+                 control_name="UseDisplayNames"
+                 follows="left|top"
+                 height="30"
+                 label="Display names"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="Check to use display names in chat, IM, name tags, etc."
+                 top="320"
+                 width="258" />
+                <plus_ps_check_compat
+                 name="show_friends"
+                 control_name="NameTagShowFriends"
+                 enabled_control="AvatarNameTagMode"
+                 follows="left|top"
+                 height="30"
+                 label="Highlight friends"
+                 layout="topleft"
+                 left="285"
+                 tool_tip="Highlight the name tags of your friends"
+                 top="320"
+                 width="258" />
+                <plus_ps_combo
+                 name="group_title"
+                 control_name="GroupTitlesTagMode"
+                 enabled_control="AvatarNameTagMode"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 top="350"
+                 width="258">
+                    <plus_ps_combo.item
+                     name="no_tags"
+                     label="No group tags"
+                     value="0" />
+                    <plus_ps_combo.item
+                     name="my_tag"
+                     label="Only my group tag"
+                     value="1" />
+                    <plus_ps_combo.item
+                     name="all_tags"
+                     label="All group tags"
+                     value="2" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="inworld_typing_rg_label"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="393"
+                 type="string"
+                 width="529">
+                    Pressing letter keys:
+                </plus_ps_text>
+                <plus_ps_radio
+                 name="inworld_typing_preference"
+                 control_name="LetterKeysFocusChatBar"
+                 follows="left|top|right"
+                 height="33"
+                 kind="segment"
+                 layout="topleft"
+                 left="14"
+                 top="433"
+                 width="529">
+                    <radio_item
+                     name="radio_start_chat"
+                     height="33"
+                     label="Starts local chat"
+                     layout="topleft"
+                     left="0"
+                     top="0"
+                     value="1"
+                     width="264" />
+                    <radio_item
+                     name="radio_move"
+                     height="33"
+                     label="Affects movement (i.e. WASD)"
+                     layout="topleft"
+                     left="264"
+                     top="0"
+                     value="0"
+                     width="265" />
+                </plus_ps_radio>
+                <plus_ps_text
+                 name="title_afk_text"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="476"
+                 type="string"
+                 width="230">
+                    Away timeout:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="afk"
+                 control_name="AFKTimeout"
+                 follows="left|top"
+                 height="33"
+                 label="Away timeout:"
+                 layout="topleft"
+                 left="256"
+                 top="476"
+                 width="287">
+                    <plus_ps_combo.item
+                     name="item0"
+                     label="2 minutes"
+                     value="120" />
+                    <plus_ps_combo.item
+                     name="item1"
+                     label="5 minutes"
+                     value="300" />
+                    <plus_ps_combo.item
+                     name="item2"
+                     label="10 minutes"
+                     value="600" />
+                    <plus_ps_combo.item
+                     name="item3"
+                     label="30 minutes"
+                     value="1800" />
+                    <plus_ps_combo.item
+                     name="item4"
+                     label="never"
+                     value="0" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="text_box3"
+                 follows="left|top|right"
+                 height="24"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 mouse_opaque="false"
+                 top="519"
+                 type="string"
+                 width="529">
+                    Do Not Disturb response:
+                </plus_ps_text>
+                <!-- the reply: the official text editor in a glass box (its colours: the skin's names) -->
+                <plus_ps_box
+                 name="dnd_response_glass"
+                 follows="left|top"
+                 height="60"
+                 kind="glass"
+                 layout="topleft"
+                 left="14"
+                 top="543"
+                 width="529">
+                    <text_editor
+                     name="do_not_disturb_response"
+                     bg_focus_color="Transparent"
+                     bg_readonly_color="Transparent"
+                     bg_writeable_color="Transparent"
+                     commit_on_focus_lost="true"
+                     control_name="DoNotDisturbModeResponse"
+                     follows="all"
+                     height="52"
+                     layout="topleft"
+                     left="4"
+                     text_color="PsTextWhite"
+                     text_readonly_color="PsTextDim"
+                     top="4"
+                     use_ellipses="false"
+                     width="521"
+                     word_wrap="true">
+                        log_in_to_change
+                    </text_editor>
+                </plus_ps_box>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

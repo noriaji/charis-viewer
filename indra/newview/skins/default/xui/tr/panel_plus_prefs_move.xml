@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_move.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="move_panel" label="Hareket Et">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="move_scroll">
+            <panel name="move_scroll_panel">
+                <plus_ps_slider_compat name="camera_fov" label="Gröünüm açısı" />
+                <plus_ps_slider_compat name="camera_offset_scale" label="Mesafe" />
+                <plus_ps_text name="heading2">
+                    Şunun için otomatik konum:
+                </plus_ps_text>
+                <plus_ps_check_compat name="edit_camera_movement" label="İnşa Et/Düzenle" tool_tip="Düzenleme moduna girerken ve düzenleme modundan çıkarken otomatik kamera konumunu kullanın" />
+                <plus_ps_check_compat name="appearance_camera_movement" label="Görünüm" tool_tip="Düzenleme modundayken otomatik kamera konumunu kullan" />
+                <plus_ps_text name="keyboard_lbl">
+                    Klavye:
+                </plus_ps_text>
+                <plus_ps_check_compat name="arrow_keys_move_avatar_check" label="Ok tuşları beni her zaman hareket ettirir" />
+                <plus_ps_check_compat name="tap_tap_hold_to_run" label="Koşmak için iki kez dokun ve tut" />
+                <plus_ps_text name="mouse_lbl">
+                    Fare:
+                </plus_ps_text>
+                <plus_ps_check_compat name="first_person_avatar_visible" label="Fare üzerinden görünümde beni göster" />
+                <plus_ps_text name=" Mouse Sensitivity">
+                    Fare üzerinden görünümde fare hassasiyeti
+                </plus_ps_text>
+                <plus_ps_check_compat name="invert_mouse" label="Tersine çevir" />
+                <plus_ps_text name="single_click_action_lbl">
+                    Arazi üzerine tek tıklama:
+                </plus_ps_text>
+                <plus_ps_combo name="single_click_action_combo">
+                    <plus_ps_combo.item name="0" label="Eylem yok" />
+                    <plus_ps_combo.item name="1" label="Tıklanan noktaya hareket et" />
+                </plus_ps_combo>
+                <plus_ps_text name="double_click_action_lbl">
+                    Arazi üzerine çift tıklama:
+                </plus_ps_text>
+                <plus_ps_combo name="double_click_action_combo">
+                    <plus_ps_combo.item name="0" label="Eylem yok" />
+                    <plus_ps_combo.item name="1" label="Tıklanan noktaya hareket et" />
+                    <plus_ps_combo.item name="2" label="Tıklanan noktaya ışınla" />
+                </plus_ps_combo>
+                <plus_ps_button_compat name="joystick_setup_button" label="Diğer Aygıtlar" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

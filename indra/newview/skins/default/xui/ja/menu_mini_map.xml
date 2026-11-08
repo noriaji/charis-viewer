@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<menu name="Popup">
+	<menu_item_check name="Zoom very close" label="最も近く"/>
+	<menu_item_check name="Zoom close" label="近く"/>
+	<menu_item_check name="Zoom medium" label="中くらい"/>
+	<menu_item_check name="Zoom far" label="遠く"/>
+	<menu_item_check name="North at top" label="北を上に"/>
+	<menu_item_check name="Camera at top" label="カメラの向きを上に"/>
+	<menu_item_check name="Show parcel boundaries" label="区画の境界を表示"/>
+	<menu_item_call label="ズーム（近）" name="Zoom Close"/>
+	<menu_item_call label="ズーム（中）" name="Zoom Medium"/>
+	<menu_item_call label="ズーム（遠）" name="Zoom Far"/>
+	<menu_item_call label="ズーム（デフォルト）" name="Zoom Default"/>
+	<menu_item_check label="マップを回転" name="Rotate Map"/>
+	<menu_item_check label="中央へ自動移動" name="Auto Center"/>
+	<menu_item_check label="チャットの届く範囲を表示" name="Show chat range"/>
+	<menu_item_check name="Auto-center map" label="自動で中央に"/>
+	<menu_item_call name="Re-center map" label="中央に戻す"/>
+	<menu_item_call name="Stop tracking" label="追跡をやめる"/>
+	<menu_item_call name="About Land" label="土地情報"/>
+	<menu_item_call label="追跡をやめる" name="Stop Tracking"/>
+	<menu_item_call label="ワールドマップ" name="World Map"/>
+</menu>

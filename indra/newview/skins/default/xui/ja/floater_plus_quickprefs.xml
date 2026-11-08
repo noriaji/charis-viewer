@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_quickprefs" title="簡易設定">
+	<floater.string name="qp_region_default">共有された環境</floater.string>
+	<floater.string name="qp_day_cycle_based">デイサイクルに従う</floater.string>
+	<floater.string name="qp_none">なし</floater.string>
+	<floater.string name="qp_no_valid_env">インベントリに、選べる空・水面・デイサイクルがありません。</floater.string>
+	<floater.string name="qp_duplicate_control">設定「[NAME]」はすでに一覧にあります。</floater.string>
+	<floater.string name="qp_restore_confirm">一覧を既定に戻しますか？ 自分で作った一覧は削除されます。</floater.string>
+	<floater.string name="qp_new_label">新しい設定</floater.string>
+	<floater.string name="qp_draw_distance">描画距離</floater.string>
+	<floater.string name="qp_max_particles">パーティクルの最大数</floater.string>
+	<floater.string name="qp_avatar_physics_lod">アバター物理の LOD</floater.string>
+	<floater.string name="qp_lod_factor">LOD 係数</floater.string>
+	<floater.string name="qp_max_avatars">アバターの最大表示数</floater.string>
+	<floater.string name="qp_name_tags">ネームタグ</floater.string>
+	<floater.string name="qp_color_under_cursor">カーソル下の色</floater.string>
+	<floater.string name="qp_bandwidth">最大帯域幅</floater.string>
+	<panel name="quickprefs">
+		<layout_stack name="wl_options_stack">
+			<layout_panel name="wl_options_panel">
+				<text name="HoverHeightLabel" tool_tip="地面やオブジェクトからのアバターの高さを調整します。">
+					ホバーの高さ：
+				</text>
+				<text name="WL Sky" tool_tip="空を選びます。">
+					空：
+				</text>
+				<text name="WL Water" tool_tip="水面を選びます。">
+					水面：
+				</text>
+				<!-- 「デイサイクル：」は約 84px。3 つのコンボを右へずらして揃える（右端は en と同じ 213） -->
+				<text name="Day Cycle" tool_tip="デイサイクルを選びます。" width="84">
+					デイサイクル：
+				</text>
+				<combo_box name="WLPresetsCombo" left="90" width="123"/>
+				<combo_box name="WaterPresetsCombo" left="90" width="123"/>
+				<combo_box name="DCPresetsCombo" left="90" width="123"/>
+				<button name="btn_personal_lighting" label="自分の光源…"/>
+				<button name="ResetToRegionDefault" tool_tip="リージョンや区画の共有された環境に戻します。"/>
+				<button name="button_edit" tool_tip="ここに並べる設定を変えます。"/>
+			</layout_panel>
+		</layout_stack>
+	</panel>
+	<panel name="edit_overlay_panel">
+		<button name="move_up_button" tool_tip="選んだ設定を一つ上へ移します。"/>
+		<button name="add_new_button" tool_tip="一覧に設定を足します。"/>
+		<line_editor name="label_edit" tool_tip="一覧に出す名前" label="名前："/>
+		<button name="move_down_button" tool_tip="選んだ設定を一つ下へ移します。"/>
+		<combo_box name="control_name_combo" tool_tip="デバッグ設定の中から選びます。">
+			<combo_box.item label="＝＝ 選んでください ＝＝" name="control_name_list_header"/>
+		</combo_box>
+		<text name="control_type_label">
+			種類：
+		</text>
+		<combo_box name="control_type_combo_box" tool_tip="設定の表示と変更のしかたを選びます。">
+			<combo_box.item label="チェックボックス" name="Checkbox"/>
+			<combo_box.item label="テキスト" name="Text"/>
+			<combo_box.item label="スピナー" name="Spinner"/>
+			<combo_box.item label="スライダー" name="Slider"/>
+			<combo_box.item label="オン／オフ" name="Radio"/>
+			<combo_box.item label="色（RGB）" name="Color 3"/>
+			<combo_box.item label="色（RGBA）" name="Color 4"/>
+		</combo_box>
+		<check_box name="control_integer_checkbox" tool_tip="整数だけの設定ならチェックを入れます。" label="整数"/>
+		<spinner name="control_min_edit" tool_tip="選べる最小値" label="最小："/>
+		<spinner name="control_max_edit" tool_tip="選べる最大値" label="最大："/>
+		<spinner name="control_increment_edit" tool_tip="スピナーの矢印を 1 回押す、またはカーソルキーを 1 回押したときの変化量" label="刻み："/>
+		<button name="Restore_Btn" tool_tip="一覧を既定に戻します。" label="既定に戻す"/>
+		<button name="button_close" tool_tip="編集パネルを閉じます。"/>
+	</panel>
+</floater>

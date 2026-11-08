@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Texts of plus/safemode (research/254: the box at the bottom right while a safe start runs).
+  Never shown: the viewer reads its strings.
+-->
+<panel
+ name="plus_safemode"
+ visible="false"
+ height="10"
+ width="10">
+    <panel.string name="badge_title">Running in safe mode</panel.string>
+    <panel.string name="badge_detail">Some new drawing features are off</panel.string>
+    <panel.string name="next_start_not_written">"Start in Safe Mode Next Time Too" could not be turned on: [FILE] could not be written. The next start is a normal one.</panel.string>
+    <panel.string name="next_start_not_removed">"Start in Safe Mode Next Time Too" could not be turned off: [FILE] could not be removed. Remove that file by hand to start normally again.</panel.string>
+</panel>

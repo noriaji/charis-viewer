@@ -1,0 +1,203 @@
+/**
+ * @file llversioninfo.cpp
+ * @brief Routines to access the viewer version and build information
+ * @author Martin Reddy
+ *
+ * $LicenseInfo:firstyear=2009&license=viewerlgpl$
+ * Second Life Viewer Source Code
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
+ * $/LicenseInfo$
+ */
+
+#include "llviewerprecompiledheaders.h"
+#include "llevents.h"
+#include "lleventfilter.h"
+#include "llregex.h"
+#include "llversioninfo.h"
+#include "stringize.h"
+
+#include "llversioninfovars.h"
+
+// <plus> Charis Viewer's own major.minor.patch in place of the official ones
+// (plus/version/version.h). The build number and the channel stay as they are;
+// the official number is plus::version::baseVersion().
+#include "plus/version/version.h"
+#include "plus/independence/independence.h" // channel name (fix-round106)
+// </plus>
+
+#if ! defined(LL_VIEWER_CHANNEL)       \
+ || ! defined(LL_VIEWER_VERSION_MAJOR) \
+ || ! defined(LL_VIEWER_VERSION_MINOR) \
+ || ! defined(LL_VIEWER_VERSION_PATCH) \
+ || ! defined(LL_VIEWER_VERSION_BUILD)
+ #error "Channel or Version information is undefined"
+#endif
+
+//
+// Set the version numbers in indra/VIEWER_VERSION
+//
+
+LLVersionInfo::LLVersionInfo():
+    // <plus> Charis numbers (was LL_VIEWER_VERSION_MAJOR.MINOR.PATCH)
+    short_version(plus::version::shortVersion()),
+    // </plus>
+    // LL_VIEWER_CHANNEL is a macro defined on the compiler command line. The
+    // macro expands to the string name of the channel, but without quotes. We
+    // need to turn it into a quoted string. LL_TO_STRING() does that.
+    mWorkingChannelName(LL_TO_STRING(LL_VIEWER_CHANNEL)),
+    // instantiate an LLEventMailDrop with canonical name to listen for news
+    // from the Viewer Version Manager
+    mPump{new LLEventMailDrop("relnotes")},
+    // immediately listen on mPump, store arriving URL into mReleaseNotes
+    mStore{new LLStoreListener<std::string>(*mPump, mReleaseNotes)}
+{
+}
+
+void LLVersionInfo::initSingleton()
+{
+    // We override initSingleton() not because we have dependencies on other
+    // LLSingletons, but because certain initializations call other member
+    // functions. We should refrain from calling methods until this object is
+    // fully constructed; such calls don't really belong in the constructor.
+
+    // cache the version string
+    version = stringize(getShortVersion(), ".", getBuild());
+}
+
+LLVersionInfo::~LLVersionInfo()
+{
+}
+
+// <plus> Charis numbers (were LL_VIEWER_VERSION_MAJOR, _MINOR, _PATCH)
+S32 LLVersionInfo::getMajor() const
+{
+    return plus::version::MAJOR;
+}
+
+S32 LLVersionInfo::getMinor() const
+{
+    return plus::version::MINOR;
+}
+
+S32 LLVersionInfo::getPatch() const
+{
+    return plus::version::PATCH;
+}
+// </plus>
+
+U64 LLVersionInfo::getBuild() const
+{
+    return LL_VIEWER_VERSION_BUILD;
+}
+
+std::string LLVersionInfo::getVersion() const
+{
+    return version;
+}
+
+std::string LLVersionInfo::getShortVersion() const
+{
+    return short_version;
+}
+
+std::string LLVersionInfo::getChannelAndVersion() const
+{
+    if (mVersionChannel.empty())
+    {
+        // cache the version string
+        mVersionChannel = getChannel() + " " + getVersion();
+    }
+
+    return mVersionChannel;
+}
+
+std::string LLVersionInfo::getChannel() const
+{
+    return mWorkingChannelName;
+}
+
+void LLVersionInfo::resetChannel(const std::string& channel)
+{
+    mWorkingChannelName = channel;
+    mVersionChannel.clear(); // Reset version and channel string til next use.
+}
+
+LLVersionInfo::ViewerMaturity LLVersionInfo::getViewerMaturity() const
+{
+    ViewerMaturity maturity;
+
+    std::string channel = getChannel();
+
+    static const boost::regex is_test_channel("\\bTest\\b");
+    static const boost::regex is_beta_channel("\\b(Beta|Develop)\\b");  // Develop is an alias for Beta
+    static const boost::regex is_project_channel("\\bProject\\b");
+    static const boost::regex is_release_channel("\\bRelease\\b");
+
+    // <plus> Charis's own channel ("Charis Viewer") is a release build: no dark red
+    // test menu bar, no "does not follow naming convention" warning (fix-round106)
+    if (channel == plus::independence::CHANNEL)
+    {
+        maturity = RELEASE_VIEWER;
+    }
+    else
+    // </plus>
+    if (ll_regex_search(channel, is_release_channel))
+    {
+        maturity = RELEASE_VIEWER;
+    }
+    else if (ll_regex_search(channel, is_beta_channel))
+    {
+        maturity = BETA_VIEWER;
+    }
+    else if (ll_regex_search(channel, is_project_channel))
+    {
+        maturity = PROJECT_VIEWER;
+    }
+    else if (ll_regex_search(channel, is_test_channel))
+    {
+        maturity = TEST_VIEWER;
+    }
+    else
+    {
+        LL_WARNS() << "Channel '" << channel
+                   << "' does not follow naming convention, assuming Test"
+                   << LL_ENDL;
+        maturity = TEST_VIEWER;
+    }
+    return maturity;
+}
+
+
+std::string LLVersionInfo::getBuildConfig() const
+{
+#if LL_DEBUG
+    return "Debug";
+#elif LL_RELEASE_WITH_DEBUG_INFO
+    return "RelWithDebInfo";
+#elif LL_RELEASE_FOR_DOWNLOAD
+    return "Release";
+#else
+    return "Unknown";
+#endif
+}
+
+std::string LLVersionInfo::getReleaseNotes() const
+{
+    return mReleaseNotes;
+}

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_group_titles" title="グループ称号">
+	<floater.string name="NoGroupTitle" value="＜称号なし＞"/>
+	<floater.string name="ClearAllRegions" value="すべてのリージョンから外す"/>
+	<floater.string name="UnknownTitle" value="（入っていないグループの称号）"/>
+	<floater.string name="NotMember" value="（メンバーではありません）"/>
+	<plus_ps_box name="body">
+		<plus_ps_box name="filter_box">
+			<filter_editor name="filter_input" label="称号・グループで絞り込み" tool_tip="称号かグループ名にこの文字を含むものだけを表示します（Ctrl+F）"/>
+		</plus_ps_box>
+		<plus_ps_box name="list_box">
+			<scroll_list name="title_list">
+				<column name="grouptitle" label="称号"/>
+				<column name="groupname" label="グループ"/>
+				<column name="regionname" label="自動リージョン" tool_tip="着いた時にこの称号へ切り替えるリージョン"/>
+			</scroll_list>
+		</plus_ps_box>
+		<plus_ps_text name="auto_region_label">
+			自動リージョン：割り当てたリージョンに入ると、その称号に切り替えます
+		</plus_ps_text>
+		<plus_ps_button_compat name="btnSetRegion" label="このリージョン" tool_tip="選んだ称号を、今いるリージョンに割り当てます"/>
+		<plus_ps_button_compat name="btnSetRegionManual" label="名前を入力…" tool_tip="リージョン名を入力して、選んだ称号を割り当てます（先に地図で確かめます）"/>
+		<plus_ps_button_compat name="btnClearRegion" label="割り当てを外す" tool_tip="選んだ称号のリージョンの割り当てを外します（複数ある時は選べます）"/>
+		<plus_ps_check_compat name="none_on_unassigned" label="割り当てのないリージョンではグループなしにする" tool_tip="称号を割り当てていないリージョンでは、どのグループもアクティブにしません（頭上の称号が消えます）"/>
+		<plus_ps_button_compat name="btnInfo" label="グループの情報" tool_tip="選んだ称号のグループの情報を開きます"/>
+		<plus_ps_button_compat name="btnActivate" label="この称号にする" tool_tip="選んだ称号をアクティブにします"/>
+		<plus_ps_button_compat name="btnRefresh" tool_tip="称号の一覧を読み直します"/>
+	</plus_ps_box>
+</floater>

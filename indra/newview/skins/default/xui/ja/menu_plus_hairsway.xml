@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<menu name="plus_hairsway_items">
+	<menu_item_check label="髪の揺れ: 髪として揺らす" name="HairSwayManualHair"/>
+	<menu_item_check label="髪の揺れ: 揺らさない" name="HairSwayManualNot"/>
+	<menu_item_check label="髪の揺れ: 自動で判定" name="HairSwayManualAuto"/>
+</menu>

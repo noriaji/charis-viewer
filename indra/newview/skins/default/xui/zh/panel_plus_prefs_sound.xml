@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_sound.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="Preference Media panel" label="聲音">
+    <panel.string name="middle_mouse">
+        滑鼠中鍵
+    </panel.string>
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="sound_scroll">
+            <panel name="sound_scroll_panel">
+                <plus_ps_slider_compat name="System Volume" label="主音量" />
+                <plus_ps_slider_compat name="UI Volume" label="按鍵音" />
+                <plus_ps_slider_compat name="Wind Volume" label="環境音" />
+                <plus_ps_slider_compat name="SFX Volume" label="音效" />
+                <plus_ps_slider_compat name="Music Volume" label="串流音樂" />
+                <plus_ps_check_compat name="enable_music" label="已啟用" />
+                <plus_ps_slider_compat name="Media Volume" label="媒體" />
+                <plus_ps_check_compat name="enable_media" label="已啟用" />
+                <plus_ps_slider_compat name="Voice Volume" label="語音聊天" />
+                <plus_ps_check_compat name="enable_voice_check" label="已啟用" />
+                <plus_ps_check_compat name="media_show_on_others_btn" label="播放附加到其他化身身上的媒體" tool_tip="若未勾選，將隱藏附著於附近其他化身身上的媒體" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

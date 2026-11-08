@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Privacy panel">
+	<plus_ps_box name="ps_ground">
+		<plus_ps_tabs name="privacy_tab_container">
+			<panel name="privacy_preferences_general">
+				<panel.string name="log_in_to_change">
+					log på for at ændre
+				</panel.string>
+				<scroll_container name="privacy_general_scroll">
+					<panel name="privacy_general_list">
+						<plus_ps_check_compat name="online_searchresults" label="Vis min profil info i søgeresultater" />
+						<plus_ps_check_compat name="online_visibility" label="Kun venner og grupper ved jeg er online" />
+						<plus_ps_check_compat name="auto_disengage_mic_check" label="Slå mikrofon fra når opkald slutter" />
+						<plus_ps_button_compat name="clear_cache" label="Nulstil historik" tool_tip="Fjern login billede, sidste lokation, teleport historik, samt web og tekstur cache" />
+						<plus_ps_text name="cache_size_label_l">
+							(Lokationer, billeder, web, søge historik)
+						</plus_ps_text>
+						<plus_ps_button_compat name="block_list" label="Liste med blokeringer" />
+						<plus_ps_text name="block_list_label">
+							(Personer og/eller objekter du har blokeret)
+						</plus_ps_text>
+					</panel>
+				</scroll_container>
+			</panel>
+		</plus_ps_tabs>
+	</plus_ps_box>
+</panel>

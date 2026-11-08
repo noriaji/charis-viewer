@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_colors.xml, by name. -->
+<panel label="Kolory" name="colors_panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="colors_scroll">
+			<panel name="colors_scroll_panel">
+				<plus_ps_text name="effects_color_textbox">
+					Efekty wyboru (wiązka cząstek):
+				</plus_ps_text>
+				<plus_ps_box name="glass_effect_color_swatch">
+					<color_swatch tool_tip="Kliknij, aby wybrać kolor" name="effect_color_swatch"/>
+				</plus_ps_box>
+				<plus_ps_text name="font_colors">
+					Wiadomości czatu:
+				</plus_ps_text>
+				<plus_ps_text name="text_box1">
+					Mój tekst
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					Inni
+				</plus_ps_text>
+				<plus_ps_text name="text_box3">
+					Obiekty
+				</plus_ps_text>
+				<plus_ps_text name="text_box5">
+					Błędy
+				</plus_ps_text>
+				<plus_ps_text name="text_box10">
+					Bezpośrednie
+				</plus_ps_text>
+				<plus_ps_text name="text_box7">
+					Właściciel
+				</plus_ps_text>
+				<plus_ps_text name="text_box9">
+					URLe
+				</plus_ps_text>
+				<plus_ps_text name="bubble_chat">
+					Tło tagów imion i czatu chmurkowego:
+				</plus_ps_text>
+				<plus_ps_box name="glass_background">
+					<color_swatch tool_tip="Wybierz kolor tła imienia (taga)" name="background"/>
+				</plus_ps_box>
+				<plus_ps_slider_compat label="Przezrocz.:" tool_tip="Wybierz przezroczystość tła tagów imion" name="bubble_chat_opacity"/>
+				<plus_ps_text name="floater_opacity">
+					Przezroczystość okna:
+				</plus_ps_text>
+				<plus_ps_slider_compat label="Aktywne:" name="active"/>
+				<plus_ps_slider_compat label="Nieaktywne:" name="inactive"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_voice.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="voice_panel">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="voice_scroll">
+            <panel name="voice_scroll_panel">
+                <plus_ps_slider_compat name="Voice Volume" label="Voice-Chat" />
+                <plus_ps_check_compat name="enable_voice_check" label="Aktiviert" />
+                <plus_ps_text name="Listen from">
+                    Zuhören von:
+                </plus_ps_text>
+                <plus_ps_check_compat name="enable_lip_sync" label="Avatarlippen beim Sprechen bewegen" />
+                <plus_ps_check_compat name="push_to_talk_toggle_check" label="Sprachfunktion beim Drücken folgender Taste(n) ein-/ausschalten:" tool_tip="Wenn der Umschaltmodus aktiviert ist, drücken Sie die Auslöse-Taste EINMAL, um Ihr Mikrofon ein- oder auszuschalten. Wenn der Umschaltmodus nicht aktiviert ist, ist das Mikrofon nur dann eingeschaltet, wenn Sie die Auslösetaste gedrückt halten." />
+                <plus_ps_check_compat name="gesture_audio_play_btn" label="Sounds von Gesten abspielen" tool_tip="Markieren, um Sounds von Gesten zu hören" />
+                <plus_ps_button_compat name="device_settings_btn" label="Eingabe-/Ausgabegeräte" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

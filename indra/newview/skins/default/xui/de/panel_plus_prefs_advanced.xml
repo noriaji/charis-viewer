@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="Erweitert">
+	<panel.string name="aspect_ratio_text">
+		[NUM]:[DEN]
+	</panel.string>
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_spinner name="cachesizespinner" label="Cachegröße (256 - 9984 MB)" />
+				<plus_ps_text name="text_box5">
+					MB
+				</plus_ps_text>
+				<plus_ps_button_compat name="clear_cache" label="Cache leeren" label_selected="Cache leeren" />
+				<plus_ps_text name="Cache location">
+					Cache-Ordner:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_cache" label="Durchsuchen" label_selected="Durchsuchen" />
+				<plus_ps_button_compat name="default_cache_location" label="Vorgabestandort" label_selected="Vorgabestandort" />
+				<plus_ps_text name="UI Size:">
+					UI-Größe:
+				</plus_ps_text>
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="Mehrere Viewer zulassen" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="Bei Anmeldung Rasterauswahl anzeigen" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="Menü „Erweitert“ anzeigen" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="Menü „Entwickler“ anzeigen" />
+				<plus_ps_button_compat name="default_creation_permissions" label="Standard-Erstellungsberechtigungen" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

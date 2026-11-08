@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater
+ positioning="centered"
+ legacy_header_height="18"
+ height="440"
+ layout="topleft"
+ name="floater_about"
+ help_topic="floater_about"
+ save_rect="true"
+ title="ABOUT [CAPITALIZED_APP_NAME]"
+ width="500">
+  
+  <!-- plus: the license notice above the list on the Licenses tab (llfloaterabout.cpp; research/123 M2) -->
+  <string name="charis_license_header">Charis Viewer is free software under the GNU Lesser General Public License, version 2.1 (LGPL 2.1). Its source code is published on the Charis Viewer download page. The licenses of the libraries it includes are in licenses.txt and licenses-charis.txt in the viewer&apos;s folder.</string>
+  <!-- /plus -->
+  <tab_container
+    follows="all" 
+    top="25"
+    left="10"
+    height="405" 
+    width="480" 
+    name="about_tab"
+    tab_position="top">
+    <panel
+      border="true" 
+      label="Info"
+      help_topic="about_support_tab"
+      name="support_panel">
+      <text_editor
+        parse_urls="true" 
+       follows="top|left"
+       font="SansSerif"
+       height="343"
+       bg_readonly_color="Transparent"
+       left="5"
+       max_length="65536"
+       name="support_editor"
+       top="5"
+       width="465"
+       word_wrap="true" />
+      <button
+        follows="left|top" 
+        label="Copy to Clipboard"
+        name="copy_btn"
+        left="10"
+        top_pad="5"
+        height="25"
+        width="180" />
+    </panel>
+    <panel
+      border="true" 
+      label="Credits" 
+      help_topic="about_credits_tab"
+      name="credits_panel">
+      <!-- plus tpv-fix1: Charis's credit first, then the Second Life viewer it is based on (TPV policy 5e,
+           research/227 F3b). The projects named are the ones licenses-charis.txt section 1 lists (research/268).
+           Heights: 10 + 112 + 8 + 34 + 6 + 210 = 380, the same as the official 10 + 20 + 10 + 340 (charis_credits: six lines
+           of en, about four of ja, with room; contrib_names scrolls). -->
+      <text
+          follows="top|left|right"
+          height="112"
+          layout="topleft"
+          left="5"
+          name="charis_credits"
+          top="10"
+          width="465"
+          wrap="true">
+Charis Viewer is made by its volunteer developers, with code, icons and data from: Firestorm Viewer (The Phoenix Firestorm Project), Black Dragon Viewer (NiranV Dean), Intel XeGTAO, AMD FidelityFX Super Resolution 1.0, Stellarium (the constellation pictures and data), Lucide icons, and the others listed in licenses-charis.txt.
+      </text>
+      <text
+          follows="top|left|right"
+          height="34"
+          layout="topleft"
+          left="5"
+          name="linden_intro"
+          top_pad="8"
+          width="465"
+          wrap="true">
+Charis Viewer is based on the Second Life viewer by Linden Lab, with open source contributions from:
+      </text>
+      <text_editor
+       enabled="false" 
+       follows="top|left"
+       height="210"
+       bg_readonly_color="Transparent"
+       left="5"
+       text_color="LtGray"
+       max_length="65536"
+       name="contrib_names"
+       top_pad="6"
+       width="465"
+       word_wrap="true">
+Dummy Name replaced at run time
+      </text_editor>
+      <!-- /plus -->
+    </panel>
+    <panel
+      border="true"
+      label="Licenses"
+      help_topic="about_licenses_tab"
+      name="licenses_panel">
+      <!-- plus: Havok and jpeg2000 (KDU) lines removed, not in this build (research/123 M2). This text shows only without packages-info.txt; llfloaterabout.cpp puts charis_license_header above either -->
+      <text_editor
+       enabled="false"
+       follows="left|top"
+       height="375"
+       bg_readonly_color="Transparent"
+       left="5"
+       text_color="LtGray"
+       max_length="65536"
+       name="licenses_editor"
+       top="5"
+       width="465"
+       word_wrap="true">
+        3Dconnexion SDK Copyright (C) 1992-2009 3Dconnexion
+        APR Copyright (C) 2011 The Apache Software Foundation
+        Collada DOM Copyright 2006 Sony Computer Entertainment Inc.
+        cURL Copyright (C) 1996-2010, Daniel Stenberg, (daniel@haxx.se)
+        DBus/dbus-glib Copyright (C) 2002, 2003  CodeFactory AB / Copyright (C) 2003, 2004 Red Hat, Inc.
+        expat Copyright (C) 1998, 1999, 2000 Thai Open Source Software Center Ltd.
+        FreeType Copyright (C) 1996-2002, 2006 David Turner, Robert Wilhelm, and Werner Lemberg.
+        GL Copyright (C) 1999-2004 Brian Paul.
+        google-perftools Copyright (c) 2005, Google Inc.
+        jpeglib Copyright (C) 1991-1998, Thomas G. Lane.
+        luau Copyright (c) 1994–2019 Lua.org, PUC-Rio / Copyright (c) 2019-2024 Roblox Corporation
+        meshoptimizer Copyright (c) 2016-2021 Arseny Kapoulkine
+        ogg/vorbis Copyright (C) 2002, Xiphophorus
+        OpenSSL Copyright (C) 1998-2008 The OpenSSL Project.
+        PCRE Copyright (c) 1997-2012 University of Cambridge
+        SDL Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Sam Lantinga
+        SSLeay Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+        xxHash Copyright (C) 2012-2020 Yann Collet.
+        zlib Copyright (C) 1995-2012 Jean-loup Gailly and Mark Adler.
+
+        This software contains source code provided by NVIDIA Corporation.
+
+        All rights reserved.  See licenses.txt for details.
+
+        Voice chat Audio coding: Polycom(R) Siren14(TM) (ITU-T Rec. G.722.1 Annex C)
+      </text_editor>
+      <!-- /plus -->
+      </panel>
+    </tab_container>
+</floater>

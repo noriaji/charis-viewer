@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_photoscreen_buttons">
+	<panel.string name="mode_to_simple">簡易表示</panel.string>
+	<panel.string name="mode_to_detail">詳細表示</panel.string>
+	<button name="btn_hud" label="HUD" tool_tip="HUD 装着物の表示／非表示。撮影モードを出ると元の状態に戻ります。" />
+	<button name="btn_360" label="360°" tool_tip="360° 撮影の窓を開く" />
+	<button name="btn_mode" label="簡易表示" tool_tip="詳細表示（世界が写真の形になり、周りにパネルが並ぶ）と簡易表示（世界が画面いっぱい）を切り替える" />
+	<button name="btn_shoot" label="撮影" tool_tip="撮影ツールで決めた大きさと形で、いま撮る" />
+	<button name="btn_exit" label="終了" tool_tip="撮影モードを出る。窓やバーが元に戻ります" />
+</panel>

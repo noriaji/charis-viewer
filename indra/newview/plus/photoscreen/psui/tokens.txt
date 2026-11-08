@@ -1,0 +1,376 @@
+# Charis Viewer's UI tokens: the one table of colours, sizes and fonts (research/239 (12), branch ui-skin).
+#
+# Everything below is made from this file by make_ui_tokens.py (next to it); nothing made is edited by hand:
+#   pstokens.h, pstokens.cpp           the C++ values (plus::psui::style::NAME; psstyle.h includes them)
+#   skins/charis/colors.xml            every colour as Ps<Name> for the XUI windows, and the official colour
+#                                      names the Charis look changes (the "official" / "palette" lines)
+#   skins/charis/textures/textures.xml and skins/charis/textures/charis/*.png
+#                                      the window frame, buttons, tooltips, toasts and scroll bars, drawn
+#                                      from these values (make_ui_tokens.py says which token each part uses)
+# After a change: python -I make_ui_tokens.py   (tools/predeliver.py (u) fails while the made files differ)
+#
+# Lines
+#   [section]                        a heading of the C++ table
+#   NAME  color  #rrggbb[/alpha]     a colour; its colors.xml name is Ps + NAME in CamelCase (PANEL_BG -> PsPanelBg)
+#   NAME  color  =OTHER[/alpha]      the colour of another token (the same, or with another opacity)
+#   NAME  f32|s32  number | =OTHER   a size, for the C++ side only
+#   NAME  font  Huge|Large|Medium|Small [bold]   one of fonts.xml's official sizes
+#   official  OfficialName  =TOKEN[/alpha]   the official colour name gets the token's colour (that name only)
+#   palette   OfficialName  =TOKEN[/alpha]   the same, and the official names that refer to it follow
+#                                            (colors.xml resolves references while it reads each file)
+#   keep      OfficialName|Prefix*           stays as the official skin has it even when a palette line would
+#                                            change it (the colour picker's swatches, the text fields ...)
+# Text after '#' (with a space before it) is a note; a token's note goes into pstokens.h.
+#
+# Sizes are UI pixels of a 1080 pixel high window. The colours of research/221 are those of the target picture
+# (research/photoscreen-design-target-2026-10-30.webp); "not in the picture, in its style" marks the others.
+
+[0. the ground]
+GROUND             color  #0c111a        # between the panels, around the world
+PANEL_TOP          color  #141b28/0.96
+PANEL_BOTTOM       color  #09111c/0.96
+PANEL_MID          color  #0f1622        # what is behind a picture on a panel
+PANEL_BORDER       color  #1c2533
+PANEL_RADIUS       f32    12
+PANEL_GAP          s32    8
+DIVIDER_LEFT       color  #1b232e
+DIVIDER_RIGHT      color  #323d4c
+DIVIDER_MARGIN     s32    14
+TEXT_WHITE         color  #f4f7fb
+TEXT_LABEL         color  #b9c3cf
+TEXT_DIM           color  #8e98a2        # tabs not chosen, the half not chosen
+TEXT_SUB           color  #acb7c6        # second lines
+TEXT_HINT          color  #9eabbb        # "F12 to leave"
+ICON_LIGHT         color  #d5dde8
+ACCENT             color  #3c91ef
+ACCENT_LINE        color  #83cbff
+FOCUS_RING         color  =ACCENT/0.7    # keyboard focus (not in the picture)
+WORLD_RADIUS       f32    10
+
+[states (not in the picture: fixed steps)]
+STATE_HOVER        f32    0.06           # hovered: the fill this much towards white
+STATE_PRESS        f32    0.06           # pressed: this much towards black
+STATE_DISABLED     f32    0.4            # disabled: the whole part at this opacity
+
+[1. the rail]
+RAIL               color  #0b1421
+RAIL_ICON_COLOR    color  #abb9d2
+RAIL_TEXT          color  =TEXT_LABEL
+RAIL_SEL_LEFT      color  #174f9a
+RAIL_SEL_RIGHT     color  #0e325d
+RAIL_SEL_BAR       color  =ACCENT_LINE
+RAIL_SEL_TEXT      color  #e8fbff
+RAIL_HOVER         color  #ffffff/0.05
+RAIL_PRESS         color  #000000/0.1
+RAIL_WIDTH         s32    123
+RAIL_TAB_HEIGHT    s32    83
+RAIL_ICON          s32    26
+RAIL_ICON_TOP      s32    15             # from the tab's top to the icon's top
+RAIL_TEXT_TOP      s32    49             # from the tab's top to the first line's top
+RAIL_BAR_WIDTH     f32    3
+
+[2. headings]
+HEAD_PAD           s32    14             # left and right
+HEAD_ICON          s32    21
+HEAD_ICON_RIGHT    s32    19             # the right panel's headings
+HEAD_ICON_GAP      s32    10
+HEAD_CHEVRON       s32    14
+HEAD_ICON_COLOR    color  =ICON_LIGHT
+HEAD_CHEVRON_COLOR color  =TEXT_DIM
+
+[3. small labels]
+LABEL              color  =TEXT_LABEL
+
+[4. check boxes]
+CHECK_BOX          s32    21
+CHECK_RADIUS       f32    4
+CHECK_GAP          s32    10
+CHECK_MARK         s32    17
+CHECK_OFF          color  #111b27
+CHECK_BORDER       color  #343b48
+CHECK_BORDER_HOVER color  #4a5566
+CHECK_ON           color  #5aa0ee
+CHECK_MARK_COLOR   color  #ffffff
+CHECK_TEXT         color  #c9d1dc
+
+[5. sliders]
+SLIDER_LABEL_WIDTH s32    124
+SLIDER_GAP         s32    12             # label - track - value box
+SLIDER_TRACK       f32    4
+SLIDER_KNOB        f32    16
+SLIDER_KNOB_PRESSED f32   18
+SLIDER_FILL_LEFT   color  #7d879e
+SLIDER_FILL_RIGHT  color  #b3bccf
+SLIDER_EMPTY       color  #363e4d
+KNOB_TOP           color  #d0daf0
+KNOB_BOTTOM        color  #aab6d0
+SLIDER_TICK        color  =CHECK_BORDER_HOVER
+VALUE_WIDTH        s32    62
+VALUE_HEIGHT       s32    26
+VALUE_RADIUS       f32    4
+VALUE_PAD          s32    8
+VALUE_FILL         color  #0c121b
+DEFAULT_BTN_WIDTH  s32    22             # the "D" button that resets to the shipped default, after the value box
+DEFAULT_BTN_GAP    s32    8              # value box - "D" (narrower than SLIDER_GAP: the track keeps more room)
+DEFAULT_BTN_COLOR  color  =TEXT_DIM
+DEFAULT_BTN_COLOR_HOVER color =TEXT_WHITE
+DEFAULT_BTN_FILL_HOVER color =RAIL_HOVER
+
+[6. switches]
+SWITCH_WIDTH       f32    31
+SWITCH_HEIGHT      f32    17
+SWITCH_KNOB        f32    12
+SWITCH_KNOB_INSET  f32    2.5
+SWITCH_SECONDS     f32    0.12
+SWITCH_ON          color  #408fe6
+SWITCH_OFF         color  =SLIDER_EMPTY
+SWITCH_KNOB_ON     color  =CHECK_MARK_COLOR
+SWITCH_KNOB_OFF    color  =TEXT_DIM
+
+[7. drop-downs]
+COMBO_RADIUS       f32    6
+COMBO_PAD          s32    10
+COMBO_CHEVRON      s32    14
+COMBO_FILL         color  #202a40/0.8
+COMBO_BORDER       color  #3a4458
+LIST_BG            color  =PANEL_TOP/1
+LIST_SELECTED      color  #1a4172
+
+[8. chips (12. the buttons in the world use the same box)]
+CHIP_RADIUS        f32    7
+CHIP_HEIGHT        s32    40
+CHIP_PAD           s32    12
+CHIP_ICON          s32    19
+CHIP_GAP           s32    10             # icon - text - chevron; and between chips
+CHIP_FILL          color  #0e1119/0.7
+CHIP_ICON_COLOR    color  =ICON_LIGHT
+
+[9. histogram]
+HIST_RADIUS        f32    7
+HIST_PAD           s32    8
+HIST_FILL          color  #1a2132/0.75
+HIST_BORDER        color  #404964/0.6
+HIST_R             color  #e2524a/0.45
+HIST_G             color  #46c06a/0.45
+HIST_B             color  #3d7ff0/0.45
+HIST_LUMA          color  #d9dde6/0.55
+HIST_BASE          color  #5a6378
+
+[11. the exposure read-out]
+READOUT_LEFT       s32    26
+READOUT_BOTTOM     s32    24
+READOUT_GAP        s32    24
+READOUT_TEXT       color  #f8f8fa
+READOUT_SHADE      color  #000000/0.35
+
+[12. icon buttons in the world]
+ICONBTN_ICON       s32    21
+ICONBTN_HOVER      f32    31
+ICONBTN_COLOR      color  #f2f7ff
+ICONBTN_HOVER_COLOR color #ffffff/0.1
+
+[13. the right panel]
+ROW_MARGIN         s32    21
+
+[14. the shutter strip]
+SEG_RADIUS         f32    7
+SEG_BORDER         color  #376386
+SEG_BORDER_DIM     color  #26354a
+SEG_ON_LEFT        color  #2b5185
+SEG_ON_RIGHT       color  #1e3858
+SEG_OFF            color  #1d2838
+SEG_SEPARATOR_INSET f32   6              # the line between two choices not chosen (three or more), off the top and bottom (not in the picture, in its style)
+SHUTTER_RING       color  #edf4ff
+SHUTTER_TOP        color  #f7f9fc
+SHUTTER_BOTTOM     color  #e4e8f0
+SHUTTER_RING_WIDTH f32    3.5
+SHUTTER_GROOVE     f32    3.5
+SHUTTER_PRESSED_SCALE f32 0.92
+SHUTTER_BUSY_SECONDS f32  0.2
+GEAR_ICON          s32    26
+
+[15. cards with a picture]
+CARD_RADIUS        f32    7
+CARD_PICTURE_WIDTH s32    65
+CARD_TEXT_GAP      s32    12
+CARD_MORE_ICON     s32    19
+CARD_FILL          color  #0c1522
+CARD_BORDER        color  #2a3342
+PLACEHOLDER        color  =PANEL_TOP/1
+PLACEHOLDER_ICON   color  #5a6378
+
+[16. buttons]
+BUTTON_RADIUS      f32    7
+BUTTON_FILL        color  #0e1721
+BUTTON_BORDER      color  #333a45
+BUTTON_FILL_HOVER  color  #152030
+BUTTON_BORDER_HOVER color =CHECK_BORDER_HOVER
+BUTTON_FILL_PRESS  color  #0a111a
+
+[17. the bottom strip's tabs]
+TAB_PAD            s32    14             # left and right of the text
+TAB_LINE           f32    2
+TAB_LINE_INSET     f32    4
+TAB_GLOW           f32    6
+TAB_TEXT_ON        color  #edfeff
+TAB_LINE_EDGE      color  =ACCENT
+TAB_LINE_MID       color  #a9dafc
+TAB_GLOW_COLOR     color  =ACCENT/0.25
+
+[18. preset cards]
+PRESET_PICTURE_HEIGHT s32 90
+PRESET_TEXT_GAP    s32    8
+PRESET_GAP         s32    12
+PRESET_CLOSE       s32    16
+PRESET_HOVER_BORDER color =ACCENT_LINE
+PRESET_SELECTED_BORDER color =ACCENT
+PRESET_CLOSE_FILL  color  #000000/0.6
+ADD_FILL           color  #0b121e
+ADD_BORDER         color  #242b36
+ADD_ICON           s32    31
+
+[19. list rows (the sky and water lists of the scene tab; not in the picture, in its style)]
+LIST_ROW_HEIGHT    s32    30
+LIST_ROW_PAD       s32    10             # left of the text, right of the star
+LIST_ROW_RADIUS    f32    6
+LIST_ROW_BAR       f32    3              # the chosen row's bar at the left
+LIST_STAR          s32    16
+LIST_STAR_HIT      s32    28             # the star's clickable width
+LIST_ROW_TEXT      color  =CHECK_TEXT
+LIST_STAR_ON       color  #f2c14e
+LIST_STAR_OFF      color  =PLACEHOLDER_ICON
+
+[20. badges (the conversations tab's unread count; not in the picture, in its style)]
+BADGE_HEIGHT       s32    18
+BADGE_PAD          s32    5              # left and right of the number (one digit: a circle)
+BADGE_MAX          s32    9              # more is shown as "9+"
+BADGE_FILL         color  =ACCENT        # unread the official settings tell of
+BADGE_QUIET        color  =SLIDER_EMPTY  # unread they leave quiet ("no action", muted)
+BADGE_TEXT         color  =CHECK_MARK_COLOR
+
+[21. the conversations tab's history (not in the picture, in its style)]
+CONV_OWN_TEXT      color  =TEXT_SUB      # what you sent
+CONV_SYSTEM_TEXT   color  =TEXT_DIM      # the viewer's own notes
+
+[22. the names the XUI windows use (colors.xml Ps*; besides PsGround, PsTextWhite ... PsAccent of 0.)]
+PANEL_BG           color  =PANEL_MID     # a flat panel inside a window (the window draws the gradient itself)
+FIELD_BG           color  =VALUE_FILL    # a box to type in
+FIELD_BORDER       color  =CHECK_BORDER
+SELECTION_BG       color  =LIST_SELECTED # the chosen row of a list (a highlighted menu item is HIGHLIGHT_BG)
+HOVER_BG           color  =RAIL_HOVER    # a row under the mouse
+LINK_TEXT          color  =ACCENT_LINE   # links and emphasised words
+DIVIDER_LINE       color  =DIVIDER_RIGHT # a line between parts
+
+[23. the skin (skins/charis: the frame of every window and the official parts not replaced yet)]
+WINDOW_TOP         color  =PANEL_TOP     # a window's gradient (also toasts and inspectors)
+WINDOW_BOTTOM      color  =PANEL_BOTTOM
+WINDOW_BORDER      color  =PANEL_BORDER  # a window behind others
+WINDOW_BORDER_FOCUS color =DIVIDER_RIGHT # the window in front
+WINDOW_RADIUS      f32    =PANEL_RADIUS
+TITLE_ICON         color  =ICON_LIGHT    # close, minimise, dock, help in the title bar
+TITLE_ICON_PRESS   color  =ACCENT_LINE
+TITLE_ICON_SIZE    s32    16             # the official UIFloaterCloseBoxSize
+TOOLTIP_FILL       color  =LIST_BG
+TOOLTIP_BORDER     color  =PANEL_BORDER
+TOOLTIP_RADIUS     f32    =COMBO_RADIUS
+BUTTON_ON_TOP      color  =SEG_ON_LEFT   # an official button that is on (or pressed): blue, as the segments
+BUTTON_ON_BOTTOM   color  =SEG_ON_RIGHT
+BUTTON_ON_BORDER   color  =SEG_BORDER
+SCROLL_THUMB       color  =CHECK_BORDER_HOVER
+SCROLL_TRACK       color  =GROUND/0.35   # only its opacity counts: the official track is drawn in ScrollbarTrackColor
+SCROLL_WIDTH       f32    6              # the thumb's width in the official 15 px bar
+SCROLL_RADIUS      f32    3
+HIGHLIGHT_BG       color  =SELECTION_BG  # a highlighted menu item, the inventory's chosen row: as a list's chosen row everywhere (2026-11-06, research/275 L181; was ACCENT/0.75, white text 4.8:1 and the link blue 2.8:1 on it, 10:1 and 5.9:1 on this). The gallery's chosen thumbnail is framed in PRESET_SELECTED_BORDER
+ROW_HOVER_BG       color  =SEG_OFF       # an official list row under the mouse, a notification's box: opaque, it must stand out from the ground
+
+[24. the shader reload notice (research/250, plus/shaderreload: a chip with a track under its text; not in the picture, in its style)]
+RELOAD_PAD_Y       s32    9              # the box's top and bottom to what is in it
+RELOAD_TEXT_LINE   s32    16             # the body text's line (FONT_BODY)
+RELOAD_BAR_GAP     s32    8              # the text to the track (SLIDER_TRACK high, SLIDER_EMPTY and ACCENT)
+RELOAD_MARGIN      s32    24             # the bottom of the world between the toolbars to the box
+
+[25. the focus hint (research/264, plus/focuslock/focushint.cpp: a chip at the top of the world while the focus is picked by clicking; not in the picture, in its style)]
+FOCUS_HINT_MARGIN  s32    24             # the top of the world (between the toolbars) to the box
+FOCUS_HINT_GAP     s32    8              # in the photo screen: its parts at the top of the world (the chips, the histogram) to the box
+
+[26. the compatible widgets (research/266 2.1, pscompat.h: the official widgets drawn in this look; not in the picture, in its style)]
+BUTTON_ICON        s32    =CHIP_ICON     # an icon on a button (before its words, or alone in the middle)
+BUTTON_PAD         s32    =CHIP_PAD      # the button's edge to its icon
+RADIO_SIZE         s32    18             # the round mark of a choice in a list (the check box's colours)
+RADIO_DOT          f32    8              # the dot in the chosen one
+SPIN_ARROW_WIDTH   s32    18             # the up and down arrows at the right of a spinner's value box
+SPIN_ARROW         s32    10             # their chevrons
+SEARCH_HIT_FILL    color  =ACCENT/0.18   # a part the preferences' search found: the ground under it
+SEARCH_HIT_RING    color  =ACCENT_LINE/0.8   # and the line around it
+SEARCH_HIT_RADIUS  f32    =COMBO_RADIUS
+
+[27. tab containers (plus_ps_tabs, research/266 prefs-frame; not in the picture, in its style)]
+TABS_RAIL_WIDTH    s32    150            # tab_position left: the rail's width, where the pages start (ja's longest name: 9 x 13 + 28)
+TABS_ROW_HEIGHT    s32    32             # a row of the rail while there is room
+TABS_ROW_MIN       s32    24             # the least: a short window's rows (below it the rail scrolls)
+TABS_ROW_GAP       s32    8              # the rail's rows end this far from the pages
+TABS_TEXT_PAD      s32    14             # a row's text from its left
+TABS_TOP_HEIGHT    s32    36             # tab_position top: the strip of tabs over the pages
+TABS_TOP_PAD       s32    14             # before the first tab (plus_ps_row's pad)
+TABS_TOP_GAP       s32    10             # between two tabs
+
+[fonts (the official sizes nearest to the picture's: research/221 "文字")]
+FONT_TITLE         font   Huge           # headings of the left panel (20 px)
+FONT_HEAD          font   Large          # headings of the right panel, sub-headings (17-18 px)
+FONT_BODY          font   Medium         # labels, rows, values (15 px)
+FONT_BUTTON        font   Large          # buttons, chips, card titles (17 px)
+FONT_SMALL         font   Small          # second lines, the hint (13-14 px)
+FONT_READOUT       font   Large          # the exposure read-out (18 px)
+## Font sizes are in points (fonts.xml: Small 9, Medium 10, Large 11, Huge 16); the picture's pixel heights fall
+## between them, so these are compared in the parts sample and moved here.
+
+# ---- the official colour names (skins/charis/colors.xml) ---------------------------------------------------------
+# The official skin's greys become the panels' blues; its cyan the accent. The text stays light on the dark ground
+# (the official skin is dark too), so the labels need no other colour. The text fields and editors keep their light
+# boxes and dark text in this stage (the psui parts that replace them are dark: research/239 (3)).
+
+palette   DkGray            =GROUND
+palette   DkGray_66         =GROUND/0.66
+palette   DkGray2           =PANEL_TOP/1
+palette   DkGray0           =DIVIDER_RIGHT
+palette   PanelGray         =DIVIDER_RIGHT
+palette   MouseGray         =SEG_OFF
+palette   DkGrayLogin       =GROUND
+palette   PanelDark         =GROUND
+palette   LtGray            =TEXT_LABEL
+palette   LtGray_35         =TEXT_LABEL/0.35
+palette   LtGray_50         =TEXT_LABEL/0.5
+palette   Gray              =TEXT_DIM
+palette   EmphasisColor     =ACCENT_LINE
+palette   EmphasisColor_35  =ACCENT/0.35
+
+official  ColorDropShadow          =GROUND/0       # no shadow under the panels
+official  FocusColor               =ACCENT
+official  HTMLLinkColor            =LINK_TEXT
+official  MenuDefaultBgColor       =LIST_BG
+official  MenuPopupBgColor         =LIST_BG
+official  MenuItemHighlightBgColor =HIGHLIGHT_BG
+official  ComboListBgColor         =LIST_BG
+official  ScrollSelectedBGColor    =SELECTION_BG
+official  ScrollHoveredColor       =ROW_HOVER_BG
+official  SysWellItemSelected      =SELECTION_BG
+official  AlertBoxColor            =LIST_BG
+official  PieMenuBgColor           =LIST_BG/0.59
+official  ResizebarBody            =PANEL_BORDER
+official  ResizebarBorderLight     =DIVIDER_RIGHT
+official  ResizebarBorderDark      =DIVIDER_LEFT
+official  ToolTipBgColor           =TOOLTIP_FILL
+official  ToolTipBorderColor       =TOOLTIP_BORDER
+official  ToolTipTextColor         =TEXT_WHITE     # the official tooltip is light with dark text; this one is dark
+official  SearchableControlHighlightBgColor   =SEARCH_HIT_FILL    # the preferences' search on the official widgets not replaced yet (red there)
+official  SearchableControlHighlightFontColor =ACCENT_LINE
+
+keep      ColorPaletteEntry*       # the colour picker's swatches
+keep      Text*                    # the text fields and editors (light boxes, dark text) stay as they are
+keep      Script*
+keep      Syntax*
+keep      *ChatColor               # the chat colours (the preferences' Colors tab)
+keep      NameTag*                 # in the world
+keep      ContextSilhouetteColor   # the selection's outline in the world
+keep      ObjectBubbleColor        # the chat bubbles in the world
+keep      OutputMonitorMutedColor

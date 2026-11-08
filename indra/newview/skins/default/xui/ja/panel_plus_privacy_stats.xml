@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="plus_privacy_stats">
+	<check_box name="plus_send_settings_stats" label="変更した設定をビューワの統計に含めて送る" tool_tip="どのビューワも、ログイン中に統計（フレームレート、PC の構成、ログインしていた時間など）を Second Life に送っています。オンにすると、ログアウト時と終了時に送る統計に、既定から変えた設定も含めます（Linden Lab がよく使われる設定を知る手がかりになります）。オフにすると設定は送りません（統計のほかの部分は送られます）。" />
+	<text name="plus_send_settings_stats_note">
+（送るのはオン／オフ・数値・色の設定だけです。文字の設定、場所、機器、ログイン情報、鍵、Charis の設定は送りません。）
+	</text>
+</panel>

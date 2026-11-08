@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="panel_dir_events" label="イベント">
+	<string name="searching_text">
+		検索中…
+	</string>
+	<string name="not_found_text">
+		見つかりませんでした。
+	</string>
+	<text name="find">
+		検索する言葉を入力：
+	</text>
+	<combo_box name="category_combo">
+		<combo_item name="All" label="全カテゴリ"/>
+		<combo_item name="Discussion" label="討論"/>
+		<combo_item name="Sports" label="スポーツ"/>
+		<combo_item name="LiveMusic" label="ライブ音楽"/>
+		<combo_item name="LiveDJ" label="ライブ DJ"/>
+		<combo_item name="Commercial" label="商業"/>
+		<combo_item name="Nightlife/Entertainment" label="ナイトライフ／エンターテインメント"/>
+		<combo_item name="Games/Contests" label="ゲーム／コンテスト"/>
+		<combo_item name="Pageants" label="コンテスト（美人・ファッション）"/>
+		<combo_item name="Education" label="教育"/>
+		<combo_item name="ArtsandCulture" label="芸術と文化"/>
+		<combo_item name="Charity/SupportGroups" label="チャリティ／支援グループ"/>
+		<combo_item name="Miscellaneous" label="その他"/>
+	</combo_box>
+	<button name="Search" label="検索"/>
+	<scroll_list name="results">
+		<column name="name" label="名前"/>
+		<column name="date" label="時刻（PT）"/>
+		<column name="time" label="時間"/>
+	</scroll_list>
+	<button name="prev_btn" tool_tip="前のページ"/>
+	<button name="next_btn" tool_tip="次のページ"/>
+	<radio_group name="date_mode">
+		<radio_item name="current" label="開催中と今後"/>
+		<radio_item name="date" label="日付"/>
+	</radio_group>
+	<button name="back_btn" tool_tip="前の日へ"/>
+	<button name="forward_btn" tool_tip="次の日へ"/>
+</panel>

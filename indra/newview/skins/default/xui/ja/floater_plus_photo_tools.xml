@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_photo_tools" title="撮影ツール">
+	<floater.string name="blur_off">上の「被写界深度」をオンにすると使えます。</floater.string>
+	<floater.string name="dof_switching">切り替え中…</floater.string>
+	<floater.string name="reset_pause">戻す設定の中に、絵が数秒止まるものがあります。</floater.string>
+	<floater.string name="pin_tip">ホームに出す</floater.string>
+	<floater.string name="changed_tip">このセッションで撮影ツールを最初に開いた時から変えています</floater.string>
+	<floater.string name="rebuild_tip_maybe">これを変えると、絵が数秒止まることがあります。</floater.string>
+	<floater.string name="rebuild_tip">これを変えると、絵が数秒止まります。</floater.string>
+	<floater.string name="my_name_auto">プリセット [N]</floater.string>
+	<floater.string name="tab_tip_home">最初の画面です。写真用のプリセット、明るさ・背景ぼかし・色味、空と水面の切り替え、撮影ボタン、世界を止める、構図ガイド、星を付けた設定をまとめています。</floater.string>
+	<floater.string name="tab_tip_quality">まずここで全体の画質と重さを決めます。画質の段（低〜超高の 7 段）、描画距離、物の細かさ、撮影時にきれいにする。詳細設定にアンビエントオクルージョン（GTAO）・反射・鏡・水・ギザギザの軽減があります。</floater.string>
+	<floater.string name="tab_tip_light">空と水と天気です。空と水面の一覧、水面の映り込み・自分の反射・水しぶき、雨・地面の濡れと水たまり・軒先の雨だれ・傘にあたる雨・雪、地面の霧・光の粒・光の筋。タブの中をスクロールできます。</floater.string>
+	<floater.string name="tab_tip_color">光の当たり方と色です。光の向き、影の濃さ、グレア、レンズフレア、光芒、明るさ、コントラスト、色味、ルック（LUT）。詳細設定に影の硬さ・距離・細かさ、トーンマッパー・露出・シャープさがあります。</floater.string>
+	<floater.string name="tab_tip_camera">カメラそのものの設定です。画角、傾き、背景ぼかしと被写界深度、カメラ位置の保存、構図ガイド、カメラの動き方、3D マウス。</floater.string>
+	<floater.string name="tab_tip_subject">写るアバターの設定です。顔の影をやわらげる、接触の影（指先・足元）、カメラ目線（目と首がどこまで回るか）、髪の揺れと風。</floater.string>
+	<floater.string name="tab_tip_shoot">撮影と保存です。写真の大きさと形、撮影ボタン、最後の写真と保存先フォルダ、通常のスナップショットウィンドウ、ファイル形式と JPEG の品質。</floater.string>
+	<floater.string name="my_presets_none">（まだありません）</floater.string>
+	<floater.string name="my_presets_label">自分のプリセット</floater.string>
+	<floater.string name="my_presets_full">保存できませんでした。自分のプリセットは [MAX] 件までです。先に 1 件消すか、今ある名前で保存して上書きしてください。</floater.string>
+	<floater.string name="search_none">見つかりませんでした。</floater.string>
+	<floater.string name="details_row_open">詳細設定を閉じる（[N]）</floater.string>
+	<floater.string name="details_row">詳細設定（[N]）</floater.string>
+	<floater.string name="changes_hide">一覧を閉じる</floater.string>
+	<floater.string name="changes_show">変更を見る</floater.string>
+	<floater.string name="status_changes">[N] 項目を変更中</floater.string>
+	<floater.string name="status_none">変更はありません</floater.string>
+	<floater.string name="no_region">（リージョンの外）</floater.string>
+	<floater.string name="freeze_resume">世界を再開（停止 [SECONDS] 秒）</floater.string>
+	<floater.string name="freeze_start">世界を止める</floater.string>
+	<floater.string name="region_label">[REGION]: [COUNT] / [MAX] 件</floater.string>
+	<floater.string name="cam_all_full">保存できませんでした。カメラ位置は全リージョン合わせて [MAX] 件までで、もういっぱいです。使わない位置を消してください（一覧には、今いるリージョンの位置だけが出ます）。</floater.string>
+	<floater.string name="auto_name">カメラ [N]</floater.string>
+	<floater.string name="sky_mark_modern">（HDR）</floater.string>
+	<floater.string name="sky_mark_classic">（昔の形式）</floater.string>
+	<floater.string name="gaze_closed">＋ 目の調整</floater.string>
+	<floater.string name="sun_unset">（空の設定のまま）</floater.string>
+	<floater.string name="details_name">詳細設定</floater.string>
+	<floater.string name="focus_part_eyes">目</floater.string>
+	<floater.string name="focus_part_chest">胸</floater.string>
+	<floater.string name="focus_part_body">全身</floater.string>
+	<floater.string name="focus_nobody">（人を選んでください）</floater.string>
+	<floater.string name="focus_st_off">ビューワの標準のピントです（Alt で寄った所）。</floater.string>
+	<floater.string name="focus_st_cursor">マウスの下にピントを合わせています。</floater.string>
+	<floater.string name="focus_st_locked">[WHO]（[PART]）にピントを合わせています。距離 [DIST] m。</floater.string>
+	<floater.string name="focus_st_locked_self">自分（[PART]）にピントを合わせています。距離 [DIST] m。</floater.string>
+	<floater.string name="focus_st_lost">[WHO] が見つかりません。その間は標準のピントです。</floater.string>
+	<floater.string name="focus_st_lost_cursor">マウスが絵の外にあります。標準のピントです。</floater.string>
+	<floater.string name="focus_st_nobody">近くの人を選んでください。</floater.string>
+	<floater.string name="focus_st_blur_off">ぼかしがオフです。ピントを合わせる対象がありません。</floater.string>
+	<floater.string name="focus_st_switching">ぼかしをオンにしています…</floater.string>
+	<floater.string name="focus_st_click_wait">ピントを合わせたい場所をクリックしてください。</floater.string>
+	<floater.string name="focus_st_click_picking">固定中（[DIST] m）。クリックで移動、Esc で終了。</floater.string>
+	<floater.string name="focus_st_click_locked">クリックした所にピントを固定しています。距離 [DIST] m。</floater.string>
+	<floater.string name="focus_st_click_none">「クリックした場所」を選び直して、場所をクリックしてください。</floater.string>
+	<floater.string name="shot_size_tip">撮影する大きさ（長辺）</floater.string>
+	<floater.string name="size_window">画面と同じ</floater.string>
+	<floater.string name="size_2k">2K</floater.string>
+	<floater.string name="size_4k">4K</floater.string>
+	<floater.string name="size_6k">6K</floater.string>
+	<floater.string name="size_8k">8K</floater.string>
+	<floater.string name="aspect_window">画面と同じ</floater.string>
+	<floater.string name="aspect_16x9">16:9</floater.string>
+	<floater.string name="aspect_3x2">3:2</floater.string>
+	<floater.string name="aspect_4x3">4:3</floater.string>
+	<floater.string name="aspect_1x1">1:1</floater.string>
+	<floater.string name="aspect_9x16">9:16（縦）</floater.string>
+	<floater.string name="aspect_2x3">2:3（縦）</floater.string>
+	<floater.string name="shot_dims">[W]×[H]  約 [MP] メガピクセル</floater.string>
+	<floater.string name="shot_dims_no">[W]×[H]  約 [MP] メガピクセル。撮れません: [WHY]</floater.string>
+	<floater.string name="shot_ok">保存しました: [FILE]（[W]×[H]、[KB] KB、[S] 秒）</floater.string>
+	<floater.string name="shot_fail">撮影できませんでした。[WHY]</floater.string>
+	<floater.string name="shot_none">まだ撮っていません。</floater.string>
+	<floater.string name="save_dir">保存先: [DIR]</floater.string>
+	<floater.string name="save_dir_missing">保存先のフォルダが見つかりません。「保存先を変更…」で選び直してください。</floater.string>
+	<floater.string name="save_dir_default">保存先（ピクチャフォルダ・未選択）: [DIR]</floater.string>
+	<floater.string name="shot_btn">撮影</floater.string>
+	<floater.string name="shot_btn_taking">撮影中…</floater.string>
+	<floater.string name="shot_btn_wait">待機中（[S] 秒）</floater.string>
+	<floater.string name="shot_btn_wait_memory">待機中…</floater.string>
+	<floater.string name="why_memory">GPU のメモリが足りません（必要 約 [NEED] GB、空き [FREE] GB）。</floater.string>
+	<floater.string name="why_side">ビューワが撮れるのは 1 辺 7680 ピクセルまでです。</floater.string>
+	<floater.string name="why_unknown">GPU のメモリが読めないため、4K までしか撮れません。</floater.string>
+	<floater.string name="fav_missing">[NAME]（見つかりません）</floater.string>
+	<floater.string name="fav_remove">外す</floater.string>
+	<floater.string name="sky_fav_empty">空の星を押すと、ここに残ります。</floater.string>
+	<floater.string name="water_fav_empty">水面の星を押すと、ここに残ります。</floater.string>
+	<floater.string name="sky_recent_empty">使った空が、ここに並びます。</floater.string>
+	<floater.string name="water_recent_empty">使った水面が、ここに並びます。</floater.string>
+	<floater.string name="fav_full">お気に入りが 100 件あります。先に 1 件外してください。</floater.string>
+	<floater.string name="fav_not_found">この項目がインベントリに見つかりません（消したか、まだ読み込み中です）。</floater.string>
+	<floater.string name="sky_not_in_inventory">この空はインベントリにありません。先にインベントリに保存してから、星を付けてください。</floater.string>
+	<floater.string name="water_not_in_inventory">この水面はインベントリにありません。先にインベントリに保存してから、星を付けてください。</floater.string>
+	<floater.string name="fav_gone">この空・水面はインベントリにありません（まだ読み込まれていないかも）。</floater.string>
+	<floater.string name="now_line">今: [NAME]</floater.string>
+	<floater.string name="now_adjusted">（調整済み）</floater.string>
+	<floater.string name="sky_now_land">土地の空</floater.string>
+	<floater.string name="water_now_land">土地の水面</floater.string>
+	<floater.string name="sky_now_item">インベントリの空</floater.string>
+	<floater.string name="water_now_item">インベントリの水面</floater.string>
+	<floater.string name="sky_now_other">調整した空</floater.string>
+	<floater.string name="water_now_other">調整した水面</floater.string>
+	<floater.string name="sky_list_open">空を選ぶ ▼</floater.string>
+	<floater.string name="water_list_open">水面を選ぶ ▼</floater.string>
+	<floater.string name="env_list_close">閉じる ▲</floater.string>
+	<floater.string name="gaze_open">－ 目の調整</floater.string>
+	<floater.string name="look_none">なし（元の色）</floater.string>
+	<floater.string name="look_missing">[NAME]（見つかりません）</floater.string>
+	<floater.string name="look_user_mark">（自分）</floater.string>
+	<floater.string name="look_kind_shipped">同梱</floater.string>
+	<floater.string name="look_kind_user">自分</floater.string>
+	<floater.string name="look_tip">画面の色合い（LUT）。Charis メニューの「ルック（色合い）」と同じ一覧です。</floater.string>
+	<floater.string name="look_prev_tip">前のルック</floater.string>
+	<floater.string name="look_next_tip">次のルック</floater.string>
+	<floater.string name="look_current">使用中: [NAME]</floater.string>
+	<floater.string name="look_photo_only">（写真にだけ）</floater.string>
+	<floater.string name="look_fav_empty">使用中のルックの星を押すと、ここに残ります。</floater.string>
+	<floater.string name="look_recent_empty">ここで使ったルックが並びます。</floater.string>
+	<floater.string name="look_none_found">ルックが見つかりません。</floater.string>
+	<floater.string name="look_fav_full">お気に入りのルックが 100 件あります。先に 1 件外してください。</floater.string>
+	<floater.string name="look_reloaded">ルックを読み直しました（同梱 [SHIPPED]、自分 [USER]）。</floater.string>
+	<floater.string name="compare_label">比べる</floater.string>
+	<floater.string name="compare_label_latched">今に戻す</floater.string>
+	<floater.string name="compare_badge">変更前を表示中</floater.string>
+	<floater.string name="compare_badge_latched">変更前を表示中（「今に戻す」で戻ります）</floater.string>
+	<floater.string name="status_compare">変更前の見た目を表示しています</floater.string>
+	<floater.string name="easy_title">かんたん調整</floater.string>
+	<floater.string name="pins_title">お気に入りの設定</floater.string>
+	<floater.string name="pins_empty">どの設定でも、星を押すとここに出ます。</floater.string>
+	<floater.string name="text_hint">例 2026-12-14 22:00（空なら今）</floater.string>
+	<plus_ps_box name="body">
+		<plus_ps_box name="search_box">
+			<filter_editor name="flt_search" label="設定を検索" />
+		</plus_ps_box>
+		<plus_photo_compare_button name="btn_compare" label="比べる" tool_tip="押している間だけ、変更する前の見た目に戻します。短く押す（クリックする）と変更前のまま固定され、もう一度押すと戻ります。どのタブからでも使えます。" />
+		<plus_ps_row name="tabs">
+			<plus_ps_tab name="tab_home" label="ホーム" />
+			<plus_ps_tab name="tab_quality" label="画質" />
+			<plus_ps_tab name="tab_light" label="空と天気" />
+			<plus_ps_tab name="tab_color" label="光と色" />
+			<plus_ps_tab name="tab_camera" label="カメラ" />
+			<plus_ps_tab name="tab_subject" label="アバター" />
+			<plus_ps_tab name="tab_shoot" label="撮影" />
+		</plus_ps_row>
+		<plus_ps_label name="status" label="変更はありません" />
+		<plus_ps_button name="btn_changes" label="変更を見る" />
+		<plus_ps_button name="btn_reset_all" label="すべて元に戻す" tool_tip="このセッションで撮影ツールを最初に開いた時の設定に、すべて戻します" />
+	</plus_ps_box>
+</floater>

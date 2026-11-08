@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window (from: official panel_preferences_setup.xml of the work tree = Second_Life_Release#d567465e-26.5 with
+     the plus rows updatecheck, importsettings and slurlhandler; research/266 4. prefs-w-setup). The official panel
+     stays as it is (the ledger's source for tools/ui-parity-diff.py); this page has all it does (name, control_name,
+     functions, strings, choices, ranges) in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml).
+     The plus rows are Charis's own pages now: panel_plus_prefs_update_check.xml, panel_plus_prefs_import_settings.xml,
+     panel_plus_prefs_slurl_handler.xml (their C++ classes as before).
+     Height of the list (1080 base): 10 + Network title 40 + bandwidth 31 + port 30 + 10
+     + Web title 40 + browser choice 3 x 30 + Javascript 30 + 10
+     + Software updates title 40 + drop-down 33 + 2 checks x 30 + the update check 30 + 10
+     + Proxy title 40 + proxy button 40 + 6 + import button 40 + 10 + the SLURL rows 129 + 14 = 743 (scrolls in 515).
+     The update check's row is hidden while PlusUpdateCheckURL is empty; its class moves the rows under it up by
+     40 then (plus/updatecheck UpdateCheckPanel: its siblings in this list), so the list ends 40 short.
+     Rows at left 14, 529 wide. Bandwidth: label 180 | 6 | slider 290 (value 62) | 6 | kbps 47.
+     Port: check 220 | 9 | spinner 300 (label 150). The other checks are whole rows (529, follows left|top|right). -->
+<panel
+ name="Input panel"
+ border="true"
+ follows="all"
+ height="515"
+ label="Setup"
+ layout="topleft"
+ left="0"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="setup_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="setup_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="743"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <!-- Network -->
+                <plus_ps_text
+                 name="Network:"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 mouse_opaque="false"
+                 top="10"
+                 type="string"
+                 width="529">
+                    Network:
+                </plus_ps_text>
+                <plus_ps_text
+                 name="Maximum bandwidth"
+                 follows="left|top"
+                 height="31"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 mouse_opaque="false"
+                 top="50"
+                 type="string"
+                 width="180">
+                    Maximum bandwidth
+                </plus_ps_text>
+                <plus_ps_slider_compat
+                 name="max_bandwidth"
+                 can_edit_text="true"
+                 control_name="ThrottleBandwidthKBPS"
+                 decimal_digits="0"
+                 follows="left|top"
+                 height="31"
+                 increment="100"
+                 initial_value="500"
+                 layout="topleft"
+                 left="200"
+                 max_val="10000"
+                 min_val="100"
+                 top="50"
+                 width="290" />
+                <plus_ps_text
+                 name="text_box2"
+                 follows="left|top"
+                 height="31"
+                 layout="topleft"
+                 left="496"
+                 length="1"
+                 mouse_opaque="false"
+                 top="50"
+                 type="string"
+                 width="47">
+                    kbps
+                </plus_ps_text>
+                <plus_ps_check_compat
+                 name="connection_port_enabled"
+                 control_name="ConnectionPortEnabled"
+                 follows="left|top"
+                 height="30"
+                 label="Custom port"
+                 layout="topleft"
+                 left="14"
+                 top="81"
+                 width="220">
+                    <plus_ps_check_compat.commit_callback
+                     function="Notification.Show"
+                     parameter="ChangeConnectionPort" />
+                </plus_ps_check_compat>
+                <plus_ps_spinner
+                 name="connection_port"
+                 control_name="ConnectionPort"
+                 decimal_digits="0"
+                 enabled_control="ConnectionPortEnabled"
+                 follows="left|top"
+                 height="30"
+                 increment="1"
+                 initial_value="13000"
+                 label="Port number:"
+                 label_width="150"
+                 layout="topleft"
+                 left="243"
+                 max_val="13050"
+                 min_val="13000"
+                 top="81"
+                 width="300" />
+                <!-- Web -->
+                <plus_ps_text
+                 name="Web:"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="121"
+                 type="string"
+                 width="529">
+                    Web:
+                </plus_ps_text>
+                <plus_ps_radio
+                 name="preferred_browser_behavior"
+                 control_name="PreferredBrowserBehavior"
+                 follows="left|top|right"
+                 height="90"
+                 kind="list"
+                 layout="topleft"
+                 left="14"
+                 top="161"
+                 width="529">
+                    <radio_item
+                     name="internal"
+                     height="30"
+                     label="Use the default system browser for all links"
+                     layout="topleft"
+                     left="0"
+                     tool_tip="Use the default system web browser for help, web links, etc. Not recommended if running full screen."
+                     top="0"
+                     value="0"
+                     width="529" />
+                    <radio_item
+                     name="external"
+                     height="30"
+                     label="Use the built-in browser for Second Life links only"
+                     layout="topleft"
+                     left="0"
+                     tool_tip="Use the default system web browser for help, web links, etc. The built-in browser will be used only for LindenLab/Second Life links."
+                     top="30"
+                     value="1"
+                     width="529" />
+                    <radio_item
+                     name="external_all"
+                     height="30"
+                     label="Use the built-in browser for all links"
+                     layout="topleft"
+                     left="0"
+                     tool_tip="Use the built-in web browser for help, web links, etc. This browser opens as a new window inside [APP_NAME]."
+                     top="60"
+                     value="2"
+                     width="529" />
+                </plus_ps_radio>
+                <plus_ps_check_compat
+                 name="browser_javascript_enabled"
+                 control_name="BrowserJavascriptEnabled"
+                 enabled="true"
+                 follows="left|top|right"
+                 height="30"
+                 initial_value="true"
+                 label="Enable Javascript"
+                 layout="topleft"
+                 left="14"
+                 mouse_opaque="true"
+                 radio_style="false"
+                 top="251"
+                 width="529" />
+                <!-- Software updates -->
+                <plus_ps_text
+                 name="Software updates:"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 mouse_opaque="false"
+                 top="291"
+                 type="string"
+                 width="529">
+                    Software updates:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="updater_service_combobox"
+                 control_name="UpdaterServiceSetting"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 top="331"
+                 width="420">
+                    <plus_ps_combo.item
+                     name="Install_automatically"
+                     label="Install each update automatically"
+                     value="3" />
+                    <plus_ps_combo.item
+                     name="Install_ask"
+                     label="Ask me when an optional update is ready to install"
+                     value="1" />
+                    <plus_ps_combo.item
+                     name="Install_manual"
+                     label="Install only mandatory updates"
+                     value="0" />
+                </plus_ps_combo>
+                <plus_ps_check_compat
+                 name="update_willing_to_test"
+                 control_name="UpdaterWillingToTest"
+                 enabled="true"
+                 follows="left|top|right"
+                 height="30"
+                 label="Willing to update to Beta"
+                 layout="topleft"
+                 left="14"
+                 mouse_opaque="true"
+                 top="364"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="update_show_release_notes"
+                 control_name="UpdaterShowReleaseNotes"
+                 enabled="true"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show Release Notes after update"
+                 layout="topleft"
+                 left="14"
+                 mouse_opaque="true"
+                 top="394"
+                 width="529" />
+                <!-- Charis's own update check (plus/updatecheck; research/123). Its class hides the box while
+                     PlusUpdateCheckURL is empty and moves its siblings under it up into its place. -->
+                <panel
+                 name="plus_update_check"
+                 class="plus_update_check_panel"
+                 filename="panel_plus_prefs_update_check.xml"
+                 follows="left|top"
+                 height="30"
+                 layout="topleft"
+                 left="14"
+                 top="424"
+                 width="529" />
+                <!-- Proxy -->
+                <plus_ps_text
+                 name="Proxy Settings:"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 mouse_opaque="false"
+                 top="464"
+                 type="string"
+                 width="529">
+                    Proxy Settings:
+                </plus_ps_text>
+                <plus_ps_button_compat
+                 name="set_proxy"
+                 follows="left|top"
+                 height="40"
+                 label="Adjust proxy settings"
+                 label_selected="Browse"
+                 layout="topleft"
+                 left="14"
+                 top="504"
+                 width="260">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.Proxy" />
+                </plus_ps_button_compat>
+                <!-- Bring the settings of another viewer over (plus/importsettings) -->
+                <panel
+                 name="plus_import_settings"
+                 filename="panel_plus_prefs_import_settings.xml"
+                 follows="left|top"
+                 height="40"
+                 layout="topleft"
+                 left="14"
+                 top="550"
+                 width="360" />
+                <!-- Which viewer opens secondlife:// links from the browser (plus/slurlhandler, research/237).
+                     Its class hides it where the desktop registers the links (not Windows). -->
+                <panel
+                 name="plus_slurl_handler"
+                 class="plus_slurl_handler_panel"
+                 filename="panel_plus_prefs_slurl_handler.xml"
+                 follows="left|top"
+                 height="129"
+                 layout="topleft"
+                 left="14"
+                 top="600"
+                 width="529" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

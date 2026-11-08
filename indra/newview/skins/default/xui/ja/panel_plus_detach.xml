@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_detach">
+	<panel.string name="detach_tooltip">別窓に出す（別のモニターに置けます。別窓のこの位置のボタンで戻ります）</panel.string>
+	<panel.string name="return_tooltip">メインの画面に戻す（タイトルバーをメインの画面までドラッグしても戻ります。Ctrl を押したままなら別窓のまま）</panel.string>
+	<panel.string name="too_many">別窓は [MAX] 枚までです。どれかをメインの画面に戻してから出してください。</panel.string>
+	<panel.string name="not_detachable">「[TITLE]」は別窓に出せません。</panel.string>
+	<panel.string name="no_frontmost">別窓に出したいウィンドウを一度クリックしてから、もう一度選んでください。</panel.string>
+	<panel.string name="needs_vulkan">別窓は Vulkan 描画の時だけ使えます。</panel.string>
+</panel>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="voice_panel" label="ボイス">
+	<slider name="Voice Volume" label="ボイスチャット"/>
+	<check_box name="enable_voice_check" label="有効"/>
+	<text name="noise_suppression_label">
+		マイクのノイズ除去
+	</text>
+	<combo_box name="noise_suppression_combo">
+		<item name="noise_suppression_none" label="オフ"/>
+		<item name="noise_suppression_low" label="弱"/>
+		<item name="noise_suppression_moderate" label="中"/>
+		<item name="noise_suppression_high" label="強"/>
+		<item name="noise_suppression_max" label="最大"/>
+	</combo_box>
+	<text name="Listen from">
+		ボイスの聞き取り位置
+	</text>
+	<combo_box name="ear_location_combo">
+		<item name="camera_position" label="カメラの位置"/>
+		<item name="avatar_position" label="アバターの位置"/>
+	</combo_box>
+	<check_box name="enable_lip_sync" label="喋るときにアバターの口を動かす"/>
+	<check_box name="push_to_talk_toggle_check" label="ツールバーのボタンで発言のオン／オフを切り替える" tool_tip="切り替え式では、トリガーキーを1回押して離すたびにマイクのオン／オフが切り替わります。切り替え式でないときは、トリガーキーを押している間だけ声が送られます。"/>
+	<check_box name="gesture_audio_play_btn" label="ジェスチャーのサウンドを再生" tool_tip="チェックすると、ジェスチャーのサウンドが聞こえます"/>
+	<check_box name="enable_echo_cancellation" label="エコーキャンセル" tool_tip="チェックすると、ボイスのエコーを打ち消します"/>
+	<check_box name="voice_automatic_gain_control" label="自動音量調整" tool_tip="チェックすると、マイクの音量を自動で調整します"/>
+	<check_box name="voice_dot_visualizer" label="アバターの頭上にボイスの印を表示" tool_tip="チェックすると、話しているアバターの頭上にボイスの印（点）を表示します"/>
+	<button name="device_settings_btn" label="ボイスの入出力機器"/>
+</panel>

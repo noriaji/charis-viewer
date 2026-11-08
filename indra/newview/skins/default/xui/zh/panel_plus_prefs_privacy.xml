@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Privacy panel">
+	<plus_ps_box name="ps_ground">
+		<plus_ps_tabs name="privacy_tab_container">
+			<panel name="privacy_preferences_general">
+				<panel.string name="log_in_to_change">
+					登入以改變
+				</panel.string>
+				<scroll_container name="privacy_general_scroll">
+					<panel name="privacy_general_list">
+						<plus_ps_check_compat name="online_searchresults" label="將我的個人小檔案顯示在搜尋結果中" />
+						<plus_ps_check_compat name="online_visibility" label="只有我的朋友和群組知道我上線" />
+						<plus_ps_check_compat name="auto_disengage_mic_check" label="當通話結束時關閉麥克風" />
+						<plus_ps_button_compat name="clear_cache" label="清除歷史紀錄" tool_tip="清除登入圖像、最後位置、瞬間傳送紀錄、網頁及材質快取" />
+						<plus_ps_text name="cache_size_label_l">
+							（位置、圖像、網頁、搜尋的歷史紀錄）
+						</plus_ps_text>
+						<plus_ps_button_compat name="block_list" label="封鎖清單" />
+						<plus_ps_text name="block_list_label">
+							（你所封鎖的人 及/或 物件）
+						</plus_ps_text>
+					</panel>
+				</scroll_container>
+			</panel>
+		</plus_ps_tabs>
+	</plus_ps_box>
+</panel>

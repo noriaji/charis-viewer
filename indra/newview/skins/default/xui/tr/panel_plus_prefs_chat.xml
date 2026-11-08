@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="chat" label="Metin Sohbeti">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="chat_scroll">
+			<panel name="chat_scroll_panel">
+				<panel name="general_chat_settings">
+					<plus_ps_check_compat name="auto_complete_gestures" label="Yakınlardaki sohbetlerde hareketleri otomatik olarak tamamla" />
+					<plus_ps_check_compat name="play_typing_animation" label="Sohbet sırasında yazma animasyonunu oynat" />
+					<plus_ps_check_compat name="bubble_text_chat" label="Balon Sohbeti" />
+					<plus_ps_text name="font_size">
+						Font büyüklüğü:
+					</plus_ps_text>
+					<plus_ps_combo name="chat_font_size">
+						<plus_ps_combo.item name="Small" label="Küçük" />
+						<plus_ps_combo.item name="Medium" label="Orta" />
+						<plus_ps_combo.item name="Large" label="Büyük" />
+					</plus_ps_combo>
+				</panel>
+				<panel name="im_notification_settings">
+					<plus_ps_check_compat name="voice_call_friends_only_check" label="Sadece arkadaşlar ve gruplar beni arasın veya Aİ göndersin" />
+					<plus_ps_text name="friend_ims">
+						Arkadaş Aİ'leri:
+					</plus_ps_text>
+					<plus_ps_combo name="FriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Sohbetler penceresini aç" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mesajı açılır pencerede göster" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Araç çubuğu düğmesi yanıp sönsün" />
+						<plus_ps_combo.item name="NoAction" label="Eylem yok" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_friend_im" label="Sesi çal" />
+					<plus_ps_text name="non_friend_ims">
+						Arkadaş harici Aİ'ler:
+					</plus_ps_text>
+					<plus_ps_combo name="NonFriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Sohbetler penceresini aç" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mesajı açılır pencerede göster" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Araç çubuğu düğmesi yanıp sönsün" />
+						<plus_ps_combo.item name="NoAction" label="Eylem yok" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_non_friend_im" label="Sesi çal" />
+					<plus_ps_text name="conference_ims">
+						Konferans Aİ'leri:
+					</plus_ps_text>
+					<plus_ps_combo name="ConferenceIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Sohbetler penceresini aç" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mesajı açılır pencerede göster" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Araç çubuğu düğmesi yanıp sönsün" />
+						<plus_ps_combo.item name="NoAction" label="Eylem yok" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_conference_im" label="Sesi çal" />
+					<plus_ps_text name="group_chat">
+						Grup sohbeti:
+					</plus_ps_text>
+					<plus_ps_combo name="GroupChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Sohbetler penceresini aç" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mesajı açılır pencerede göster" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Araç çubuğu düğmesi yanıp sönsün" />
+						<plus_ps_combo.item name="NoAction" label="Eylem yok" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_group_chat_im" label="Sesi çal" />
+					<plus_ps_text name="nearby_chat">
+						Yakındaki sohbet:
+					</plus_ps_text>
+					<plus_ps_combo name="NearbyChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Sohbetler penceresini aç" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mesajı açılır pencerede göster" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="Araç çubuğu düğmesi yanıp sönsün" />
+						<plus_ps_combo.item name="NoAction" label="Eylem yok" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_nearby_chat_im" label="Sesi çal" />
+					<plus_ps_text name="object_ims">
+						Nesne Aİ'leri:
+					</plus_ps_text>
+					<plus_ps_combo name="ObjectIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Sohbetler penceresini aç" />
+						<plus_ps_combo.item name="PopUpMessage" label="Mesajı açılır pencerede göster" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="Araç çubuğu düğmesi yanıp sönsün" />
+						<plus_ps_combo.item name="NoAction" label="Eylem yok" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_object_im" label="Sesi çal" />
+					<plus_ps_text name="notifications_alert">
+						Tüm bildirimleri geçici olarak durdurmak için İletişim Kur &gt; Rahatsız Etme seçeneğini kullanın.
+					</plus_ps_text>
+				</panel>
+				<panel name="play_sound_settings">
+					<plus_ps_text name="play_sound">
+						Sesi çal:
+					</plus_ps_text>
+					<plus_ps_check_compat name="new_conversation" label="Yeni sohbet" />
+					<plus_ps_check_compat name="teleport_offer" label="Işınlama teklifi" />
+					<plus_ps_check_compat name="incoming_voice_call" label="Gelen sesli arama" />
+					<plus_ps_check_compat name="inventory_offer" label="Envanter teklifi" />
+				</panel>
+				<panel name="log_settings">
+					<plus_ps_text name="logging_label">
+						Kaydet:
+					</plus_ps_text>
+					<plus_ps_combo name="conversation_log_combo">
+						<plus_ps_combo.item name="log_and_transcripts" label="Günlük ve dökümler" />
+						<plus_ps_combo.item name="log_only" label="Sadece günlük" />
+						<plus_ps_combo.item name="no_log_or_transcript" label="Günlük veya döküm yok" />
+					</plus_ps_combo>
+					<plus_ps_button_compat name="clear_log" label="Günlüğü temizle..." />
+					<plus_ps_button_compat name="delete_transcripts" label="Dökümleri sil..." />
+					<plus_ps_text name="log_location_label">
+						Konum:
+					</plus_ps_text>
+					<plus_ps_button_compat name="log_path_button" label="Gözat..." label_selected="Gözat" />
+				</panel>
+				<plus_ps_button_compat name="ok_btn" label="Çeviri..." />
+				<plus_ps_button_compat name="autoreplace_showgui" label="Otomatik Yerine Koy..." />
+				<plus_ps_button_compat name="spellcheck_showgui" label="Yazım Denetimi Yapılıyor..." />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

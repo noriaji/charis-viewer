@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="panel_dir_people" label="人物">
+	<string name="searching_text">
+		検索中…
+	</string>
+	<string name="not_found_text">
+		見つかりませんでした。
+	</string>
+	<text name="find">
+		検索する言葉を入力：
+	</text>
+	<button name="Search" label="検索"/>
+	<scroll_list name="results">
+		<column name="name" label="名前"/>
+	</scroll_list>
+	<button name="prev_btn" tool_tip="前のページ"/>
+	<button name="next_btn" tool_tip="次のページ"/>
+</panel>

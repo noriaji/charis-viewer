@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Texts of plus/focuslock's hint (research/264: the chip over the world while the focus is picked by clicking).
+  Never shown: the viewer reads its strings.
+-->
+<panel
+ name="plus_focushint"
+ visible="false"
+ height="10"
+ width="10">
+    <panel.string name="first">Click the place to focus on</panel.string>
+    <panel.string name="moved">Click another place to move the focus</panel.string>
+    <panel.string name="esc">·  Esc to stop</panel.string>
+</panel>

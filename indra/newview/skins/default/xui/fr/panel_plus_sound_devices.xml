@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="Paramètres du périphérique">
+    <panel.string name="default_text">
+        Valeur par défaut
+    </panel.string>
+    <string name="name_no_device">
+        Aucun périphérique
+    </string>
+    <string name="name_default_system_device">
+        Périphérique système par défaut
+    </string>
+    <plus_ps_text name="Input">
+        Entrée
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        Sortie
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        Volume du micro :
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="Régler le volume du micro avec le curseur." />
+    <plus_ps_text name="wait_text">
+        Veuillez patienter
+    </plus_ps_text>
+</panel>

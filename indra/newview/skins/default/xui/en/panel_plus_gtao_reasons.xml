@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Texts of plus/gtao (gtao_ui.cpp): why GTAO or the indirect light (SSGI) cannot be used, at the top of
+  the tool tip of their greyed-out rows (graphics preferences, photo tools, photo screen).
+  Never shown: the viewer reads its strings. The names are plus::gtao::reason (gtao.h).
+-->
+<panel
+ name="plus_gtao_reasons"
+ visible="false"
+ height="10"
+ width="10">
+    <panel.string name="reason_safe_mode">Not available: the viewer was started in safe mode.</panel.string>
+    <panel.string name="reason_gtao_switched_off">Not available: turned off at start (LLRHI_GTAO=0).</panel.string>
+    <panel.string name="reason_ssgi_switched_off">Not available: turned off at start (LLRHI_SSGI=0).</panel.string>
+    <panel.string name="reason_no_backend">Not available with this graphics card or driver.</panel.string>
+    <panel.string name="reason_ssao_off">Screen Space Ambient Occlusion (SSAO; "Standard SSAO" in the photo tools) is off. Turn it on to use this.</panel.string>
+    <panel.string name="reason_gtao_off">GTAO is off ("GTAO (finer shade in corners)" in the preferences, "Ambient Occlusion (GTAO)" in the photo tools). Turn it on to use this.</panel.string>
+    <panel.string name="reason_gtao_strength_zero">GTAO's strength is 0 ("GTAO strength" in the preferences, "GTAO Strength" in the photo tools). Raise it to use this.</panel.string>
+    <panel.string name="reason_ssao_unsupported">Not available: this graphics card cannot use Screen Space Ambient Occlusion (SSAO).</panel.string>
+    <panel.string name="reason_hdr_off">HDR is off. Turn it on to use this.</panel.string>
+    <panel.string name="reason_probes_off">Reflection probes are off (as at a low graphics quality). Turn them on to use this.</panel.string>
+    <panel.string name="reason_probes_unsupported">Not available: this graphics card cannot use reflection probes.</panel.string>
+</panel>

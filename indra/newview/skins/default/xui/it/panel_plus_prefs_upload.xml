@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="uploads" label="Caricamenti">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="uploads_scroll">
+			<panel name="uploads_scroll_panel">
+				<plus_ps_text name="title">
+					Cartelle correnti di destinazione dei caricamenti
+				</plus_ps_text>
+				<plus_ps_text name="title_models">
+					Immagini
+				</plus_ps_text>
+				<plus_ps_text name="title_sounds">
+					Suoni
+				</plus_ps_text>
+				<plus_ps_text name="title_animation">
+					Animazioni
+				</plus_ps_text>
+				<plus_ps_text name="title_model">
+					Modelli
+				</plus_ps_text>
+				<plus_ps_text name="upload_help">
+					Per cambiare una cartella di destinazione, fai clic col pulsante destro del mouse sulla cartella desiderata nell'inventario e sceglila "Usa come impostazione predefinita per"
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

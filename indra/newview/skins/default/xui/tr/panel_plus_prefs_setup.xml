@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Input panel" label="Ayarlar">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="setup_scroll">
+			<panel name="setup_scroll_panel">
+				<plus_ps_text name="Network:">
+					Ağ:
+				</plus_ps_text>
+				<plus_ps_text name="Maximum bandwidth">
+					Maksimum bant genişliği
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					kbps
+				</plus_ps_text>
+				<plus_ps_check_compat name="connection_port_enabled" label="Özel port" />
+				<plus_ps_spinner name="connection_port" label="Port numarası:" />
+				<plus_ps_text name="Web:">
+					Web:
+				</plus_ps_text>
+				<plus_ps_radio name="preferred_browser_behavior">
+					<radio_item name="internal" label="Tüm bağlantılar için sisteme ait varsayılan tarayıcıyı kullan" tool_tip="Yardım, web bağlantıları vb. için sistemin varsayılan web tarayıcısını kullanın. Tam ekran çalıştırılıyorsa tavsiye edilmez." />
+					<radio_item name="external" label="Yerleşik tarayıcıyı yalnızca Second Life bağlantıları için kullan" tool_tip="Yardım, web bağlantıları vb. için sisteme ait varsayılan web tarayıcıyı kullan Yerleşik tarayıcı yalnızca LindenLab/Second Life bağlantıları için kullanılır." />
+					<radio_item name="external_all" label="Tüm bağlantılar için yerleşik tarayıcıyı kullan" tool_tip="Yardım, web bağlantıları vs. için dahili web tarayıcısını kullanın. Bu tarayıcı [APP_NAME] içerisinde yeni bir pencere olarak açılır." />
+				</plus_ps_radio>
+				<plus_ps_check_compat name="browser_javascript_enabled" label="Javascript'i etkinleştir" />
+				<plus_ps_text name="Software updates:">
+					Yazılım güncelleştirmeleri:
+				</plus_ps_text>
+				<plus_ps_combo name="updater_service_combobox">
+					<plus_ps_combo.item name="Install_automatically" label="Her bir güncellemeyi otomatik olarak yükle" />
+					<plus_ps_combo.item name="Install_ask" label="İsteğe bağlı bir güncelleme yüklenmeye hazır olduğunda bana sor" />
+					<plus_ps_combo.item name="Install_manual" label="Yalnızca zorunlu güncellemeleri yükle" />
+				</plus_ps_combo>
+				<plus_ps_check_compat name="update_willing_to_test" label="Sürüm adaylarına güncelleme yapmaya gönüllü" />
+				<plus_ps_check_compat name="update_show_release_notes" label="Güncellemeden sonra Sürüm Notlarını göster" />
+				<plus_ps_text name="Proxy Settings:">
+					Proxy Ayarları:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_proxy" label="Proxy ayarlarını yap" label_selected="Gözat" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

@@ -1,0 +1,9 @@
+The looks in this folder (look.xml, lut.cube, lut.png in each subfolder)
+were made for Charis Viewer by tools/looks/make_looks.py (autumn-street:
+tools/make-look-autumn.py).
+
+To the extent possible under law, the authors have waived all copyright and
+related or neighboring rights to them: CC0 1.0 Universal,
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Use, change and share them freely, in Charis or anywhere else.

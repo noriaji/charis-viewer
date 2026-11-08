@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<menu label="Charis" name="plus_menu_items">
+	<menu_item_check label="撮影ツール" name="PhotoTools"/>
+	<menu_item_check label="撮影モード（画面全体を撮影用に）" name="PhotoScreen"/>
+	<menu_item_check label="簡易設定" name="QuickPreferences"/>
+	<menu_item_call label="Charis の設定…" name="PrefsCharis"/>
+	<menu_item_check label="カメラワーク" name="CameraShot"/>
+	<menu_item_check label="カメラ演出（ポイントを順に巡る）" name="CameraPath"/>
+	<menu_item_check label="フライカム（キーボードとマウス）" name="FlycamKeyboardMouse"/>
+	<menu_item_check label="エリアサーチ（周りのオブジェクトを探す）" name="AreaSearch"/>
+	<menu_item_check label="時刻変換（SL時間・世界標準時・日本時間など）" name="TimeConv"/>
+	<menu_item_check label="レーダー（周りの人を一覧にする）" name="Radar"/>
+	<menu_item_check label="字幕（ボイスを文字にする）" name="Subtitle"/>
+	<menu_item_check label="ローカルメッシュ（手元のメッシュを貼って見る）" name="LocalMesh"/>
+	<menu_item_check label="保護したフォルダ（削除・移動できないフォルダ）" name="ProtectedFolders"/>
+	<menu_item_check label="チャットのキーワード通知" name="Keywords"/>
+	<menu label="ルック（色合い）" name="Look">
+		<menu_item_check label="なし" name="LookNone"/>
+		<menu_item_call label="自分のルック（ルックフォルダ）" name="LookUserHeader"/>
+		<menu_item_call label="   （まだありません: .cube か .png の LUT をルックフォルダに置きます）" name="LookUserNone"/>
+		<menu_item_call label="ルックフォルダを開く" name="LookOpenFolder"/>
+		<menu_item_call label="ルックの一覧を読み直す" name="LookReload"/>
+	</menu>
+	<menu_item_check label="チャットコンソール（左下にチャットを表示）" name="ChatConsoleOn"/>
+	<menu_item_check label="ポーザー" name="Poser"/>
+	<menu_item_check label="AO（アニメーションの置き換え）" name="AnimationOverrider"/>
+	<menu_item_check label="RestrainedLove API" name="RLV API"/>
+</menu>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_tts" title="チャットの読み上げ">
+	<floater.string name="voice_auto">（自動）</floater.string>
+	<floater.string name="voices_none">声がまだ見つかっていません。読み上げエンジンが起動すると、ここに出ます。</floater.string>
+	<floater.string name="voices_failed">Windows の読み上げエンジンを起動できず、声がありません。理由はログ（PlusTts）にあります。</floater.string>
+	<floater.string name="voices_count">この PC には声が [COUNT] 種類あります。個人の声は、アバターを右クリックしたメニューで手動指定できます。</floater.string>
+	<check_box name="on" label="チャットを読み上げる"/>
+	<text name="what_label">何を読むか:</text>
+	<check_box name="nearby" label="近くの人の発言"/>
+	<check_box name="self" label="自分の発言"/>
+	<check_box name="objects" label="オブジェクトの発言"/>
+	<check_box name="system" label="システム通知（お金・テレポート・リージョン）"/>
+	<check_box name="arrivals" label="人の出入り（レーダーの知らせ）"/>
+	<check_box name="im" label="IM"/>
+	<check_box name="group" label="グループチャット"/>
+	<check_box name="show_details" label="詳細設定を出す（声・速さ・制限）"/>
+	<panel name="detail">
+		<text name="male_label">男声:</text>
+		<text name="female_label">女声:</text>
+		<slider name="rate" label="速さ"/>
+		<slider name="volume" label="音量"/>
+		<spinner name="distance" label="この距離（m）以内の人・物だけ（0 で無制限）"/>
+		<spinner name="max_length" label="この文字数で切る"/>
+		<spinner name="max_queue" label="溜められる行数（古いものは捨てる）"/>
+		<check_box name="only_active" label="ビューワのウィンドウが裏にある間は読まない"/>
+		<check_box name="translated" label="チャット翻訳が付いた行は、翻訳の方だけ読む"/>
+		<check_box name="say_name" label="IM・グループは、先に名前を読む"/>
+		<button name="sample" label="声を試す" tool_tip="男声・女声・性別不明の声で、見本を読みます。"/>
+		<button name="stop" label="止める" tool_tip="読んでいるのを止めて、待っている分も捨てます。"/>
+		<button name="clear_hand" label="手動指定を全部消す" tool_tip="声を手動で決めたアバターを、すべて自動に戻します。"/>
+	</panel>
+</floater>

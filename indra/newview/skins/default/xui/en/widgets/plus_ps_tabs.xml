@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The defaults of plus_ps_tabs (plus/photoscreen/psui/pstabs.h, research/266 prefs-frame): tab_container.xml's defaults that the
+     official container still reads (the hidden tab buttons' widths and font). The tabs are drawn by PsTabs from the
+     style table (tokens.txt: TABS_*), so no images, colours or tab_height here: tab_width (left) and tab_height (top)
+     are TABS_RAIL_WIDTH and TABS_TOP_HEIGHT unless a window gives them. -->
+<plus_ps_tabs name="plus_ps_tabs"
+              mouse_opaque="false"
+              tab_min_width="60"
+              tab_max_width="160"
+              use_custom_icon_ctrl="false"
+              halign="center"
+              font="SansSerif"
+              font.size="Small"
+              label_pad_bottom="1"
+              label_pad_left="4" />

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="bulk_upload">
+	<layout_stack name="maint_layout">
+		<layout_panel name="count_panel">
+			<text name="number_of_items">
+				アップロードするアイテム数：[COUNT]
+			</text>
+		</layout_panel>
+		<layout_panel name="warning_panel">
+			<text name="textures_2k_warning">
+				選んだテクスチャのうち、大きいものは標準で 2048px に縮小されます。
+			</text>
+		</layout_panel>
+		<layout_panel name="checkbox_panel">
+			<check_box name="upload_2k" label="テクスチャを最大 1024px に縮小する"/>
+		</layout_panel>
+		<layout_panel name="cost_panel">
+			<text name="upload_cost">
+				アップロード料金：L$[COST]
+			</text>
+		</layout_panel>
+		<layout_panel name="buttoms_panel">
+			<button name="upload_btn" label="アップロード"/>
+			<button name="cancel_btn" label="キャンセル"/>
+		</layout_panel>
+		<layout_panel name="link_panel">
+			<text name="new_folder_textbox">
+				アップロード時のテクスチャの縮小について：https://wiki.secondlife.com/wiki/Limits#All_Viewers
+			</text>
+		</layout_panel>
+	</layout_stack>
+</floater>

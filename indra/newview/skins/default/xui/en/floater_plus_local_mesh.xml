@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Local mesh (plus/localmesh, from Firestorm's floater_vj_local_mesh.xml). Control names and
+  string names are used by localmeshfloater.cpp: why_<reason> are the reasons of
+  plus::localmesh::canShowOn().
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ min_width="460"
+ min_height="400"
+ height="440"
+ width="540"
+ layout="topleft"
+ name="plus_local_mesh"
+ title="LOCAL MESH">
+    <floater.string name="status_loading">Loading</floater.string>
+    <floater.string name="status_active">Ready</floater.string>
+    <floater.string name="status_error">Error</floater.string>
+    <floater.string name="unnamed">(an object)</floater.string>
+    <floater.string name="target">Selected: [NAME]</floater.string>
+    <floater.string name="target_shown">Selected: [NAME] (showing a local mesh)</floater.string>
+    <floater.string name="why_NoObject">Click an object in the world to select it. A mesh is shown on the selected object.</floater.string>
+    <floater.string name="why_NotMesh">The selected object is not a mesh object. A local mesh can only be shown on one (rez any mesh you own to use as a stand-in).</floater.string>
+    <floater.string name="why_Rigged">The selected object is a rigged mesh. Rigged meshes are not supported yet.</floater.string>
+    <floater.string name="why_NotLoaded">The selected object's own mesh has not loaded yet. Wait a moment.</floater.string>
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="10"
+     name="files_label"
+     top="24"
+     width="520">
+        Mesh files on this PC (.dae, .gltf, .glb). Only you see them; nothing is uploaded.
+    </text>
+    <scroll_list
+     column_padding="0"
+     draw_heading="true"
+     follows="left|top|right"
+     height="120"
+     layout="topleft"
+     left="8"
+     multi_select="false"
+     name="files"
+     top_pad="2"
+     width="524">
+        <scroll_list.columns
+         label="State"
+         name="status"
+         width="70" />
+        <scroll_list.columns
+         dynamic_width="true"
+         label="File"
+         name="name" />
+        <scroll_list.columns
+         label="LODs"
+         name="lods"
+         tool_tip="The LODs read from files, highest to lowest (3 2 1 0). A missing one shows the next better one. Lower LODs are files beside it named like name_LOD2.dae, name_LOD1.dae, name_LOD0.dae."
+         width="55" />
+        <scroll_list.columns
+         label="Meshes"
+         name="meshes"
+         width="55" />
+        <scroll_list.columns
+         label="Shown"
+         name="shown"
+         tool_tip="Objects showing a mesh of the file"
+         width="55" />
+    </scroll_list>
+    <button
+     follows="left|top"
+     height="22"
+     label="Add..."
+     layout="topleft"
+     left="8"
+     name="add"
+     tool_tip="Add mesh files (several at once)"
+     top_pad="6"
+     width="100" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Reload"
+     layout="topleft"
+     left_pad="6"
+     name="reload"
+     tool_tip="Read the selected file again (after you export it again); the objects showing it get the new version"
+     top_delta="0"
+     width="100" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Remove"
+     layout="topleft"
+     left_pad="6"
+     name="remove"
+     tool_tip="Remove the selected file from the list; the objects showing it get their own mesh back"
+     top_delta="0"
+     width="100" />
+    <check_box
+     control_name="PlusLocalMeshAutoReload"
+     follows="left|top"
+     height="16"
+     label="Reload when the file changes"
+     layout="topleft"
+     left_pad="10"
+     name="auto_reload"
+     tool_tip="Read a file again by itself when you export it again (checked once a second)"
+     top_delta="3"
+     width="200" />
+    <text
+     follows="left|top"
+     font="SansSerifBold"
+     height="16"
+     layout="topleft"
+     left="10"
+     name="object_label"
+     top_pad="14"
+     width="520">
+        Show on the selected object
+    </text>
+    <text
+     follows="left|top|right"
+     height="30"
+     layout="topleft"
+     left="10"
+     name="target"
+     top_pad="2"
+     width="520"
+     word_wrap="true">
+        (selected object)
+    </text>
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="10"
+     name="meshes_label"
+     top_pad="6"
+     width="60">
+        Mesh:
+    </text>
+    <combo_box
+     follows="left|top|right"
+     height="22"
+     layout="topleft"
+     left_pad="4"
+     name="meshes"
+     tool_tip="The mesh of the file to show (a file can have several)"
+     top_delta="-3"
+     width="456" />
+    <check_box
+     control_name="PlusLocalMeshFileSize"
+     follows="left|top"
+     height="16"
+     label="Give the object the size of the file"
+     layout="topleft"
+     left="8"
+     name="file_size"
+     tool_tip="Off: the mesh is stretched to the object's own size. On: the object takes the size the file has, in meters (only in your viewer; not for attachments)."
+     top_pad="6"
+     width="300" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Show on the object"
+     layout="topleft"
+     left="8"
+     name="show"
+     tool_tip="Show the mesh on the selected object, in your viewer only. While it shows a local mesh, the object does not take changes from the region."
+     top_pad="6"
+     width="170" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Take off"
+     layout="topleft"
+     left_pad="6"
+     name="take_off"
+     tool_tip="Give the selected object its own mesh back"
+     top_delta="0"
+     width="170" />
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="10"
+     name="log_label"
+     top_pad="10"
+     width="520">
+        Log of the selected file:
+    </text>
+    <text_editor
+     follows="all"
+     height="76"
+     layout="topleft"
+     left="8"
+     max_length="65536"
+     name="log"
+     parse_urls="false"
+     read_only="true"
+     spellcheck="false"
+     top_pad="2"
+     width="524"
+     word_wrap="true" />
+</floater>

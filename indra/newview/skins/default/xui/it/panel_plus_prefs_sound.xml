@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_sound.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="Preference Media panel" label="Suoni">
+    <panel.string name="middle_mouse">
+        Pulsante centrale del mouse
+    </panel.string>
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="sound_scroll">
+            <panel name="sound_scroll_panel">
+                <plus_ps_slider_compat name="System Volume" label="Vol. principale" />
+                <plus_ps_slider_compat name="UI Volume" label="Pulsanti" />
+                <plus_ps_slider_compat name="Wind Volume" label="Ambiente" />
+                <plus_ps_slider_compat name="SFX Volume" label="Effetti sonori" />
+                <plus_ps_slider_compat name="Music Volume" label="Musica in streaming" />
+                <plus_ps_check_compat name="enable_music" label="Abilitato" />
+                <plus_ps_slider_compat name="Media Volume" label="Multimediale" />
+                <plus_ps_check_compat name="enable_media" label="Abilitato" />
+                <plus_ps_slider_compat name="Voice Volume" label="Chat vocale" />
+                <plus_ps_check_compat name="enable_voice_check" label="Abilitato" />
+                <plus_ps_combo name="media_auto_play_combo">
+                    <item name="autoplay_disabled" label=" No " />
+                    <item name="autoplay_enabled" label="Si" />
+                    <item name="autoplay_ask" label="Chiedi" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="media_show_on_others_btn" label="Riproduci media in uso da altri avatar" tool_tip="Deseleziona qui per nascondere i media in uso dagli altri avatar nei dintorni" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

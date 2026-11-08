@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+  <panel
+    border="true"
+    follows="left|top|right|bottom"
+    height="438"
+    label="Privacy"
+    layout="topleft"
+    left="102"
+    name="Privacy panel"
+    top="1"
+    width="517">
+
+  <!-- remove "hide_tabs" param when Discord tab is actually used -->
+  <tab_container
+    top_pad="0"
+    enabled="true"
+    follows="left|top"
+    height="430"
+    width="517"
+    left_delta="0"
+    name="privacy_tab_container"
+    hide_tabs="true"
+    tab_position="top"
+    tab_stop="false">
+  <panel
+    label="General"
+    name="privacy_preferences_general"
+    layout="topleft"
+    follows="top|left">
+
+  <panel.string
+      name="log_in_to_change">
+    log in to change
+  </panel.string>
+
+  <button
+      follows="left|top"
+      height="23"
+      label="Clear History"
+      tool_tip="Clear search and teleport history, web and texture cache"
+      layout="topleft"
+      left="30"
+      name="clear_cache"
+      top="10"
+      width="145">
+    <button.commit_callback
+        function="Pref.WebClearCache" />
+  </button>
+
+  <text
+      type="string"
+      length="1"
+      follows="left|top"
+      height="10"
+      layout="topleft"
+      left_pad="10"
+      mouse_opaque="false"
+      name="cache_size_label_l"
+      top_delta="3"
+      text_color="LtGray_50"
+      width="300">
+    (Locations, images, web, search history)
+  </text>
+
+  <check_box
+      height="16"
+      enabled="false"
+      label="Show my profile info in Search results"
+      layout="topleft"
+      left="30"
+      name="online_searchresults"
+      top_pad="20"
+      width="350" />
+
+  <check_box
+      height="16"
+      enabled="false"
+      label="Only friends and groups know I'm online"
+      layout="topleft"
+      left="30"
+      name="online_visibility"
+      top_pad="30"
+      width="350" />
+
+    <check_box
+     enabled_control="EnableVoiceChat"
+     control_name="AutoDisengageMic"
+     height="16"
+     label="Switch off microphone when ending calls"
+     layout="topleft"
+     left="30"
+     name="auto_disengage_mic_check"
+     top_pad="10"
+     width="350" />
+    <check_box
+     control_name="EnableSelectionHints"
+     height="16"
+     label="Enable Selection Hints"
+     tool_tip="Enable reporting and tracking current selection using 'beam' particles and character animations. Turn this off and selecting, grabbing or editing an object never moves your avatar (no pointing, no turning toward the object, no turning at the screen edge; the camera turns instead)."
+     layout="topleft"
+     left="30"
+     name="enable_selection_hints"
+     top_pad="10"
+     width="350" />
+    <button
+     follows="left|top"
+     height="23"
+     label="Block list"
+     layout="topleft"
+     left="30"
+     name="block_list"
+     top_pad="28"
+     width="145">
+        <!--<button.commit_callback
+         function="SideTray.ShowPanel"-->
+      <button.commit_callback
+         function="Pref.BlockList"/>
+    </button>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="10"
+     layout="topleft"
+     left_pad="10"
+     mouse_opaque="false"
+     name="block_list_label"
+     top_delta="3"
+     text_color="LtGray_50"
+     width="300">
+       (People and/or Objects you have blocked)
+    </text>
+    <!-- plus: privacy. The settings in the viewer statistics on or off (PlusSendSettingsStats,
+         plus/privacy; panel_plus_privacy_stats.xml, the other languages' texts are in that file) -->
+    <panel
+     filename="panel_plus_privacy_stats.xml"
+     follows="left|top"
+     height="48"
+     layout="topleft"
+     left="30"
+     name="plus_privacy_stats"
+     top_pad="24"
+     width="460"/>
+    <!-- /plus -->
+    </panel>
+
+    <panel
+      label="Discord"
+      name="privacy_preferences_discord"
+      layout="topleft"
+      follows="top|left">
+
+      <check_box
+        control_name="EnableDiscord"
+        height="16"
+        enabled="true"
+        label="Enable Discord integration"
+        layout="topleft"
+        left="30"
+        name="enable_discord"
+        top_pad="20"
+        width="350" />
+
+      <check_box
+        enabled_control="EnableDiscord"
+        control_name="ShowDiscordActivityDetails"
+        height="16"
+        enabled="true"
+        label="Show avatar name"
+        layout="topleft"
+        left="30"
+        name="show_name"
+        top_pad="20"
+        width="350" />
+
+      <check_box
+        enabled_control="EnableDiscord"
+        control_name="ShowDiscordActivityState"
+        height="16"
+        enabled="false"
+        label="Show location"
+        layout="topleft"
+        left="30"
+        name="show_location"
+        top_pad="20"
+        width="350" />
+      </panel>
+  </tab_container>
+
+</panel>

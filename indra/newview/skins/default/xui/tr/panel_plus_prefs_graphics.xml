@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_graphics1.xml, by name. -->
+<panel label="Grafikler" name="Display panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="graphics_scroll">
+			<panel name="graphics_scroll_panel">
+				<plus_ps_text name="preset_text">
+					(Hiçbiri)
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText">
+					Düşük
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText2">
+					Orta
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText3">
+					Yüksek
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText4">
+					Ultra
+				</plus_ps_text>
+				<plus_ps_text name="QualitySpeed">
+					Kalite &amp; hız:
+				</plus_ps_text>
+				<plus_ps_text name="FasterText">
+					Daha hızlı
+				</plus_ps_text>
+				<plus_ps_text name="BetterText">
+					Daha iyi
+				</plus_ps_text>
+				<plus_ps_button_compat label="Gelişmiş Ayarlar..." name="AdvancedSettings"/>
+				<plus_ps_slider_compat label="Avatarın Maksimum Karmaşıklığı:" tool_tip="Görsel olarak karmaşık bir avatarın ne zaman JellyDoll olarak çizileceğini belirler" name="IndirectMaxComplexity"/>
+				<plus_ps_text name="IndirectMaxComplexityText">
+					0
+				</plus_ps_text>
+				<plus_ps_button_compat label="İstisnalar..." name="RenderExceptionsButton"/>
+				<plus_ps_button_compat label="Ayarları ön ayar olarak kaydet..." name="PrefSaveButton"/>
+				<plus_ps_button_compat label="Ön ayarı yükle..." name="PrefLoadButton"/>
+				<plus_ps_button_compat label="Ön ayarı sil..." name="PrefDeleteButton"/>
+				<plus_ps_button_compat label="Önerilen ayarlara dön" name="Defaults"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

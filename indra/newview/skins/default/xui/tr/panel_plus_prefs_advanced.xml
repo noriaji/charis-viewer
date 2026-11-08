@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="Gelişmiş">
+	<panel.string name="aspect_ratio_text">
+		[NUM]:[DEN]
+	</panel.string>
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_spinner name="cachesizespinner" label="Önbellek büyüklüğü (256 - 9984MB)" />
+				<plus_ps_text name="text_box5">
+					MB
+				</plus_ps_text>
+				<plus_ps_button_compat name="clear_cache" label="Önbelleği Sil" label_selected="Önbelleği Sil" />
+				<plus_ps_text name="Cache location">
+					Önbellek konumu:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_cache" label="Gözat" label_selected="Gözat" />
+				<plus_ps_button_compat name="default_cache_location" label="Varsayılan Konum" label_selected="Varsayılan Konum" />
+				<plus_ps_text name="UI Size:">
+					KA büyüklüğü:
+				</plus_ps_text>
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="Birden Çok Görüntüleyiciye İzin Ver" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="Oturum açarken Ağ Seçimini göster" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="Gelişmiş Menüyü Göster" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="Geliştirme Menüsünü Göster" />
+				<plus_ps_button_compat name="default_creation_permissions" label="Varsayılan Oluşturma İzinleri" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

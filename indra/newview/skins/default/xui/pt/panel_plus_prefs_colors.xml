@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_colors.xml, by name. -->
+<panel label="Cores" name="colors_panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="colors_scroll">
+			<panel name="colors_scroll_panel">
+				<plus_ps_text name="effects_color_textbox">
+					Meus efeitos (raio de seleção):
+				</plus_ps_text>
+				<plus_ps_box name="glass_effect_color_swatch">
+					<color_swatch tool_tip="Selecionar a cor" name="effect_color_swatch"/>
+				</plus_ps_box>
+				<plus_ps_text name="font_colors">
+					Cores no bate-papo:
+				</plus_ps_text>
+				<plus_ps_text name="text_box1">
+					Eu
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					Outros
+				</plus_ps_text>
+				<plus_ps_text name="text_box3">
+					Objects
+				</plus_ps_text>
+				<plus_ps_text name="text_box4">
+					Sistema
+				</plus_ps_text>
+				<plus_ps_text name="text_box5">
+					Erros
+				</plus_ps_text>
+				<plus_ps_text name="text_box10">
+					Direto
+				</plus_ps_text>
+				<plus_ps_text name="text_box7">
+					Proprietário
+				</plus_ps_text>
+				<plus_ps_text name="text_box9">
+					URLs
+				</plus_ps_text>
+				<plus_ps_text name="bubble_chat">
+					Cor de fundo do nome (e do balão do bate-papo):
+				</plus_ps_text>
+				<plus_ps_box name="glass_background">
+					<color_swatch tool_tip="Selecionar cor do nome" name="background"/>
+				</plus_ps_box>
+				<plus_ps_slider_compat label="Opacidade:" tool_tip="Selecionar cor do nome" name="bubble_chat_opacity"/>
+				<plus_ps_text name="floater_opacity">
+					Opacidade:
+				</plus_ps_text>
+				<plus_ps_slider_compat label="Ativo:" name="active"/>
+				<plus_ps_slider_compat label="Inativo:" name="inactive"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

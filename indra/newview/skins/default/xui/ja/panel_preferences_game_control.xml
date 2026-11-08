@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- gamecontrol-ja: 環境設定の「ゲームパッド」タブの日本語（公式の ja には無い） -->
+<panel label="ゲームパッド" name="game_control_panel">
+	<tab_container name="game_control_tabs">
+		<panel label="操作の割り当て" name="tab_action_mappings">
+			<combo_box name="action_mode" tool_tip="割り当てを編集するモードを選びます。">
+				<combo_box.item label="アバターを動かすとき" name="avatar"/>
+				<combo_box.item label="一人称視点のとき（マウスルック）" name="mouselook"/>
+				<combo_box.item label="フライカムのとき" name="flycam"/>
+				<combo_box.item label="着席時" name="captive"/>
+				<combo_box.item label="マウスカーソルを使うとき" name="cursor"/>
+			</combo_box>
+			<check_box label="このモードを使う" name="action_mode_enabled" tool_tip="オフにすると、このモードの割り当てを固定し、ゲームパッドの入力をこのモードの操作に変えなくなります。"/>
+			<check_box label="傾きを使う" name="flycam_allow_roll" tool_tip="傾ける入力で、フライカムを前向きの軸のまわりに回せるようにします。フライカムの割り当てを編集している時だけ表示されます。"/>
+			<text name="speed_slow_label">遅い</text>
+			<slider name="speed_factor" tool_tip="フライカム: カメラの移動の速さ。一人称視点: 向きを変える・見回す速さ。アバター: 向きを変える速さ。フライカム、一人称視点、アバターの割り当てを編集している時だけ表示されます。"/>
+			<text name="speed_fast_label">速い</text>
+			<check_box label="カーソルを隠す" name="flycam_hide_cursor" tool_tip="フライカムで飛んでいる間、マウスカーソルを隠します。マウスを動かすと現れ、5 秒後（フライカムが動けば 1 秒以内）にまた隠れます。フライカムの割り当てを編集している時だけ表示されます。"/>
+			<check_box label="照準を表示" name="flycam_crosshair" tool_tip="フライカムで飛んでいる間、画面の中央に照準を描きます。フライカムの割り当てを編集している時だけ表示されます。"/>
+			<button label="初期設定に戻す" name="restore_actions_defaults" tool_tip="選んでいるモードの割り当てを初期設定に戻します。"/>
+			<text name="current_mode_indicator">今のモード:</text>
+			<panel name="action_mappings_panel">
+				<panel name="action_mappings_axes_panel">
+					<scroll_list name="action_mappings_axes">
+						<scroll_list.columns label="操作" name="action"/>
+						<scroll_list.columns label="入力" name="input"/>
+						<scroll_list.columns label="軸" name="input_description"/>
+						<scroll_list.columns label="反転" name="invert"/>
+					</scroll_list>
+				</panel>
+				<panel name="action_mappings_buttons_panel">
+					<scroll_list name="action_mappings_buttons">
+						<scroll_list.columns label="操作" name="action"/>
+						<scroll_list.columns label="入力" name="input"/>
+						<scroll_list.columns label="ボタン" name="input_description"/>
+					</scroll_list>
+				</panel>
+			</panel>
+		</panel>
+		<panel label="機器の割り当て" name="tab_device_mappings">
+			<text name="nodevice_message">機器がつながっていません</text>
+			<check_box label="過去の機器も表示" name="show_all_known_devices"/>
+			<text name="device_prompt">機器:</text>
+			<button label="初期設定に戻す" name="restore_device_defaults" tool_tip="選んでいる機器の設定を初期設定に戻します。"/>
+			<panel name="device_settings">
+				<panel name="axis_channels_panel">
+					<scroll_list name="axis_channels">
+						<scroll_list.columns label="機器の入力" name="input_description"/>
+						<scroll_list.columns label="ビューワでの扱い" name="output_description"/>
+					</scroll_list>
+				</panel>
+				<panel name="button_channels_panel">
+					<scroll_list name="button_channels">
+						<scroll_list.columns label="機器の入力" name="input_description"/>
+						<scroll_list.columns label="ビューワでの扱い" name="output_description"/>
+					</scroll_list>
+				</panel>
+			</panel>
+		</panel>
+		<panel label="機器の調整" name="tab_device_options">
+			<text name="state_nodevice_message">機器がつながっていません</text>
+			<text name="state_device_prompt">機器:</text>
+			<button label="初期設定に戻す" name="restore_device_options_defaults" tool_tip="選んでいる機器のすべての軸の中心ずれ・反転・遊びを初期設定に戻します。"/>
+			<button label="自動調整" name="auto_calibrate" tool_tip="選んでいる機器の軸の値を 5 フレーム分読み取ります。動かなかった軸は手を離した状態とみなし、その値から中心ずれと遊びを決めます。"/>
+			<panel name="device_state_settings">
+				<panel name="axis_state_panel">
+					<!-- 軸の名前（左スティック ↔ など）が英語より長いので、入力・遊びを詰めて軸・補正後の値を広げた（合計 1.00） -->
+					<scroll_list name="axis_state">
+						<scroll_list.columns label="入力" name="input_glyph" relative_width="0.10"/>
+						<scroll_list.columns label="軸" name="input" relative_width="0.22"/>
+						<scroll_list.columns label="生の値" name="raw_value"/>
+						<scroll_list.columns label="中心ずれ" name="offset"/>
+						<scroll_list.columns label="反転" name="invert"/>
+						<scroll_list.columns label="遊び" name="dead_zone" relative_width="0.12"/>
+						<scroll_list.columns label="補正後の値" name="fixed_value" relative_width="0.22"/>
+					</scroll_list>
+				</panel>
+				<panel name="button_state_panel">
+					<scroll_list name="button_state">
+						<scroll_list.columns label="入力" name="input_glyph"/>
+						<scroll_list.columns label="ボタン" name="input"/>
+						<scroll_list.columns label="値" name="value"/>
+					</scroll_list>
+				</panel>
+			</panel>
+		</panel>
+		<panel label="サーバー送信" name="tab_server_data">
+			<check_box label="ゲームパッドの入力を送る" name="game_control_to_server"/>
+			<text name="data_note">サーバーに送るデータ: 標準の軸とボタン、続いて今のモードに応じた軸とボタン。</text>
+			<panel name="data_panel">
+				<scroll_list name="data_output">
+					<scroll_list.columns label="#" name="index"/>
+					<scroll_list.columns label="名前" name="output"/>
+					<scroll_list.columns label="値" name="value"/>
+				</scroll_list>
+			</panel>
+		</panel>
+	</tab_container>
+	<combo_box name="axis_input_selector">
+		<combo_box.item label="左スティック ↔" name="axis_leftx"/>
+		<combo_box.item label="左スティック ↕" name="axis_lefty"/>
+		<combo_box.item label="右スティック ↔" name="axis_rightx"/>
+		<combo_box.item label="右スティック ↕" name="axis_righty"/>
+		<combo_box.item label="トリガー ↘↙" name="axis_triggers"/>
+		<combo_box.item label="なし" name="axis_none"/>
+	</combo_box>
+	<combo_box name="axis_output_selector">
+		<combo_box.item label="左スティック ↔" name="axis_0"/>
+		<combo_box.item label="左スティック ↕" name="axis_1"/>
+		<combo_box.item label="右スティック ↔" name="axis_2"/>
+		<combo_box.item label="右スティック ↕" name="axis_3"/>
+		<combo_box.item label="L トリガー ↘" name="axis_4"/>
+		<combo_box.item label="R トリガー ↙" name="axis_5"/>
+		<combo_box.item label="トリガー ↘↙" name="axis_output_triggers"/>
+		<combo_box.item label="なし" name="axis_none"/>
+	</combo_box>
+	<combo_box name="analog_action_selector">
+		<combo_box.item label="横移動 ↔" name="Strafe"/>
+		<combo_box.item label="前進 ↕" name="Advance"/>
+		<combo_box.item label="旋回 ↔" name="Turn"/>
+		<combo_box.item label="上下を見る ↕" name="Look"/>
+		<combo_box.item label="上昇・下降 ↕" name="Fly"/>
+		<combo_box.item label="ズーム -/+" name="Zoom"/>
+		<combo_box.item label="スクロール -/+" name="Scroll"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+	<combo_box name="button_input_selector">
+		<combo_box.item label="下ボタン" name="BUTTON_0"/>
+		<combo_box.item label="右ボタン" name="BUTTON_1"/>
+		<combo_box.item label="左ボタン" name="BUTTON_2"/>
+		<combo_box.item label="上ボタン" name="BUTTON_3"/>
+		<combo_box.item label="セレクト" name="BUTTON_4"/>
+		<combo_box.item label="ホーム" name="BUTTON_5"/>
+		<combo_box.item label="スタート" name="BUTTON_6"/>
+		<combo_box.item label="左スティック押し込み" name="BUTTON_7"/>
+		<combo_box.item label="右スティック押し込み" name="BUTTON_8"/>
+		<combo_box.item label="L ボタン" name="BUTTON_9"/>
+		<combo_box.item label="R ボタン" name="BUTTON_10"/>
+		<combo_box.item label="十字キー上" name="BUTTON_11"/>
+		<combo_box.item label="十字キー下" name="BUTTON_12"/>
+		<combo_box.item label="十字キー左" name="BUTTON_13"/>
+		<combo_box.item label="十字キー右" name="BUTTON_14"/>
+		<combo_box.item label="その他 1" name="BUTTON_15"/>
+		<combo_box.item label="パドル 1" name="BUTTON_16"/>
+		<combo_box.item label="パドル 2" name="BUTTON_17"/>
+		<combo_box.item label="パドル 3" name="BUTTON_18"/>
+		<combo_box.item label="パドル 4" name="BUTTON_19"/>
+		<combo_box.item label="タッチパッド" name="BUTTON_20"/>
+		<combo_box.item label="ボタン 21" name="BUTTON_21"/>
+		<combo_box.item label="ボタン 22" name="BUTTON_22"/>
+		<combo_box.item label="ボタン 23" name="BUTTON_23"/>
+		<combo_box.item label="ボタン 24" name="BUTTON_24"/>
+		<combo_box.item label="ボタン 25" name="BUTTON_25"/>
+		<combo_box.item label="ボタン 26" name="BUTTON_26"/>
+		<combo_box.item label="ボタン 27" name="BUTTON_27"/>
+		<combo_box.item label="ボタン 28" name="BUTTON_28"/>
+		<combo_box.item label="ボタン 29" name="BUTTON_29"/>
+		<combo_box.item label="ボタン 30" name="BUTTON_30"/>
+		<combo_box.item label="ボタン 31" name="BUTTON_31"/>
+		<combo_box.item label="なし" name="BUTTON_NONE"/>
+	</combo_box>
+	<combo_box name="binary_action_selector">
+		<combo_box.item label="ジャンプ" name="Jump"/>
+		<combo_box.item label="しゃがむ" name="Crouch"/>
+		<combo_box.item label="座る" name="Toggle sit"/>
+		<combo_box.item label="ボイスのオン・オフ" name="Toggle speak"/>
+		<combo_box.item label="一人称視点の切り替え" name="Toggle mouselook"/>
+		<combo_box.item label="フライカム" name="FlyCam"/>
+		<combo_box.item label="マウスカーソル" name="Mouse cursor"/>
+		<combo_box.item label="前進 ↑" name="Avdance"/>
+		<combo_box.item label="後退 ↓" name="Retreat"/>
+		<combo_box.item label="横移動 ←" name="Strafe left"/>
+		<combo_box.item label="横移動 →" name="Strafe right"/>
+		<combo_box.item label="上昇 ↑" name="Fly up"/>
+		<combo_box.item label="下降 ↓" name="Fly down"/>
+		<combo_box.item label="旋回 ←" name="Turn left"/>
+		<combo_box.item label="旋回 →" name="Turn right"/>
+		<combo_box.item label="ズーム +" name="Zoom +"/>
+		<combo_box.item label="ズーム -" name="Zoom -"/>
+		<combo_box.item label="スクロール +" name="Scroll +"/>
+		<combo_box.item label="スクロール -" name="Scroll -"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+	<combo_box name="mouselook_analog_action_selector">
+		<combo_box.item label="横移動 ↔" name="Strafe left/right"/>
+		<combo_box.item label="前進 ↕" name="Avdance forward/back"/>
+		<combo_box.item label="旋回 ↔" name="Turn left/right"/>
+		<combo_box.item label="上下を見る ↕" name="Look up/down"/>
+		<combo_box.item label="上昇・下降 ↕" name="Fly up/down"/>
+		<combo_box.item label="ズーム -/+" name="Zoom +/-"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+	<combo_box name="mouselook_binary_action_selector">
+		<combo_box.item label="ジャンプ" name="Jump"/>
+		<combo_box.item label="しゃがむ" name="Crouch"/>
+		<combo_box.item label="座る" name="Toggle sit"/>
+		<combo_box.item label="ボイスのオン・オフ" name="Toggle speak"/>
+		<combo_box.item label="一人称視点の切り替え" name="Toggle mouselook"/>
+		<combo_box.item label="フライカム" name="Toggle Flycam"/>
+		<combo_box.item label="マウスカーソル" name="Toggle mouse cursor"/>
+		<combo_box.item label="左クリック" name="Mouse click left"/>
+		<combo_box.item label="右クリック" name="Mouse click right"/>
+		<combo_box.item label="前進 ↑" name="Avdance forward"/>
+		<combo_box.item label="後退 ↓" name="Avdance back"/>
+		<combo_box.item label="横移動 ←" name="Strafe left"/>
+		<combo_box.item label="横移動 →" name="Strafe right"/>
+		<combo_box.item label="上昇 ↑" name="Fly up"/>
+		<combo_box.item label="下降 ↓" name="Fly down"/>
+		<combo_box.item label="旋回 ←" name="Turn left"/>
+		<combo_box.item label="旋回 →" name="Turn right"/>
+		<combo_box.item label="ズーム +" name="Zoom +"/>
+		<combo_box.item label="ズーム -" name="Zoom -"/>
+		<combo_box.item label="ESC" name="ESC"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+	<combo_box name="sit_binary_action_selector">
+		<combo_box.item label="立つ" name="Toggle Sit"/>
+		<combo_box.item label="ボイスのオン・オフ" name="Toggle speak"/>
+		<combo_box.item label="一人称視点の切り替え" name="Toggle mouselook"/>
+		<combo_box.item label="フライカム" name="Toggle flycam"/>
+		<combo_box.item label="マウスカーソル" name="Toggle mouse cursor"/>
+		<combo_box.item label="ズーム +" name="Zoom +"/>
+		<combo_box.item label="ズーム -" name="Zoom -"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+	<combo_box name="cursor_analog_action_selector">
+		<combo_box.item label="マウス ↔" name="Mouse left/right"/>
+		<combo_box.item label="マウス ↕" name="Mouse up/down"/>
+		<combo_box.item label="旋回 ↔" name="Turn left/right"/>
+		<combo_box.item label="上下を見る ↕" name="Look up/down"/>
+		<combo_box.item label="上昇・下降 ↕" name="Fly up/down"/>
+		<combo_box.item label="横移動 ↔" name="Strafe left/right"/>
+		<combo_box.item label="前進 ↕" name="Avdance forward/back"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+	<combo_box name="cursor_binary_action_selector">
+		<combo_box.item label="ジャンプ" name="Jump"/>
+		<combo_box.item label="しゃがむ" name="Crouch"/>
+		<combo_box.item label="座る" name="Toggle sit"/>
+		<combo_box.item label="ボイスのオン・オフ" name="Toggle speak"/>
+		<combo_box.item label="一人称視点の切り替え" name="Toggle mouselook"/>
+		<combo_box.item label="フライカム" name="Toggle flycam"/>
+		<combo_box.item label="マウスカーソルの切り替え" name="Toggle mouse cursor"/>
+		<combo_box.item label="左クリック" name="Mouse click left"/>
+		<combo_box.item label="右クリック" name="Mouse click right"/>
+		<combo_box.item label="前進 ↑" name="Avdance forward"/>
+		<combo_box.item label="後退 ↓" name="Avdance back"/>
+		<combo_box.item label="横移動 ←" name="Strafe left"/>
+		<combo_box.item label="横移動 →" name="Strafe right"/>
+		<combo_box.item label="上昇 ↑" name="Fly up"/>
+		<combo_box.item label="下降 ↓" name="Fly down"/>
+		<combo_box.item label="旋回 ←" name="Turn left"/>
+		<combo_box.item label="旋回 →" name="Right right"/>
+		<combo_box.item label="カーソル ↑" name="Cursor up"/>
+		<combo_box.item label="カーソル ↓" name="Cursor down"/>
+		<combo_box.item label="カーソル ←" name="Cursor left"/>
+		<combo_box.item label="カーソル →" name="Cursor right"/>
+		<combo_box.item label="ESC" name="ESC"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+	<combo_box name="flycam_analog_action_selector">
+		<combo_box.item label="左右に動く ↔" name="Truck left/right"/>
+		<combo_box.item label="前後に動く ↕" name="Dolly forward/back"/>
+		<combo_box.item label="左右に振る ↔" name="Pan left/right"/>
+		<combo_box.item label="上下に振る ↕" name="Tilt up/down"/>
+		<combo_box.item label="上下に動く ↕" name="Boom up/down"/>
+		<combo_box.item label="傾ける ↻↺" name="Roll CCW/CW"/>
+		<combo_box.item label="ズーム -/+" name="Zoom in/out"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+	<combo_box name="flycam_binary_action_selector">
+		<combo_box.item label="ズーム -" name="Zoom out"/>
+		<combo_box.item label="右に振る →" name="Pan right"/>
+		<combo_box.item label="左に振る ←" name="Pan left"/>
+		<combo_box.item label="ズーム +" name="Zoom in"/>
+		<combo_box.item label="マウスカーソル" name="Toggle mouse cursor"/>
+		<combo_box.item label="フライカムを終える" name="Toggle flycam"/>
+		<combo_box.item label="傾きを戻す" name="Unroll"/>
+		<combo_box.item label="左に傾ける ↺" name="Roll CCW"/>
+		<combo_box.item label="右に傾ける ↻" name="Roll CW"/>
+		<combo_box.item label="回り込む" name="Orbit"/>
+		<combo_box.item label="前に動く ↑" name="Dolly forward"/>
+		<combo_box.item label="後ろに動く ↓" name="Dolly back"/>
+		<combo_box.item label="左に動く ←" name="Truck left"/>
+		<combo_box.item label="右に動く →" name="Truck right"/>
+		<combo_box.item label="上に動く ↑" name="Boom up"/>
+		<combo_box.item label="下に動く ↓" name="Boom down"/>
+		<combo_box.item label="ESC" name="ESC"/>
+		<combo_box.item label="なし" name="None"/>
+	</combo_box>
+</panel>

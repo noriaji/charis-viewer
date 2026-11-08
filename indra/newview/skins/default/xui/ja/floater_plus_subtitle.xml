@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_subtitle" title="字幕（ボイス）">
+	<floater.string name="loading">準備中です…（初回は 1 分ほどかかることがあります）</floater.string>
+	<floater.string name="ready">聞こえているボイス（近くの人・グループ）を字幕にしています。</floater.string>
+	<floater.string name="dropped">認識が追いつかず、[SECONDS] 秒ぶんを飛ばしました。スレッド数を下げるか、重いプログラムを閉じてください。</floater.string>
+	<floater.string name="error">認識の途中で問題が起きました（ログを見てください）。</floater.string>
+	<floater.string name="exited">認識が止まりました。このウィンドウを閉じて開き直してください。</floater.string>
+	<floater.string name="start_failed">認識を始められませんでした（ログを見てください）。</floater.string>
+	<floater.string name="no_helper">ビューワの横に charis-subtitle.exe がありません。</floater.string>
+	<floater.string name="unknown_speaker">？</floater.string>
+	<floater.string name="and_others">ほか</floater.string>
+	<floater.string name="translate_unconfigured">翻訳がオンですが、環境設定 → チャットで翻訳サービスが設定されていません。</floater.string>
+	<floater.string name="translated_mark">→</floater.string>
+	<floater.string name="radio_label">ラジオ</floater.string>
+	<floater.string name="radio_listening">誰も話していない間は、土地のネットラジオも字幕にします。</floater.string>
+	<floater.string name="radio_failed">ラジオの音を取れませんでした（ログを見てください）。Windows 10 バージョン 2004 以降が必要です。</floater.string>
+	<floater.string name="no_model">認識モデル（約 490 MB）がまだありません。右のボタンで取得するか、下の場所に置いてください。</floater.string>
+	<floater.string name="model_place">モデルを手で入れる時は、このファイル名で置いてください: [PATH]</floater.string>
+	<floater.string name="download_label">モデルを取得</floater.string>
+	<floater.string name="cancel_label">中止</floater.string>
+	<floater.string name="downloading">モデルを取得しています… [PERCENT]%</floater.string>
+	<floater.string name="verifying">取得したモデルを確かめています…</floater.string>
+	<floater.string name="download_cancelled">取得を中止しました。</floater.string>
+	<floater.string name="download_cannot_start">取得を始められませんでした（ログを見てください）。</floater.string>
+	<floater.string name="download_failed">取得に失敗しました（ログを見てください）。ボタンでもう一度試せます。</floater.string>
+	<floater.string name="translate_local_unsupported">この PC での翻訳は、英語→日本語・中国語・スペイン語・フランス語・ドイツ語・ロシア語・イタリア語・ポルトガル語と、日本語→英語だけです。ほかの文はそのまま表示します。</floater.string>
+	<floater.string name="translate_local_missing">翻訳モデルがまだありません。ボタンで取得してください。</floater.string>
+	<floater.string name="translate_local_no_helper">ビューワの横に charis-translate.exe がありません。</floater.string>
+	<floater.string name="translate_local_failed">この PC の翻訳を始められませんでした（ログを見てください）。</floater.string>
+	<floater.string name="translate_fetch_label">翻訳モデルを取得</floater.string>
+	<floater.string name="translate_fetching">翻訳モデルを取得しています… [PERCENT]%</floater.string>
+	<floater.string name="translate_fetch_unpacking">翻訳モデルを展開しています…</floater.string>
+	<floater.string name="translate_fetch_done">翻訳モデルの用意ができました。</floater.string>
+	<floater.string name="translate_fetch_not_published">翻訳モデルはまだ取得できません（取得先が決まっていません）。</floater.string>
+	<button name="download_model" label="モデルを取得" tool_tip="認識に使うモデル（約 490 MB）を Hugging Face から取得します。もう一度押すと中止します。"/>
+	<button name="download_translate_model" label="翻訳モデルを取得" tool_tip="選んだ言語に訳すモデルを、この PC に取得します（1 つ 60〜240 MB）。もう一度押すと中止します。モデルの出典とライセンス:"/>
+	<check_box name="translate" label="翻訳する"/>
+	<check_box name="radio" label="土地のネットラジオも字幕にする（誰も話していない間）" tool_tip="ストリームを鳴らしているプレイヤーの音だけを聞きます（他の音は混ざりません）。局への接続は増えません。文は音量で区切り、音楽は誤った文字になることがあります。Windows 10 バージョン 2004 以降が必要です。"/>
+	<spinner name="threads" label="スレッド" label_width="60" width="120" tool_tip="認識に使うプロセッサのスレッド数。多いほど速く、少ないほど軽くなります。ウィンドウを開き直すと反映されます。"/>
+	<combo_box name="dialect" tool_tip="日本語への訳を方言にします（遊びの機能。変わるのは訳した文だけで、話された言葉はそのままです）。">
+		<combo_box.item label="方言: 標準" name="standard" value=""/>
+		<combo_box.item label="関西弁" name="kansai" value="kansai"/>
+		<combo_box.item label="博多弁" name="hakata" value="hakata"/>
+		<combo_box.item label="東北弁" name="tohoku" value="tohoku"/>
+	</combo_box>
+	<combo_box name="translate_to" tool_tip="訳す先の言語。いちばん上は、環境設定→チャットの翻訳で選んだ言語です。">
+		<combo_box.item label="訳す先: チャットと同じ" name="chat" value=""/>
+		<combo_box.item label="日本語" name="ja" value="ja"/>
+		<combo_box.item label="英語" name="en" value="en"/>
+		<combo_box.item label="中国語" name="zh" value="zh"/>
+		<combo_box.item label="スペイン語" name="es" value="es"/>
+		<combo_box.item label="フランス語" name="fr" value="fr"/>
+		<combo_box.item label="ドイツ語" name="de" value="de"/>
+		<combo_box.item label="ロシア語" name="ru" value="ru"/>
+		<combo_box.item label="イタリア語" name="it" value="it"/>
+		<combo_box.item label="ポルトガル語" name="pt" value="pt"/>
+	</combo_box>
+	<combo_box name="translate_service" tool_tip="翻訳のやり方。サービス: 環境設定→チャットで設定した翻訳サービスに文字を送ります。この PC: ここで取得したモデルで訳し、文字はどこにも送りません（英語→日本語・中国語・スペイン語・フランス語・ドイツ語・ロシア語・イタリア語・ポルトガル語、日本語→英語）。">
+		<combo_box.item label="翻訳: サービス" name="service" value="service"/>
+		<combo_box.item label="翻訳: この PC" name="local" value="local"/>
+	</combo_box>
+	<combo_box name="language" tool_tip="話されている言語。自動は文ごとに判定します（遅く、正確さも少し落ちます）。ウィンドウを開き直すと反映されます。">
+		<combo_box.item label="言語: 自動" name="auto" value="auto"/>
+		<combo_box.item label="日本語" name="ja" value="ja"/>
+		<combo_box.item label="英語" name="en" value="en"/>
+		<combo_box.item label="中国語" name="zh" value="zh"/>
+		<combo_box.item label="韓国語" name="ko" value="ko"/>
+		<combo_box.item label="スペイン語" name="es" value="es"/>
+		<combo_box.item label="フランス語" name="fr" value="fr"/>
+		<combo_box.item label="ドイツ語" name="de" value="de"/>
+		<combo_box.item label="ポルトガル語" name="pt" value="pt"/>
+		<combo_box.item label="ロシア語" name="ru" value="ru"/>
+	</combo_box>
+</floater>

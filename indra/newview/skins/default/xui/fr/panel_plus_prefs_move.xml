@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_move.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="move_panel" label="Déplacement">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="move_scroll">
+            <panel name="move_scroll_panel">
+                <plus_ps_slider_compat name="camera_fov" label="Angle de vue" />
+                <plus_ps_slider_compat name="camera_offset_scale" label="Distance" />
+                <plus_ps_text name="heading2">
+                    Positionnement automatique pour :
+                </plus_ps_text>
+                <plus_ps_check_compat name="edit_camera_movement" label="Construire/Modifier" tool_tip="Utiliser le positionnement automatique de la caméra lorsque vous entrez en mode de modification et le quittez." />
+                <plus_ps_check_compat name="appearance_camera_movement" label="Apparence" tool_tip="Utiliser le positionnement automatique de la caméra en mode de modification." />
+                <plus_ps_text name="keyboard_lbl">
+                    Clavier :
+                </plus_ps_text>
+                <plus_ps_check_compat name="arrow_keys_move_avatar_check" label="Les touches de direction me font toujours me déplacer" />
+                <plus_ps_check_compat name="tap_tap_hold_to_run" label="Appuyer deux fois et maintenir enfoncé pour courir" />
+                <plus_ps_text name="mouse_lbl">
+                    Souris :
+                </plus_ps_text>
+                <plus_ps_check_compat name="first_person_avatar_visible" label="Afficher en vue subjective" />
+                <plus_ps_text name=" Mouse Sensitivity">
+                    Sensibilité de la souris en vue subjective :
+                </plus_ps_text>
+                <plus_ps_check_compat name="invert_mouse" label="Inverser" />
+                <plus_ps_text name="single_click_action_lbl">
+                    Clic simple sur le terrain :
+                </plus_ps_text>
+                <plus_ps_combo name="single_click_action_combo">
+                    <plus_ps_combo.item name="0" label="Aucune action" />
+                    <plus_ps_combo.item name="1" label="Déplacement vers le clic" />
+                </plus_ps_combo>
+                <plus_ps_text name="double_click_action_lbl">
+                    Double clic sur le terrain :
+                </plus_ps_text>
+                <plus_ps_combo name="double_click_action_combo">
+                    <plus_ps_combo.item name="0" label="Aucune action" />
+                    <plus_ps_combo.item name="1" label="Déplacement vers le double clic" />
+                    <plus_ps_combo.item name="2" label="Téléportation vers le double clic" />
+                </plus_ps_combo>
+                <plus_ps_button_compat name="joystick_setup_button" label="Autres accessoires" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

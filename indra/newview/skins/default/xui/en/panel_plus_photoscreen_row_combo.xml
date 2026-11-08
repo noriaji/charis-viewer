@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  A choice row of the detailed photo screen (plus/photoscreen/photodetail.cpp).
+-->
+<panel
+ background_visible="false"
+ follows="left|right|top"
+ height="46"
+ layout="topleft"
+ name="plus_photoscreen_row"
+ width="260">
+    <text
+     type="string"
+     length="1"
+     follows="left|right|top"
+     font="SansSerifSmall"
+     height="14"
+     layout="topleft"
+     left="10"
+     right="-10"
+     top="3"
+     use_ellipses="true"
+     name="label">
+        Name
+    </text>
+    <combo_box
+     follows="left|right|top"
+     height="20"
+     layout="topleft"
+     left="8"
+     right="-8"
+     top="19"
+     name="ctl" />
+</panel>

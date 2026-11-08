@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="panel_plus_flycam_exit">
+	<string name="look_0">矢印キーで向きを変えます。</string>
+	<string name="look_1">右ボタンを押しながらマウスで見回します。</string>
+	<string name="look_2">マウスで見回します（Alt を押す間はカーソル）。</string>
+	<button label="フライカム終了（[KEY]）" name="leave_btn" tool_tip="フライカムを抜けて、カメラをアバターに戻します。"/>
+</panel>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_local_mesh" title="ローカルメッシュ">
+	<floater.string name="status_loading">読み込み中</floater.string>
+	<floater.string name="status_active">使える</floater.string>
+	<floater.string name="status_error">エラー</floater.string>
+	<floater.string name="unnamed">（オブジェクト）</floater.string>
+	<floater.string name="target">選択中: [NAME]</floater.string>
+	<floater.string name="target_shown">選択中: [NAME]（ローカルメッシュを表示中）</floater.string>
+	<floater.string name="why_NoObject">ワールドのオブジェクトをクリックして選んでください。選んだオブジェクトにメッシュを貼ります。</floater.string>
+	<floater.string name="why_NotMesh">選んだオブジェクトはメッシュではありません。貼れるのはメッシュのオブジェクトだけです（自分のメッシュを何か置いて台にしてください）。</floater.string>
+	<floater.string name="why_Rigged">選んだオブジェクトはリグ付きメッシュです。リグ付きにはまだ対応していません。</floater.string>
+	<floater.string name="why_NotLoaded">選んだオブジェクトのメッシュがまだ読み込まれていません。少し待ってください。</floater.string>
+	<text name="files_label">
+		この PC のメッシュ（.dae .gltf .glb）。自分にだけ見え、アップロードしません。
+	</text>
+	<scroll_list name="files">
+		<scroll_list.columns label="状態" name="status"/>
+		<scroll_list.columns label="ファイル" name="name"/>
+		<scroll_list.columns label="LOD" name="lods" tool_tip="ファイルから読めた LOD（高→最低の順に 3 2 1 0）。ない LOD は一つ上の LOD で代用します。下の LOD は同じフォルダの 名前_LOD2.dae、名前_LOD1.dae、名前_LOD0.dae のようなファイルです。"/>
+		<scroll_list.columns label="メッシュ" name="meshes"/>
+		<scroll_list.columns label="表示中" name="shown" tool_tip="このファイルのメッシュを表示しているオブジェクトの数"/>
+	</scroll_list>
+	<button label="追加…" name="add" tool_tip="メッシュファイルを追加します（複数まとめて選べます）"/>
+	<button label="読み直す" name="reload" tool_tip="選んだファイルを読み直します（書き出し直した後に）。表示中のオブジェクトも新しい形になります"/>
+	<button label="外す" name="remove" tool_tip="選んだファイルを一覧から外します。表示中のオブジェクトは元のメッシュに戻ります"/>
+	<check_box label="ファイルが変わったら読み直す" name="auto_reload" tool_tip="書き出し直すと自動で読み直します（1 秒ごとに確認）"/>
+	<text name="object_label">
+		選んだオブジェクトに貼る
+	</text>
+	<text name="target">
+		（選んだオブジェクト）
+	</text>
+	<text name="meshes_label">
+		メッシュ:
+	</text>
+	<combo_box name="meshes" tool_tip="ファイルの中のどのメッシュを貼るか（1 つのファイルに複数あることがあります）"/>
+	<check_box label="オブジェクトの大きさをファイルに合わせる" name="file_size" tool_tip="オフ: メッシュをオブジェクトの今の大きさに合わせて伸ばします。オン: ファイルの大きさ（メートル）にします（自分の画面だけ。装着物は変えません）。"/>
+	<button label="オブジェクトに貼る" name="show" tool_tip="選んだオブジェクトにメッシュを貼ります。見えるのは自分だけです。貼っている間、そのオブジェクトはリージョンからの変更を受け取りません。"/>
+	<button label="元に戻す" name="take_off" tool_tip="選んだオブジェクトを元のメッシュに戻します"/>
+	<text name="log_label">
+		選んだファイルのログ:
+	</text>
+</floater>

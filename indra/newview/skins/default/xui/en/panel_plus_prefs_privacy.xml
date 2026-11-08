@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis の窓（元: 公式 Second_Life_Release#d567465e-26.5 の panel_preferences_privacy.xml。research/266 prefs-w-chat）.
+     Charis window: Preferences > Privacy in the psui look. The official file stays as it is (the ledger's source:
+     research/ui-ledger/map.json). The class is panel_preference_privacy (floater_preferences.xml), the official
+     LLPanelPreferencePrivacy. The inner tabs are a plus_ps_tabs on top (the official tab container: the C++ asks for
+     privacy_tab_container as an LLTabContainer and takes the Discord page out when the viewer is built without
+     Discord, removeTabPanel(); the preferences' search opens a page with a match). Each page's label is its tab's.
+     online_searchresults / online_visibility are enabled by the C++ after login (getChild<LLUICtrl>), block_list too.
+     The settings in the viewer statistics (plus/privacy) are panel_plus_prefs_privacy_stats.xml.
+     Size (1080 base; a preferences page, plus/prefscharis/prefs_tab_template.xml): 574 x 515; the tabs' strip 36 at
+     the top 4, the pages under it 475 high, each a scroll_container (574) with a panel 557 wide. Rows at left 14,
+     529 wide.
+       General: 10 + heading 40 + 4 checks 120 + 10 + heading 40 + 6 + button 40 + 6 + button 40 + 10 + heading 40
+                + the statistics 66 + 14 = 442
+       Discord: 10 + heading 40 + 3 checks 90 + 14 = 154
+     (neither scrolls at the default size). A button's note: the button 14..214, the note 224..543 (en 40 characters,
+     ja 16). -->
+<panel
+ border="true"
+ follows="all"
+ height="515"
+ label="Privacy"
+ layout="topleft"
+ left="0"
+ name="Privacy panel"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <!-- the official comment: remove "hide_tabs" param when Discord tab is actually used (plus_ps_tabs draws its
+             own tabs and hides the official buttons whatever hide_tabs says) -->
+        <plus_ps_tabs
+         name="privacy_tab_container"
+         enabled="true"
+         follows="all"
+         height="511"
+         hide_tabs="true"
+         layout="topleft"
+         left="0"
+         tab_height="36"
+         tab_position="top"
+         tab_stop="false"
+         top="4"
+         width="574">
+            <panel
+             name="privacy_preferences_general"
+             background_visible="false"
+             follows="all"
+             height="475"
+             label="General"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="36"
+             width="574">
+                <panel.string
+                 name="log_in_to_change">
+                    log in to change
+                </panel.string>
+                <scroll_container
+                 name="privacy_general_scroll"
+                 follows="all"
+                 height="475"
+                 layout="topleft"
+                 left="0"
+                 opaque="false"
+                 reserve_scroll_corner="false"
+                 top="0"
+                 width="574">
+                    <panel
+                     name="privacy_general_list"
+                     background_visible="false"
+                     follows="left|top"
+                     height="442"
+                     layout="topleft"
+                     left="0"
+                     mouse_opaque="false"
+                     top="0"
+                     width="557">
+                        <plus_ps_header
+                         name="h_privacy_seen"
+                         divider="none"
+                         follows="left|top|right"
+                         height="40"
+                         label="What others see and hear"
+                         layout="topleft"
+                         left="14"
+                         size="sub"
+                         top="10"
+                         width="529" />
+                        <plus_ps_check_compat
+                         name="online_searchresults"
+                         enabled="false"
+                         follows="left|top|right"
+                         height="30"
+                         label="Show my profile info in Search results"
+                         layout="topleft"
+                         left="14"
+                         top="50"
+                         width="529" />
+                        <plus_ps_check_compat
+                         name="online_visibility"
+                         enabled="false"
+                         follows="left|top|right"
+                         height="30"
+                         label="Only friends and groups know I'm online"
+                         layout="topleft"
+                         left="14"
+                         top="80"
+                         width="529" />
+                        <plus_ps_check_compat
+                         name="auto_disengage_mic_check"
+                         control_name="AutoDisengageMic"
+                         enabled_control="EnableVoiceChat"
+                         follows="left|top|right"
+                         height="30"
+                         label="Switch off microphone when ending calls"
+                         layout="topleft"
+                         left="14"
+                         top="110"
+                         width="529" />
+                        <plus_ps_check_compat
+                         name="enable_selection_hints"
+                         control_name="EnableSelectionHints"
+                         follows="left|top|right"
+                         height="30"
+                         label="Enable Selection Hints"
+                         layout="topleft"
+                         left="14"
+                         tool_tip="Enable reporting and tracking current selection using 'beam' particles and character animations. Turn this off and selecting, grabbing or editing an object never moves your avatar (no pointing, no turning toward the object, no turning at the screen edge; the camera turns instead)."
+                         top="140"
+                         width="529" />
+
+                        <plus_ps_header
+                         name="h_privacy_history"
+                         divider="top"
+                         follows="left|top|right"
+                         height="40"
+                         label="History and blocking"
+                         layout="topleft"
+                         left="14"
+                         size="sub"
+                         top="180"
+                         width="529" />
+                        <plus_ps_button_compat
+                         name="clear_cache"
+                         follows="left|top"
+                         height="40"
+                         label="Clear History"
+                         layout="topleft"
+                         left="14"
+                         tool_tip="Clear search and teleport history, web and texture cache"
+                         top="226"
+                         width="200">
+                            <plus_ps_button_compat.commit_callback
+                             function="Pref.WebClearCache" />
+                        </plus_ps_button_compat>
+                        <plus_ps_text
+                         name="cache_size_label_l"
+                         follows="left|top"
+                         height="40"
+                         kind="dim"
+                         layout="topleft"
+                         left="224"
+                         length="1"
+                         mouse_opaque="false"
+                         top="226"
+                         type="string"
+                         width="319">
+                            (Locations, images, web, search history)
+                        </plus_ps_text>
+                        <plus_ps_button_compat
+                         name="block_list"
+                         follows="left|top"
+                         height="40"
+                         label="Block list"
+                         layout="topleft"
+                         left="14"
+                         top="272"
+                         width="200">
+                            <plus_ps_button_compat.commit_callback
+                             function="Pref.BlockList" />
+                        </plus_ps_button_compat>
+                        <plus_ps_text
+                         name="block_list_label"
+                         follows="left|top"
+                         height="40"
+                         kind="dim"
+                         layout="topleft"
+                         left="224"
+                         length="1"
+                         mouse_opaque="false"
+                         top="272"
+                         type="string"
+                         width="319">
+                            (People and/or Objects you have blocked)
+                        </plus_ps_text>
+
+                        <!-- the settings in the viewer statistics on or off (PlusSendSettingsStats, the feature plus/privacy) -->
+                        <plus_ps_header
+                         name="h_privacy_stats"
+                         divider="top"
+                         follows="left|top|right"
+                         height="40"
+                         label="Viewer statistics"
+                         layout="topleft"
+                         left="14"
+                         size="sub"
+                         top="322"
+                         width="529" />
+                        <panel
+                         name="plus_privacy_stats"
+                         filename="panel_plus_prefs_privacy_stats.xml"
+                         follows="left|top"
+                         height="66"
+                         layout="topleft"
+                         left="14"
+                         top="362"
+                         width="529" />
+                    </panel>
+                </scroll_container>
+            </panel>
+
+            <panel
+             name="privacy_preferences_discord"
+             background_visible="false"
+             follows="all"
+             height="475"
+             label="Discord"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="36"
+             width="574">
+                <scroll_container
+                 name="privacy_discord_scroll"
+                 follows="all"
+                 height="475"
+                 layout="topleft"
+                 left="0"
+                 opaque="false"
+                 reserve_scroll_corner="false"
+                 top="0"
+                 width="574">
+                    <panel
+                     name="privacy_discord_list"
+                     background_visible="false"
+                     follows="left|top"
+                     height="154"
+                     layout="topleft"
+                     left="0"
+                     mouse_opaque="false"
+                     top="0"
+                     width="557">
+                        <plus_ps_header
+                         name="h_privacy_discord"
+                         divider="none"
+                         follows="left|top|right"
+                         height="40"
+                         label="Discord"
+                         layout="topleft"
+                         left="14"
+                         size="sub"
+                         top="10"
+                         width="529" />
+                        <plus_ps_check_compat
+                         name="enable_discord"
+                         control_name="EnableDiscord"
+                         enabled="true"
+                         follows="left|top|right"
+                         height="30"
+                         label="Enable Discord integration"
+                         layout="topleft"
+                         left="14"
+                         top="50"
+                         width="529" />
+                        <plus_ps_check_compat
+                         name="show_name"
+                         control_name="ShowDiscordActivityDetails"
+                         enabled="true"
+                         enabled_control="EnableDiscord"
+                         follows="left|top|right"
+                         height="30"
+                         label="Show avatar name"
+                         layout="topleft"
+                         left="14"
+                         top="80"
+                         width="529" />
+                        <plus_ps_check_compat
+                         name="show_location"
+                         control_name="ShowDiscordActivityState"
+                         enabled="false"
+                         enabled_control="EnableDiscord"
+                         follows="left|top|right"
+                         height="30"
+                         label="Show location"
+                         layout="topleft"
+                         left="14"
+                         top="110"
+                         width="529" />
+                    </panel>
+                </scroll_container>
+            </panel>
+        </plus_ps_tabs>
+    </plus_ps_box>
+</panel>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_protected_folders" title="保護したフォルダ">
+	<floater.string name="unknown_folder">（不明なフォルダ）</floater.string>
+	<search_editor label="名前で絞り込む" name="filter_input"/>
+	<button name="remove_btn" tool_tip="選んだフォルダを一覧から外します（外すと、削除も移動もできるようになります）"/>
+	<scroll_list name="folder_list">
+		<scroll_list.columns label="フォルダ" name="name"/>
+	</scroll_list>
+</floater>

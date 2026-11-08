@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<llsd>
+<map>
+
+	<key>strings</key>
+	<map>
+		<!-- Primarily used when @showloc restricted -->
+		<key>hidden_generic</key>
+		<map>
+			<key>value</key>
+			<string>（非表示）</string>
+		</map>
+		<key>hidden_parcel</key>
+		<map>
+			<key>value</key>
+			<string>（区画は非表示）</string>
+		</map>
+		<key>hidden_region</key>
+		<map>
+			<key>value</key>
+			<string>（地域は非表示）</string>
+		</map>
+
+		<!-- Received/sent IMs will be replaced by the matching string when @recvim/sendim restricted -->
+		<key>blocked_recvim</key>
+		<map>
+			<key>value</key>
+			<string>＊＊＊ RLV の制限で IM を受け取れませんでした</string>
+			<key>description</key>
+			<string>Shown in place of the original message when an incoming IM is blocked</string>
+			<key>label</key>
+			<string>Blocked incoming IM message (local)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+		<key>blocked_sendim</key>
+		<map>
+			<key>value</key>
+			<string>*** IM blocked by sender's viewer</string>
+			<key>description</key>
+			<string>Shown (and sent to the remote party) when an outgoing IM is blocked</string>
+			<key>label</key>
+			<string>Blocked outgoing IM message (local + remote)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+
+		<!-- Sent to the remote party when they issue @list or @except as an IM query (if enabled) -->
+		<key>imquery_list_deny</key>
+		<map>
+			<key>value</key>
+			<string>*** The other party respectfully requests you mind your own business (bunnies made me do it!)</string>
+			<key>description</key>
+			<string>Sent to the remote party when you deny their request to list your active RLV restrictions)</string>
+			<key>label</key>
+			<string>@list and @except command (remote)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+
+		<!-- Sent to the remote party as a suffix to @list to inform them there might be more information -->
+		<key>imquery_list_suffix</key>
+		<map>
+			<key>value</key>
+			<string>(Use @except to see the list of active exceptions)</string>
+			<key>description</key>
+			<string>Sent to the remote party as a suffix to @list to inform them how to request your exceptions</string>
+			<key>label</key>
+			<string>@list command suffix (remote)</string>
+			<key>customizable</key>
+			<boolean>0</boolean>
+		</map>
+
+		<!-- Sent to the remote party when they issue @stopim as an IM query (if enabled) -->
+		<key>stopim_nosession</key>
+		<map>
+			<key>value</key>
+			<string>*** The other party is not under a @startim restriction</string>
+			<key>description</key>
+			<string>Sent to the remote party when they attempt to forcefully close your IM conversation with them (and no such session exists)</string>
+			<key>label</key>
+			<string>@stopim command with no session (remote)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+		<key>stopim_endsession_remote</key>
+		<map>
+			<key>value</key>
+			<string>*** Session has been ended for the other party</string>
+			<key>description</key>
+			<string>Sent to the remote party when they attempt to forcefully close the IM conversation (and it exists)</string>
+			<key>label</key>
+			<string>@stopim command with an active session (remote)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+		<key>stopim_endsession_local</key>
+		<map>
+			<key>value</key>
+			<string>[NAME] has remotely closed the IM conversation with @stopim</string>
+		</map>
+
+		<!-- Shown as notifications -->
+		<key>blocked_autopilot</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、自動移動はできません</string>
+		</map>
+		<key>blocked_generic</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限でこの操作はできません</string>
+		</map>
+		<key>blocked_groupchange</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、有効なグループを変えられません。「[GROUP_SLURL]」に戻します</string>
+		</map>
+		<key>blocked_invfolder</key>
+		<map>
+			<key>value</key>
+			<string>RLV の鍵が掛かったフォルダなので、この操作はできません</string>
+		</map>
+		<key>blocked_nearby</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、近くの一覧は見られません</string>
+		</map>
+		<key>blocked_permattach</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、「[OBJECT]」の装着の許可は出せません</string>
+		</map>
+		<key>blocked_permteleport</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、「[OBJECT]」にテレポートの許可は出せません</string>
+		</map>
+		<key>blocked_scriptdialog</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、チャットに返事するダイアログは出せません</string>
+		</map>
+		<key>blocked_share</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、[RECIPIENT] と持ち物を共有できません</string>
+		</map>
+		<key>blocked_share_generic</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、持ち物は渡せません</string>
+		</map>
+		<key>blocked_startim</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で [RECIPIENT] と IM を始められません</string>
+		</map>
+		<key>blocked_startconf</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、[RECIPIENT] と会議 IM を始められません</string>
+		</map>
+		<key>blocked_teleport</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限でテレポートできません</string>
+		</map>
+		<key>blocked_teleport_offer</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、テレポートの誘いは送れません</string>
+		</map>
+		<key>blocked_viewxxx</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、[TYPE] は開けません</string>
+		</map>
+		<key>blocked_wireframe</key>
+		<map>
+			<key>value</key>
+			<string>RLV の制限で、ワイヤーフレーム表示にはできません</string>
+		</map>
+
+		<!-- Sent as "Busy" messages to the remote party -->
+		<key>blocked_recvim_remote</key>
+		<map>
+			<key>value</key>
+			<string>The Resident you messaged is currently prevented from reading your instant messages at the moment, please try again later.</string>
+			<key>description</key>
+			<string>Sent to the remote party when their IM was blocked</string>
+			<key>label</key>
+			<string>Blocked incoming IM message (remote)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+		<key>blocked_tplurerequest_remote</key>
+		<map>
+			<key>value</key>
+			<string>The Resident is currently prevented from accepting. Please try again later.</string>
+			<key>description</key>
+			<string>Sent to the remote party when their teleport offer or request was blocked</string>
+			<key>label</key>
+			<string>Blocked teleport offer/request (remote)</string>
+			<key>customizable</key>
+			<boolean>1</boolean>
+		</map>
+	</map>
+
+	<!-- Generic names used to replace resident names when @shownames restricted -->
+	<key>anonyms</key>
+	<array>
+			<string>ある住人</string>
+			<string>この住人</string>
+			<string>その住人</string>
+			<string>ひとり</string>
+			<string>この人</string>
+			<string>その人</string>
+			<string>ある人</string>
+			<string>この人物</string>
+			<string>その人物</string>
+			<string>知らない人</string>
+			<string>この知らない人</string>
+			<string>その知らない人</string>
+			<string>ある存在</string>
+			<string>この存在</string>
+			<string>その存在</string>
+			<string>ある者</string>
+			<string>この者</string>
+			<string>その者</string>
+			<string>ある魂</string>
+			<string>この魂</string>
+			<string>その魂</string>
+			<string>だれか</string>
+			<string>何人か</string>
+			<string>だれかさん</string>
+			<string>謎の人</string>
+			<string>正体不明の人</string>
+			<string>名無しの人</string>
+			<string>見知らぬ人</string>
+		</array>
+
+</map>
+</llsd>

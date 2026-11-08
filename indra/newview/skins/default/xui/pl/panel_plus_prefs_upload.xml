@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="uploads" label="Uploads">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="uploads_scroll">
+			<panel name="uploads_scroll_panel">
+				<plus_ps_text name="title">
+					Obecne lokalizacje dla nowych plików
+				</plus_ps_text>
+				<plus_ps_text name="title_models">
+					Obrazy
+				</plus_ps_text>
+				<plus_ps_text name="title_sounds">
+					Dźwięki
+				</plus_ps_text>
+				<plus_ps_text name="title_animation">
+					Animacje
+				</plus_ps_text>
+				<plus_ps_text name="title_model">
+					Modele
+				</plus_ps_text>
+				<plus_ps_text name="upload_help">
+					Aby zmienić folder docelowy kliknij na nim prawym przyciskiem myszy w Szafie i użyj opcji "ustaw jako domyślne dla"
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

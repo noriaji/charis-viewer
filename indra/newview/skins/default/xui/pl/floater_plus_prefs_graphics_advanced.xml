@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis window (research/267 gfxadv-ui) in this language: the words of floater_preferences_graphics_advanced.xml, by name (the chain of names of en). -->
+<floater name="prefs_graphics_advanced" title="ZAAWANSOWANE USTAWIENIA GRAFICZNE">
+	<plus_ps_tabs name="graphics_tabs">
+		<panel label="Ogólne" name="General">
+			<scroll_container name="general_scroll">
+				<panel name="general_scroll_panel">
+					<plus_ps_text name="ShadersText">
+						Cieniowanie
+					</plus_ps_text>
+					<plus_ps_check_compat label="Przezroczysta woda" name="TransparentWater"/>
+					<plus_ps_check_compat label="Okluzja otoczenia" name="UseSSAO"/>
+					<plus_ps_text name="RenderShadowDetailText">
+						Cienie:
+					</plus_ps_text>
+					<plus_ps_combo name="ShadowDetail">
+						<plus_ps_combo.item label="Brak" name="0"/>
+						<plus_ps_combo.item label="Słońce/Księżyc" name="1"/>
+						<plus_ps_combo.item label="Słońce/Księżyc + inne źródła" name="2"/>
+					</plus_ps_combo>
+					<plus_ps_slider_compat label="Pole widzenia:" name="DrawDistance"/>
+					<plus_ps_slider_compat label="Maks. ilość cząsteczek:" name="MaxParticleCount"/>
+					<plus_ps_text name="AvatarText">
+						Awatar
+					</plus_ps_text>
+					<plus_ps_slider_compat tool_tip="Kontroluje w jakim momencie awatar, który jest graficznie złożony zostanie zastąpiony przez mniej obciążającą komputer formę (tzw. JellyDoll)" label="Maks. szczegółowość awatarów:" name="IndirectMaxComplexity"/>
+					<plus_ps_slider_compat label="Maks. il. wyświetlanych awatarów:" name="IndirectMaxNonImpostors"/>
+					<plus_ps_slider_compat label="Fizyka:" name="AvatarPhysicsDetail"/>
+					<plus_ps_text name="AvatarPhysicsDetailText">
+						Mało
+					</plus_ps_text>
+					<plus_ps_text name="MeshText">
+						Poziom szczegółowości obiektów (LOD)
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Obiekty i skulpty:" name="ObjectMeshDetail"/>
+					<plus_ps_text name="ObjectMeshDetailText">
+						Mało
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Obiekty elastyczne:" name="FlexibleMeshDetail"/>
+					<plus_ps_text name="FlexibleMeshDetailText">
+						Mało
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Drzewa:" name="TreeMeshDetail"/>
+					<plus_ps_text name="TreeMeshDetailText">
+						Mało
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Awatary:" name="AvatarMeshDetail"/>
+					<plus_ps_text name="AvatarMeshDetailText">
+						Mało
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Teren:" name="TerrainMeshDetail"/>
+					<plus_ps_text name="TerrainMeshDetailText">
+						Mało
+					</plus_ps_text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Ustawienia sprzętowe" name="Hardware Settings">
+			<scroll_container name="hardware_scroll">
+				<panel name="hardware_scroll_panel">
+					<plus_ps_check_compat label="Włącz stratną kompresję tekstur (wymaga restartu)" name="texture compression" tool_tip="Kompresuje tekstury w pamięci wideo. Umożliwi to ładowanie tekstur w wyższej rozdzielczości / większej ich ilości, ale kosztem jakości obrazu."/>
+					<plus_ps_text name="antialiasing label">
+						Antyaliasing:
+					</plus_ps_text>
+					<plus_ps_combo label="Antyaliasing" name="fsaa">
+						<plus_ps_combo.item label="Wyłączony" name="FSAADisabled"/>
+					</plus_ps_combo>
+					<plus_ps_text name="antialiasing restart">
+						(wymaga restartu)
+					</plus_ps_text>
+					<plus_ps_check_compat label="Włącz wsparcie dla ekranów HiDPI (wymaga restartu)" name="use HiDPI" tool_tip="Włącz funkcje OpenGL dla rysowania w wysokich rozdzielczościach."/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel name="Rendering">
+			<scroll_container name="rendering_scroll">
+				<panel name="rendering_scroll_panel">
+					<plus_ps_check_compat label="Włącz VSync" name="vsync" tool_tip="Synchronizuje liczbę klatek na sekundę z częstotliwością odświeżania monitora, może skutkować zmniejszeniem widocznej płynności i opóźnieniami."/>
+					<plus_ps_text name="Texture Rendering">
+						Rendering tekstur
+					</plus_ps_text>
+					<plus_ps_text name="Miscellaneous Rendering">
+						Inne opcje wyświetlania
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Jakość post-procesu:" name="RenderPostProcess"/>
+					<plus_ps_text name="PostProcessText">
+						Niska
+					</plus_ps_text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Głębia ostrości" name="DOF panel">
+			<scroll_container name="dof_scroll">
+				<panel name="dof_scroll_panel">
+					<plus_ps_check_compat label="Włącz głębię ostrości (rozmywaj widok z wyjątkiem miejsca, gdzie skupiona jest kamera)" name="UseDoF"/>
+					<plus_ps_check_compat name="RenderDepthOfFieldInEditMode" label="Włączaj w trybie budowania"/>
+					<plus_ps_slider_compat name="CameraFNum" label="Wartość F kamery:" tool_tip="Wartość F kamery dla głębi ostrości"/>
+					<plus_ps_slider_compat name="CameraFocal" label="Ogniskowa (mm):" tool_tip="Ogniskowa dla głębi ostrości (w milimetrach)"/>
+					<plus_ps_slider_compat name="Camera FOV" label="Pole widzenia (°):" tool_tip="Pionowy kąt pola widzenia kamery dla głębi ostrości (w stopniach)"/>
+					<plus_ps_slider_compat name="CameraFocusTrans" label="Czas przejścia:" tool_tip="Czas potrzebny na dostosowanie skupienia kamery podczas zmiany z jednego punktu widzenia na drugi"/>
+					<plus_ps_slider_compat name="CameraDoFResScale" label="Jakość renderowania:" tool_tip="Wpływa na jakość rozmywania oraz wydajność renderowania (więcej = lepsza jakość, mniej = lepsza wydajność)"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Charis" name="Charis panel">
+			<scroll_container name="charis_scroll">
+				<panel name="charis_scroll_panel">
+				</panel>
+			</scroll_container>
+		</panel>
+	</plus_ps_tabs>
+	<plus_ps_button_compat label="Zresetuj wartości ustawień grafiki" name="Defaults" width="400"/>
+	<plus_ps_button_compat label="Anuluj" label_selected="Anuluj" name="Cancel"/>
+</floater>

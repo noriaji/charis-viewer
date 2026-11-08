@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="plus_group_chat_filter">
+	<text name="plus_group_chat_mode_label" width="115">
+		グループチャット:
+	</text>
+	<combo_box name="plus_group_chat_mode" left="125" tool_tip="このグループのチャットを受け取るかどうか。受け取らないチャットは表示されず、チャット履歴にも残りません。">
+		<combo_box.item label="通常" name="normal"/>
+		<combo_box.item label="受け取らない（ブラックリスト）" name="blacklist"/>
+		<combo_box.item label="必ず受け取る（ホワイトリスト）" name="whitelist"/>
+	</combo_box>
+	<check_box label="ホワイトリストのグループだけ受け取る" name="plus_group_chat_whitelist_only" tool_tip="オンにすると、「必ず受け取る」にしていないグループのチャットはすべて受け取りません。全グループ共通で、このアカウントだけの設定です。"/>
+	<text name="plus_group_chat_whitelist_only_note">
+		（全グループ共通・すぐに反映）
+	</text>
+</panel>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="Avanzado">
+	<panel.string name="aspect_ratio_text">
+		[NUM]:[DEN]
+	</panel.string>
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_spinner name="cachesizespinner" label="Tamaño de la caché (256 - 9984MB)" />
+				<plus_ps_text name="text_box5">
+					MB
+				</plus_ps_text>
+				<plus_ps_button_compat name="clear_cache" label="Vaciar la caché" label_selected="Vaciar la caché" />
+				<plus_ps_text name="Cache location">
+					Localización de la caché:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_cache" label="Elegir" label_selected="Elegir" />
+				<plus_ps_button_compat name="default_cache_location" label="Ubicación predeterminada" label_selected="Ubicación predeterminada" />
+				<plus_ps_text name="UI Size:">
+					Tamaño de la UI:
+				</plus_ps_text>
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="Permitir el acceso de varios usuarios" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="Mostrar la selección de cuadrícula al iniciar sesión" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="Mostrar el menú Avanzado" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="Mostrar el menú Desarrollar" />
+				<plus_ps_button_compat name="default_creation_permissions" label="Permisos de creación predeterminados" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

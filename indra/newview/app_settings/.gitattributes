@@ -1,0 +1,4 @@
+# <plus> binary data of features ported or written for Charis Viewer (the root .gitattributes says
+# "* text eol=lf", which would turn CR LF bytes inside these into LF). research/177.
+plus/*.bin binary
+# </plus>

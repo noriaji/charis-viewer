@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Privacy panel" label="プライバシー">
+	<plus_ps_box name="ps_ground">
+		<plus_ps_tabs name="privacy_tab_container">
+			<panel name="privacy_preferences_general" label="一般">
+				<panel.string name="log_in_to_change">
+					ログインすると変更できます
+				</panel.string>
+				<scroll_container name="privacy_general_scroll">
+					<panel name="privacy_general_list">
+						<plus_ps_header name="h_privacy_seen" label="周りに見えるもの・聞こえるもの" />
+						<plus_ps_check_compat name="online_searchresults" label="検索結果に自分のプロフィール情報を表示" />
+						<plus_ps_check_compat name="online_visibility" label="オンライン状態をフレンドとグループにだけ知らせる" />
+						<plus_ps_check_compat name="auto_disengage_mic_check" label="通話を終えたらマイクをオフにする" />
+						<plus_ps_check_compat name="enable_selection_hints" label="選択の表示を有効にする" tool_tip="選択しているものを、ビームのパーティクルやアバターの動作で周りに示します。オフにすると、物を選ぶ・つかむ・編集してもアバターは動きません（指す、物の方を向く、画面端で回る動きも止まります。画面端ではカメラが回ります）" />
+						<plus_ps_header name="h_privacy_history" label="履歴とブロック" />
+						<plus_ps_button_compat name="clear_cache" label="履歴を消去" tool_tip="検索とテレポートの履歴、ウェブとテクスチャのキャッシュを消去します" />
+						<plus_ps_text name="cache_size_label_l">
+							（場所、画像、ウェブ、検索履歴）
+						</plus_ps_text>
+						<plus_ps_button_compat name="block_list" label="ブロックリスト" />
+						<plus_ps_text name="block_list_label">
+							（ブロックした人やオブジェクト）
+						</plus_ps_text>
+						<plus_ps_header name="h_privacy_stats" label="ビューワの統計" />
+					</panel>
+				</scroll_container>
+			</panel>
+			<panel name="privacy_preferences_discord" label="Discord">
+				<scroll_container name="privacy_discord_scroll">
+					<panel name="privacy_discord_list">
+						<plus_ps_header name="h_privacy_discord" label="Discord" />
+						<plus_ps_check_compat name="enable_discord" label="Discord と連携する" />
+						<plus_ps_check_compat name="show_name" label="アバター名を表示" />
+						<plus_ps_check_compat name="show_location" label="場所を表示" />
+					</panel>
+				</scroll_container>
+			</panel>
+		</plus_ps_tabs>
+	</plus_ps_box>
+</panel>

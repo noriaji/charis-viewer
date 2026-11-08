@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_sound.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="Preference Media panel" label="サウンド">
+    <panel.string name="middle_mouse">
+        中央のボタン
+    </panel.string>
+    <panel.string name="button4_mouse">
+        マウスボタン4
+    </panel.string>
+    <panel.string name="button5_mouse">
+        マウスボタン5
+    </panel.string>
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="sound_scroll">
+            <panel name="sound_scroll_panel">
+                <plus_ps_slider_compat name="System Volume" label="全体のボリューム" />
+                <plus_ps_button_compat name="mute_audio" label="ミュート" tool_tip="すべての音を消します。青い間は消音中です。" />
+                <plus_ps_check_compat name="mute_when_minimized" label="最小化時にミュート" />
+                <plus_ps_slider_compat name="UI Volume" label="ボタン" />
+                <plus_ps_button_compat name="mute_audio_ui" label="ミュート" tool_tip="この音量だけを消します。青い間は消音中です。" />
+                <plus_ps_slider_compat name="Wind Volume" label="環境音" />
+                <plus_ps_button_compat name="mute_audio_ambient" label="ミュート" tool_tip="この音量だけを消します。青い間は消音中です。" />
+                <plus_ps_slider_compat name="SFX Volume" label="効果音" />
+                <plus_ps_button_compat name="mute_audio_sounds" label="ミュート" tool_tip="この音量だけを消します。青い間は消音中です。" />
+                <plus_ps_slider_compat name="Music Volume" label="ストリーミング音楽" />
+                <plus_ps_button_compat name="mute_audio_music" label="ミュート" tool_tip="この音量だけを消します。青い間は消音中です。" />
+                <plus_ps_check_compat name="enable_music" label="有効" />
+                <plus_ps_slider_compat name="Media Volume" label="メディア" />
+                <plus_ps_button_compat name="mute_audio_media" label="ミュート" tool_tip="この音量だけを消します。青い間は消音中です。" />
+                <plus_ps_check_compat name="enable_media" label="有効" />
+                <plus_ps_slider_compat name="Voice Volume" label="ボイスチャット" />
+                <plus_ps_button_compat name="mute_audio_voice" label="ミュート" tool_tip="この音量だけを消します。青い間は消音中です。" />
+                <plus_ps_check_compat name="enable_voice_check" label="有効" />
+                <plus_ps_text name="Listen media from">
+                    メディアとサウンドの聞き取り位置：
+                </plus_ps_text>
+                <plus_ps_combo name="media_ear_location_combo">
+                    <item name="camera_position" label="カメラの位置" />
+                    <item name="avatar_position" label="アバターの位置" />
+                </plus_ps_combo>
+                <plus_ps_text name="media_autoplay_label">
+                    メディアの自動再生
+                </plus_ps_text>
+                <plus_ps_combo name="media_auto_play_combo">
+                    <item name="autoplay_disabled" label="再生しない" />
+                    <item name="autoplay_enabled" label="常に再生" />
+                    <item name="autoplay_ask" label="その都度確認" />
+                </plus_ps_combo>
+                <plus_ps_text name="media_firstinteract_label">
+                    メディアの最初のクリック
+                </plus_ps_text>
+                <plus_ps_combo name="media_first_interact_combo" tool_tip="読み込み済みのメディアのうち、操作の前にフォーカス用のクリックが要らないものを選びます。選んだメディアは、最初のクリックからそのまま操作できます。下の選択肢は、上の選択肢の対象も含みます。">
+                    <item name="media_first_click_none" label="無効" />
+                    <item name="media_first_click_hud" label="装着中の HUD のみ" />
+                    <item name="media_first_click_own" label="自分のオブジェクト" />
+                    <item name="media_first_click_friend" label="フレンドのオブジェクト" />
+                    <item name="media_first_click_group" label="グループのオブジェクト" />
+                    <item name="media_first_click_land" label="土地所有者のオブジェクト" />
+                    <item name="media_first_interact_any" label="誰のオブジェクトでも" />
+                    <item name="media_first_click_all" label="すべての MOAP" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="media_show_on_others_btn" label="他のアバターに取り付けられたメディアを再生する" tool_tip="このチェックを外すと、近くにいる他のアバターに取り付けられたメディアを非表示にします。" />
+                <plus_ps_check_compat name="media_huds_autoplay" label="HUD のメディアを自動再生" tool_tip="チェックを外すと、HUD のメディアも通常の自動再生の設定に従います" />
+                <plus_ps_text name="bluetooth_lbl">
+                    Bluetooth 使用時
+                </plus_ps_text>
+                <plus_ps_radio name="bluetooth_behavior">
+                    <radio_item name="better_voice" label="ボイスの音質を優先" />
+                    <radio_item name="better_audio" label="ワールド内の音を優先" />
+                </plus_ps_radio>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

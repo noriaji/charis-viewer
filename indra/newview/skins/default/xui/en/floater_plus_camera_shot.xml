@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Camera shots (plus/camerashot): a slow push-in or pull-out, a zoom and a dolly zoom, optionally locked on
+  an avatar. Control names and string names are used by camerashotfloater.cpp. The error strings
+  (shot_err_*) are the keys camerashot::start() gives back.
+-->
+<floater
+ positioning="cascading"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="true"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="380"
+ width="380"
+ layout="topleft"
+ name="plus_camera_shot"
+ title="CAMERA SHOT">
+    <floater.string name="shot_subject_none">Where the camera looks now (stays)</floater.string>
+    <floater.string name="shot_subject_me">Me ([NAME])</floater.string>
+    <floater.string name="shot_err_no_avatar">There is no avatar or camera yet.</floater.string>
+    <floater.string name="shot_err_too_close">The camera is too close to what it looks at. Move it back first.</floater.string>
+    <floater.string name="shot_err_subject">That avatar cannot be seen now. Press Refresh and choose again.</floater.string>
+    <floater.string name="shot_err_flycam">The flycam (3D mouse) is moving the camera. Turn it off first.</floater.string>
+    <floater.string name="shot_err_mouselook">The camera is in mouselook. Leave mouselook first.</floater.string>
+    <floater.string name="shot_idle">Ready. Esc ends a shot and returns the camera to your avatar.</floater.string>
+    <floater.string name="shot_running">Shooting... [PERCENT]%</floater.string>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     font="SansSerifBold"
+     height="16"
+     layout="topleft"
+     left="8"
+     top="26"
+     width="200"
+     name="lbl_subject">
+        Look at
+    </text>
+    <combo_box
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="8"
+     top="44"
+     width="298"
+     name="subject"
+     tool_tip="Lock on an avatar: the camera follows it while it moves. The first choice keeps the camera looking where it looks now." />
+    <button
+     follows="left|top"
+     height="22"
+     label="Refresh"
+     layout="topleft"
+     left="310"
+     top="44"
+     width="62"
+     name="btn_refresh"
+     tool_tip="Look for avatars near the camera again" />
+    <combo_box
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="8"
+     top="70"
+     width="150"
+     name="part"
+     tool_tip="Which part of the avatar the camera keeps in the middle">
+        <combo_box.item
+         type="string"
+         label="Face"
+         name="part_face"
+         value="0" />
+        <combo_box.item
+         type="string"
+         label="Chest"
+         name="part_chest"
+         value="1" />
+        <combo_box.item
+         type="string"
+         label="Whole body"
+         name="part_body"
+         value="2" />
+    </combo_box>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     font="SansSerifBold"
+     height="16"
+     layout="topleft"
+     left="8"
+     top="102"
+     width="200"
+     name="lbl_move">
+        Move
+    </text>
+    <slider
+     can_edit_text="true"
+     decimal_digits="1"
+     follows="left|top|right"
+     height="16"
+     increment="0.1"
+     label="Amount"
+     label_width="70"
+     layout="topleft"
+     left="8"
+     max_val="5"
+     min_val="1.2"
+     name="amount"
+     right="-8"
+     top="124"
+     tool_tip="How much: 2 is twice as close for a dolly, twice the magnification for a zoom (out: the other way)" />
+    <slider
+     can_edit_text="true"
+     decimal_digits="1"
+     follows="left|top|right"
+     height="16"
+     increment="0.5"
+     label="Seconds"
+     label_width="70"
+     layout="topleft"
+     left="8"
+     max_val="30"
+     min_val="1"
+     name="seconds"
+     right="-8"
+     top="146"
+     tool_tip="How long the move takes" />
+    <combo_box
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="8"
+     top="168"
+     width="200"
+     name="ease"
+     tool_tip="How the move starts and stops">
+        <combo_box.item
+         type="string"
+         label="Smooth start and stop"
+         name="ease_smooth"
+         value="1" />
+        <combo_box.item
+         type="string"
+         label="Even speed"
+         name="ease_linear"
+         value="0" />
+        <combo_box.item
+         type="string"
+         label="Slow start"
+         name="ease_slowin"
+         value="2" />
+        <combo_box.item
+         type="string"
+         label="Slow stop"
+         name="ease_slowout"
+         value="3" />
+    </combo_box>
+    <button
+     follows="left|top"
+     height="26"
+     label="Dolly In"
+     layout="topleft"
+     left="8"
+     top="200"
+     width="98"
+     name="btn_dolly_in"
+     tool_tip="The camera moves toward what it looks at; the angle stays" />
+    <button
+     follows="left|top"
+     height="26"
+     label="Zoom In"
+     layout="topleft"
+     left="111"
+     top="200"
+     width="98"
+     name="btn_zoom_in"
+     tool_tip="The camera stays; the angle narrows (the picture is magnified)" />
+    <button
+     follows="left|top"
+     height="26"
+     label="Dolly Zoom: Recede"
+     layout="topleft"
+     left="214"
+     top="200"
+     width="158"
+     name="btn_dollyzoom_recede"
+     tool_tip="The camera moves closer while the angle widens: the subject keeps its size and the background draws away" />
+    <button
+     follows="left|top"
+     height="26"
+     label="Dolly Out"
+     layout="topleft"
+     left="8"
+     top="230"
+     width="98"
+     name="btn_dolly_out"
+     tool_tip="The camera moves away from what it looks at; the angle stays" />
+    <button
+     follows="left|top"
+     height="26"
+     label="Zoom Out"
+     layout="topleft"
+     left="111"
+     top="230"
+     width="98"
+     name="btn_zoom_out"
+     tool_tip="The camera stays; the angle widens" />
+    <button
+     follows="left|top"
+     height="26"
+     label="Dolly Zoom: Rush In"
+     layout="topleft"
+     left="214"
+     top="230"
+     width="158"
+     name="btn_dollyzoom_rush"
+     tool_tip="The camera moves away while the angle narrows: the subject keeps its size and the background closes in on it" />
+    <floater.string name="shot_err_overhead">The camera is straight above or below what it looks at. Move it to the side first.</floater.string>
+    <slider
+     can_edit_text="true"
+     decimal_digits="0"
+     follows="left|top|right"
+     height="16"
+     increment="15"
+     label="Orbit angle"
+     label_width="70"
+     layout="topleft"
+     left="8"
+     max_val="720"
+     min_val="30"
+     name="orbit_degrees"
+     right="-8"
+     top="264"
+     tool_tip="How far round the subject the camera goes: 360 is once round" />
+    <button
+     follows="left|top"
+     height="26"
+     label="Orbit Right"
+     layout="topleft"
+     left="8"
+     top="286"
+     width="120"
+     name="btn_orbit_right"
+     tool_tip="The camera goes round what it looks at, to its own right (counter-clockwise seen from above), keeping its distance and height. Choose an avatar above to go round it while it moves." />
+    <button
+     follows="left|top"
+     height="26"
+     label="Orbit Left"
+     layout="topleft"
+     left="132"
+     top="286"
+     width="120"
+     name="btn_orbit_left"
+     tool_tip="The same, to the camera's left (clockwise seen from above)" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Stop"
+     layout="topleft"
+     left="8"
+     top="318"
+     width="80"
+     name="btn_stop"
+     tool_tip="Ends the shot where the camera is" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Back to start"
+     layout="topleft"
+     left="92"
+     top="318"
+     width="120"
+     name="btn_back"
+     tool_tip="Puts the camera and the angle as they were when the last shot began, for another take" />
+    <text
+     type="string"
+     length="1"
+     follows="left|top|right"
+     font="SansSerifSmall"
+     height="28"
+     layout="topleft"
+     left="8"
+     right="-8"
+     top="346"
+     word_wrap="true"
+     name="status">
+        Ready.
+    </text>
+</floater>

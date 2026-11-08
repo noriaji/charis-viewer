@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<contents>
+	<rows name="flycam_move_forward" value="flycam_move_forward">
+		<columns name="lst_action" value="フライカム：前へ"/>
+	</rows>
+	<rows name="flycam_move_backward" value="flycam_move_backward">
+		<columns name="lst_action" value="フライカム：後ろへ"/>
+	</rows>
+	<rows name="flycam_truck_left" value="flycam_truck_left">
+		<columns name="lst_action" value="フライカム：左へ平行移動"/>
+	</rows>
+	<rows name="flycam_truck_right" value="flycam_truck_right">
+		<columns name="lst_action" value="フライカム：右へ平行移動"/>
+	</rows>
+	<rows name="flycam_move_up" value="flycam_move_up">
+		<columns name="lst_action" value="フライカム：上昇"/>
+	</rows>
+	<rows name="flycam_move_down" value="flycam_move_down">
+		<columns name="lst_action" value="フライカム：下降"/>
+	</rows>
+	<rows name="flycam_yaw_left" value="flycam_yaw_left">
+		<columns name="lst_action" value="フライカム：左を向く"/>
+	</rows>
+	<rows name="flycam_yaw_right" value="flycam_yaw_right">
+		<columns name="lst_action" value="フライカム：右を向く"/>
+	</rows>
+	<rows name="flycam_pitch_up" value="flycam_pitch_up">
+		<columns name="lst_action" value="フライカム：上を向く"/>
+	</rows>
+	<rows name="flycam_pitch_down" value="flycam_pitch_down">
+		<columns name="lst_action" value="フライカム：下を向く"/>
+	</rows>
+	<!-- plus: フライカムの傾きのキー（plus/flycammouse、flycam-keys） -->
+	<rows name="flycam_roll_left" value="flycam_roll_left">
+		<columns name="lst_action" tool_tip="押している間、カメラを左に傾けます（撮影ツールの「傾き」と同じ）。" value="フライカム：傾ける（左）"/>
+	</rows>
+	<rows name="flycam_roll_right" value="flycam_roll_right">
+		<columns name="lst_action" tool_tip="押している間、カメラを右に傾けます（撮影ツールの「傾き」と同じ）。" value="フライカム：傾ける（右）"/>
+	</rows>
+	<!-- /plus -->
+	<rows name="flycam_unroll" value="flycam_unroll">
+		<columns name="lst_action" tool_tip="フライカムの傾きを水平に戻します。" value="フライカム：傾きを戻す"/>
+	</rows>
+	<rows name="toggle_flycam" value="toggle_flycam">
+		<columns name="lst_action" tool_tip="フライカムのオン／オフを切り替えます。" value="フライカムの切り替え"/>
+	</rows>
+	<!-- plus: フライカム中も撮影モードに出入りする（plus/photoscreen） -->
+	<rows name="photo_screen_toggle" value="photo_screen_toggle">
+		<columns name="lst_action" tool_tip="撮影モードに入ります。撮影モード中に押すと抜けます（文字の入力中でも効きます）" value="撮影モードに入る／抜ける"/>
+	</rows>
+	<!-- /plus -->
+</contents>

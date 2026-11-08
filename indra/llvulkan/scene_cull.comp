@@ -1,0 +1,269 @@
+#version 450
+// scene_cull.comp: the retained scene's choice for one view (research/197 3.3).
+//
+// One dispatch per phase, between barriers (llvkscene.cpp LLVKScene::cull):
+//  phase 0, a workgroup per page of the record table: which lanes (records) of
+//    the page the view draws (the record lives in the page's bucket, its group
+//    is visible, its bounds are not outside the view's planes): a 64-bit mask
+//    and its count per page.
+//  phase 1, a workgroup per bucket: the bucket's pages in its order, each
+//    page's place among the bucket's drawn records (the sum of the counts of
+//    the pages before it), and the bucket's count.
+//  phase 2, a workgroup per page: each drawn record's indexed indirect command
+//    at its bucket's first command + its page's place + the drawn lanes below
+//    it. The records keep the table's order (a bucket's pages, then lanes);
+//    nothing is placed by atomics, so the order is the same every frame.
+//
+// The parts between the "shared" markers also build as C++
+// (llvkscenetable.cpp: the CPU's copy of the same choice for verify, and the
+// selftest sim-scene). They use only scalars, arrays of scalars and structs of
+// them, and read the buffers by the names the C++ gives its members.
+// tools/selftest/sim/gen_scene.py and llvulkan.cmake cut them out by the
+// marker lines: keep each marker on a line of its own.
+
+layout(local_size_x = 64) in;
+
+#define SCENE_CONST const
+
+// ==== scene shared types: begin ====
+SCENE_CONST uint SCENE_PAGE = 64u;              // records per page (the workgroup size)
+SCENE_CONST uint SCENE_NONE = 0xffffffffu;      // a free page's bucket; a dead record's bucket
+SCENE_CONST uint SCENE_LOOSE = 1u;              // Record::flags: bounds not known (no bounds test)
+SCENE_CONST uint SCENE_TEXLIST_SHIFT = 8u;      // Record::flags >> this: its texture list's row (0: none; research/205 H5)
+SCENE_CONST uint SCENE_SKINNED = 2u;            // Record::flags: rigged (research/219); bits 8.. are its palette, not a list
+SCENE_CONST uint SCENE_PALETTE_SHIFT = 8u;      // Record::flags >> this, SCENE_SKINNED: its palette row's first vec4
+SCENE_CONST uint SCENE_PALETTE_LIMIT = 16777216u;   // 1 << 24: the palette bases flags hold
+SCENE_CONST uint SCENE_PLANE_FLOATS = 28u;      // 7 planes: n.x, n.y, n.z, d
+
+// A record: one batch (64 bytes, research/197 2.2 DrawRecord).
+struct Record
+{
+    float lo[3];            // bounds in its transform's space
+    uint group_slot;        // its group's visible bit
+    float hi[3];
+    uint transform;         // transforms[] row (0: identity)
+    uint index_count;
+    uint first_index;       // in its pool chunk's index buffer
+    int vertex_offset;
+    uint bucket;            // its bucket; SCENE_NONE: dead (never drawn)
+    uint uv_transform;      // texture transform row (0: none), read by the draw
+    uint material;          // material row, read by the draw
+    uint flags;             // SCENE_LOOSE, SCENE_SKINNED; from bit 8 on its palette (skinned) or its texture list's row
+    uint record_id;         // the viewer's id (verify and debugging)
+};
+
+struct Transform
+{
+    float m[16];            // column-major
+};
+
+// The view of one dispatch (176 bytes) and where its outputs go in out_words.
+struct ViewData
+{
+    float planes[28];       // SCENE_PLANE_FLOATS
+    float origin[4];
+    uint plane_count;
+    uint pages;             // page span (phase 0 and 2 workgroups)
+    uint buckets;           // bucket span (phase 1 workgroups)
+    uint group_words;       // words of visible bits
+    uint count_base;        // a count per bucket
+    uint mask_base;         // two mask words per page
+    uint pagecount_base;    // a count per page
+    uint offset_base;       // a place per listed page
+    uint command_base;      // the commands, 5 words each
+    uint pad0;
+    uint pad1;
+    uint pad2;
+};
+
+// A bucket of the view: its commands start at first_command, its pages are
+// page_list[first_listed .. first_listed + page_count).
+struct BucketInfo
+{
+    uint first_command;
+    uint first_listed;
+    uint page_count;
+    uint pad;
+};
+// ==== scene shared types: end ====
+
+layout(std430, set = 0, binding = 0) readonly buffer RecordTable { Record records[]; };
+layout(std430, set = 0, binding = 1) readonly buffer TransformTable { Transform transforms[]; };
+layout(std430, set = 0, binding = 2) readonly buffer PageTable { uint page_bucket[]; };
+layout(std430, set = 0, binding = 3) readonly buffer ViewBlock { ViewData view; };
+layout(std430, set = 0, binding = 4) readonly buffer VisibleBits { uint visible[]; };
+layout(std430, set = 0, binding = 5) readonly buffer BucketTable { BucketInfo bucket_info[]; };
+layout(std430, set = 0, binding = 6) readonly buffer PageList { uint page_list[]; };
+layout(std430, set = 0, binding = 7) buffer Output { uint out_words[]; };
+layout(push_constant) uniform Push { uint phase; } push;
+
+// ==== scene shared functions: begin ====
+// The view's visible bit of a group slot.
+bool scene_group_visible(uint g)
+{
+    if ((g >> 5u) >= view.group_words)
+    {
+        return false;
+    }
+    return (visible[g >> 5u] & (1u << (g & 31u))) != 0u;
+}
+
+// How far the record's bounds lie outside the view beyond the float slack:
+// above 0 when the box after its transform is entirely outside one plane
+// (LLCamera::AABBInFrustum's test, with a slack for the planes' float error
+// as research/44 P1 has it). The box's centre and half size after the matrix
+// are exact for translations and conservative otherwise.
+float scene_box_excess(uint slot)
+{
+    Record r = records[slot];
+    Transform t = transforms[r.transform];
+    float c0[3];
+    float h0[3];
+    for (uint i = 0u; i < 3u; ++i)
+    {
+        c0[i] = 0.5f * (r.lo[i] + r.hi[i]);
+        h0[i] = 0.5f * (r.hi[i] - r.lo[i]);
+    }
+    float c[3];
+    float h[3];
+    float reach = 0.0f;
+    for (uint i = 0u; i < 3u; ++i)
+    {
+        c[i] = t.m[i] * c0[0] + t.m[4u + i] * c0[1] + t.m[8u + i] * c0[2] + t.m[12u + i];
+        h[i] = abs(t.m[i]) * h0[0] + abs(t.m[4u + i]) * h0[1] + abs(t.m[8u + i]) * h0[2];
+        reach += abs(c[i] - view.origin[i]) + h[i];
+    }
+    float margin = 0.01f + 0.001f * reach;
+    float excess = -1.0e30f;
+    for (uint k = 0u; k < view.plane_count; ++k)
+    {
+        uint p = k * 4u;
+        float nearest = view.planes[p] * c[0] + view.planes[p + 1u] * c[1] + view.planes[p + 2u] * c[2] + view.planes[p + 3u] -
+                        (abs(view.planes[p]) * h[0] + abs(view.planes[p + 1u]) * h[1] + abs(view.planes[p + 2u]) * h[2]);
+        if (nearest - margin > excess)
+        {
+            excess = nearest - margin;
+        }
+    }
+    return excess;
+}
+
+// Phase 0: whether the view draws the page's lane.
+bool scene_lane_visible(uint page, uint lane)
+{
+    uint bucket = page_bucket[page];
+    if (bucket == SCENE_NONE)
+    {
+        return false;
+    }
+    uint slot = page * SCENE_PAGE + lane;
+    Record r = records[slot];
+    if (r.bucket != bucket)
+    {
+        return false;   // dead, or written for another layout
+    }
+    if (!scene_group_visible(r.group_slot))
+    {
+        return false;
+    }
+    return (r.flags & SCENE_LOOSE) != 0u || scene_box_excess(slot) <= 0.0f;
+}
+
+// Phase 0: the page's drawn lanes and their count.
+void scene_page_done(uint page, uint mask_lo, uint mask_hi)
+{
+    out_words[view.mask_base + page * 2u] = mask_lo;
+    out_words[view.mask_base + page * 2u + 1u] = mask_hi;
+    out_words[view.pagecount_base + page] = uint(bitCount(mask_lo) + bitCount(mask_hi));
+}
+
+// Phase 1: each of the bucket's pages' place among its drawn records, in the
+// bucket's page order, and the bucket's count.
+void scene_scan_bucket(uint b)
+{
+    BucketInfo info = bucket_info[b];
+    uint running = 0u;
+    for (uint k = 0u; k < info.page_count; ++k)
+    {
+        uint page = page_list[info.first_listed + k];
+        out_words[view.offset_base + page] = running;
+        running += out_words[view.pagecount_base + page];
+    }
+    out_words[view.count_base + b] = running;
+}
+
+// The drawn lanes below lane in a page's mask.
+uint scene_lanes_below(uint mask_lo, uint mask_hi, uint lane)
+{
+    if (lane < 32u)
+    {
+        return uint(bitCount(mask_lo & ((1u << lane) - 1u)));
+    }
+    return uint(bitCount(mask_lo) + bitCount(mask_hi & ((1u << (lane - 32u)) - 1u)));
+}
+
+// Phase 2: the drawn lane's command (VkDrawIndexedIndirectCommand; the
+// instance is the record's slot, which the draw reads the record by).
+void scene_emit(uint page, uint lane)
+{
+    uint bucket = page_bucket[page];
+    if (bucket == SCENE_NONE)
+    {
+        return;
+    }
+    uint mask_lo = out_words[view.mask_base + page * 2u];
+    uint mask_hi = out_words[view.mask_base + page * 2u + 1u];
+    uint bit = lane < 32u ? (mask_lo >> lane) & 1u : (mask_hi >> (lane - 32u)) & 1u;
+    if (bit == 0u)
+    {
+        return;
+    }
+    uint place = bucket_info[bucket].first_command + out_words[view.offset_base + page] + scene_lanes_below(mask_lo, mask_hi, lane);
+    uint slot = page * SCENE_PAGE + lane;
+    Record r = records[slot];
+    uint at = view.command_base + place * 5u;
+    out_words[at] = r.index_count;
+    out_words[at + 1u] = 1u;
+    out_words[at + 2u] = r.first_index;
+    out_words[at + 3u] = uint(r.vertex_offset);
+    out_words[at + 4u] = slot;
+}
+// ==== scene shared functions: end ====
+
+shared uint sh_mask[2];
+
+void main()
+{
+    uint wg = gl_WorkGroupID.x;
+    uint lane = gl_LocalInvocationID.x;
+    if (push.phase == 0u)
+    {
+        if (lane < 2u)
+        {
+            sh_mask[lane] = 0u;
+        }
+        memoryBarrierShared();
+        barrier();
+        if (wg < view.pages && scene_lane_visible(wg, lane))
+        {
+            atomicOr(sh_mask[lane >> 5u], 1u << (lane & 31u));
+        }
+        memoryBarrierShared();
+        barrier();
+        if (lane == 0u && wg < view.pages)
+        {
+            scene_page_done(wg, sh_mask[0], sh_mask[1]);
+        }
+    }
+    else if (push.phase == 1u)
+    {
+        if (lane == 0u && wg < view.buckets)
+        {
+            scene_scan_bucket(wg);
+        }
+    }
+    else if (wg < view.pages)
+    {
+        scene_emit(wg, lane);
+    }
+}

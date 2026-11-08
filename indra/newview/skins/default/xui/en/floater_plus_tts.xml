@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Chat read-aloud (plus/tts): speaks the chat that arrives. The boxes are bound to the per-account settings
+  PlusTts* (settings_plus.xml); ttsfloater.cpp fills the two voice choices and shows / hides the details.
+-->
+<floater
+ positioning="specified"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="252"
+ width="440"
+ layout="topleft"
+ name="plus_tts"
+ title="CHAT READ-ALOUD">
+    <floater.string name="voice_auto">(automatic)</floater.string>
+    <floater.string name="voices_none">No voice found yet. The system voices appear here once the speech engine has started.</floater.string>
+    <floater.string name="voices_failed">Windows speech could not start: no voice to read with. The reason is in the log (PlusTts).</floater.string>
+    <floater.string name="voices_count">[COUNT] voices on this PC. Set a person's voice by hand from the right-click menu of the avatar.</floater.string>
+    <check_box
+     control_name="PlusTtsOn"
+     follows="left|top"
+     height="16"
+     label="Read chat aloud"
+     layout="topleft"
+     left="12"
+     name="on"
+     top="26"
+     width="410" />
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="12"
+     name="what_label"
+     top_pad="8"
+     width="410">
+        What to read:
+    </text>
+    <check_box
+     control_name="PlusTtsNearby"
+     enabled_control="PlusTtsOn"
+     follows="left|top"
+     height="16"
+     label="People near me"
+     layout="topleft"
+     left="28"
+     name="nearby"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusTtsSelf"
+     enabled_control="PlusTtsOn"
+     follows="left|top"
+     height="16"
+     label="My own chat"
+     layout="topleft"
+     left="28"
+     name="self"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusTtsObjects"
+     enabled_control="PlusTtsOn"
+     follows="left|top"
+     height="16"
+     label="Objects"
+     layout="topleft"
+     left="28"
+     name="objects"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusTtsSystem"
+     enabled_control="PlusTtsOn"
+     follows="left|top"
+     height="16"
+     label="Notices (money, teleport, region)"
+     layout="topleft"
+     left="28"
+     name="system"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusTtsArrivals"
+     enabled_control="PlusTtsOn"
+     follows="left|top"
+     height="16"
+     label="Who comes and goes (radar)"
+     layout="topleft"
+     left="28"
+     name="arrivals"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusTtsIM"
+     enabled_control="PlusTtsOn"
+     follows="left|top"
+     height="16"
+     label="Instant messages"
+     layout="topleft"
+     left="28"
+     name="im"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusTtsGroup"
+     enabled_control="PlusTtsOn"
+     follows="left|top"
+     height="16"
+     label="Group chat"
+     layout="topleft"
+     left="28"
+     name="group"
+     top_pad="4"
+     width="394" />
+    <check_box
+     control_name="PlusTtsShowDetails"
+     follows="left|top"
+     height="16"
+     label="Show details (voices, speed, limits)"
+     layout="topleft"
+     left="12"
+     name="show_details"
+     top_pad="10"
+     width="410" />
+    <panel
+     follows="left|top"
+     height="318"
+     layout="topleft"
+     left="0"
+     name="detail"
+     top_pad="4"
+     visible="false"
+     width="440">
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="12"
+     name="male_label"
+     top="6"
+     width="116">
+        Man's voice:
+    </text>
+    <combo_box
+     allow_text_entry="false"
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="130"
+     name="voice_male"
+     top="2"
+     width="294" />
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="12"
+     name="female_label"
+     top="36"
+     width="116">
+        Woman's voice:
+    </text>
+    <combo_box
+     allow_text_entry="false"
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="130"
+     name="voice_female"
+     top="32"
+     width="294" />
+    <slider
+     control_name="PlusTtsRate"
+     decimal_digits="1"
+     follows="left|top"
+     height="16"
+     increment="0.1"
+     initial_value="1"
+     label="Speed"
+     label_width="118"
+     layout="topleft"
+     left="12"
+     max_val="2.5"
+     min_val="0.5"
+     name="rate"
+     top="66"
+     width="412" />
+    <slider
+     control_name="PlusTtsVolume"
+     decimal_digits="2"
+     follows="left|top"
+     height="16"
+     increment="0.05"
+     initial_value="1"
+     label="Volume"
+     label_width="118"
+     layout="topleft"
+     left="12"
+     max_val="1"
+     min_val="0"
+     name="volume"
+     top="88"
+     width="412" />
+    <spinner
+     control_name="PlusTtsDistance"
+     decimal_digits="0"
+     follows="left|top"
+     height="20"
+     increment="5"
+     label="Only people and objects within (m, 0 = any)"
+     label_width="280"
+     layout="topleft"
+     left="12"
+     max_val="4096"
+     min_val="0"
+     name="distance"
+     top="112"
+     width="380" />
+    <spinner
+     control_name="PlusTtsMaxLength"
+     decimal_digits="0"
+     follows="left|top"
+     height="20"
+     increment="10"
+     label="Cut a line after this many characters"
+     label_width="280"
+     layout="topleft"
+     left="12"
+     max_val="500"
+     min_val="20"
+     name="max_length"
+     top="138"
+     width="380" />
+    <spinner
+     control_name="PlusTtsMaxQueue"
+     decimal_digits="0"
+     follows="left|top"
+     height="20"
+     increment="1"
+     label="Lines kept waiting (older ones are dropped)"
+     label_width="280"
+     layout="topleft"
+     left="12"
+     max_val="20"
+     min_val="1"
+     name="max_queue"
+     top="164"
+     width="380" />
+    <check_box
+     control_name="PlusTtsOnlyActive"
+     follows="left|top"
+     height="16"
+     label="Stay silent while the viewer window is in the background"
+     layout="topleft"
+     left="12"
+     name="only_active"
+     top="194"
+     width="410" />
+    <check_box
+     control_name="PlusTtsTranslated"
+     follows="left|top"
+     height="16"
+     label="Read only the translation when the chat translation added one"
+     layout="topleft"
+     left="12"
+     name="translated"
+     top="214"
+     width="410" />
+    <check_box
+     control_name="PlusTtsSayName"
+     follows="left|top"
+     height="16"
+     label="Say the name before an IM / group line"
+     layout="topleft"
+     left="12"
+     name="say_name"
+     top="234"
+     width="410" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Try the voices"
+     layout="topleft"
+     left="12"
+     name="sample"
+     tool_tip="Say a sample in a man's, a woman's and a neutral voice."
+     top="258"
+     width="130" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Stop"
+     layout="topleft"
+     left="146"
+     name="stop"
+     tool_tip="Stop what is being read and drop what waits."
+     top="258"
+     width="70" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Forget hand-set voices"
+     layout="topleft"
+     left="220"
+     name="clear_hand"
+     tool_tip="Back to automatic for every avatar whose voice you set by hand."
+     top="258"
+     width="204" />
+    <text
+     follows="left|top"
+     height="30"
+     layout="topleft"
+     left="12"
+     name="voices_info"
+     top="286"
+     width="412"
+     word_wrap="true" />
+    </panel>
+</floater>

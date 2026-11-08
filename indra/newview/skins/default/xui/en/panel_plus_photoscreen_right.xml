@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The right side of the detailed photo screen (research/221 "13. 右パネル" and "14. 撮影の帯"): the camera
+  settings in folding sections over the shutter strip. The panel itself is see-through and lets the mouse
+  through; its two boxes are the opaque parts. The rows of the sections are made in the code
+  (plus/photoscreen/photodetail_right.cpp) from the strings below, and the boxes are placed there too.
+-->
+<panel
+ background_visible="false"
+ follows="right|top|bottom"
+ height="1080"
+ layout="topleft"
+ left="1506"
+ top="0"
+ mouse_opaque="false"
+ name="plus_photoscreen_right"
+ width="414">
+    <!-- section headings -->
+    <string name="sec_camera">Lens</string>
+    <string name="sec_exposure">Exposure &amp; Tone</string>
+    <string name="sec_color">Color Grading</string>
+    <string name="sec_effects">Effects</string>
+    <string name="sec_output">Output</string>
+    <!-- camera -->
+    <string name="focal">Focal Length</string>
+    <string name="focal_tip">The lens as on a 35 mm camera: small is wide-angle, large zooms in. The same setting as the field of view.</string>
+    <string name="fov">Field of View</string>
+    <string name="fov_tip">How much of the scene the picture shows, top to bottom, in degrees. The same setting as the focal length.</string>
+    <string name="aperture">Aperture (F)</string>
+    <string name="aperture_tip">The f-number: smaller blurs the background more. Needs Depth of Field.</string>
+    <string name="focus_mode">Focus Mode</string>
+    <string name="focus_mode_tip">What the camera keeps in focus. Turn on Depth of Field to blur the rest.</string>
+    <string name="focus_auto">Auto</string>
+    <string name="focus_cursor">Under Mouse</string>
+    <string name="focus_self">My Face</string>
+    <string name="focus_other">Their Face</string>
+    <string name="focus_click">Clicked Spot</string>
+    <string name="focus_frame_tip">Show the focus frame in the picture</string>
+    <!-- the left column's focus section (research/264), moved here: who and which part "Their Face" follows,
+         and the button that starts choosing a spot for "Clicked Spot" -->
+    <string name="focus_who">Who</string>
+    <string name="focus_who_tip">Whose face the focus follows in the Their Face mode: someone near you</string>
+    <string name="focus_part">Part</string>
+    <string name="focus_click_start">Click to Set the Spot</string>
+    <string name="focus_click_stop">Stop Choosing (Esc)</string>
+    <string name="focus_click_tip">While choosing, a click on the world puts the focus there and objects do not react to it; click again to move it. Esc or this button stops choosing; the focus stays where it is.</string>
+    <string name="focus_distance">Focus Distance</string>
+    <string name="focus_distance_tip">How far away the point in focus is (shown only).</string>
+    <string name="no_distance">-</string>
+    <!-- "Clicked Spot" without a spot yet: what to do, in place of "-" (the tip says it whole) -->
+    <string name="focus_click_none">Use the button above</string>
+    <string name="focus_click_waiting">Click the world</string>
+    <string name="focus_click_none_tip">There is no spot to focus on yet. Press Click to Set the Spot, then click a place in the world.</string>
+    <string name="focus_click_waiting_tip">Click a place in the world to focus there. Esc stops choosing.</string>
+    <string name="focus_distance_dof_tip">Shown only while Depth of Field is on.</string>
+    <string name="sub_dof">Depth of Field</string>
+    <string name="dof_tip">Blurs what is nearer or farther than the point in focus. Needed for the aperture and the bokeh. Turning it on or off rebuilds the drawing: the viewer stops for a few seconds.</string>
+    <string name="bokeh">Bokeh Intensity</string>
+    <string name="bokeh_tip">How large the blur may grow far from the point in focus. Needs Depth of Field.</string>
+    <!-- exposure and tone -->
+    <string name="exposure">Exposure</string>
+    <string name="exposure_tip">Brighter or darker, in stops (+1 is twice as bright).</string>
+    <string name="contrast">Contrast</string>
+    <string name="contrast_tip">More or less difference between light and dark.</string>
+    <string name="shadows">Shadows</string>
+    <string name="shadows_tip">Raise it to lift the shadows and make them soft, lower it for deeper shadows.</string>
+    <string name="clarity">Clarity</string>
+    <string name="texture">Texture</string>
+    <!-- color grading -->
+    <string name="grading_tip">Color grading on or off. Turned on again, the last look comes back.</string>
+    <string name="lut">LUT</string>
+    <string name="lut_tip">The look (a color lookup table) of the whole picture.</string>
+    <string name="look_strength">Strength</string>
+    <string name="look_strength_tip">How strongly the look is applied. 0 is the original colors, 100 is the full look.</string>
+    <!-- effects -->
+    <string name="lens_flare">Lens Flare</string>
+    <string name="cross_filter">Star Filter</string>
+    <string name="glare">Glare</string>
+    <string name="soft_glow">Soft Glow</string>
+    <string name="ssgi">Indirect Light</string>
+    <string name="shafts">Light Shafts</string>
+    <string name="cloud_shafts">Cloud Sunbeams</string>
+    <!-- output (size and aspect ratio are the chips above the world, not repeated here) -->
+    <string name="format">Format</string>
+    <string name="quality">JPEG Quality</string>
+    <string name="last_shot">Last Photo</string>
+    <string name="last_shot_tip">Opens the last photo taken.</string>
+    <string name="open_folder">Open Folder</string>
+    <string name="open_folder_tip">Opens the folder the photos are saved in.</string>
+    <string name="change_folder">Change Folder...</string>
+    <string name="change_folder_tip">Choose the folder the photos are saved in. The snapshot window uses the same folder.</string>
+    <string name="save_dir">Save to: [DIR]</string>
+    <string name="save_dir_default">Save to (Pictures, none chosen yet): [DIR]</string>
+    <string name="save_dir_missing">The save folder was not found. Press "Change Folder..." to choose another.</string>
+    <!-- the shutter strip -->
+    <string name="shutter_photo_tip">Take a picture</string>
+    <string name="shutter_360_tip">Open the 360° capture</string>
+
+    <plus_ps_box
+     follows="all"
+     height="926"
+     kind="panel"
+     layout="topleft"
+     left="8"
+     name="sections"
+     top="8"
+     width="398">
+        <scroll_container
+         border_visible="false"
+         follows="all"
+         height="914"
+         layout="topleft"
+         left="0"
+         name="scroll"
+         opaque="false"
+         reserve_scroll_corner="false"
+         size="10"
+         top="6"
+         width="398">
+            <panel
+             background_visible="false"
+             follows="left|top"
+             height="900"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             name="content"
+             top="0"
+             width="388" />
+        </scroll_container>
+    </plus_ps_box>
+
+    <plus_ps_box
+     follows="left|right|bottom"
+     height="134"
+     kind="panel"
+     layout="topleft"
+     left="8"
+     name="shutter"
+     top="938"
+     width="398">
+        <plus_ps_segment
+         follows="left|top"
+         height="40"
+         layout="topleft"
+         left="12"
+         left_label="Photo"
+         name="seg_mode"
+         right_label="360°"
+         tool_tip="Photo: the shutter takes a picture. 360°: it opens the 360° capture."
+         top="27"
+         width="137" />
+        <plus_ps_shutter
+         follows="left|top"
+         height="75"
+         layout="topleft"
+         left="162"
+         name="shutter_button"
+         tool_tip="Take a picture"
+         top="10"
+         width="75" />
+        <plus_ps_icon_button
+         follows="right|top"
+         height="44"
+         icon="settings"
+         icon_size="26"
+         layout="topleft"
+         left="331"
+         name="ib_settings"
+         tool_tip="Photo tools"
+         top="25"
+         width="44" />
+        <plus_ps_label
+         align="right"
+         follows="right|top"
+         height="22"
+         kind="hint"
+         label="Press F12 to exit Photo Mode"
+         layout="topleft"
+         left="77"
+         name="l_exit"
+         top="102"
+         width="300" />
+    </plus_ps_box>
+</panel>

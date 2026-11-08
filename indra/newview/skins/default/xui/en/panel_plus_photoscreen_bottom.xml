@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The preset strip under the world of the detailed photo screen (research/221, parts 17 and 18): the tabs, the
+  cards (made in the code, in a strip that scrolls sideways), the card that saves the current settings, and the
+  small bubble that asks for the name. Sizes are UI pixels at a window 1080 high; the code gives the panel its place
+  between the side panels (photodetail_bottom.cpp, layoutBottom()). Looks come from plus/photoscreen/psui/psstyle.h.
+-->
+<panel
+ background_visible="false"
+ follows="left|bottom"
+ height="234"
+ layout="topleft"
+ left="0"
+ top="0"
+ name="plus_photoscreen_bottom"
+ width="1111">
+    <string name="sub_pose">Opens in the poser</string>
+    <string name="sub_portrait">Soft light on the face</string>
+    <string name="sub_backlight">Light from behind</string>
+    <string name="sub_sunset">Low, warm sun</string>
+    <string name="sub_night">Dark sky, lights on</string>
+    <string name="sub_studio">Even, clean light</string>
+    <string name="sub_natural">The sky as it is</string>
+    <string name="name_autumn">Autumn Alley</string>
+    <string name="sub_autumn">Autumn reds, dappled light</string>
+    <string name="tip_autumn">Deep autumn reds and oranges, crisp stone and bark, weak glare, shadow edges soft enough for dappled light. The sun is left alone: choose a low afternoon sky from the sky list.</string>
+    <string name="add_save">Save Current</string>
+    <string name="add_pose">Open Poser</string>
+    <string name="add_tip_camera">Save the camera position (with a small picture) under a name</string>
+    <string name="add_tip_pose">Poses are made and saved in the poser: open it</string>
+    <string name="add_tip_my">Save the current settings (with a small picture) as a preset of your own</string>
+    <plus_ps_box follows="all" height="234" kind="panel" layout="topleft" left="0" top="0" width="1111" name="box">
+        <plus_ps_row follows="left|right|top" height="36" kind="tabs" layout="topleft" left="0" top="6" width="1111" pad="14" spacing="4" name="ptabs">
+            <plus_ps_tab follows="left|top" height="36" label="Camera Presets" layout="topleft" left="0" top="0" width="120" name="ptab_camera" />
+            <plus_ps_tab follows="left|top" height="36" label="Pose Presets" layout="topleft" left="130" top="0" width="110" name="ptab_pose" />
+            <plus_ps_tab follows="left|top" height="36" label="Scene Presets" layout="topleft" left="250" top="0" width="110" name="ptab_scene" />
+            <plus_ps_tab follows="left|top" height="36" label="My Presets" layout="topleft" left="370" top="0" width="100" name="ptab_my" />
+        </plus_ps_row>
+        <!-- the cards go in here (a strip view made in the code fills it) -->
+        <panel background_visible="false" follows="left|right|top" height="140" layout="topleft" left="12" top="59" width="967" mouse_opaque="false" name="cards" />
+        <plus_ps_add_card follows="right|top" height="132" label="Save Current" layout="topleft" left="991" top="59" width="108" name="btn_save" tool_tip="Save the current settings (with a small picture) as a preset of your own" />
+        <!-- the name to save under: opened by the card above, Enter or the button saves -->
+        <plus_ps_box follows="right|top" height="84" kind="panel" layout="topleft" left="679" top="83" width="300" visible="false" name="name_bubble">
+            <plus_ps_label follows="left|top" height="20" kind="label" label="Name (empty: a number is added)" layout="topleft" left="14" top="10" width="272" name="name_label" />
+            <line_editor
+             follows="left|top"
+             font="SansSerifMedium"
+             height="30"
+             layout="topleft"
+             left="14"
+             top="40"
+             width="178"
+             max_length_bytes="40"
+             commit_on_focus_lost="false"
+             revert_on_esc="false"
+             select_on_focus="true"
+             use_bg_color="true"
+             bg_color="0.047 0.071 0.106 1"
+             text_color="0.957 0.969 0.984 1"
+             cursor_color="0.957 0.969 0.984 1"
+             draw_focus_border="false"
+             text_pad_left="8"
+             name="preset_name"
+             tool_tip="The name to save under (empty: a number is added)" />
+            <plus_ps_button follows="left|top" height="30" label="Save" layout="topleft" left="200" top="40" width="86" name="btn_save_ok" />
+        </plus_ps_box>
+    </plus_ps_box>
+</panel>

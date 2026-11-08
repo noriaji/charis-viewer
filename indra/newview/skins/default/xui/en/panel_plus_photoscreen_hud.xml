@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The parts over the world of the detailed photo screen (research/221 9.-12.), on the world's rectangle (800 x 450 here; the
+  parts follow its edges): the exposure read-out with the shade under it at the bottom left, the chat input over it, the
+  histogram's frame at the top right (drawn only when it has data: the branch ps-histogram), the icons at the bottom right
+  (shoot, focus, focus frame, flycam in one box; the simple view in another; over them, while the flycam is on, a line
+  saying so) and, over all of them, the world's rounded corners.
+  The focus frame and the chat lines are drawn in the code (photodetail_hud.cpp, behind these). The panel takes no mouse.
+-->
+<panel
+ background_visible="false"
+ follows="all"
+ layout="topleft"
+ left="0"
+ top="450"
+ mouse_opaque="false"
+ name="plus_photoscreen_hud"
+ width="800"
+ height="450">
+    <string name="FrameClick">The place clicked · [DIST] m</string>
+    <!-- the flycam's line and icon tip ([KEY]: the key bound now, photodetail_center.cpp; FlycamTipN for PlusFlycamMouseMode N) -->
+    <string name="FlycamBadge">Flycam on: [KEY] to leave</string>
+    <string name="FlycamTip0">Flycam (keyboard and mouse) on or off: W A S D fly, the arrow keys turn, the wheel sets the speed, Q / E tilt (also [KEY])</string>
+    <string name="FlycamTip1">Flycam (keyboard and mouse) on or off: W A S D fly, the right button looks around, the wheel sets the speed, Q / E tilt (also [KEY])</string>
+    <string name="FlycamTip2">Flycam (keyboard and mouse) on or off: W A S D fly, the mouse looks around (Alt for the cursor), the wheel sets the speed, Q / E tilt (also [KEY])</string>
+    <!-- the focus icon's tip: the wide layout opens the right column's Lens section, a narrow one the left panel -->
+    <string name="FocusTipWide">Focus settings (opens the Lens section on the right)</string>
+    <string name="FocusTipNarrow">Focus settings (opens them on the left, over the world)</string>
+    <plus_ps_readout
+     follows="left|right|bottom"
+     height="83"
+     label="F 1.8|1/125|ISO 100|50 mm"
+     layout="topleft"
+     left="0"
+     top="367"
+     width="800"
+     name="readout" />
+    <plus_ps_histogram
+     follows="right|top"
+     height="100"
+     layout="topleft"
+     left="593"
+     top="12"
+     width="195"
+     name="histogram" />
+    <plus_ps_box
+     follows="left|bottom"
+     height="30"
+     kind="glass"
+     layout="topleft"
+     left="12"
+     top="364"
+     width="380"
+     name="chat_box">
+        <line_editor
+         follows="left|right|top"
+         height="22"
+         layout="topleft"
+         left="4"
+         top="4"
+         commit_on_focus_lost="false"
+         max_length_bytes="1023"
+         use_bg_color="true"
+         bg_color="0 0 0 0"
+         text_color="0.957 0.969 0.984 1"
+         cursor_color="0.957 0.969 0.984 1"
+         text_tentative_color="0.557 0.596 0.635 1"
+         draw_focus_border="false"
+         text_pad_left="6"
+         width="372"
+         name="chat_input"
+         label="Chat"
+         tool_tip="Chat: type here and press Enter. Esc or a click on the world gives the keys back to the camera.">
+            <line_editor.border visible="false" />
+        </line_editor>
+    </plus_ps_box>
+    <!-- the flycam's icon (photo-flycam): blue while the flycam is on; over the icons, the line saying so (shown only
+         then; it takes no mouse, so the right button still looks around under it) -->
+    <plus_ps_box
+     follows="right|bottom"
+     height="28"
+     kind="glass"
+     layout="topleft"
+     left="506"
+     top="362"
+     width="230"
+     mouse_opaque="false"
+     visible="false"
+     name="flycam_badge">
+        <plus_ps_label
+         follows="left|top"
+         height="24"
+         kind="white"
+         align="center"
+         label="Flycam on"
+         layout="topleft"
+         left="8"
+         top="2"
+         mouse_opaque="false"
+         width="214"
+         name="flycam_badge_text" />
+    </plus_ps_box>
+    <plus_ps_box
+     follows="right|bottom"
+     height="40"
+     kind="glass"
+     layout="topleft"
+     left="563"
+     top="398"
+     width="173"
+     name="icon_box">
+        <plus_ps_icon_button follows="left|top" height="40" icon="camera" layout="topleft" left="1" top="0" width="42" name="b_shoot" tool_tip="Take the photo now, at the size and shape set above" />
+        <plus_ps_icon_button follows="left|top" height="40" icon="focus" layout="topleft" left="44" top="0" width="42" name="b_focus" tool_tip="Focus settings (opens the Lens section on the right)" />
+        <plus_ps_icon_button follows="left|top" height="40" icon="frame" toggle="true" layout="topleft" left="87" top="0" width="42" name="b_area" tool_tip="Show or hide the focus frame" />
+        <plus_ps_icon_button follows="left|top" height="40" icon="flycam" toggle="true" layout="topleft" left="130" top="0" width="42" name="b_flycam" tool_tip="Flycam (keyboard and mouse) on or off" />
+    </plus_ps_box>
+    <plus_ps_box
+     follows="right|bottom"
+     height="40"
+     kind="glass"
+     layout="topleft"
+     left="748"
+     top="398"
+     width="40"
+     name="full_box">
+        <plus_ps_icon_button follows="left|top" height="40" icon="maximize" layout="topleft" left="0" top="0" width="40" name="b_full" tool_tip="Switch to the simple view: the world fills the window" />
+    </plus_ps_box>
+    <plus_ps_box
+     follows="all"
+     height="450"
+     kind="world_corners"
+     layout="topleft"
+     left="0"
+     top="0"
+     mouse_opaque="false"
+     width="800"
+     name="world_corners" />
+</panel>

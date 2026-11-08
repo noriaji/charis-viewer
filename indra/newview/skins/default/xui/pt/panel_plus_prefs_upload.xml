@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="uploads" label="Envios">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="uploads_scroll">
+			<panel name="uploads_scroll_panel">
+				<plus_ps_text name="title">
+					Pastas de destino atuais para envios
+				</plus_ps_text>
+				<plus_ps_text name="title_models">
+					Imagens
+				</plus_ps_text>
+				<plus_ps_text name="title_sounds">
+					Sons
+				</plus_ps_text>
+				<plus_ps_text name="title_animation">
+					Animações
+				</plus_ps_text>
+				<plus_ps_text name="title_model">
+					Modelos
+				</plus_ps_text>
+				<plus_ps_text name="upload_help">
+					Para alterar a pasta de destino, clique com o botão direito nela no inventário e selecione "Usar como padrão para"
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

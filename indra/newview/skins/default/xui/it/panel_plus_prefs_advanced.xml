@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="Avanzata">
+	<panel.string name="aspect_ratio_text">
+		[NUM]:[DEN]
+	</panel.string>
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_spinner name="cachesizespinner" label="Dimensioni cache (256 - 9984MB)" />
+				<plus_ps_text name="text_box5">
+					MB
+				</plus_ps_text>
+				<plus_ps_button_compat name="clear_cache" label="Pulizia della cache" label_selected="Pulizia della cache" />
+				<plus_ps_text name="Cache location">
+					Ubicazione della cache:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_cache" label="Sfoglia" label_selected="Sfoglia" />
+				<plus_ps_button_compat name="default_cache_location" label="Posizione predefinita" label_selected="Posizione predefinita" />
+				<plus_ps_text name="UI Size:">
+					Dimensioni UI:
+				</plus_ps_text>
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="Consenti più Viewer" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="Mostra selezione griglia all'accesso" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="Mostra menu Avanzato" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="Mostra menu sviluppo" />
+				<plus_ps_button_compat name="default_creation_permissions" label="Diritti di creazione predefiniti" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

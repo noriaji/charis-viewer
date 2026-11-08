@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  A check box row of the detailed photo screen (plus/photoscreen/photodetail.cpp).
+-->
+<panel
+ background_visible="false"
+ follows="left|right|top"
+ height="26"
+ layout="topleft"
+ name="plus_photoscreen_row"
+ width="260">
+    <check_box
+     follows="left|right|top"
+     font="SansSerifSmall"
+     height="18"
+     label="Name"
+     layout="topleft"
+     left="10"
+     right="-8"
+     top="4"
+     name="ctl" />
+</panel>

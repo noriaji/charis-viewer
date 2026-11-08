@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<floater
+ positioning="cascading"
+ can_close="true"
+ can_resize="true"
+ height="570"
+ help_topic="sidebar_inventory"
+ min_width="363"
+ min_height="270"
+ name="floater_my_inventory"
+ save_rect="true"
+ save_visibility="true"
+ reuse_instance="true"
+ title="INVENTORY"
+ width="424" >
+   <!-- plus invexplorer (research/220). The inventory is wrapped in a stack: the detail pane
+        (plus/invexplorer, panel_plus_inv_detail.xml) on its right shows while the window is wide
+        enough (PlusInvExplorerMinWidth); plus::invexplorer::tick() switches it. -->
+   <layout_stack
+    animate="false"
+    border_size="0"
+    follows="all"
+    height="570"
+    layout="topleft"
+    left="0"
+    name="plus_inv_explorer_stack"
+    orientation="horizontal"
+    top="0"
+    width="424">
+       <layout_panel
+        auto_resize="true"
+        follows="all"
+        height="570"
+        layout="topleft"
+        min_width="363"
+        name="inv_main_layout_panel"
+        user_resize="false"
+        width="424">
+           <panel
+            class="sidepanel_inventory"
+            name="main_panel"
+            filename="sidepanel_inventory.xml"
+            follows="all"
+            top="0"/>
+       </layout_panel>
+       <layout_panel
+        auto_resize="false"
+        follows="all"
+        height="570"
+        layout="topleft"
+        min_width="200"
+        name="inv_detail_layout_panel"
+        user_resize="true"
+        visible="false"
+        width="260">
+           <panel
+            class="plus_inv_detail"
+            name="plus_inv_detail"
+            filename="panel_plus_inv_detail.xml"
+            follows="all"
+            top="0"/>
+       </layout_panel>
+   </layout_stack>
+   <!-- /plus -->
+</floater>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- gamecontrol-ja: 「操作」タブのゲームパッドのボタン（公式の ja には無い） -->
+<contents>
+	<rows name="game_control_buttons" value="">
+		<columns type="icontext" label="ゲームパッドのボタン" name="lst_action" value="Dpad"/>
+	</rows>
+	<rows name="game_control_button_0" value="game_control_button_0">
+		<columns name="lst_action" value="下ボタン"/>
+	</rows>
+	<rows name="game_control_button_1" value="game_control_button_1">
+		<columns name="lst_action" value="右ボタン"/>
+	</rows>
+	<rows name="game_control_button_2" value="game_control_button_2">
+		<columns name="lst_action" value="左ボタン"/>
+	</rows>
+	<rows name="game_control_button_3" value="game_control_button_3">
+		<columns name="lst_action" value="上ボタン"/>
+	</rows>
+	<rows name="game_control_button_4" value="game_control_button_4">
+		<columns name="lst_action" value="セレクト"/>
+	</rows>
+	<rows name="game_control_button_5" value="game_control_button_5">
+		<columns name="lst_action" value="ホーム"/>
+	</rows>
+	<rows name="game_control_button_6" value="game_control_button_6">
+		<columns name="lst_action" value="スタート"/>
+	</rows>
+	<rows name="game_control_button_7" value="game_control_button_7">
+		<columns name="lst_action" value="左スティック押し込み"/>
+	</rows>
+	<rows name="game_control_button_8" value="game_control_button_8">
+		<columns name="lst_action" value="右スティック押し込み"/>
+	</rows>
+	<rows name="game_control_button_9" value="game_control_button_9">
+		<columns name="lst_action" value="L ボタン"/>
+	</rows>
+	<rows name="game_control_button_10" value="game_control_button_10">
+		<columns name="lst_action" value="R ボタン"/>
+	</rows>
+	<rows name="game_control_button_11" value="game_control_button_11">
+		<columns name="lst_action" value="十字キー上"/>
+	</rows>
+	<rows name="game_control_button_12" value="game_control_button_12">
+		<columns name="lst_action" value="十字キー下"/>
+	</rows>
+	<rows name="game_control_button_13" value="game_control_button_13">
+		<columns name="lst_action" value="十字キー左"/>
+	</rows>
+	<rows name="game_control_button_14" value="game_control_button_14">
+		<columns name="lst_action" value="十字キー右"/>
+	</rows>
+	<rows name="game_control_button_15" value="game_control_button_15">
+		<columns name="lst_action" value="その他 1"/>
+	</rows>
+	<rows name="game_control_button_16" value="game_control_button_16">
+		<columns name="lst_action" value="パドル 1"/>
+	</rows>
+	<rows name="game_control_button_17" value="game_control_button_17">
+		<columns name="lst_action" value="パドル 2"/>
+	</rows>
+	<rows name="game_control_button_18" value="game_control_button_18">
+		<columns name="lst_action" value="パドル 3"/>
+	</rows>
+	<rows name="game_control_button_19" value="game_control_button_19">
+		<columns name="lst_action" value="パドル 4"/>
+	</rows>
+	<rows name="game_control_button_20" value="game_control_button_20">
+		<columns name="lst_action" value="タッチパッド"/>
+	</rows>
+	<rows name="game_control_button_21" value="game_control_button_21">
+		<columns name="lst_action" value="ボタン 21"/>
+	</rows>
+	<rows name="game_control_button_22" value="game_control_button_22">
+		<columns name="lst_action" value="ボタン 22"/>
+	</rows>
+	<rows name="game_control_button_23" value="game_control_button_23">
+		<columns name="lst_action" value="ボタン 23"/>
+	</rows>
+	<rows name="game_control_button_24" value="game_control_button_24">
+		<columns name="lst_action" value="ボタン 24"/>
+	</rows>
+	<rows name="game_control_button_25" value="game_control_button_25">
+		<columns name="lst_action" value="ボタン 25"/>
+	</rows>
+	<rows name="game_control_button_26" value="game_control_button_26">
+		<columns name="lst_action" value="ボタン 26"/>
+	</rows>
+	<rows name="game_control_button_27" value="game_control_button_27">
+		<columns name="lst_action" value="ボタン 27"/>
+	</rows>
+	<rows name="game_control_button_28" value="game_control_button_28">
+		<columns name="lst_action" value="ボタン 28"/>
+	</rows>
+	<rows name="game_control_button_29" value="game_control_button_29">
+		<columns name="lst_action" value="ボタン 29"/>
+	</rows>
+	<rows name="game_control_button_30" value="game_control_button_30">
+		<columns name="lst_action" value="ボタン 30"/>
+	</rows>
+	<rows name="game_control_button_31" value="game_control_button_31">
+		<columns name="lst_action" value="ボタン 31"/>
+	</rows>
+</contents>

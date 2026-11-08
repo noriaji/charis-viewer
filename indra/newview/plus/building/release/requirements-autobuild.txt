@@ -1,0 +1,24 @@
+# autobuild and its dependencies, pinned with their SHA-256 (pip --require-hashes).
+# setup-deps.py installs these with --only-binary :all: --no-deps into its own venv,
+# then runs "pip check" (a dependency missing from this list fails there).
+# Only Windows 64-bit wheels and pure-Python wheels are listed (CPython 3.9 to 3.14).
+# To move to another version, take the digests from https://pypi.org/pypi/<name>/<version>/json
+# ("digests" -> "sha256" of each wheel) and update AUTOBUILD_VERSION in setup-deps.py.
+
+autobuild==3.10.2 \
+    --hash=sha256:b712f8f32751926bb84300d6efcaafa5558e80e2ee1bdb7de03b81420ea72d11
+llsd==1.2.4 \
+    --hash=sha256:69ebe8ee52c18315ff9a7249ff9b0890a03dcf8bba1718a9ce47e2057faf38aa
+pydot==4.0.1 \
+    --hash=sha256:869c0efadd2708c0be1f916eb669f3d664ca684bc57ffb7ecc08e70d5e93fee6
+pyparsing==3.3.3 \
+    --hash=sha256:ece8c00a69cf01b45d0b1dedabb469c90d8caf996d4fda40f147627a122849a4
+pyzstd==0.18.0 \
+    --hash=sha256:4a32751ac634eb685bec42935b0f6e494f018843da09596da3f2a0072ae8273b \
+    --hash=sha256:ec99569321a99b9868666c85a5846151f9a16b6a222b59b2570e2ddeefd4d80c \
+    --hash=sha256:8285a464aed201b166bb0d2f4667485b61b607cf89f12943b1f21f7e84cb4550 \
+    --hash=sha256:e951c3013b9df479cff758d578b83837b2531d02fb6c3e59166a756795697e19 \
+    --hash=sha256:98f43488f88b859291d6bdc51cc7793d1eab17aa9382b17d762944bbb8567c98 \
+    --hash=sha256:73c3dcd9a16f1669ed6eef0dad1d840b7dd6070ab7d48719171ca691101e7975
+typing_extensions==4.16.0 ; python_version < "3.13" \
+    --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8

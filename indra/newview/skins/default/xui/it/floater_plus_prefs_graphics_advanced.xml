@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis window (research/267 gfxadv-ui) in this language: the words of floater_preferences_graphics_advanced.xml, by name (the chain of names of en). -->
+<floater name="prefs_graphics_advanced" title="PREFERENZE AVANZATE GRAFICA">
+	<plus_ps_tabs name="graphics_tabs">
+		<panel label="Generale" name="General">
+			<scroll_container name="general_scroll">
+				<panel name="general_scroll_panel">
+					<plus_ps_text name="ShadersText">
+						Shader
+					</plus_ps_text>
+					<plus_ps_check_compat initial_value="true" label="Acqua trasparente" name="TransparentWater"/>
+					<plus_ps_check_compat initial_value="true" label="Occlusione ambientale" name="UseSSAO"/>
+					<plus_ps_text name="RenderShadowDetailText">
+						Ombre:
+					</plus_ps_text>
+					<plus_ps_combo name="ShadowDetail">
+						<plus_ps_combo.item label="Nessuno" name="0"/>
+						<plus_ps_combo.item label="Sole/Luna" name="1"/>
+						<plus_ps_combo.item label="Sole/Luna + Proiettori" name="2"/>
+					</plus_ps_combo>
+					<plus_ps_slider_compat label="Distanza visualizzazione:" name="DrawDistance"/>
+					<plus_ps_text name="DrawDistanceMeterText2">
+						m
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Numero massimo particelle:" name="MaxParticleCount"/>
+					<plus_ps_text name="AvatarText">
+						Avatar
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Complessità massima:" name="IndirectMaxComplexity" tool_tip="Definisce il punto in cui un avatar dall'aspetto complesso viene visualizzato come JellyDoll"/>
+					<plus_ps_text name="IndirectMaxComplexityText">
+						0
+					</plus_ps_text>
+					<plus_ps_slider_compat label="N. max di non impostori:" name="IndirectMaxNonImpostors"/>
+					<plus_ps_text name="IndirectMaxNonImpostorsText">
+						0
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Fisica:" name="AvatarPhysicsDetail"/>
+					<plus_ps_text name="AvatarPhysicsDetailText">
+						Basso
+					</plus_ps_text>
+					<plus_ps_text name="MeshText">
+						Livello dei dettagli (LOD)
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Oggetti:" name="ObjectMeshDetail"/>
+					<plus_ps_text name="ObjectMeshDetailText">
+						Basso
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Prim flessibili:" name="FlexibleMeshDetail"/>
+					<plus_ps_text name="FlexibleMeshDetailText">
+						Basso
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Alberi:" name="TreeMeshDetail"/>
+					<plus_ps_text name="TreeMeshDetailText">
+						Basso
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Avatar:" name="AvatarMeshDetail"/>
+					<plus_ps_text name="AvatarMeshDetailText">
+						Basso
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Terreno:" name="TerrainMeshDetail"/>
+					<plus_ps_text name="TerrainMeshDetailText">
+						Basso
+					</plus_ps_text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Impostazioni Hardware" name="Hardware Settings">
+			<scroll_container name="hardware_scroll">
+				<panel name="hardware_scroll_panel">
+					<plus_ps_check_compat initial_value="true" label="Attiva compressione texture (richiede riavvio)" name="texture compression" tool_tip="Comprime le texture nella memoria video, consentendo il caricamento di texture a risoluzione maggiore al prezzo di una perdita di qualità del colore."/>
+					<plus_ps_text name="antialiasing label">
+						Antialiasing:
+					</plus_ps_text>
+					<plus_ps_combo label="Antialiasing" name="fsaa">
+						<plus_ps_combo.item label="Disattivato" name="FSAADisabled"/>
+					</plus_ps_combo>
+					<plus_ps_text name="antialiasing restart">
+						(richiede il riavvio)
+					</plus_ps_text>
+					<plus_ps_check_compat initial_value="true" label="Abilita assistenza per display HiDPI (riavvio necessario)" name="use HiDPI" tool_tip="Abilita OpenGL per disegni ad alta risoluzione."/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Rendering" name="Rendering">
+			<scroll_container name="rendering_scroll">
+				<panel name="rendering_scroll_panel">
+					<plus_ps_text name="Texture Rendering">
+						Rendering texture
+					</plus_ps_text>
+					<plus_ps_text name="Miscellaneous Rendering">
+						Altre impostazioni
+					</plus_ps_text>
+					<plus_ps_slider_compat label="Qualità dopo l'elaborazione:" name="RenderPostProcess"/>
+					<plus_ps_text name="PostProcessText">
+						Basso
+					</plus_ps_text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Profondità di Campo" name="DOF panel">
+			<scroll_container name="dof_scroll">
+				<panel name="dof_scroll_panel">
+					<plus_ps_check_compat initial_value="true" label="Abilita Profondità di Campo (PdC: sfoca la vista tranne che nella direzione della camera)" name="UseDoF"/>
+					<plus_ps_check_compat name="RenderDepthOfFieldInEditMode" label="Abilita in modalità Costruzione"/>
+					<plus_ps_slider_compat name="CameraFNum" label="F-Number Camera:" tool_tip="Il valore F è un valore della profondità di campo."/>
+					<plus_ps_slider_compat name="CameraFocal" label="Lunghezza focale (mm):" tool_tip="A che distanza avviene la messa a fuoco (in millimetri)."/>
+					<plus_ps_slider_compat name="Camera FOV" label="Campo visivo (gradi):" tool_tip="Campo verticale di visualizzazione della camera (in gradi)."/>
+					<plus_ps_slider_compat name="CameraFocusTrans" label="Tempo di transizione:" tool_tip="Tempo necessario per passare la focalizzazione da un'oggetto ad un'altro."/>
+					<plus_ps_slider_compat name="CameraDoFResScale" label="Qualità resa PdC:" tool_tip="Influisce sulla qualità della sfocatura e le prestazioni di resa. (alto = migliore qualità, basso = migliori prestazioni)."/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Charis" name="Charis panel">
+			<scroll_container name="charis_scroll">
+				<panel name="charis_scroll_panel">
+				</panel>
+			</scroll_container>
+		</panel>
+	</plus_ps_tabs>
+	<plus_ps_button_compat label="Ripristina impostazioni consigliate" name="Defaults" width="400"/>
+	<plus_ps_button_compat label="OK" label_selected="OK" name="OK"/>
+	<plus_ps_button_compat label="Annulla" label_selected="Annulla" name="Cancel"/>
+	<check_box label="RenderAvatarMaxComplexity" name="RenderAvatarMaxComplexity"/>
+	<check_box label="RenderAvatarMaxNonImpostors" name="RenderAvatarMaxNonImpostors"/>
+</floater>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_voice.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="voice_panel">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="voice_scroll">
+            <panel name="voice_scroll_panel">
+                <plus_ps_slider_compat name="Voice Volume" label="Rozmowy głosowe" />
+                <plus_ps_check_compat name="enable_voice_check" label="Włączone" />
+                <plus_ps_text name="Listen from">
+                    Odtwarzaj głos z:
+                </plus_ps_text>
+                <plus_ps_check_compat name="enable_lip_sync" label="Poruszaj ustami awatara podczas mówienia" />
+                <plus_ps_check_compat name="push_to_talk_toggle_check" label="Włącz/wyłącz mikrofon kiedy naciskam:" tool_tip="Kiedy aktywny jest tryb przełączania wciśnij i zwolnij przełącznik RAZ, aby włączyć lub wyłączyć mikrofon. Kiedy tryb przełączania nie jest aktywny mikrofon nadaje głos tylko wtedy, gdy przełącznik jest wciśnięty." />
+                <plus_ps_check_compat name="gesture_audio_play_btn" label="Odtwarzaj dźwięki gestów" tool_tip="Zaznacz, aby słyszeć dźwięki gestów" />
+                <plus_ps_button_compat name="device_settings_btn" label="Ustawienia sprzętowe audio" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

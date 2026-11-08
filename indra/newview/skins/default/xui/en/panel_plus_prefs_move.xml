@@ -1,0 +1,379 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window (from: official Second_Life_Release#d567465e-26.5 panel_preferences_move.xml;
+     research/266 4. prefs-w-basic). The official panel stays as it is (the ledger's source for
+     tools/ui-parity-diff.py); this page has all it does (name, control_name, functions, strings, choices,
+     ranges) in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml).
+     Height of the list (1080 base): 10 + 2 sliders x 31 + label 24 + 2 checks x 30 + 10 + heading 40
+     + 3 checks x 30 + 10 + heading 40 + check 30 + sensitivity 31 + 10 + 3 drop-down rows x 33 + 10
+     + 2 checks x 30 + 6 + button 40 + 14 = 646 (scrolls in 515).
+     Rows at left 44 (the icons in the column at 14), 499 wide: label 257 | 12 | drop-down 230 (the
+     longest ja choice is 15 characters); sensitivity: label 206 | 6 | slider 174 | 12 | Invert 101. -->
+<panel
+ name="move_panel"
+ border="true"
+ follows="all"
+ height="515"
+ label="Move"
+ layout="topleft"
+ left="0"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="move_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="move_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="646"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <icon
+                 name="camera_icon"
+                 follows="left|top"
+                 height="18"
+                 image_name="Cam_FreeCam_Off"
+                 layout="topleft"
+                 left="14"
+                 mouse_opaque="false"
+                 top="16"
+                 visible="true"
+                 width="18" />
+                <plus_ps_slider_compat
+                 name="camera_fov"
+                 can_edit_text="true"
+                 control_name="CameraAngle"
+                 decimal_digits="2"
+                 follows="left|top|right"
+                 height="31"
+                 increment="0.025"
+                 initial_value="1.57"
+                 label="View angle"
+                 layout="topleft"
+                 left="44"
+                 max_val="2.97"
+                 min_val="0.17"
+                 top="10"
+                 width="499" />
+                <plus_ps_slider_compat
+                 name="camera_offset_scale"
+                 can_edit_text="true"
+                 control_name="CameraOffsetScale"
+                 decimal_digits="2"
+                 follows="left|top|right"
+                 height="31"
+                 increment="0.025"
+                 initial_value="1"
+                 label="Distance"
+                 layout="topleft"
+                 left="44"
+                 max_val="3"
+                 min_val="0.5"
+                 top="41"
+                 width="499" />
+                <plus_ps_text
+                 name="heading2"
+                 follows="left|top|right"
+                 height="24"
+                 layout="topleft"
+                 left="44"
+                 length="1"
+                 top="72"
+                 type="string"
+                 width="499">
+                    Automatic position for:
+                </plus_ps_text>
+                <plus_ps_check_compat
+                 name="edit_camera_movement"
+                 control_name="EditCameraMovement"
+                 follows="left|top|right"
+                 height="30"
+                 label="Build/Edit"
+                 layout="topleft"
+                 left="44"
+                 tool_tip="Use automatic camera positioning when entering and exiting edit mode"
+                 top="96"
+                 width="499" />
+                <plus_ps_check_compat
+                 name="appearance_camera_movement"
+                 control_name="AppearanceCameraMovement"
+                 follows="left|top|right"
+                 height="30"
+                 label="Appearance"
+                 layout="topleft"
+                 left="44"
+                 tool_tip="Use automatic camera positioning while in edit mode"
+                 top="126"
+                 width="499" />
+                <icon
+                 name="avatar_icon"
+                 follows="left|top"
+                 height="18"
+                 image_name="Move_Walk_Off"
+                 layout="topleft"
+                 left="14"
+                 mouse_opaque="false"
+                 top="177"
+                 visible="true"
+                 width="18" />
+                <plus_ps_text
+                 name="keyboard_lbl"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="44"
+                 length="1"
+                 top="166"
+                 type="string"
+                 width="499">
+                    Keyboard:
+                </plus_ps_text>
+                <plus_ps_check_compat
+                 name="arrow_keys_move_avatar_check"
+                 control_name="ArrowKeysAlwaysMove"
+                 follows="left|top|right"
+                 height="30"
+                 label="Arrow keys always move me while in chat"
+                 layout="topleft"
+                 left="44"
+                 top="206"
+                 width="499" />
+                <plus_ps_check_compat
+                 name="tap_tap_hold_to_run"
+                 control_name="AllowTapTapHoldRun"
+                 follows="left|top|right"
+                 height="30"
+                 label="Tap-tap-hold to run"
+                 layout="topleft"
+                 left="44"
+                 top="236"
+                 width="499" />
+                <plus_ps_check_compat
+                 name="automatic_fly"
+                 control_name="AutomaticFly"
+                 follows="left|top|right"
+                 height="30"
+                 label="Hold jump or crouch key to start or stop flying"
+                 layout="topleft"
+                 left="44"
+                 top="266"
+                 width="499" />
+                <plus_ps_text
+                 name="mouse_lbl"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="44"
+                 length="1"
+                 top="306"
+                 type="string"
+                 width="499">
+                    Mouse:
+                </plus_ps_text>
+                <plus_ps_check_compat
+                 name="first_person_avatar_visible"
+                 control_name="FirstPersonAvatarVisible"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show me in Mouselook"
+                 layout="topleft"
+                 left="44"
+                 top="346"
+                 width="499" />
+                <plus_ps_text
+                 name=" Mouse Sensitivity"
+                 follows="left|top"
+                 height="31"
+                 layout="topleft"
+                 left="44"
+                 length="1"
+                 top="376"
+                 type="string"
+                 width="206"
+                 wrap="true">
+                    Mouselook mouse sensitivity:
+                </plus_ps_text>
+                <plus_ps_slider_compat
+                 name="mouse_sensitivity"
+                 control_name="MouseSensitivity"
+                 follows="left|top"
+                 height="31"
+                 initial_value="2"
+                 layout="topleft"
+                 left="256"
+                 max_val="15"
+                 show_text="false"
+                 top="376"
+                 width="174" />
+                <plus_ps_check_compat
+                 name="invert_mouse"
+                 control_name="InvertMouse"
+                 follows="left|top"
+                 height="30"
+                 label="Invert"
+                 layout="topleft"
+                 left="442"
+                 top="376"
+                 width="101" />
+                <plus_ps_text
+                 name="mouse_warp_lbl"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="44"
+                 length="1"
+                 top="417"
+                 type="string"
+                 width="257">
+                    Mouse Warp:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="mouse_warp_combo"
+                 control_name="MouseWarpMode"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="313"
+                 tool_tip="Controls warping of the mouse to the center of the screen during alt-zoom and mouse look."
+                 top="417"
+                 width="230">
+                    <plus_ps_combo.item
+                     name="0"
+                     label="Automatic"
+                     value="0" />
+                    <plus_ps_combo.item
+                     name="1"
+                     label="On"
+                     value="1" />
+                    <plus_ps_combo.item
+                     name="2"
+                     label="Off"
+                     value="2" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="single_click_action_lbl"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="44"
+                 length="1"
+                 top="450"
+                 type="string"
+                 width="257">
+                    Single click on land:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="single_click_action_combo"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="313"
+                 top="450"
+                 width="230">
+                    <plus_ps_combo.item
+                     name="0"
+                     label="No action"
+                     value="0" />
+                    <plus_ps_combo.item
+                     name="1"
+                     label="Move to clicked point"
+                     value="1" />
+                    <plus_ps_combo.commit_callback
+                     function="Pref.ClickActionChange" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="double_click_action_lbl"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="44"
+                 length="1"
+                 top="483"
+                 type="string"
+                 width="257">
+                    Double click on land:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="double_click_action_combo"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="313"
+                 top="483"
+                 width="230">
+                    <plus_ps_combo.item
+                     name="0"
+                     label="No action"
+                     value="0" />
+                    <plus_ps_combo.item
+                     name="1"
+                     label="Move to clicked point"
+                     value="1" />
+                    <plus_ps_combo.item
+                     name="2"
+                     label="Teleport to clicked point"
+                     value="2" />
+                    <plus_ps_combo.commit_callback
+                     function="Pref.ClickActionChange" />
+                </plus_ps_combo>
+                <plus_ps_check_compat
+                 name="sound_on_collisions"
+                 control_name="EnableCollisionSounds"
+                 follows="left|top|right"
+                 height="30"
+                 label="Play sound on collisions"
+                 layout="topleft"
+                 left="44"
+                 top="526"
+                 width="499" />
+                <!-- tpscreen (plus/loginfast, PlusDisableTeleportScreens): Firestorm's "Disable Teleport Screens"
+                     (Move & View > Teleports there; here at the end of the Move tab, as on the official panel) -->
+                <plus_ps_check_compat
+                 name="tp_screen_toggle"
+                 control_name="PlusDisableTeleportScreens"
+                 follows="left|top|right"
+                 height="30"
+                 label="Disable teleport screens"
+                 layout="topleft"
+                 left="44"
+                 tool_tip="The dark teleport screen (the progress view) does not come down: the world stays in view while you teleport. What is still loading comes in with the materialize effect."
+                 top="556"
+                 width="499" />
+                <plus_ps_button_compat
+                 name="joystick_setup_button"
+                 follows="left|top"
+                 height="40"
+                 label="3Dconnexion devices"
+                 layout="topleft"
+                 left="44"
+                 top="592"
+                 width="260">
+                    <plus_ps_button_compat.commit_callback
+                     function="Floater.Show"
+                     parameter="pref_joystick" />
+                </plus_ps_button_compat>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

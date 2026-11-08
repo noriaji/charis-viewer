@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="chat" label="Chat de texto">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="chat_scroll">
+			<panel name="chat_scroll_panel">
+				<panel name="general_chat_settings">
+					<plus_ps_check_compat name="auto_complete_gestures" label="Auto completar los gestos en el chat cercano" />
+					<plus_ps_check_compat name="play_typing_animation" label="Ejecutar la animación de escribir al hacerlo en el chat" />
+					<plus_ps_check_compat name="bubble_text_chat" label="Bocadillos del chat" />
+					<plus_ps_text name="font_size">
+						Tamaño de la fuente:
+					</plus_ps_text>
+					<plus_ps_combo name="chat_font_size">
+						<plus_ps_combo.item name="Small" label="Pequeño" />
+						<plus_ps_combo.item name="Medium" label="Medio" />
+						<plus_ps_combo.item name="Large" label="Grande" />
+					</plus_ps_combo>
+				</panel>
+				<panel name="im_notification_settings">
+					<plus_ps_check_compat name="voice_call_friends_only_check" label="Sólo pueden llamarme o mandarme un MI mis amigos y grupos" />
+					<plus_ps_text name="friend_ims">
+						MI de amigos:
+					</plus_ps_text>
+					<plus_ps_combo name="FriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Abrir ventana de conversaciones" />
+						<plus_ps_combo.item name="PopUpMessage" label="Abrir el mensaje en una ventana emergente" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Botón de la barra de herramientas de Flash" />
+						<plus_ps_combo.item name="NoAction" label="Ninguna acción" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_friend_im" label="Reproducir sonido" />
+					<plus_ps_text name="non_friend_ims">
+						MI de no amigos:
+					</plus_ps_text>
+					<plus_ps_combo name="NonFriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Abrir ventana de conversaciones" />
+						<plus_ps_combo.item name="PopUpMessage" label="Abrir el mensaje en una ventana emergente" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Botón de la barra de herramientas de Flash" />
+						<plus_ps_combo.item name="NoAction" label="Ninguna acción" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_non_friend_im" label="Reproducir sonido" />
+					<plus_ps_text name="conference_ims">
+						MI de conferencias:
+					</plus_ps_text>
+					<plus_ps_combo name="ConferenceIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Abrir ventana de conversaciones" />
+						<plus_ps_combo.item name="PopUpMessage" label="Abrir el mensaje en una ventana emergente" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Botón de la barra de herramientas de Flash" />
+						<plus_ps_combo.item name="NoAction" label="Ninguna acción" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_conference_im" label="Reproducir sonido" />
+					<plus_ps_text name="group_chat">
+						Chat de grupo:
+					</plus_ps_text>
+					<plus_ps_combo name="GroupChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Abrir ventana de conversaciones" />
+						<plus_ps_combo.item name="PopUpMessage" label="Abrir el mensaje en una ventana emergente" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Botón de la barra de herramientas de Flash" />
+						<plus_ps_combo.item name="NoAction" label="Ninguna acción" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_group_chat_im" label="Reproducir sonido" />
+					<plus_ps_text name="nearby_chat">
+						Chat con gente cercana:
+					</plus_ps_text>
+					<plus_ps_combo name="NearbyChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Abrir ventana de conversaciones" />
+						<plus_ps_combo.item name="PopUpMessage" label="Abrir el mensaje en una ventana emergente" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="Botón de la barra de herramientas de Flash" />
+						<plus_ps_combo.item name="NoAction" label="Ninguna acción" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_nearby_chat_im" label="Reproducir sonido" />
+					<plus_ps_text name="object_ims">
+						MI de objetos:
+					</plus_ps_text>
+					<plus_ps_combo name="ObjectIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="Abrir ventana de conversaciones" />
+						<plus_ps_combo.item name="PopUpMessage" label="Abrir el mensaje en una ventana emergente" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="Botón de la barra de herramientas de Flash" />
+						<plus_ps_combo.item name="NoAction" label="Ninguna acción" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_object_im" label="Reproducir sonido" />
+					<plus_ps_text name="notifications_alert">
+						Para dejar de recibir avisos durante un tiempo, usa Comunicarme &gt; No molestar.
+					</plus_ps_text>
+				</panel>
+				<panel name="play_sound_settings">
+					<plus_ps_text name="play_sound">
+						Reproducir sonido:
+					</plus_ps_text>
+					<plus_ps_check_compat name="new_conversation" label="Nueva conversación" />
+					<plus_ps_check_compat name="teleport_offer" label="Oferta de teleporte" />
+					<plus_ps_check_compat name="incoming_voice_call" label="Llamada de voz entrante" />
+					<plus_ps_check_compat name="inventory_offer" label="Oferta de inventario" />
+				</panel>
+				<panel name="log_settings">
+					<plus_ps_text name="logging_label">
+						Guardar:
+					</plus_ps_text>
+					<plus_ps_combo name="conversation_log_combo">
+						<plus_ps_combo.item name="log_and_transcripts" label="Registro y transcripciones" />
+						<plus_ps_combo.item name="log_only" label="Solo registro" />
+						<plus_ps_combo.item name="no_log_or_transcript" label="Ni el registro ni las transcripciones" />
+					</plus_ps_combo>
+					<plus_ps_button_compat name="clear_log" label="Borrar registro..." />
+					<plus_ps_button_compat name="delete_transcripts" label="Borrar grabaciones..." />
+					<plus_ps_text name="log_location_label">
+						Ubicación:
+					</plus_ps_text>
+					<plus_ps_button_compat name="log_path_button" label="Examinar..." label_selected="Examinar" />
+				</panel>
+				<plus_ps_button_compat name="ok_btn" label="Traducción…" />
+				<plus_ps_button_compat name="autoreplace_showgui" label="Reemplazo automático..." />
+				<plus_ps_button_compat name="spellcheck_showgui" label="Revisión ortográfica..." />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

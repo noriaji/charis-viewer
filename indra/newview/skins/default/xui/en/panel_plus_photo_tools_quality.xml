@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The photo tools' page "quality" (floater_plus_photo_tools.xml, research/265).
+  Quality: the seven quality levels (phototools_blocks.cpp), then the rows of the tab.
+  The parts of content_quality are put under each other by the code in the order of their tops (the
+  hidden ones take no room); a block keeps its height, a column (rows_*) gets the height of its rows.
+  Blocks are 583 wide at 10, columns 597 at 0 (the content: the page less the scroll bar).
+-->
+<panel
+ name="page_quality"
+ background_visible="false"
+ follows="all"
+ height="688"
+ layout="topleft"
+ mouse_opaque="false"
+ width="612">
+    <scroll_container
+     name="scroll_quality"
+     border_visible="false"
+     follows="all"
+     height="688"
+     ignore_arrow_keys="true"
+     layout="topleft"
+     left="0"
+     opaque="false"
+     reserve_scroll_corner="false"
+     top="0"
+     width="612">
+        <panel
+         name="content_quality"
+         background_visible="false"
+         follows="left|top"
+         height="688"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="0"
+         width="597">
+            <panel
+             name="sec_qpreset"
+             background_visible="false"
+             follows="left|top"
+             height="52"
+             layout="topleft"
+             left="10"
+             top="0"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_qpreset"
+                 width="456">
+                    Graphics Quality Level
+                </text>
+                <button
+                 follows="left|top"
+                 font="SansSerifSmall"
+                 height="22"
+                 label="Low"
+                 layout="topleft"
+                 left="4"
+                 top="22"
+                 width="62"
+                 tab_stop="false"
+                 tool_tip="Low"
+                 name="btn_gl_low">
+                    <button.commit_callback
+                     function="Plus.Presets.SetLevel"
+                     parameter="0" />
+                </button>
+                <button
+                 follows="left|top"
+                 font="SansSerifSmall"
+                 height="22"
+                 label="Low-Mid"
+                 layout="topleft"
+                 left="68"
+                 top="22"
+                 width="62"
+                 tab_stop="false"
+                 tool_tip="Low-Mid"
+                 name="btn_gl_lowmid">
+                    <button.commit_callback
+                     function="Plus.Presets.SetLevel"
+                     parameter="1" />
+                </button>
+                <button
+                 follows="left|top"
+                 font="SansSerifSmall"
+                 height="22"
+                 label="Mid"
+                 layout="topleft"
+                 left="132"
+                 top="22"
+                 width="62"
+                 tab_stop="false"
+                 tool_tip="Mid"
+                 name="btn_gl_mid">
+                    <button.commit_callback
+                     function="Plus.Presets.SetLevel"
+                     parameter="2" />
+                </button>
+                <button
+                 follows="left|top"
+                 font="SansSerifSmall"
+                 height="22"
+                 label="Mid-High"
+                 layout="topleft"
+                 left="196"
+                 top="22"
+                 width="62"
+                 tab_stop="false"
+                 tool_tip="Mid-High: full OIT only; no other Charis feature on"
+                 name="btn_gl_midhigh">
+                    <button.commit_callback
+                     function="Plus.Presets.SetLevel"
+                     parameter="3" />
+                </button>
+                <button
+                 follows="left|top"
+                 font="SansSerifSmall"
+                 height="22"
+                 label="High"
+                 layout="topleft"
+                 left="260"
+                 top="22"
+                 width="62"
+                 tab_stop="false"
+                 tool_tip="High"
+                 name="btn_gl_high">
+                    <button.commit_callback
+                     function="Plus.Presets.SetLevel"
+                     parameter="4" />
+                </button>
+                <button
+                 follows="left|top"
+                 font="SansSerifSmall"
+                 height="22"
+                 label="High-Ultra"
+                 layout="topleft"
+                 left="324"
+                 top="22"
+                 width="62"
+                 tab_stop="false"
+                 tool_tip="High-Ultra"
+                 name="btn_gl_highultra">
+                    <button.commit_callback
+                     function="Plus.Presets.SetLevel"
+                     parameter="5" />
+                </button>
+                <button
+                 follows="left|top"
+                 font="SansSerifSmall"
+                 height="22"
+                 label="Ultra"
+                 layout="topleft"
+                 left="388"
+                 top="22"
+                 width="62"
+                 tab_stop="false"
+                 tool_tip="Ultra"
+                 name="btn_gl_ultra">
+                    <button.commit_callback
+                     function="Plus.Presets.SetLevel"
+                     parameter="6" />
+                </button>
+            </panel>
+            <panel name="rows_quality" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="52" width="597" />
+        </panel>
+    </scroll_container>
+</panel>

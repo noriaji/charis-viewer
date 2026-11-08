@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  A slider row of the detailed photo screen (plus/photoscreen/photodetail.cpp). The name and the range are set in the code.
+-->
+<panel
+ background_visible="false"
+ follows="left|right|top"
+ height="40"
+ layout="topleft"
+ name="plus_photoscreen_row"
+ width="260">
+    <text
+     type="string"
+     length="1"
+     follows="left|right|top"
+     font="SansSerifSmall"
+     height="14"
+     layout="topleft"
+     left="10"
+     right="-10"
+     top="3"
+     use_ellipses="true"
+     name="label">
+        Name
+    </text>
+    <slider
+     decimal_digits="0"
+     follows="left|right|top"
+     height="16"
+     increment="1"
+     label=""
+     label_width="0"
+     layout="topleft"
+     left="8"
+     right="-8"
+     top="19"
+     min_val="0"
+     max_val="100"
+     name="ctl"
+     show_text="true" />
+</panel>

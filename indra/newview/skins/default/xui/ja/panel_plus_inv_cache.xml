@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_inv_cache">
+	<button name="plus_inv_cache_clear" label="インベントリのキャッシュを消す" tool_tip="このアカウントのインベントリの控え（キャッシュ）を、次のログインの時に消します。インベントリを全部サーバーから読み直すので、ログインに時間がかかります。フォルダが空に見える、物が見つからない時に試してください。インベントリの中身は消えません。"/>
+</panel>

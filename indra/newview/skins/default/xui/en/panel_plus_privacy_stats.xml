@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The on/off box of the settings in the viewer statistics (plus/privacy, PlusSendSettingsStats),
+     in Preferences > Privacy under the block list. Included from panel_preferences_privacy.xml. -->
+<panel
+ background_visible="false"
+ border="false"
+ follows="left|top"
+ height="48"
+ layout="topleft"
+ name="plus_privacy_stats"
+ width="460">
+    <check_box
+     control_name="PlusSendSettingsStats"
+     follows="left|top"
+     height="16"
+     label="Send the settings I changed with the viewer statistics"
+     layout="topleft"
+     left="0"
+     name="plus_send_settings_stats"
+     tool_tip="Every viewer sends statistics (frame rate, hardware, how long you were logged in) to Second Life while you are logged in. Checked: the ones sent at logout and quit also hold the settings you changed from the default, which helps Linden Lab see what people use. Unchecked: no settings are sent; the rest of the statistics are."
+     top="0"
+     width="460" />
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="28"
+     layout="topleft"
+     left="18"
+     mouse_opaque="false"
+     name="plus_send_settings_stats_note"
+     text_color="LtGray_50"
+     top_pad="2"
+     width="440"
+     wrap="true">
+(Only on/off, number and color settings. Never text, places, devices, login details, keys or the Charis settings.)
+    </text>
+</panel>

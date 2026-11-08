@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- ja: the words only. Places and sizes come from en/panel_plus_photoscreen_right.xml (LLXMLNode::updateNode matches by name). -->
+<panel name="plus_photoscreen_right">
+    <string name="sec_camera">レンズ</string>
+    <string name="sec_exposure">露出と階調</string>
+    <string name="sec_color">カラーグレーディング</string>
+    <string name="sec_effects">エフェクト</string>
+    <string name="sec_output">出力</string>
+    <string name="focal">焦点距離</string>
+    <string name="focal_tip">35 mm カメラに置き換えたレンズの長さです。小さいと広角、大きいと望遠になります。画角と同じ設定です。</string>
+    <string name="fov">画角</string>
+    <string name="fov_tip">写る範囲の広さ（上下の角度）です。焦点距離と同じ設定です。</string>
+    <string name="aperture">絞り（F 値）</string>
+    <string name="aperture_tip">F 値です。小さいほど背景が大きくぼけます。被写界深度がオンの時だけ使えます。</string>
+    <string name="focus_mode">ピントの合わせ方</string>
+    <string name="focus_mode_tip">カメラがどこにピントを合わせるかです。ぼかすには被写界深度をオンにしてください。</string>
+    <string name="focus_auto">自動</string>
+    <string name="focus_cursor">マウスの位置</string>
+    <string name="focus_self">自分の顔</string>
+    <string name="focus_other">相手の顔</string>
+    <string name="focus_click">クリックした場所</string>
+    <string name="focus_frame_tip">画面にピント枠を出す</string>
+    <string name="focus_who">相手</string>
+    <string name="focus_who_tip">「相手の顔」のときに、ピントを合わせる人を近くの人から選びます</string>
+    <string name="focus_part">部位</string>
+    <string name="focus_click_start">クリックで場所を指定</string>
+    <string name="focus_click_stop">指定を終える（Esc）</string>
+    <string name="focus_click_tip">指定中は、世界をクリックするとそこにピントが合い、物はクリックに反応しません。もう一度クリックすると移ります。Esc かこのボタンで指定を終えます（ピントはそのまま残ります）。</string>
+    <string name="focus_distance">ピント距離</string>
+    <string name="focus_distance_tip">ピントが合っている所までの距離です（表示のみ）。</string>
+    <string name="no_distance">-</string>
+    <string name="focus_click_none">上のボタンで指定</string>
+    <string name="focus_click_waiting">世界をクリック</string>
+    <string name="focus_click_none_tip">ピントを合わせる場所がまだありません。「クリックで場所を指定」を押してから、世界の中の場所をクリックしてください。</string>
+    <string name="focus_click_waiting_tip">世界の中の場所をクリックすると、そこにピントが合います。Esc で指定を終えます。</string>
+    <string name="focus_distance_dof_tip">被写界深度がオンの時だけ表示します。</string>
+    <string name="sub_dof">被写界深度</string>
+    <string name="dof_tip">ピントの位置より手前や奥をぼかします。絞りとボケの強さに必要です。切り替えると描画を組み直すので、数秒止まります。</string>
+    <string name="bokeh">ボケの強さ</string>
+    <string name="bokeh_tip">ピントから離れた所のぼけを、どこまで大きくするかです。被写界深度がオンの時だけ使えます。</string>
+    <string name="exposure">露出</string>
+    <string name="exposure_tip">明るさを段（+1 で 2 倍の明るさ）で上げ下げします。</string>
+    <string name="contrast">コントラスト</string>
+    <string name="contrast_tip">明暗の差を強めたり弱めたりします。</string>
+    <string name="shadows">シャドウ</string>
+    <string name="shadows_tip">上げると影が明るく浮いてやわらかく、下げると影が濃くなります。</string>
+    <string name="clarity">明瞭度</string>
+    <string name="texture">質感</string>
+    <string name="grading_tip">カラーグレーディングのオン・オフです。もう一度オンにすると、最後のルックに戻ります。</string>
+    <string name="lut">ルック</string>
+    <string name="lut_tip">写真全体の色合い（LUT）です。</string>
+    <string name="look_strength">強さ</string>
+    <string name="look_strength_tip">ルックをどれだけ強く掛けるかです。0 で元の色、100 でルックをそのまま掛けます。</string>
+    <string name="lens_flare">レンズフレア</string>
+    <string name="cross_filter">クロスフィルター</string>
+    <string name="glare">グレア</string>
+    <string name="soft_glow">ふんわり光</string>
+    <string name="ssgi">間接光</string>
+    <string name="shafts">光の筋</string>
+    <string name="cloud_shafts">雲間の光の筋</string>
+    <string name="format">ファイル形式</string>
+    <string name="quality">JPEG の品質</string>
+    <string name="last_shot">最後の写真</string>
+    <string name="last_shot_tip">最後に撮った写真を開きます。</string>
+    <string name="open_folder">フォルダを開く</string>
+    <string name="open_folder_tip">写真を保存するフォルダを開きます。</string>
+    <string name="change_folder">保存先を変更…</string>
+    <string name="change_folder_tip">写真の保存先のフォルダを選びます。スナップショットウィンドウも同じフォルダを使います。</string>
+    <string name="save_dir">保存先: [DIR]</string>
+    <string name="save_dir_default">保存先（ピクチャフォルダ・未選択）: [DIR]</string>
+    <string name="save_dir_missing">保存先のフォルダが見つかりません。「保存先を変更…」で選び直してください。</string>
+    <string name="shutter_photo_tip">撮影</string>
+    <string name="shutter_360_tip">360° 撮影の窓を開く</string>
+    <plus_ps_box name="shutter">
+        <plus_ps_segment name="seg_mode" left_label="写真" right_label="360°" tool_tip="写真: シャッターで撮影します。360°: 360° 撮影の窓を開きます。" />
+        <plus_ps_shutter name="shutter_button" tool_tip="撮影" />
+        <plus_ps_icon_button name="ib_settings" tool_tip="撮影ツール" />
+        <plus_ps_label name="l_exit" label="F12 で撮影モードを抜ける" />
+    </plus_ps_box>
+</panel>

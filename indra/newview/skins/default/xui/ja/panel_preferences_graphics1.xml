@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel label="グラフィック" name="Display panel">
+	<text follows="top|left|right" height="16" layout="topleft" left="5" top="5" width="100">
+		使用中のプリセット：
+	</text>
+	<text name="preset_text">
+		（なし）
+	</text>
+	<text name="QualitySpeed">
+		品質と速度：
+	</text>
+	<text name="ShadersPrefText">
+		低
+	</text>
+	<text name="ShadersPrefText2">
+		中
+	</text>
+	<text name="ShadersPrefText3">
+		高
+	</text>
+	<text name="ShadersPrefText4">
+		最高
+	</text>
+	<text name="FasterText">
+		速度優先
+	</text>
+	<text name="BetterText">
+		品質優先
+	</text>
+	<icon name="LowGraphicsDivet"/>
+	<icon name="LowMidGraphicsDivet"/>
+	<icon name="MidGraphicsDivet"/>
+	<icon name="MidHighGraphicsDivet"/>
+	<icon name="HighGraphicsDivet"/>
+	<icon name="HighUltraGraphicsDivet"/>
+	<icon name="UltraGraphicsDivet"/>
+	<slider name="QualityPerformanceSelection"/>
+	<slider control_name="RenderFarClip" label="描画距離：" name="DrawDistance"/>
+	<text name="DrawDistanceMeterText2">
+		m
+	</text>
+	<check_box initial_value="true" label="大気（周辺）シェーダー" name="WindLightUseAtmosShaders"/>
+	<check_box initial_value="true" label="高度な光源モデル" name="UseLightShaders"/>
+	<button label="自動調整" name="AutoAdjustmentsButton"/>
+	<text name="AvatarComplexityModeLabel">
+		アバター表示：
+	</text>
+	<combo_box name="AvatarComplexityMode">
+		<combo_box.item label="複雑度で制限" name="0"/>
+		<combo_box.item label="フレンドは常に表示" name="1"/>
+		<combo_box.item label="フレンドのみ表示" name="2"/>
+	</combo_box>
+	<slider label="動くアバターの最大数：" name="IndirectMaxNonImpostors"/>
+	<slider label="明るさ（露出）" name="RenderExposure"/>
+	<!-- plus: shadowdist -->
+	<text name="PlusShadowDistanceLabel">
+		影の距離：
+	</text>
+	<combo_box name="PlusShadowDistance" tool_tip="太陽の影がどこまで届くか、遠くでもどれだけくっきり出るかを選びます。遠いほど、離れた人や家具の影まで出ます。「遠い」「とても遠い」は影を細かく描くので、ビデオメモリを多く使います。「撮影時にきれいにする」がオンなら、写真は常にいちばん遠くまで撮ります。">
+		<combo_box.item label="近い（96 m）" name="0"/>
+		<combo_box.item label="ふつう（192 m）" name="1"/>
+		<combo_box.item label="遠い（384 m）" name="2"/>
+		<combo_box.item label="とても遠い（512 m）" name="3"/>
+		<combo_box.item label="標準" name="official"/>
+	</combo_box>
+	<!-- /plus -->
+	<slider label="アバターの最大複雑度：" name="IndirectMaxComplexity" tool_tip="どの程度の複雑度で他のアバターをJellyDollとして描画するを設定します。"/>
+	<text name="IndirectMaxComplexityText">
+		0
+	</text>
+	<text name="IndirectMaxComplexityLink">
+		[https://community.secondlife.com/t5/Featured-News/Why-are-all-these-people-made-of-colored-jelly/ba-p/3031255 これはなんですか？]
+	</text>
+	<check_box label="フレンドは常に描画" name="AlwaysRenderFriends"/>
+	<button label="例外…" name="RenderExceptionsButton"/>
+	<!-- plus: shadowdist -->
+	<text name="PlusShadowPrecisionLabel">
+		影の細かさ：
+	</text>
+	<combo_box name="PlusShadowPrecision" tool_tip="細い影（脚・手すり・髪）が、遠くでもどれだけ残るかを選びます。細かいほど、遠くの細い影が痩せたり途切れたりしにくくなります。「細かい」「とても細かい」は影を細かく描くので、ビデオメモリを多く使います。「撮影時にきれいにする」がオンなら、写真は常にいちばん細かく撮ります。">
+		<combo_box.item label="ふつう" name="0"/>
+		<combo_box.item label="細かい" name="1"/>
+		<combo_box.item label="とても細かい" name="2"/>
+		<combo_box.item label="標準" name="official"/>
+	</combo_box>
+	<text name="PlusShadowSoftnessLabel">
+		影の硬さ：
+	</text>
+	<combo_box name="PlusShadowSoftness" tool_tip="太陽の影のふちを、くっきりさせるかやわらかくするかを選びます。写真でもこの選択のまま撮ります。変えても、使用中のプリセットは変わりません。">
+		<combo_box.item label="シャープ" name="0"/>
+		<combo_box.item label="ややシャープ" name="1"/>
+		<combo_box.item label="ふつう" name="2"/>
+		<combo_box.item label="ややソフト" name="3"/>
+		<combo_box.item label="ソフト" name="4"/>
+		<combo_box.item label="標準" name="official"/>
+	</combo_box>
+	<!-- /plus -->
+	<button label="設定をプリセットとして保存…" name="PrefSaveButton"/>
+	<button label="プリセットを読み込む…" name="PrefLoadButton"/>
+	<button label="プリセットを削除…" name="PrefDeleteButton"/>
+	<button label="プリセットを削除…" name="PrefDeleteButton"/>
+	<button label="推奨設定にリセット" name="Defaults"/>
+	<button label="詳細設定…" name="AdvancedSettings"/>
+</panel>

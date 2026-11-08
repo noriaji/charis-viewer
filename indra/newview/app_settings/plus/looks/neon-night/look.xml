@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Neon Night</string><key>ja</key><string>ネオンの夜</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Blue-violet shadows and magenta lights with firm contrast, for city nights.</string><key>ja</key><string>影は青紫、光は桃色寄り。コントラストは強め。夜の街に。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>170</integer>
+  </map>
+</llsd>

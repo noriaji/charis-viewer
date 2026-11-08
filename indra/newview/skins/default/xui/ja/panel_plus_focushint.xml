@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_focushint">
+	<panel.string name="first">ピントを合わせたい場所をクリック</panel.string>
+	<panel.string name="moved">次の場所をクリックで変更</panel.string>
+	<panel.string name="esc">·  Esc で終了</panel.string>
+</panel>

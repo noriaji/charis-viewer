@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="uploads" label="Karşıya Yüklemeler">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="uploads_scroll">
+			<panel name="uploads_scroll_panel">
+				<plus_ps_text name="title">
+					Karşıya yüklemeler için mevcut hedef klasörler
+				</plus_ps_text>
+				<plus_ps_text name="title_models">
+					Görüntüler
+				</plus_ps_text>
+				<plus_ps_text name="title_sounds">
+					Sesler
+				</plus_ps_text>
+				<plus_ps_text name="title_animation">
+					Animasyonlar
+				</plus_ps_text>
+				<plus_ps_text name="title_model">
+					Modeller
+				</plus_ps_text>
+				<plus_ps_text name="upload_help">
+					Bir hedef klasörü değiştirmek için, envanterde o klasöre sağ tıklayın ve şu öğeyi seçin: "Şunun için varsayılan olarak kullan:"
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

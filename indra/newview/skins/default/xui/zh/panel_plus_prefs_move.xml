@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_move.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="move_panel" label="移動">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="move_scroll">
+            <panel name="move_scroll_panel">
+                <plus_ps_slider_compat name="camera_fov" label="視角" />
+                <plus_ps_slider_compat name="camera_offset_scale" label="距離" />
+                <plus_ps_text name="heading2">
+                    自動位移：
+                </plus_ps_text>
+                <plus_ps_check_compat name="edit_camera_movement" label="建造 / 編輯" tool_tip="使用進入或離開編輯模式時自動調整攝影機位置功能" />
+                <plus_ps_check_compat name="appearance_camera_movement" label="編輯外觀" tool_tip="使用編輯模式時自動調整攝影機位置功能" />
+                <plus_ps_text name="keyboard_lbl">
+                    鍵盤：
+                </plus_ps_text>
+                <plus_ps_check_compat name="arrow_keys_move_avatar_check" label="總是使用方向鍵移動" />
+                <plus_ps_check_compat name="tap_tap_hold_to_run" label="連點按住後跑步" />
+                <plus_ps_text name="mouse_lbl">
+                    滑鼠：
+                </plus_ps_text>
+                <plus_ps_check_compat name="first_person_avatar_visible" label="將我顯示於第一人稱視角中" />
+                <plus_ps_text name=" Mouse Sensitivity">
+                    第一人稱視角滑鼠敏感度：
+                </plus_ps_text>
+                <plus_ps_check_compat name="invert_mouse" label="反轉" />
+                <plus_ps_text name="single_click_action_lbl">
+                    在土地上點按一下：
+                </plus_ps_text>
+                <plus_ps_combo name="single_click_action_combo">
+                    <plus_ps_combo.item name="0" label="無動作" />
+                    <plus_ps_combo.item name="1" label="移動至點按的地點" />
+                </plus_ps_combo>
+                <plus_ps_text name="double_click_action_lbl">
+                    在土地上點按兩下：
+                </plus_ps_text>
+                <plus_ps_combo name="double_click_action_combo">
+                    <plus_ps_combo.item name="0" label="無動作" />
+                    <plus_ps_combo.item name="1" label="移動至點按的地點" />
+                    <plus_ps_combo.item name="2" label="瞬間傳送至點按的地點" />
+                </plus_ps_combo>
+                <plus_ps_button_compat name="joystick_setup_button" label="其他設備" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

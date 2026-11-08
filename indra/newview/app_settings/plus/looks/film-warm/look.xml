@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Warm Film</string><key>ja</key><string>暖かいフィルム</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Gentle contrast, warm highlights and a little lift in the shadows, like a warm color negative.</string><key>ja</key><string>やわらかいコントラストで、明るい所は暖かく、影はほんの少し浮かせて。カラーネガのような優しい色。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>110</integer>
+  </map>
+</llsd>

@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Bring settings over from another viewer (plus/importsettings, research/143). Opened at the
+  first start (login screen), from Preferences > Setup and from Preferences > Charis.
+  [NAME] is a viewer's name; the numbers are counts.
+-->
+<floater
+ positioning="centered"
+ save_rect="false"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="false"
+ can_minimize="false"
+ can_close="true"
+ legacy_header_height="18"
+ height="500"
+ width="580"
+ layout="topleft"
+ name="plus_import_settings"
+ title="BRING SETTINGS OVER FROM ANOTHER VIEWER">
+    <floater.string name="intro_first">This is the first start of Charis Viewer. Bring your settings over from a viewer you have used? Its own files are only read, never changed.</floater.string>
+    <floater.string name="not_now">Start fresh</floater.string>
+    <floater.string name="none">No other viewer was found on this computer. If yours keeps its settings somewhere else (a portable install, another drive), choose its folder.</floater.string>
+    <floater.string name="not_viewer_folder">[FOLDER] holds no viewer settings (user_settings\settings.xml), or it is this viewer's own folder. Choose the folder that holds user_settings.</floater.string>
+    <floater.string name="confirm">The settings you chose are replaced by those of [NAME], and so are your key bindings if you chose them. What they replace is kept in user_settings (settings_before_import_, key_bindings_before_import_, colors_before_import_ and so on, with the date). Your saved logins, chat logs and other files stay; those you do not have yet are added. Go ahead?</floater.string>
+    <floater.string name="busy">The files of the last import are still being copied. Wait until it is done.</floater.string>
+    <floater.string name="logging_in">Logging in: the settings cannot be brought over now. Try again once you are in-world (or from the login screen).</floater.string>
+    <floater.string name="applying">Bringing the settings over... The viewer may stop for a while: the shaders are made again for the new settings.</floater.string>
+    <floater.string name="copying">The settings are brought over. Copying the files: [COPIED] of [TOTAL]... (you can go on meanwhile)</floater.string>
+    <floater.string name="done">From [NAME]: [SETTINGS] settings, [LOGINS] saved logins and [FILES] files were brought over.</floater.string>
+    <floater.string name="done_keys">The key bindings were replaced (the ones you had are kept in user_settings as key_bindings_before_import_ with the date).</floater.string>
+    <floater.string name="done_kept">[KEPT] files this viewer already had were left as they were.</floater.string>
+    <floater.string name="done_over">[OVER] files were too big or past the limit of one import (100,000 files, 2 GB) and were not copied; the log names them.</floater.string>
+    <floater.string name="done_errors">[ERRORS] things could not be brought over; the log has the details.</floater.string>
+    <floater.string name="restart">Some settings (the language, the size of the text, the graphics and the like) take effect at the next start.</floater.string>
+    <text
+     follows="left|top"
+     height="32"
+     layout="topleft"
+     left="12"
+     name="intro"
+     top="24"
+     width="556"
+     word_wrap="true">
+Choose the viewer to bring settings over from. Its own files are only read, never changed.
+    </text>
+    <scroll_list
+     column_padding="0"
+     commit_on_selection_change="true"
+     draw_heading="true"
+     follows="left|top"
+     height="112"
+     layout="topleft"
+     left="12"
+     multi_select="false"
+     name="sources"
+     top_pad="4"
+     width="556">
+        <scroll_list.columns
+         label="Viewer"
+         name="name"
+         width="170" />
+        <scroll_list.columns
+         label="Folder"
+         name="folder"
+         dynamic_width="true" />
+        <scroll_list.columns
+         label="Last used"
+         name="date"
+         width="110" />
+    </scroll_list>
+    <button
+     follows="left|top"
+     height="23"
+     label="Choose a folder..."
+     layout="topleft"
+     left="12"
+     name="btn_browse"
+     tool_tip="For a viewer that is not in the list: choose its folder (the one that holds user_settings)"
+     top_pad="6"
+     width="150" />
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left_pad="8"
+     name="browse_hint"
+     top_delta="4"
+     width="398">
+Not in the list? A portable install, another drive...
+    </text>
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="12"
+     name="what_label"
+     top_pad="10"
+     width="556">
+What to bring over:
+    </text>
+    <check_box
+     height="16"
+     initial_value="true"
+     label="General settings (chat, camera, movement, sound, colors, messages not to show again, ...)"
+     layout="topleft"
+     left="20"
+     name="chk_general"
+     top_pad="4"
+     width="548" />
+    <check_box
+     height="16"
+     initial_value="false"
+     label="Graphics settings, graphics presets and the window's size"
+     layout="topleft"
+     left="20"
+     name="chk_graphics"
+     tool_tip="Ticked for another Charis Viewer only: other viewers' graphics settings and presets were made for their own renderers. From a Charis Viewer, its own picture settings (ambient occlusion, glare, looks, ...) are graphics too"
+     top_pad="4"
+     width="548" />
+    <check_box
+     height="16"
+     initial_value="true"
+     label="Saved logins (user names and passwords; yours stay)"
+     layout="topleft"
+     left="20"
+     name="chk_logins"
+     top_pad="4"
+     width="548" />
+    <check_box
+     height="16"
+     initial_value="true"
+     label="Key bindings"
+     layout="topleft"
+     left="20"
+     name="chk_keys"
+     top_pad="4"
+     width="548" />
+    <check_box
+     height="16"
+     initial_value="true"
+     label="Settings of each account (toolbars, presets, volumes, ...)"
+     layout="topleft"
+     left="20"
+     name="chk_accounts"
+     top_pad="4"
+     width="548" />
+    <check_box
+     height="16"
+     initial_value="true"
+     label="Chat and IM logs"
+     layout="topleft"
+     left="20"
+     name="chk_chat"
+     top_pad="4"
+     width="548" />
+    <check_box
+     height="16"
+     initial_value="true"
+     label="Poses, environments, dictionaries and other saved files"
+     layout="topleft"
+     left="20"
+     name="chk_files"
+     top_pad="4"
+     width="548" />
+    <text_editor
+     follows="left|top"
+     height="72"
+     layout="topleft"
+     left="12"
+     max_length="4096"
+     name="status"
+     parse_urls="false"
+     trusted_content="false"
+     read_only="true"
+     top_pad="10"
+     width="556"
+     word_wrap="true" />
+    <button
+     follows="left|bottom"
+     height="23"
+     label="Bring over"
+     layout="topleft"
+     left="12"
+     name="btn_import"
+     top_pad="10"
+     width="140" />
+    <button
+     follows="left|bottom"
+     height="23"
+     label="Close"
+     layout="topleft"
+     left_pad="8"
+     name="btn_close"
+     tool_tip="Closes this. You can open it again from Preferences > Setup."
+     top_delta="0"
+     width="140" />
+</floater>

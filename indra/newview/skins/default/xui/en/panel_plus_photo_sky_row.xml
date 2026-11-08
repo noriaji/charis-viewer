@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  A row of the favorite and recent lists of skies or water settings (plus/photomode/phototoolsfloater.cpp): a grip to
+  drag it by, the star, a water's dot of colour, the name (press it to put the sky or water on), the folder it
+  is in, and "Remove" when the item cannot be found. The texts and the dot's colour are set in the code.
+-->
+<panel
+ background_visible="false"
+ follows="left|right|top"
+ height="26"
+ layout="topleft"
+ name="plus_photo_sky_row"
+ width="400">
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="3"
+     top="6"
+     width="14"
+     name="grip"
+     tool_tip="Drag to put it in another place">
+        ::
+    </text>
+    <button
+     follows="left|top"
+     height="16"
+     image_selected="Favorite_Star_Active"
+     image_unselected="Favorite_Star_Off"
+     is_toggle="true"
+     label=""
+     layout="topleft"
+     left="18"
+     top="5"
+     width="16"
+     name="star"
+     tool_tip="Add to or take out of the favorites" />
+    <panel
+     background_visible="true"
+     follows="left|top"
+     height="10"
+     layout="topleft"
+     left="38"
+     top="8"
+     width="10"
+     visible="false"
+     name="swatch"
+     tool_tip="The color of the water (its fog)" />
+    <button
+     follows="left|right|top"
+     halign="left"
+     height="20"
+     label="Name"
+     layout="topleft"
+     left="52"
+     right="-118"
+     top="3"
+     name="apply" />
+    <text
+     type="string"
+     length="1"
+     follows="right|top"
+     font="SansSerifSmall"
+     height="14"
+     layout="topleft"
+     right="-60"
+     top="7"
+     width="54"
+     name="folder"
+     text_color="LtGray">
+        Folder
+    </text>
+    <button
+     follows="right|top"
+     height="20"
+     label="Remove"
+     layout="topleft"
+     right="-4"
+     top="3"
+     width="54"
+     name="unpin" />
+</panel>

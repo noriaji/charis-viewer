@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="Zaawansowane">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_spinner name="cachesizespinner" label="Rozmiar (256 - 9984 MB)" />
+				<plus_ps_button_compat name="clear_cache" label="Wyczyść" label_selected="Wyczyść" />
+				<plus_ps_text name="Cache location">
+					Położenie buforu pamięci podręcznej:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_cache" label="Przeglądaj" label_selected="Przeglądaj" />
+				<plus_ps_button_compat name="default_cache_location" label="Domyślne" label_selected="Domyślne" />
+				<plus_ps_text name="UI Size:">
+					Rozmiar interfejsu:
+				</plus_ps_text>
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="Zezwól na wiele Przeglądarek" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="Zezwól na logowanie do innych siatek" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="Pokaż menu Zaawansowane" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="Pokaż menu Programista" />
+				<plus_ps_button_compat name="default_creation_permissions" label="Domyślne uprawnienia tworzenia" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

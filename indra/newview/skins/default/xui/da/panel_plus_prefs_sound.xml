@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_sound.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="Preference Media panel" label="Lyde">
+    <panel.string name="middle_mouse">
+        Midterste museknap
+    </panel.string>
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="sound_scroll">
+            <panel name="sound_scroll_panel">
+                <plus_ps_slider_compat name="System Volume" label="Generel" />
+                <plus_ps_slider_compat name="UI Volume" label="Knapper" />
+                <plus_ps_slider_compat name="Wind Volume" label="Omgivelser" />
+                <plus_ps_slider_compat name="SFX Volume" label="Lyd effekter" />
+                <plus_ps_slider_compat name="Music Volume" label="Musik" />
+                <plus_ps_check_compat name="enable_music" label="Aktiveret" />
+                <plus_ps_slider_compat name="Media Volume" label="Media" />
+                <plus_ps_check_compat name="enable_media" label="Aktiveret" />
+                <plus_ps_slider_compat name="Voice Volume" label="Stemme chat" />
+                <plus_ps_check_compat name="enable_voice_check" label="Aktiveret" />
+                <plus_ps_check_compat name="media_show_on_others_btn" label="Afspil media vedhæftet andre avatarer" tool_tip="Deaktiver dette for at skjule vedhæftet media for avatarer i nærheden" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

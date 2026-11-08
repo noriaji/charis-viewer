@@ -1,0 +1,643 @@
+# The build and packaging of a Charis Viewer release, called by release.yml only
+# (workflow_call: it has no trigger of its own).
+#
+# Three jobs, one after the other:
+#   build    from the checkout to the checked release build. It makes the symbols zip
+#            (the pdb files stay here) and hands the rest of what the release is made
+#            from (the release files without the shader bundle, the file list, the stamp,
+#            the vpk arguments and the Setup.exe's icon they name: job-handoff.py's tar,
+#            about 0.7 GB) and the symbols zip
+#            to the next jobs as artifacts kept for 1 day, with their SHA-256 as job
+#            outputs.
+#   bake     the shader bundle, baked by the viewer on Mesa's lavapipe (third-party code)
+#            in a job of its own: it checks out the bake tools only (no packaging tool),
+#            has no secret, and hands over only the bundle and its manifest (data).
+#   package  takes the build's tar and symbols zip, checked by the SHA-256 the build job
+#            gave (so nothing the bake job did can change them), reads the bundle back
+#            without running anything in it (shaderbundle.py check), and makes the release
+#            assets. Mesa never runs here. For a tag the assets (about 1.3 GB) go to the
+#            publish job of release.yml as a workflow artifact kept for 1 day.
+# The build folder (about 9 GB) is never handed between jobs.
+#
+# Permissions: contents: read only, in every job and for a tag too. Nothing that runs
+# here (the build, the packages it fetches, Mesa, vpk, the Vulkan SDK installer) can
+# write to the repository or its releases: that is the publish job's, which runs none
+# of it. No step overwrites an artifact (no overwrite: true). Code that takes this run's
+# artifact token (Mesa in the bake job could) can still delete an artifact and upload
+# another under its name, before or after its job: so whatever crosses into a trusted job
+# is checked by a SHA-256 that its maker gave as a job output, which no other job can
+# write (build -> bake and package: the tar and the symbols zip; package -> publish:
+# SHA256SUMS.txt, and through it every asset).
+#
+# Expressions (${{ }}) never appear inside run: scripts; values reach the
+# scripts through environment variables, and the tag is checked before use.
+# Every action is GitHub's own, pinned by commit SHA.
+
+name: Build and package
+
+on:
+  workflow_call:
+    inputs:
+      publish:
+        description: 'true: a tag build whose assets go to the publish job; false: a test build'
+        type: boolean
+        required: true
+    outputs:
+      tag:
+        description: 'the tag (a test build: a tag-like name)'
+        value: ${{ jobs.package.outputs.tag }}
+      version:
+        description: 'the version in the asset names'
+        value: ${{ jobs.package.outputs.version }}
+      bundle:
+        description: 'yes when the shader bundle is in the release'
+        value: ${{ jobs.package.outputs.bundle }}
+      artifact:
+        description: 'the name of the artifact with the release assets (a tag build)'
+        value: ${{ jobs.package.outputs.artifact }}
+      sums_sha256:
+        description: 'the SHA-256 of the SHA256SUMS.txt among those assets'
+        value: ${{ jobs.package.outputs.sums_sha256 }}
+
+env:
+  # The Vulkan SDK the releases are built with (setup-deps.py VULKAN_SDK_VERSION; the
+  # first step checks that the two agree).
+  VULKAN_SDK_VERSION: 1.4.363.0
+  # vpk, the Velopack packaging tool (NuGet). Its version must match the Velopack
+  # library the viewer links (autobuild.xml: secondlife-3p/3p-velopack v1.2.161, built
+  # from Velopack 92d6a1c). Velopack's tag 1.2.161 is that commit, and vpk 1.2.161 on
+  # NuGet is its release (published 2026-09-29).
+  VPK_VERSION: 1.2.161
+  # base64 of the SHA-512 of vpk.<VPK_VERSION>.nupkg (NuGet's package hash, from the
+  # nuget.org catalog entry; the same as the hash of the nupkg itself). Empty: a test
+  # build prints it with a warning; a tag build stops.
+  VPK_NUPKG_SHA512: 'NZ9I8Fbwlz4bHPlxvWeGKx3TXCEUf4AdPHhUHidppgM3CKVt1bGAHHrdBjCjY0S1uokpl60vA889wAzO2/ixmw=='
+  BUILD_NAME: build-vc170-64-release
+  RELEASE_TOOLS: indra/newview/plus/building/release
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: '1'
+  PUBLISH: ${{ inputs.publish }}
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 330
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.handoff.outputs.tag }}
+      version: ${{ steps.handoff.outputs.version }}
+      runner_image: ${{ steps.handoff.outputs.runner_image }}
+      build_artifact: ${{ steps.handoff.outputs.build_artifact }}
+      build_tar_sha256: ${{ steps.handoff.outputs.build_tar_sha256 }}
+      symbols: ${{ steps.handoff.outputs.symbols }}
+      symbols_artifact: ${{ steps.handoff.outputs.symbols_artifact }}
+      symbols_sha256: ${{ steps.handoff.outputs.symbols_sha256 }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Disk space and machine
+        shell: pwsh
+        run: |
+          Get-PSDrive -PSProvider FileSystem | Format-Table Name, @{n='FreeGB';e={[math]::Round($_.Free / 1GB, 1)}}, @{n='UsedGB';e={[math]::Round($_.Used / 1GB, 1)}}
+          "logical processors: $env:NUMBER_OF_PROCESSORS, image: $env:ImageOS $env:ImageVersion"
+
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      # vpk runs in the package job, after the build; its pins are checked here, before
+      # hours of building.
+      - name: Paths, tag and version
+        run: |
+          set -euo pipefail
+          tmp=$(cygpath -m "$RUNNER_TEMP")
+          printf '%s=%s\n' DEPS "$tmp/charis-deps" HANDOFF "$tmp/charis-handoff" >> "$GITHUB_ENV"
+          grep -qx "VULKAN_SDK_VERSION = '$VULKAN_SDK_VERSION'" "$RELEASE_TOOLS/setup-deps.py" \
+            || { echo "::error::VULKAN_SDK_VERSION ($VULKAN_SDK_VERSION) is not setup-deps.py's"; exit 1; }
+          grep -qx "VULKAN_RT_SDK = '$VULKAN_SDK_VERSION'" "$RELEASE_TOOLS/bake-shaders-ci.py" \
+            || { echo "::error::VULKAN_SDK_VERSION ($VULKAN_SDK_VERSION) is not bake-shaders-ci.py's VULKAN_RT_SDK (its VulkanRT.exe hash)"; exit 1; }
+          case "$VPK_VERSION" in
+            ''|TODO*) echo "::error::VPK_VERSION is not set: pin the vpk version that matches the viewer's Velopack library (BUILDING.md, Release workflow)"; exit 1 ;;
+          esac
+          if [ "$PUBLISH" = true ] && [ -z "$VPK_NUPKG_SHA512" ]; then
+            echo "::error::VPK_NUPKG_SHA512 is not set: a release uses a vpk pinned by hash"; exit 1
+          fi
+          [ -f indra/newview/plus/version/build-number.txt ] \
+            || { echo "::error::no indra/newview/plus/version/build-number.txt (the build number of a checkout without the history)"; exit 1; }
+          info() { python -I "$RELEASE_TOOLS/release-info.py" "$@"; }
+          if [ "$PUBLISH" = true ]; then
+            case "$GITHUB_REF" in
+              refs/tags/v*) tag="$GITHUB_REF_NAME" ;;
+              *) echo "::error::a release is made from a v* tag only, not $GITHUB_REF"; exit 1 ;;
+            esac
+            project=$(info project-url)
+            [ "$project" = "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY" ] \
+              || { echo "::error::PROJECT_URL in independence.h ($project) is not this repository: the update feed would point elsewhere"; exit 1; }
+          else
+            # A test build: a tag-like name for the assets (not a real tag; nothing is released).
+            v=$(info version)
+            case "$v" in *-*) tag="v$v.test$GITHUB_RUN_NUMBER" ;; *) tag="v$v-test$GITHUB_RUN_NUMBER" ;; esac
+          fi
+          # tag-version checks the tag's form (it goes into file names and feed addresses).
+          version=$(info tag-version "$tag")
+          printf '%s=%s\n' TAG "$tag" VERSION "$version" >> "$GITHUB_ENV"
+          echo "tag $tag, version $version, publish $PUBLISH"
+
+      - name: Restore the autobuild packages
+        id: autobuild-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/charis-deps/autobuild-cache
+          key: autobuild-packages-${{ hashFiles('autobuild.xml') }}
+          restore-keys: autobuild-packages-
+
+      - name: Restore the Vulkan SDK
+        id: vulkan-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/charis-deps/VulkanSDK/${{ env.VULKAN_SDK_VERSION }}
+          key: vulkan-sdk-${{ env.VULKAN_SDK_VERSION }}-v1
+
+      # From LunarG's own address, with curl as it is (no other user agent, no extra
+      # parameters). setup-deps.py checks the installer's size and SHA-256 (the one
+      # LunarG publishes) before running it. When LunarG refuses the download (HTTP 403)
+      # there is no way around it here: a run whose cache still holds the checked SDK
+      # (the step above; setup-deps.py checks it file by file) does not download at all.
+      - name: Fetch the Vulkan SDK installer
+        if: steps.vulkan-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          url=$(python -I "$RELEASE_TOOLS/setup-deps.py" --print-vulkan-url)
+          file="$DEPS/downloads/${url##*/}"
+          mkdir -p "$DEPS/downloads"
+          rc=0
+          code=$(curl --proto '=https' --proto-redir '=https' --tlsv1.2 --location --silent --show-error --retry 3 \
+                      --max-filesize 400000000 --output "$file" --write-out '%{http_code}' "$url") || rc=$?
+          if [ "$rc" != 0 ] || [ "$code" != 200 ]; then
+            rm -f "$file"
+            echo "::error::fetching $url: curl exit $rc, HTTP ${code:-none}; and no checked Vulkan SDK is in the cache (key vulkan-sdk-$VULKAN_SDK_VERSION-v1). Run again later; see BUILDING.md, Release workflow."
+            exit 1
+          fi
+          printf '%s=%s\n' VULKAN_INSTALLER "$file" >> "$GITHUB_ENV"
+
+      - name: Fetch and check the build dependencies
+        run: |
+          set -euo pipefail
+          installer=()
+          [ -z "${VULKAN_INSTALLER:-}" ] || installer=(--vulkan-installer "$VULKAN_INSTALLER")
+          python -I "$RELEASE_TOOLS/setup-deps.py" --deps "$DEPS" "${installer[@]}"
+          rm -f "${VULKAN_INSTALLER:-/nonexistent}"
+
+      # Caches are written only by these runs (a tag or a manual run: release.yml has
+      # no other trigger; the condition repeats it in case one is added). A tag's run
+      # restores what a manual run on the default branch saved; what a tag's run saves
+      # serves re-runs of that tag only. So a manual run on the default branch shortly
+      # before tagging fills the caches (entries unused for 7 days are dropped).
+      - name: Save the Vulkan SDK
+        if: steps.vulkan-cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v'))
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/charis-deps/VulkanSDK/${{ env.VULKAN_SDK_VERSION }}
+          key: vulkan-sdk-${{ env.VULKAN_SDK_VERSION }}-v1
+
+      - name: Build (configure, build, release check)
+        timeout-minutes: 270
+        run: |
+          set -euo pipefail
+          . "$DEPS/env.sh"
+          indra/newview/plus/building/charis-build.sh --build-dir "$BUILD_NAME" --velopack on -- --accept-number-file
+
+      - name: Save the autobuild packages
+        if: steps.autobuild-cache.outputs.cache-hit != 'true' && (github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v'))
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/charis-deps/autobuild-cache
+          key: autobuild-packages-${{ hashFiles('autobuild.xml') }}
+
+      - name: Free the build intermediates
+        run: |
+          set -euo pipefail
+          # Objects and precompiled headers: not packaged, the check has run.
+          find "$BUILD_NAME" -type f \( -name '*.obj' -o -name '*.pch' -o -name '*.ilk' -o -name '*.iobj' -o -name '*.ipdb' \) -delete
+          df -h . "$RUNNER_TEMP" || true
+
+      # The symbols zip is made here (the pdb files never leave this job). The rest of what
+      # the release is made from goes to the bake and package jobs as one tar
+      # (job-handoff.py: the listed release files without a shader bundle, the list, the
+      # stamp, velopack-pack.json and the icon it names (as charis-velopack/icon.ico:
+      # releasecommon.py VELOPACK_ICON_REL, which the vpk step below passes to --icon),
+      # what the build record quotes, and the Vulkan SDK's
+      # runtime installer for the bake job). Their SHA-256 are job outputs: the package
+      # job takes the files only when they are these.
+      - name: Symbols zip and the build's tar
+        id: handoff
+        run: |
+          set -euo pipefail
+          . "$DEPS/env.sh"      # VULKAN_SDK: its Helpers/VulkanRT.exe goes into the tar
+          python -I "$RELEASE_TOOLS/make-release-zip.py" --build-dir "$BUILD_NAME" --out "$HANDOFF" \
+            --commit "$GITHUB_SHA" --tag "$TAG" --velopack on --symbols-only
+          python -I "$RELEASE_TOOLS/job-handoff.py" pack --build-dir "$BUILD_NAME" --out "$HANDOFF/charis-build.tar" \
+            --vulkan-sdk "${VULKAN_SDK:-}"
+          symbols="CharisViewer-$VERSION-win64-symbols.zip"
+          [ -f "$HANDOFF/$symbols" ] || { echo "::error::no $symbols"; exit 1; }
+          printf '%s=%s\n' tag "$TAG" version "$VERSION" runner_image "${ImageOS:-?} ${ImageVersion:-?}" \
+            build_artifact "charis-build-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            build_tar_sha256 "$(sha256sum < "$HANDOFF/charis-build.tar" | cut -d' ' -f1)" \
+            symbols "$symbols" symbols_artifact "charis-symbols-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            symbols_sha256 "$(sha256sum < "$HANDOFF/$symbols" | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          ls -l "$HANDOFF"
+
+      - name: Hand the build to the bake and package jobs
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.handoff.outputs.build_artifact }}
+          path: ${{ runner.temp }}/charis-handoff/charis-build.tar
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Hand the symbols zip to the package job
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.handoff.outputs.symbols_artifact }}
+          path: ${{ runner.temp }}/charis-handoff/${{ steps.handoff.outputs.symbols }}
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+  # The shader bundle (research/159: shaders.vkb made from this exe), baked on Mesa's
+  # lavapipe, a software Vulkan driver (research/312), on this job's own throwaway runner:
+  # the bake tools only (a sparse checkout), no secret, a read-only token. bake-shaders-ci.py
+  # checks Mesa by SHA-256, registers it for the Vulkan loader on this runner only
+  # (--register-icd) and checks that its copy of the build is untouched by the bake. What
+  # leaves this job is the bundle and its manifest, which the package job reads back before
+  # use. Exit 3 (this copy changed while Mesa ran, or holds a Mesa file) stops every build;
+  # any other failure stops a release, and a test build goes on without the bundle. Three
+  # vendors at up to 35 minutes each fit the step's 120.
+  bake:
+    needs: build
+    runs-on: windows-2022
+    timeout-minutes: 150
+    permissions:
+      contents: read
+    outputs:
+      bundle: ${{ steps.bake.outputs.bundle }}
+      artifact: ${{ steps.bake.outputs.artifact }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUILD_TAR_SHA256: ${{ needs.build.outputs.build_tar_sha256 }}
+    steps:
+      - name: Check out the bake tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            indra/newview/plus/building/release/bake-shaders-ci.py
+            indra/newview/plus/building/release/bake-shaders-ci.sh
+            indra/newview/plus/building/release/job-handoff.py
+            indra/newview/plus/building/release/releasecommon.py
+            indra/newview/plus/building/release/shaderbundle.py
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      - name: Take the build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.build.outputs.build_artifact }}
+          path: ${{ runner.temp }}/charis-build-in
+
+      - name: Unpack the build
+        run: |
+          set -euo pipefail
+          tmp=$(cygpath -m "$RUNNER_TEMP")
+          python -I "$RELEASE_TOOLS/job-handoff.py" unpack "$tmp/charis-build-in/charis-build.tar" \
+            --sha256 "$BUILD_TAR_SHA256" --into "$tmp/charis-handoff"
+          rm -f "$tmp/charis-build-in/charis-build.tar"
+          printf '%s=%s\n' BUILD "$tmp/charis-handoff/build" WORK "$tmp/charis-bake" OUT "$tmp/charis-bundle" >> "$GITHUB_ENV"
+          if [ -d "$tmp/charis-handoff/vulkan-sdk" ]; then
+            printf '%s=%s\n' VULKAN_SDK "$tmp/charis-handoff/vulkan-sdk" >> "$GITHUB_ENV"
+          fi
+
+      - name: Shader bundle
+        id: bake
+        timeout-minutes: 120
+        run: |
+          set -euo pipefail
+          rc=0
+          bash "$RELEASE_TOOLS/bake-shaders-ci.sh" --build-dir "$BUILD" --work "$WORK" --bundle-out "$OUT/shaders.vkb" \
+            --register-icd --install-vulkan-runtime --timeout-minutes 35 || rc=$?
+          if [ "$rc" = 3 ]; then
+            rm -f "$OUT/shaders.vkb"
+            echo "::error::this job's copy of the build changed while Mesa ran, or holds a Mesa file: no bundle, nothing of this build is packed (see the charis-bake artifact)"
+            exit 1
+          fi
+          if [ "$rc" != 0 ]; then
+            rm -f "$OUT/shaders.vkb"
+            if [ "$PUBLISH" = true ]; then
+              echo "::error::the shader bake failed: see this step and the charis-bake artifact"
+              exit 1
+            fi
+            echo "::warning::the shader bake failed: this test build has no shader bundle"
+          fi
+          if [ -f "$OUT/shaders.vkb" ]; then
+            cp "$WORK/bundle-manifest.tsv" "$OUT/bundle-manifest.tsv"
+            printf '%s=%s\n' bundle yes artifact "charis-bundle-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+          else
+            printf '%s=%s\n' bundle no artifact none >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Hand the shader bundle to the package job
+        if: steps.bake.outputs.bundle == 'yes'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.bake.outputs.artifact }}
+          path: |
+            ${{ runner.temp }}/charis-bundle/shaders.vkb
+            ${{ runner.temp }}/charis-bundle/bundle-manifest.tsv
+          retention-days: 1
+          if-no-files-found: error
+
+      # What the bake used and made, and the viewer's logs (runner paths only), for
+      # checking a run; kept 3 days.
+      - name: Keep the shader bake record
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: charis-bake-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/charis-bake/bake-record.txt
+            ${{ runner.temp }}/charis-bake/bundle-manifest.tsv
+            ${{ runner.temp }}/charis-bake/vulkaninfo-summary.txt
+            ${{ runner.temp }}/charis-bake/out/report-*.txt
+            ${{ runner.temp }}/charis-bake/out/viewer-*.log
+          retention-days: 3
+          if-no-files-found: ignore
+
+  package:
+    needs: [build, bake]
+    runs-on: windows-2022
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    outputs:
+      tag: ${{ steps.facts.outputs.tag }}
+      version: ${{ steps.facts.outputs.version }}
+      bundle: ${{ steps.facts.outputs.bundle }}
+      artifact: ${{ steps.facts.outputs.artifact }}
+      sums_sha256: ${{ steps.sums.outputs.sums_sha256 }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
+      VERSION: ${{ needs.build.outputs.version }}
+      BUILD_RUNNER_IMAGE: ${{ needs.build.outputs.runner_image }}
+      BUILD_TAR_SHA256: ${{ needs.build.outputs.build_tar_sha256 }}
+      SYMBOLS: ${{ needs.build.outputs.symbols }}
+      SYMBOLS_SHA256: ${{ needs.build.outputs.symbols_sha256 }}
+      # The bake job's outputs are not trusted (Mesa ran there): only bundle=yes with an
+      # artifact named by that job's rule for this run, or bundle=no (a test build only).
+      BAKE_BUNDLE: ${{ needs.bake.outputs.bundle }}
+      BAKE_ARTIFACT: ${{ needs.bake.outputs.artifact }}
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.12'
+
+      # The bake job's outputs are printed only through `safe` (letters, digits, . _ -): a
+      # value from there cannot start a workflow command or a new line.
+      - name: Paths and what the other jobs handed over
+        run: |
+          set -euo pipefail
+          safe() { printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '?' | head -c 80; }
+          tmp=$(cygpath -m "$RUNNER_TEMP")
+          printf '%s=%s\n' DEPS "$tmp/charis-deps" DIST "$tmp/charis-dist" STAGE "$tmp/charis-stage" \
+            HANDOFF "$tmp/charis-handoff" BUILD "$tmp/charis-handoff/build" BUNDLE_IN "$tmp/charis-bundle-in" >> "$GITHUB_ENV"
+          version=$(python -I "$RELEASE_TOOLS/release-info.py" tag-version "$TAG")
+          [ "$version" = "$VERSION" ] || { echo "::error::the build job says version $VERSION for $TAG, not $version"; exit 1; }
+          [ "$SYMBOLS" = "CharisViewer-$VERSION-win64-symbols.zip" ] || { echo "::error::the build job names its symbols zip $SYMBOLS"; exit 1; }
+          case "$BAKE_BUNDLE" in
+            yes)
+              [[ "$BAKE_ARTIFACT" =~ ^charis-bundle-${GITHUB_RUN_ID}-[0-9]+$ ]] \
+                || { echo "::error::the bake job names its artifact $(safe "$BAKE_ARTIFACT")"; exit 1; }
+              printf '%s=%s\n' BUNDLE_ARTIFACT "$BAKE_ARTIFACT" >> "$GITHUB_ENV" ;;
+            no)
+              [ "$PUBLISH" != true ] || { echo "::error::the bake job made no shader bundle: a release needs one"; exit 1; } ;;
+            *)
+              echo "::error::the bake job says bundle=$(safe "$BAKE_BUNDLE")"; exit 1 ;;
+          esac
+          echo "tag $TAG, version $VERSION, publish $PUBLISH, shader bundle from the bake job: $BAKE_BUNDLE"
+
+      # The bundle comes from the job where Mesa ran, so it is taken first, before anything
+      # this job packs is on the disk: then the folders the packing uses must still be new
+      # (nothing was written there while it was unpacked) and the checkout untouched.
+      # download-artifact v4.1.3 and later keep an artifact's files inside its folder
+      # (CVE-2024-42471); these checks are the second line.
+      - name: Take the shader bundle
+        if: env.BUNDLE_ARTIFACT != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ env.BUNDLE_ARTIFACT }}
+          path: ${{ runner.temp }}/charis-bundle-in
+
+      # Exactly its two plain files, then read back without running anything in it
+      # (shaderbundle.py check: size, form, keys in place, the SPIR-V allow list, the
+      # reflections and GL views, this commit, the manifest). Its SHA-256 is kept: the copy
+      # put into the build is checked against it.
+      - name: Check the shader bundle
+        run: |
+          set -euo pipefail
+          changed=$(git status --porcelain --untracked-files=all)
+          [ -z "$changed" ] || { echo "::error::the checkout changed while the bundle was taken"; exit 1; }
+          for d in "$HANDOFF" "$DIST" "$STAGE" "$DEPS"; do
+            [ ! -e "$d" ] || { echo "::error::$d is there before this job made it"; exit 1; }
+          done
+          if [ -z "${BUNDLE_ARTIFACT:-}" ]; then
+            printf '%s=%s\n' BUNDLE no BUNDLE_SHA256 none >> "$GITHUB_ENV"
+            echo "::warning::this build has no shader bundle: the first start compiles every shader (about a minute)"
+            exit 0
+          fi
+          found=$(find "$BUNDLE_IN" -mindepth 1 -printf '%y %P\n' | sort | tr '\n' ';')
+          [ "$found" = "f bundle-manifest.tsv;f shaders.vkb;" ] \
+            || { echo "::error::the bundle artifact is not exactly shaders.vkb and bundle-manifest.tsv"; exit 1; }
+          python -I "$RELEASE_TOOLS/shaderbundle.py" check "$BUNDLE_IN/shaders.vkb" --commit "$GITHUB_SHA" \
+            --manifest "$BUNDLE_IN/bundle-manifest.tsv" || { echo "::error::the shader bundle is not sound: not packed"; exit 1; }
+          printf '%s=%s\n' BUNDLE yes BUNDLE_SHA256 "$(sha256sum < "$BUNDLE_IN/shaders.vkb" | cut -d' ' -f1)" >> "$GITHUB_ENV"
+
+      - name: Take the build
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.build.outputs.build_artifact }}
+          path: ${{ runner.temp }}/charis-build-in
+
+      - name: Take the symbols zip
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.build.outputs.symbols_artifact }}
+          path: ${{ runner.temp }}/charis-symbols-in
+
+      # The tar and the symbols zip only when they are what the build job made (its outputs:
+      # no other job can write them); the checked bundle copied in and checked again by its
+      # SHA-256.
+      - name: Unpack the build and put the shader bundle in place
+        run: |
+          set -euo pipefail
+          tmp=$(cygpath -m "$RUNNER_TEMP")
+          python -I "$RELEASE_TOOLS/job-handoff.py" unpack "$tmp/charis-build-in/charis-build.tar" \
+            --sha256 "$BUILD_TAR_SHA256" --into "$HANDOFF"
+          rm -f "$tmp/charis-build-in/charis-build.tar"
+          got=$(sha256sum < "$tmp/charis-symbols-in/$SYMBOLS" | cut -d' ' -f1)
+          [ "$got" = "$SYMBOLS_SHA256" ] \
+            || { echo "::error::$SYMBOLS has SHA-256 $got, not the $SYMBOLS_SHA256 the build job gave"; exit 1; }
+          mkdir "$DIST"
+          mv "$tmp/charis-symbols-in/$SYMBOLS" "$DIST/$SYMBOLS"
+          target="$BUILD/newview/RelWithDebInfo/app_settings/vk_shader_bundle/shaders.vkb"
+          [ ! -e "$target" ] || { echo "::error::the build handed over a shader bundle of its own"; exit 1; }
+          if [ "$BUNDLE" = yes ]; then
+            mkdir -p "$(dirname "$target")"
+            cp "$BUNDLE_IN/shaders.vkb" "$target"
+            got=$(sha256sum < "$target" | cut -d' ' -f1)
+            [ "$got" = "$BUNDLE_SHA256" ] || { rm -f "$target"; echo "::error::the bundle put in place is not the one checked"; exit 1; }
+          fi
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: '9.0.x'
+
+      # VPK_VERSION was checked in the build job's first step.
+      - name: Install vpk
+        run: |
+          set -euo pipefail
+          mkdir "$DEPS"
+          cfg="$DEPS/nuget.config"
+          printf '%s\n' '<?xml version="1.0" encoding="utf-8"?>' '<configuration>' '  <packageSources>' '    <clear />' \
+            '    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />' '  </packageSources>' '</configuration>' > "$cfg"
+          dotnet tool install vpk --version "$VPK_VERSION" --tool-path "$DEPS/vpk" --configfile "$cfg"
+          nupkg=$(find "$DEPS/vpk/.store" -iname "vpk.$VPK_VERSION.nupkg" | head -1)
+          [ -n "$nupkg" ] || { echo "::error::vpk.$VPK_VERSION.nupkg not found under $DEPS/vpk/.store"; exit 1; }
+          got=$(python -I -B -c 'import base64, hashlib, sys; print(base64.b64encode(hashlib.sha512(open(sys.argv[1], "rb").read()).digest()).decode())' "$nupkg")
+          if [ -z "$VPK_NUPKG_SHA512" ]; then
+            [ "$PUBLISH" != true ] || { echo "::error::VPK_NUPKG_SHA512 is not set: a release uses a vpk pinned by hash (it is $got)"; exit 1; }
+            echo "::warning::vpk $VPK_VERSION is not pinned by hash; its NuGet SHA-512 is $got (set VPK_NUPKG_SHA512)"
+          elif [ "$got" != "$VPK_NUPKG_SHA512" ]; then
+            echo "::error::vpk.$VPK_VERSION.nupkg has SHA-512 $got, not VPK_NUPKG_SHA512"; exit 1
+          fi
+          printf '%s=%s\n' VPK "$(cygpath -m "$DEPS/vpk/vpk.exe")" >> "$GITHUB_ENV"
+
+      - name: Release zip
+        run: |
+          set -euo pipefail
+          no_bundle=()
+          [ "$BUNDLE" = yes ] || no_bundle=(--allow-no-bundle)
+          python -I "$RELEASE_TOOLS/make-release-zip.py" --build-dir "$BUILD" --out "$DIST" --stage "$STAGE" \
+            --commit "$GITHUB_SHA" --tag "$TAG" --velopack on "${no_bundle[@]}"
+
+      # The Setup.exe's icon: the copy the build job handed over (velopack-pack.json names a
+      # file of the build job's source tree, which the configure step wrote). Its place is
+      # releasecommon.py VELOPACK_ICON_REL: change both.
+      - name: Installer and update packages (vpk)
+        run: |
+          set -euo pipefail
+          python -I "$RELEASE_TOOLS/velopack-release.py" --build-dir "$BUILD" --stage "$STAGE" --out "$DIST" \
+            --vpk "$VPK" --tag "$TAG" --icon "$BUILD/charis-velopack/icon.ico"
+
+      - name: Source zip and build record
+        run: |
+          set -euo pipefail
+          git archive --format=zip --prefix="CharisViewer-$VERSION-src/" -o "$DIST/CharisViewer-$VERSION-src.zip" "$GITHUB_SHA"
+          {
+            echo "Charis Viewer $VERSION: build record"
+            echo "tag=$TAG"
+            echo "commit=$GITHUB_SHA"
+            echo "workflow_run=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "runner_image=$BUILD_RUNNER_IMAGE"
+            echo "msvc=$(grep -ho 'CMAKE_CXX_COMPILER_VERSION "[^"]*"' "$BUILD"/CMakeFiles/*/CMakeCXXCompiler.cmake | head -1 || true)"
+            echo "vulkan_sdk=$VULKAN_SDK_VERSION"
+            echo "vpk=$VPK_VERSION"
+            echo "python=$(python --version 2>&1)"
+            echo "shader_bundle_sha256=$BUNDLE_SHA256"
+            echo "---- charis-release-build.txt"
+            cat "$BUILD/charis-release-build.txt"
+            if [ -f "$BUILD/packages/installed-packages.xml" ]; then
+              echo "---- packages/installed-packages.xml"
+              cat "$BUILD/packages/installed-packages.xml"
+            fi
+          } > "$DIST/CharisViewer-$VERSION-build-record.txt"
+
+      # SHA256SUMS.txt's own SHA-256 goes to the publish job as a job output (which no other
+      # job can write): an artifact replaced after this job (a token taken in the bake job
+      # can delete and upload artifacts of this run) does not match it. The sums are also
+      # in the run's summary, to compare a test build's zip by hand before starting it.
+      - name: SHA256SUMS.txt
+        id: sums
+        run: |
+          set -euo pipefail
+          cd "$DIST"
+          for f in *; do printf '%s  %s\n' "$(sha256sum < "$f" | cut -d' ' -f1)" "$f"; done > ../SHA256SUMS.txt
+          mv ../SHA256SUMS.txt SHA256SUMS.txt
+          sha256sum --check --strict SHA256SUMS.txt
+          ls -l
+          sums=$(sha256sum < SHA256SUMS.txt | cut -d' ' -f1)
+          printf '%s=%s\n' sums_sha256 "$sums" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Charis Viewer $VERSION: SHA256SUMS.txt (its SHA-256 $sums)"
+            echo '```'
+            cat SHA256SUMS.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Facts for the publish job
+        id: facts
+        run: |
+          set -euo pipefail
+          printf '%s=%s\n' tag "$TAG" version "$VERSION" bundle "$BUNDLE" \
+            artifact "charis-release-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+
+      - name: Keep the zip of a test build
+        if: ${{ !inputs.publish }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: charis-test-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/charis-dist/*-win64.zip
+            ${{ runner.temp }}/charis-dist/*-build-record.txt
+            ${{ runner.temp }}/charis-dist/SHA256SUMS.txt
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: error
+
+      # The publish job in release.yml (the only one with write permissions) takes these,
+      # checks them against SHA256SUMS.txt, attests them and makes the draft release.
+      - name: Hand the release assets to the publish job
+        if: inputs.publish
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ steps.facts.outputs.artifact }}
+          path: ${{ runner.temp }}/charis-dist/*
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_move.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="move_panel" label="Flyv">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="move_scroll">
+            <panel name="move_scroll_panel">
+                <plus_ps_slider_compat name="camera_fov" label="Se vinkel" />
+                <plus_ps_slider_compat name="camera_offset_scale" label="Distance" />
+                <plus_ps_text name="heading2">
+                    Automatisk position for:
+                </plus_ps_text>
+                <plus_ps_check_compat name="edit_camera_movement" label="Byg/Redigér" tool_tip="Benyt automatisk kamera positionering når edit modus aktiveres og forlades" />
+                <plus_ps_check_compat name="appearance_camera_movement" label="Udseende" tool_tip="Benyt automatisk kamera positionering i edit modus" />
+                <plus_ps_check_compat name="arrow_keys_move_avatar_check" label="Piletaster bevæger altid avatar" />
+                <plus_ps_check_compat name="tap_tap_hold_to_run" label="Tryk to gange for at løbe" />
+                <plus_ps_check_compat name="first_person_avatar_visible" label="Vis avatar i første-person" />
+                <plus_ps_text name=" Mouse Sensitivity">
+                    Muse-følsomhed i første-person:
+                </plus_ps_text>
+                <plus_ps_check_compat name="invert_mouse" label="Omvend" />
+                <plus_ps_button_compat name="joystick_setup_button" label="Andre enheder" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

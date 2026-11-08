@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="Opsætning for udstyr">
+    <panel.string name="default_text">
+        Standard
+    </panel.string>
+    <plus_ps_text name="Input">
+        Input
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        Output
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        Min lydstyrke:
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="Ændre lydstyrke med denne skyder" />
+    <plus_ps_text name="wait_text">
+        Vent venligst
+    </plus_ps_text>
+</panel>

@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The photo tools' page "camera" (floater_plus_photo_tools.xml, research/265).
+  Camera: level the camera, the camera positions (phototools_blocks.cpp), then the rows of the tab.
+  The parts of content_camera are put under each other by the code in the order of their tops (the
+  hidden ones take no room); a block keeps its height, a column (rows_*) gets the height of its rows.
+  Blocks are 583 wide at 10, columns 597 at 0 (the content: the page less the scroll bar).
+-->
+<panel
+ name="page_camera"
+ background_visible="false"
+ follows="all"
+ height="688"
+ layout="topleft"
+ mouse_opaque="false"
+ width="612">
+    <scroll_container
+     name="scroll_camera"
+     border_visible="false"
+     follows="all"
+     height="688"
+     ignore_arrow_keys="true"
+     layout="topleft"
+     left="0"
+     opaque="false"
+     reserve_scroll_corner="false"
+     top="0"
+     width="612">
+        <panel
+         name="content_camera"
+         background_visible="false"
+         follows="left|top"
+         height="688"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="0"
+         width="597">
+            <panel
+             name="sec_cam_roll"
+             background_visible="false"
+             follows="left|top"
+             height="30"
+             layout="topleft"
+             left="10"
+             top="0"
+             width="583">
+                <button
+                 follows="left|top|right"
+                 height="22"
+                 label="Level the Camera"
+                 layout="topleft"
+                 left="4"
+                 right="-6"
+                 top="4"
+                 name="btn_roll_reset"
+                 tool_tip="Take the tilt out of the camera (the Tilt slider below goes to 0)" />
+            </panel>
+            <panel
+             name="body_camera"
+             background_visible="false"
+             follows="left|top"
+             height="240"
+             layout="topleft"
+             left="10"
+             top="30"
+             width="583">
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Save Here"
+                 layout="topleft"
+                 left="4"
+                 top="4"
+                 width="154"
+                 name="btn_cam_temp_save"
+                 tool_tip="Keep the camera as it is now (one place, overwritten)" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Back to It"
+                 layout="topleft"
+                 left="162"
+                 top="4"
+                 width="154"
+                 name="btn_cam_temp_go"
+                 tool_tip="Go to the camera kept with Save Here" />
+                <line_editor
+                 follows="left|top|right"
+                 height="22"
+                 label="Name (empty: a number)"
+                 layout="topleft"
+                 left="4"
+                 right="-70"
+                 top="32"
+                 max_length_chars="40"
+                 name="ed_cam_name" />
+                <button
+                 follows="right|top"
+                 height="22"
+                 label="Save"
+                 layout="topleft"
+                 right="-4"
+                 top="32"
+                 width="62"
+                 name="btn_cam_save"
+                 tool_tip="Keep the camera with this name" />
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="14"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="58"
+                 name="cam_region">
+                    Region
+                </text>
+                <scroll_list
+                 background_visible="true"
+                 draw_border="true"
+                 follows="all"
+                 height="100"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="74"
+                 name="list_cam"
+                 tool_tip="Double-click: go there. Keys 1 to 8 go to the first eight.">
+                    <scroll_list.columns
+                     name="name"
+                     relative_width="1" />
+                </scroll_list>
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="Go"
+                 layout="topleft"
+                 left="4"
+                 bottom="-28"
+                 width="70"
+                 name="btn_cam_go" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="Rename"
+                 layout="topleft"
+                 left="78"
+                 bottom="-28"
+                 width="120"
+                 name="btn_cam_rename"
+                 tool_tip="Give the chosen one the name typed above" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="Delete"
+                 layout="topleft"
+                 left="202"
+                 bottom="-28"
+                 width="70"
+                 name="btn_cam_delete" />
+                <check_box
+                 control_name="PlusPhotoCameraSmooth"
+                 follows="left|bottom"
+                 height="16"
+                 label="Glide to it (otherwise jump)"
+                 layout="topleft"
+                 left="6"
+                 bottom="-6"
+                 width="300"
+                 name="chk_cam_smooth" />
+            </panel>
+            <panel name="rows_camera" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="270" width="597" />
+        </panel>
+    </scroll_container>
+</panel>

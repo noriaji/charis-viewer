@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="plus_slurl_handler">
+	<string name="status_none">なし（どのビューワも登録していません）</string>
+	<string name="status_this">このビューワ</string>
+	<string name="status_other">[NAME]</string>
+	<string name="status_other_charis">別のフォルダの Charis Viewer</string>
+	<string name="status_missing">[NAME]（プログラムが見つかりません）</string>
+	<string name="status_user_choice">（Windows の既定のアプリで選択）</string>
+	<string name="status_second">x-grid のリンク: [NAME]</string>
+	<string name="tip_second">x-grid-location-info:// のリンク（ほかのグリッドへのリンク）は [NAME] で開きます。［このビューワで開く］で両方とも登録します。</string>
+	<string name="tip_no_exe">（なし）</string>
+	<string name="tip_status">今 secondlife:// のリンクを開くプログラム: [EXE]
+このビューワ: [OURS]
+
+Web ページのリンク（maps.secondlife.com の「この場所を訪問」など）は、secondlife:// に登録されたプログラムで開きます。開く前にブラウザが「Charis Viewer を開きますか？」のように確認します。そこで「常に許可」にチェックを入れると、次からは聞かれません。https://maps.secondlife.com のページ自体はブラウザで開きます。</string>
+	<string name="confirm_take">ブラウザの secondlife:// のリンクは、今は [NAME] で開きます。
+
+このビューワで開くように切り替えますか？変わるのはお使いの Windows ユーザーの設定だけです（管理者権限は要りません）。［元に戻す］で [NAME] に戻せます。</string>
+	<string name="confirm_take_grid">ブラウザの x-grid-location-info:// のリンク（ほかのグリッドへのリンク）は、今は [NAME] で開きます。
+
+secondlife:// のリンクと合わせて、このビューワで開くように切り替えますか？変わるのはお使いの Windows ユーザーの設定だけです（管理者権限は要りません）。［元に戻す］で [NAME] に戻せます。</string>
+	<string name="confirm_also_grid">x-grid-location-info:// のリンク（ほかのグリッドへのリンク）は今 [NAME] で開きます。こちらも、このビューワで開くようにします。</string>
+	<string name="done_register">ブラウザの secondlife:// のリンクを、このビューワで開くようにしました。［元に戻す］で前の状態に戻せます。</string>
+	<string name="done_register_user_choice">登録しましたが、Windows の「既定のアプリ」で secondlife:// に別のアプリが選ばれていて、そちらが優先されます。Windows の［設定］→［アプリ］→［既定のアプリ］で「secondlife」を探して変えてください。</string>
+	<string name="bad_exe">このビューワの場所（フォルダのパス）に % などの特別な文字が含まれているため、安全に登録できません。何も変えていません。別のフォルダに入れてから、もう一度押してください。</string>
+	<string name="failed">登録を書き込めませんでした。元の状態に戻してあります。</string>
+	<string name="failed_partial">登録を書き込めず、一部は元に戻せませんでした。リンクは、このビューワ・別の Charis Viewer のどちらかで開くか、どれでも開かない状態かもしれません。しばらくしてから、もう一度［このビューワで開く］を押してください。</string>
+	<string name="done_undo">secondlife:// のリンクを、このビューワを登録する前のプログラムで開くように戻しました。</string>
+	<string name="nothing_to_undo">secondlife:// のリンクはこのビューワに登録されていません（その後に別のビューワが登録しました）。何も変えていません。</string>
+	<string name="failed_undo">登録の一部を元に戻せませんでした。しばらくしてからもう一度［元に戻す］を押すか、リンクを開かせたいビューワを入れ直してください。</string>
+	<plus_ps_text name="plus_slurl_label">
+		ブラウザの SLURL リンク：
+	</plus_ps_text>
+	<plus_ps_button_compat name="plus_slurl_register" label="このビューワで開く" tool_tip="ブラウザでクリックした secondlife:// のリンクを、このビューワで開くようにします（お使いの Windows ユーザーだけ。管理者権限は要りません）。それまでの登録先は［元に戻す］のために控えておきます。このボタンを押さない限り、勝手に登録することはありません。" />
+	<plus_ps_button_compat name="plus_slurl_undo" label="元に戻す" tool_tip="［このビューワで開く］を押す前に secondlife:// のリンクを開いていたビューワに戻します。このビューワのフォルダを削除する前に押してください。" />
+	<plus_ps_check_compat name="plus_slurl_check_at_start" label="起動時に、ほかのビューワがリンクを開く設定なら知らせる" tool_tip="既定はオフです。オンにすると、起動時に一度だけ確認し、secondlife:// のリンクがほかのビューワで開く設定になっていれば知らせます。知らせるだけで、勝手に登録はしません。" />
+</panel>

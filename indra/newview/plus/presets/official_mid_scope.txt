@@ -1,0 +1,538 @@
+# Charis の設定の分類（fix-round108・109、research/151 §7・162。research/183 で公式の画質 7 段に移した）
+#
+# settings_plus.xml の全部の設定と、Charis が公式の settings.xml に足した／既定を変えた設定を、ここで分類する。
+# tools/predeliver.py の (c) が次を確かめる（NG）:
+#   - settings_plus.xml の設定が全部ここに 1 行ずつある（新しい設定を足したら、ここにも足す）
+#   - render の設定（official render の行も）は、featuretable.txt の list all と 7 段（Low, LowMid, Mid, MidHigh,
+#     High, HighUltra, Ultra）の全部に行がある（research/183: 段を動かした時に前の段の値が残らない。新しい render の
+#     設定を足したら、all に上限、7 段に値を足す。MidHigh は「オフ／公式の動作」の値）。数値の型（Boolean / S32 /
+#     U32 / F32）で Persist 1、all の値 ≧ 各段の値
+#   - taste（好み）の設定は featuretable.txt の Charis の行（<plus> の中）に無い（段を動かしても変えない）
+#   - sub の設定の主スイッチ（3 列目）は render か taste か公式の設定（transient の主スイッチは Persist 0）
+#   - featuretable.txt の Charis の行（Plus* と RenderOITMode）は、どれもここで render か sub
+#   - 公式の settings.xml / settings_per_account.xml に Charis が足した設定・既定を変えた設定（最新の公式リリースの
+#     タグとの差）が、ここに official として載っている
+#
+# 分類（1 列目）:
+#   render    描画・毎フレームの処理・計測に効く Charis の機能。画質の段（featuretable.txt）が値を決める。
+#             MidHigh（公式との比較の段）では「オフ／公式の動作」（値は research/183 §2.1）
+#   taste     描画に効くが好みの物（ルック・天気・レンズフレア・影の柔らかさ・星など）。段は触らない
+#   sub       render / taste の機能の細かい値。主スイッチ（3 列目）がオフなら効かない
+#   backend   Charis の速さの仕組み（Vulkan のバックエンド、変換スレッド、DGC、テクスチャの読み込み）。
+#             見た目を変えない。比べたいのはこれなので、段に入れない
+#   transient 保存されない状態（起動時はいつもオフ）。段に入れられない
+#   snapshot  スナップショットを撮る時だけ効く（フレームの計測には効かない）
+#   ui        UI・操作・通信の便利機能。描画に効かない（窓を開いた時の UI の描画だけ）
+#   diag      計測・診断・開発用
+#   marker    廃止したプリセットのファイルの印（ログイン時に消す・1 回だけの移行に読む）
+#   official  （2 列目が分類）公式の設定ファイルにある設定。4 列目以降は説明
+#
+# 書式: <分類> <設定名> [<主スイッチ>]    / official <分類> <設定名> <説明>
+ui        FSManipRotateJointUseNaturalDirection
+ui        FSManipRotateJointTargetSize
+ui        FSManipShowJointMarkers
+ui        FSPoserOnSaveConfirmOverwrite
+ui        FSPoserPelvisUnlockedForBvhSave
+ui        FSPoserSaveExternalFileAlso
+ui        FSPoserStopPosingWhenClosed
+ui        FSPoserTrackpadSensitivity
+ui        PlusPoserIKKeepFloor
+ui        PlusPoserIKRanges
+ui        PlusPoserMcpEnabled
+ui        PlusPoserMcpPort
+ui        PlusPoserMcpKeepToken
+ui        PlusPoserMcpAllowUiSnapshot
+render    PlusHairSway
+sub       PlusHairSwayStrength PlusHairSway
+sub       PlusHairSwayMaxOffset PlusHairSway
+sub       PlusHairSwayBounce PlusHairSway
+sub       PlusHairSwayAutoDetect PlusHairSway
+diag      PlusHairSwayDetectOnly
+sub       PlusHairSwayDetectThreshold PlusHairSway
+sub       PlusHairSwayManual PlusHairSway
+sub       PlusHairSwayWind PlusHairSway
+render    PlusGtao
+render    PlusGtaoQuality
+sub       PlusGtaoStrength PlusGtao
+sub       PlusGtaoRadius PlusGtao
+diag      PlusGtaoDebugPasses
+render    PlusContactShadows
+sub       PlusContactShadowLength PlusContactShadows
+diag      PlusGtaoDiagnostics
+sub       PlusGtaoOnePass PlusGtao
+render    PlusSsgi
+sub       PlusSsgiStrength PlusSsgi
+sub       PlusSsgiRadius PlusSsgi
+sub       PlusSsgiThickness PlusSsgi
+diag      PlusSsgiDebug
+diag      PlusSkinSssDebug
+render    PlusSkinFill
+taste     PlusWetLook
+sub       PlusWetPuddles PlusWetLook
+sub       PlusWetAvatars PlusWetLook
+taste     PlusRain
+render    PlusSplash
+sub       PlusRainWind PlusRain
+sub       PlusRainWindDirection PlusRain
+sub       PlusRainSplashes PlusRain
+taste     PlusRainDropScale
+taste     PlusRainDropLength
+render    PlusRainEaves
+sub       PlusRainUmbrella PlusRain
+sub       PlusRainUmbrellaNames PlusRain
+taste     PlusSnow
+taste     PlusWeatherAllowParcel
+render    PlusSnowAccumulate
+taste     PlusSnowGround
+render    PlusVolumetric
+render    PlusVolumetricQuality
+sub       PlusVolumetricStrength PlusVolumetric
+sub       PlusVolumetricSamples PlusVolumetric
+sub       PlusVolumetricAlpha PlusVolumetric
+sub       PlusDoFAlpha RenderDepthOfField
+sub       PlusDoFAlphaCutoff RenderDepthOfField
+render    PlusUiFrame
+sub       PlusUiFrameThresholdMs PlusUiFrame
+sub       PlusUiFrameWorldShare PlusUiFrame
+sub       PlusUiFrameMaxPauseMs PlusUiFrame
+diag      PlusUiFrameLog
+ui        MiniMapShowChatRange
+ui        PlusDetachedFloaters
+ui        PlusDetachedMaxFps
+ui        PlusDetachedIdleFps
+ui        PlusDetachedMaxWindows
+ui        PlusDetachAutoOnDrag
+marker    PlusGraphicPreset
+marker    PlusGraphicPresetRevision
+ui        PlusPresetMigrated
+snapshot  PlusSnapshotBoost
+transient PlusCloudShaftsScene    # research/253 9: ワンクリック「雲間の光の筋」。保存しない（値の一致から作り直す）
+ui        PlusCloudShaftsSceneBefore    # 同、書く前の値（元に戻す用）
+render    PlusShadowDistance
+render    PlusGlare
+taste     PlusLensFlare
+taste     PlusCrossFilter
+taste     PlusSkyStars
+render    PlusNightCloudLift
+taste     PlusRainbow    # research/255: 天候の虹（好み。段では変えない）
+taste     PlusRainbowKind
+taste     PlusRainbowStrength
+render    PlusVolumetricClouds
+sub       PlusCloudThickness PlusVolumetricClouds
+sub       PlusCloudDetail PlusVolumetricClouds
+sub       PlusCloudShade PlusVolumetricClouds
+sub       PlusCloudGrain PlusVolumetricClouds
+sub       PlusCloudSteps PlusVolumetricClouds
+sub       PlusCloudShadow PlusVolumetricClouds
+sub       PlusCloudShadowRadius PlusVolumetricClouds
+sub       PlusCloudShafts PlusVolumetricClouds
+sub       PlusSkyStarGain PlusSkyStars
+taste     PlusSkyStarsMilkyWayGain
+taste     PlusSkyStarsDense
+taste     PlusSkyStarsMilkyWayHQ
+render    PlusAlphaEdgeFix
+render    PlusSkyStarsTwinkle
+transient PlusSkyStarsTwinkleHold
+taste     PlusSkyStarsReal
+render    PlusSkyStarsConstellationBoost
+sub       PlusSkyStarsLat PlusSkyStarsReal
+sub       PlusSkyStarsLon PlusSkyStarsReal
+sub       PlusSkyStarsTimeMode PlusSkyStarsReal
+sub       PlusSkyStarsTime PlusSkyStarsReal
+taste     PlusSkyStarsLines
+sub       PlusSkyStarsLineAlpha PlusSkyStarsLines
+sub       PlusSkyStarsLineWidth PlusSkyStarsLines
+taste     PlusSkyStarsArt
+sub       PlusSkyStarsArtAlpha PlusSkyStarsArt
+sub       PlusCrossFilterRays PlusCrossFilter
+sub       PlusCrossFilterAngle PlusCrossFilter
+sub       PlusCrossFilterSky PlusCrossFilter
+sub       PlusGlareInTonemap PlusGlare
+render    PlusShadowPrecision
+render    PlusShadowFocus
+diag      PlusShadowDiagnostics
+render    PlusShadowCasterBias
+render    PlusShadowNormalOffset
+render    PlusShadowPenumbra
+render    PlusShadowStabilize
+sub       PlusShadowWorldLock PlusShadowStabilize
+render    PlusShadowShift
+sub       PlusShadowShiftFirstSeen PlusShadowShift
+sub       PlusShadowShiftPartial PlusShadowShift
+diag      PlusShadowShiftVerify
+sub       PlusShadowShiftWhole PlusShadowShift
+diag      PlusShadowZRound
+render    PlusShadowSkipFarSmall
+sub       PlusShadowSkipFarSmallDistance PlusShadowSkipFarSmall
+sub       PlusShadowSkipFarSmallRadius PlusShadowSkipFarSmall
+taste     PlusShadowSoftness
+taste     PlusShadowLightStep
+taste     PlusLook
+sub       PlusLookStrength PlusLook
+sub       PlusLookSnapshotOnly PlusLook
+ui        PlusLookFavorites
+ui        PlusLookRecent
+taste     PlusPaintStyle
+sub       PlusPaintStrength PlusPaintStyle
+sub       PlusPaintSnapshotOnly PlusPaintStyle
+transient PlusOcean    # 2026-10-31 廃止: 撮影ツールの欄と画質の段から外した。保存しない（Persist 0）
+sub       PlusOceanFoamSkip PlusOcean
+sub       PlusOceanSkipDryField PlusOcean
+sub       PlusOceanMinArea PlusOcean
+taste     PlusFocusMode
+sub       PlusFocusPart PlusFocusMode
+sub       PlusFocusAvatar PlusFocusMode
+sub       PlusFocusThroughGlass RenderDepthOfField
+taste     PlusGazeMode
+sub       PlusGazeEyeLimit PlusGazeMode
+sub       PlusGazeHeadMax PlusGazeMode
+sub       PlusGazePitchLimit PlusGazeMode
+sub       PlusGazeHeadPitchMax PlusGazeMode
+diag      PlusGazeDiag
+sub       PlusGazeConvergence PlusGazeMode
+sub       PlusGazeEyeBiasL PlusGazeMode
+sub       PlusGazeEyeBiasR PlusGazeMode
+sub       PlusGazeFovAdaptive PlusGazeMode
+sub       PlusGazeHeadMaxAbs PlusGazeMode
+sub       PlusGazeAllowEveryone PlusGazeMode
+sub       PlusGazeNeckShare PlusGazeMode
+sub       PlusGazeLag PlusGazeMode
+ui        PlusPhotoPreset
+ui        PlusPhotoCameraSlots
+ui        PlusPhotoCameraTemp
+ui        PlusPhotoCameraSmooth
+transient PlusWorldFreeze
+sub       PlusWorldFreezeAppearance PlusWorldFreeze
+sub       PlusWorldFreezeMaxSeconds PlusWorldFreeze
+sub       PlusWorldFreezeMaxPending PlusWorldFreeze
+ui        PlusAOEnabled
+ui        PlusAOStands
+ui        PlusAOFirestormOffer
+ui        PlusAOCurrentState
+ui        PlusAOFullInterface
+ui        PlusAOFullRect
+diag      PlusAOLogTiming
+ui        PlusNudgeTurnStep
+ui        PlusInvExplorerDetail
+ui        PlusInvExplorerMinWidth
+ui        PlusPhotoPins
+ui        PlusPhotoMyPresets
+ui        PlusPhotoShotSize
+ui        PlusPhotoShotAspect
+ui        PlusPhotoScreenSimple
+ui        PlusPhotoScreenFocusFrame
+snapshot  PlusPhotoShotBytesPerPixel
+ui        PlusQuickPrefsEditMode
+ui        PlusQuickPrefsSelectedControl
+ui        PlusNudgeStepCm
+ui        PlusNudgeUnitCm
+sub       PlusUIFrameNotice PlusUiFrame
+ui        PlusGroupChatWhitelistOnly
+ui        PlusCameraShotAmount
+ui        PlusCameraShotSeconds
+ui        PlusCameraShotEase
+ui        PlusCameraShotPart
+ui        PlusCameraShotOrbit
+ui        PlusCameraRoll
+ui        PlusFlycamZoomButton
+ui        PlusFlycamZoomSpeed
+ui        PlusCameraRollKeySpeed
+ui        PlusPhotoKeysVersion
+ui        PlusPhotoKeysCommands
+ui        PlusIgnoreSimCameraConstraint
+ui        PlusPhotoSkyLibraryFavorites
+ui        PlusPhotoSkyListOpen
+ui        PlusPhotoWaterListOpen
+ui        PlusPhotoWaterLibraryFavorites
+ui        PlusPhotoGuideOn
+ui        PlusPhotoGuideKind
+ui        PlusPhotoGuideColor
+ui        PlusPhotoGuideOpacity
+ui        PlusPhotoGuideThickness
+diag      PlusGPUBenchmarkGPU
+diag      PlusGPUBenchmarkGBps
+diag      PlusGPUBenchmarkVulkanScaleNVIDIA
+diag      PlusGPUBenchmarkVulkanScaleOther
+ui        PlusUpdateCheck
+ui        PlusUpdateCheckURL
+ui        PlusUpdateCheckSkipped
+ui        PlusUpdateCheckLastTime
+ui        PlusUpdateCheckLastTry
+ui        PlusUpdateCheckAllowedHosts
+backend   PlusSelfFirst
+backend   PlusTexViewPriority               # 画面内のテクスチャを先に読む（research/285 tex-view-priority、2026-11-06）
+backend   PlusTexFetchRetryUnknownTries     # 403 など「不明」の失敗を再要求する回数（既定 1。research/305）
+backend   PlusTexFetchRetry                # 一時的な失敗のテクスチャを再要求し、missing の旗を立てない（research/299 tex-fetch-retry、2026-11-07）
+backend   PlusTexOnScreenCoarsest           # 画面内のテクスチャが止まってよい一番粗い段（既定 4。research/303）。見た目を変える設定だが PlusTexViewPriority と同じ扱いで backend（MidHigh の比較でも効く）
+backend   PlusTexFarFloorPx                 # 画像の無い物の vsize の下限（research/285・215 §9）
+backend   PlusFetchAutoTune
+backend   PlusMediaReap                     # 使っていないメディアのプラグインを早く終わらせる（2026-11-01）
+backend   PlusMediaReapSeconds
+backend   PlusMediaReapDistance
+backend   PlusMediaReapTeleportSeconds
+backend   PlusMediaReapUISeconds
+diag      PlusSelfFirstLog
+ui        PlusSendSettingsStats
+ui        PlusSupportURL
+ui        PlusReleaseNotesURL
+ui        PlusReleaseQAModeCleared
+render    PlusMirrorAvatars
+render    PlusAvatarReflection
+sub       PlusAvatarReflectionScale PlusAvatarReflection
+sub       PlusAvatarReflectionFloorOffset PlusAvatarReflection
+render    PlusWaterMirror
+render    PlusWaterMirrorScale
+sub       PlusWaterMirrorRate PlusWaterMirror
+sub       PlusWaterMirrorDistance PlusWaterMirror
+sub       PlusWaterMirrorShadows PlusWaterMirror
+sub       PlusWaterMirrorWaves PlusWaterMirror
+render    PlusWaterMirrorAA
+backend   PlusSkinOnce
+backend   PlusCullThreads
+diag      PlusTestScene
+render    PlusSSR
+taste     PlusRayTracingRange               # PlusRayTracing の範囲（m）。プリセットは触らない（research/230 R2）
+taste     PlusRayTracing                    # 撮影用の任意機能。プリセット・自動判定は触らない（research/230）
+render    PlusSSRDenoise
+sub       PlusSSRIterations PlusSSR
+sub       PlusSSRAvatarHistory PlusSSR
+sub       PlusSSRReflectionMotion PlusSSR   # 時間合成の履歴を反射像の動きで引く（research/294）。プリセットは触らない
+diag      PlusSSRClipSigma                  # 上の分散クリップの幅（A/B 用、保存しない）
+sub       RenderScreenSpaceReflectionMaxThickness PlusSSR
+sub       RenderScreenSpaceReflectionDepthBias PlusSSR
+sub       RenderScreenSpaceReflectionMaxDepth PlusSSR
+sub       RenderScreenSpaceReflectionMaxRoughness PlusSSR
+sub       RenderScreenSpaceReflectionsResolutionMultiplier PlusSSR
+sub       RenderScreenSpaceReflectionsBilateralUpsample PlusSSR
+sub       RenderScreenSpaceReflectionTemporal PlusSSR
+sub       RenderScreenSpaceReflectionTemporalBlend PlusSSR
+sub       RenderScreenSpaceReflectionsFilterScale PlusSSR
+diag      PlusPathingDumpBlob
+sub       PlusFxPreset PlusFxStrength
+taste     PlusFxStrength
+sub       PlusFxGrain PlusFxStrength
+sub       PlusFxVignette PlusFxStrength
+sub       PlusFxChromatic PlusFxStrength
+sub       PlusFxHalation PlusFxStrength
+sub       PlusFxDust PlusFxStrength
+sub       PlusFxScanlines PlusFxStrength
+sub       PlusFxClarity PlusFxStrength
+sub       PlusFxTexture PlusFxStrength
+sub       PlusFxSoftGlow PlusFxStrength
+sub       PlusFxSoftGlowSize PlusFxStrength
+sub       PlusFxSoftGlowLift PlusFxStrength
+sub       PlusFxSnapshotOnly PlusFxStrength
+taste     PlusMiniature                     # ジオラマ風（チルトシフト）。撮影用の好み（research/236）
+sub       PlusMiniatureBand PlusMiniature
+sub       PlusMiniatureWidth PlusMiniature
+sub       PlusMiniatureBlur PlusMiniature
+sub       PlusMiniatureTilt PlusMiniature
+sub       PlusMiniatureSaturation PlusMiniature
+ui        PlusSubtitleThreads
+ui        PlusSubtitleLanguage
+ui        PlusSubtitleLines
+ui        PlusSubtitleLatency
+ui        PlusSubtitleTranslate
+ui        PlusSubtitleTranslateTo
+ui        PlusSubtitleUseFlags
+ui        PlusSubtitleStream
+ui        PlusSubtitleTranslateService
+ui        PlusTranslateDialect
+ui        PlusTranslateModelUrl
+ui        PlusAreaSearchColumns
+ui        PlusAreaSearchFilters
+ui        PlusAreaSearchDoubleClick
+ui        PlusAreaSearchIncludeAttached
+ui        PlusAreaSearchRange
+taste     PlusAvatarLoadingCloud
+sub       PlusAvatarWireframeLoading RenderGrayTextureWireframe
+sub       PlusWireframeTaaNearOnly RenderGrayTextureWireframe
+render    PlusMaterialize
+sub       PlusMaterializeSeconds PlusMaterialize
+sub       PlusMaterializePalette PlusMaterialize
+sub       PlusMaterializeColor PlusMaterialize
+render    PlusMaterializeAvatar
+diag      PlusMaterializeLog
+diag      PlusAlphaMaskRebuild
+ui        PlusComboWheelSelect
+ui        PlusTimeConvZone2
+ui        PlusTimeConvZone3
+ui        PlusTimeConvRows
+ui        PlusTimeConvTick
+ui        PlusRadarColumns
+ui        PlusRadarNameFormat
+ui        PlusRadarLimitRange
+ui        PlusRadarRange
+ui        PlusRadarShowMuted
+ui        PlusRadarReportChatEnter
+ui        PlusRadarReportChatLeave
+ui        PlusRadarReportDrawEnter
+ui        PlusRadarReportDrawLeave
+ui        PlusRadarReportRegionEnter
+ui        PlusRadarReportRegionLeave
+ui        PlusLocalMeshAutoReload
+ui        PlusLocalMeshFileSize
+ui        PlusProtectedFolders
+backend   PlusJ2CDecoder
+backend   PlusJ2CDecoderThreads
+backend   PlusJ2CDecoderThreadsMinArea
+ui        PlusOutfitBackup
+ui        PlusKeywordsOn
+ui        PlusKeywordsInChat
+ui        PlusKeywordsInIM
+ui        PlusKeywordsList
+ui        PlusKeywordsOwnName
+ui        PlusKeywordsSpeakerName
+ui        PlusKeywordsCaseSensitive
+ui        PlusKeywordsWholeWords
+ui        PlusKeywordsFoldWidth
+ui        PlusKeywordsChangeColor
+ui        PlusKeywordsColor
+ui        PlusKeywordsPlaySound
+ui        PlusKeywordsSound
+ui        PlusKeywordsToast
+ui        PlusChatConsoleOn
+ui        PlusInvFolderIcons
+ui        PlusChatConsolePersistTime
+ui        PlusChatConsoleMaxLines
+ui        PlusBorderless
+ui        PlusUiShowButton
+ui        PlusPrefsCharisTab
+ui        PlusShortcutBarShow
+ui        PlusShortcutBarBackground
+ui        PlusFpsCornerOn
+ui        PlusFpsCornerPosition
+taste     PlusFpsLimit
+taste     PlusBackgroundKeepVisible
+sub       PlusBackgroundHiddenStop PlusBackgroundKeepVisible
+diag      PlusHitchLogMs
+diag      PlusExitTimeLog
+diag      PlusExitWatchdog
+diag      PlusExitWatchdogSeconds
+render    PlusRainWetAll
+ui        PlusFlycamSens
+ui        PlusFlycamSensSteps
+ui        PlusFlycamHint
+ui        PlusFlycamMouseMode
+ui        PlusFlycamKeepView
+ui        PlusFlycamMouseSens
+ui        PlusFlycamBoost
+ui        PlusFlycamSmooth
+ui        PlusFlycamSpeedMul
+ui        PlusFlycamRollSpeed
+backend   PlusGpuDrivenDGC
+backend   PlusGpuDrivenDGCLostCount
+backend   PlusRegionPark
+backend   PlusRegionParkMax
+backend   PlusRegionParkTextureHold
+backend   PlusRegionParkEager
+backend   PlusRegionParkEagerPerFrame
+diag      PlusTPLagLog
+backend   PlusBufferCompact
+backend   PlusBufferCompactIdle
+backend   PlusMemGuard
+backend   PlusMemGuardFreeMB
+backend   PlusMemGuardSoftOnly
+ui        PlusImportSettingsPending
+ui        PlusSLURLCheckAtStart
+taste     PlusHideOtherLandObjects
+taste     PlusHideOtherParcelObjects
+ui        PlusTtsOn
+ui        PlusTtsNearby
+ui        PlusTtsSelf
+ui        PlusTtsObjects
+ui        PlusTtsSystem
+ui        PlusTtsArrivals
+ui        PlusTtsIM
+ui        PlusTtsGroup
+ui        PlusTtsShowDetails
+ui        PlusTtsVoiceMale
+ui        PlusTtsVoiceFemale
+ui        PlusTtsRate
+ui        PlusTtsVolume
+ui        PlusTtsDistance
+ui        PlusTtsMaxLength
+ui        PlusTtsMaxQueue
+ui        PlusTtsOnlyActive
+ui        PlusTtsTranslated
+ui        PlusTtsSayName
+ui        PlusTtsOverrides
+taste     PlusGroundFog
+sub       PlusGroundFogHeight PlusGroundFog
+sub       PlusGroundFogGlow PlusGroundFog
+taste     PlusFireflies
+sub       PlusFireflyColor PlusFireflies
+sub       PlusFireflyBrightness PlusFireflies
+sub       PlusFireflyHeight PlusFireflies
+# 崩壊の演出（research/257）。既定オン（2026-10-31 決定）。画質の段は MidHigh（公式との比較）だけオフ。細かい値は段に入れない
+render    PlusDerez
+sub       PlusDerezSeconds PlusDerez
+sub       PlusDerezMaxDistance PlusDerez
+sub       PlusDerezMax PlusDerez
+sub       PlusDerezStartsPerFrame PlusDerez
+sub       PlusDerezPalette PlusDerez
+sub       PlusDerezColor PlusDerez
+
+# アップスケール（research/165）。段 1・2 は手で入れる時だけ（既定オフ）。段 3 で PlusUpscale と PlusUpscaleScale を
+# render にして featuretable の 7 段に入れる（presets-official-7 の取り込み後）。鋭さは好みのまま
+taste     PlusUpscale
+taste     PlusUpscaleScale
+taste     PlusUpscaleSharpness
+# TAA（research/185）。画質の段が決める（2026-10-31 決定: 低・低〜中はオフ、中以降はオン）。MidHigh でもオンで、
+# 公式相当の比較（presets.cpp の applyComparison）がオフにする。細かい値（sub）は段に入れず既定のまま
+render    PlusTAA
+sub       PlusTAABlend PlusTAA
+sub       PlusTAAJitter PlusTAA
+sub       PlusTAAJitterScale PlusTAA
+sub       PlusTAAThinGaps PlusTAA
+# Charis が公式の設定ファイルに足した／既定を変えた設定と、公式の中間に入れる公式の設定（featuretable の中高にないもの）
+official render    RenderOITMode  # Charis が settings.xml に足した。OIT（0 = 公式の並べ替えアルファ）
+official snapshot  RenderOITSnapshotFull  # Charis が settings.xml に足した。スナップショットの時だけ
+official taste     ThrottleBandwidthKBPS  # Charis が settings.xml と llviewerthrottle.cpp で既定を 3000 → 4000 にした（回線の太さ。画質の段では変えない）
+official taste     RenderGrayTextureWireframe  # Charis が settings.xml に足した。読み込み前のテクスチャを灰色でなくワイヤーフレームで描く
+official ui        EnableSelectionHints  # Charis が既定を 1 から 0 に変えた。物を選ぶ・つかむ時に手で指す（上体をひねる）動きを止める。プライバシー画面のチェック
+official ui        ShowSelectionBeam  # Charis が既定を 1 から 0 に変えた。選択・編集中だけ（比較中は選択しない）
+official ui        ShowHoverTips  # Charis が既定を 1 から 0 に変えた。ワールド内でマウスを乗せた物の情報表示（ホバーチップ）
+official ui        RenderUnloadedAvatar  # Charis が既定を 0 から 1 に変えた。読み込み中のアバターも描く（読み込み前のテクスチャはワイヤーフレーム）
+official ui        PlayTypingAnim  # Charis が既定を 1 から 0 に変えた。チャット入力中のタイピングのアニメとカタカタ音（音はアニメの開始に連動）
+official ui        QuietSnapshotsToDisk  # Charis が既定を 0 から 1 に変えた。写真をディスクへ撮る時のアニメとシャッター音
+official ui        SkinCurrent  # Charis が既定を default から charis に変えた。skins/charis（色と窓の枠・ボタン・ツールチップの画像）を公式の skin の上に重ねる（research/239）
+official taste    RenderTonemapType  # Charis が 2〜4 を足した。公式の中高は 1（ACES）
+official taste    RenderTonemapMix  # 公式の中高は 0.7
+official taste    RenderExposure  # 公式の中高は 1
+official taste    RenderDepthOfField  # 被写界深度（PlusDoFAlpha の主スイッチ）。公式の既定 0
+ui        FSExperimentalLostAttachmentsFix
+ui        FSExperimentalLostAttachmentsFixKillDelay
+ui        FSExperimentalLostAttachmentsFixReport
+backend   PlusFastLogin
+backend   PlusFastLoginEarlyUCC
+backend   PlusFastTeleport
+taste     PlusDisableTeleportScreens
+diag      PlusLoginTimeline
+ui        RestrainedLove
+ui        RestrainedLoveDebug
+ui        RLVaDebugHideUnsetDuplicate
+ui        RestrainedLoveCanOOC
+ui        RestrainedLoveShowEllipsis
+ui        RLVaShowRedirectChatTyping
+ui        RLVaSplitRedirectChat
+ui        RLVaEnableIMQuery
+ui        RLVaEnableTemporaryAttachments
+ui        RLVaBlockedExperiences
+ui        RLVaExperienceMaturityThreshold
+ui        RLVaExperimentalCommands
+ui        RLVaCompatibilityModeList
+ui        RLVaShowAssertionFailures
+ui        RLVaTopLevelMenu
+ui        RestrainedLoveStackWhenFolderBeginsWith
+ui        RestrainedLoveReplaceWhenFolderBeginsWith
+ui        RLVaWearReplaceUnlocked
+ui        RLVaEnableLegacyNaming
+ui        RLVaEnableSharedWear
+ui        RLVaHideLockedLayers
+ui        RLVaHideLockedAttachments
+ui        RLVaSharedInvAutoRename
+ui        RestrainedLoveForbidGiveToRLV
+ui        RLVaBlockedCommands
+ui        RLVaLoginLastLocation
+ui        RLVaDebugDeprecateExplicitPoint

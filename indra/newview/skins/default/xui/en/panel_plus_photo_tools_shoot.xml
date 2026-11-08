@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The photo tools' page "shoot" (floater_plus_photo_tools.xml, research/265).
+  Shoot: the size and shape of the photo, the shutter and the last photo (phototools_blocks.cpp), then the
+  rows of the tab.
+  The parts of content_shoot are put under each other by the code in the order of their tops (the
+  hidden ones take no room); a block keeps its height, a column (rows_*) gets the height of its rows.
+  Blocks are 583 wide at 10, columns 597 at 0 (the content: the page less the scroll bar).
+-->
+<panel
+ name="page_shoot"
+ background_visible="false"
+ follows="all"
+ height="688"
+ layout="topleft"
+ mouse_opaque="false"
+ width="612">
+    <scroll_container
+     name="scroll_shoot"
+     border_visible="false"
+     follows="all"
+     height="688"
+     ignore_arrow_keys="true"
+     layout="topleft"
+     left="0"
+     opaque="false"
+     reserve_scroll_corner="false"
+     top="0"
+     width="612">
+        <panel
+         name="content_shoot"
+         background_visible="false"
+         follows="left|top"
+         height="688"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="0"
+         width="597">
+            <panel
+             name="sec_shoot"
+             background_visible="false"
+             follows="left|top"
+             height="206"
+             layout="topleft"
+             left="10"
+             top="0"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_shot"
+                 width="300">
+                    Photo
+                </text>
+                <combo_box
+                 follows="left|top"
+                 height="22"
+                 layout="topleft"
+                 left="4"
+                 top="22"
+                 width="226"
+                 name="shot_size"
+                 tool_tip="How big the photo is (the long side)" />
+                <combo_box
+                 follows="left|top"
+                 height="22"
+                 layout="topleft"
+                 left="234"
+                 top="22"
+                 width="222"
+                 name="shot_aspect"
+                 tool_tip="The shape of the photo" />
+                <text
+                 type="string"
+                 length="1"
+                 word_wrap="true"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="32"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="48"
+                 name="shot_info">
+                    -
+                </text>
+                <button
+                 follows="left|top|right"
+                 font="SansSerifBold"
+                 height="28"
+                 label="Take Photo"
+                 layout="topleft"
+                 left="4"
+                 right="-6"
+                 top="82"
+                 name="btn_shoot"
+                 tool_tip="Take the photo now, at the size and shape above, and save it. This window stays." />
+                <text
+                 type="string"
+                 length="1"
+                 word_wrap="true"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="30"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="114"
+                 name="shot_status">
+                    -
+                </text>
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Open"
+                 layout="topleft"
+                 left="4"
+                 top="178"
+                 width="100"
+                 name="btn_shot_open"
+                 tool_tip="Open the last photo" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Open Folder"
+                 layout="topleft"
+                 left="252"
+                 top="178"
+                 width="120"
+                 name="btn_shot_folder"
+                 tool_tip="Open the folder the photos go to" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Snapshot Window..."
+                 layout="topleft"
+                 left="376"
+                 top="178"
+                 width="200"
+                 name="btn_shot_window"
+                 tool_tip="The standard snapshot window (to share, to set the folder, to upload)" />
+                <text
+                 type="string"
+                 length="1"
+                 word_wrap="true"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="30"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="146"
+                 name="shot_dir">
+                    -
+                </text>
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Change Folder..."
+                 layout="topleft"
+                 left="108"
+                 top="178"
+                 width="140"
+                 name="btn_shot_dir"
+                 tool_tip="Choose the folder the photos are saved in (the snapshot window uses the same folder)" />
+            </panel>
+            <panel name="rows_shoot" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="208" width="597" />
+        </panel>
+    </scroll_container>
+</panel>

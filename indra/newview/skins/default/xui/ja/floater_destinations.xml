@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="Destinations" title="行き先">
+	<!-- plus destinations-reload: the Reload button (plus/destinations), as in en -->
+	<button label="再読み込み" name="plus_reload_btn" tool_tip="表示中のページを、キャッシュを使わずに読み込み直します"/>
+	<!-- /plus -->
+</floater>

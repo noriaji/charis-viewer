@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="uploads" label="Chargements">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="uploads_scroll">
+			<panel name="uploads_scroll_panel">
+				<plus_ps_text name="title">
+					Dossiers de destination actuels pour les chargements
+				</plus_ps_text>
+				<plus_ps_text name="title_models">
+					Images
+				</plus_ps_text>
+				<plus_ps_text name="title_sounds">
+					Sons
+				</plus_ps_text>
+				<plus_ps_text name="title_animation">
+					Animations
+				</plus_ps_text>
+				<plus_ps_text name="title_model">
+					Modèles
+				</plus_ps_text>
+				<plus_ps_text name="upload_help">
+					Pour modifier un dossier de destination, cliquez-droit sur ce dossier dans l’inventaire et faites votre choix "Utiliser comme défaut pour"
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

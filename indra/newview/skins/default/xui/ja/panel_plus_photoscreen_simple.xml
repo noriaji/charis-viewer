@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_photoscreen_simple">
+	<panel.string name="focus_auto_off">自動（ビューワにおまかせ）</panel.string>
+	<panel.string name="focus_blur_off">背景ぼかしがオフなので、ピントは合わせられません。</panel.string>
+	<panel.string name="focus_lost">[WHO]が見えていません。見えるまではビューワ標準のピントです。</panel.string>
+	<panel.string name="focus_nobody">一覧から人を選んでください。</panel.string>
+	<panel.string name="focus_click_none">ピントを合わせる場所がまだありません。詳細表示の「クリックで場所を指定」を押して、世界の中をクリックしてください。</panel.string>
+	<panel.string name="focus_click_wait">世界の中をクリックすると、そこにピントが合います（Esc で指定を終えます）。</panel.string>
+	<panel.string name="focus_click_behind">クリックした場所がカメラの後ろにあります。見える所を指定し直してください。</panel.string>
+	<panel.string name="focus_locked">ピント: [WHO]</panel.string>
+	<panel.string name="focus_auto">ピント: 自動</panel.string>
+	<panel.string name="focus_cursor">ピント: カーソルの先</panel.string>
+	<panel.string name="focus_click">ピント: クリックした場所</panel.string>
+	<panel.string name="frame_click">クリックした場所</panel.string>
+	<panel.string name="focus_self">自分の顔</panel.string>
+	<panel.string name="focus_face_of">[WHO]の顔</panel.string>
+	<panel.string name="focus_someone">その人</panel.string>
+	<panel.string name="who_self">自分</panel.string>
+	<panel.string name="strip_mood">雰囲気: [MOOD]</panel.string>
+	<panel.string name="strip_mood_none">雰囲気: なし</panel.string>
+	<panel.string name="comp_ok">[WHO]に合わせてカメラを置きました。「ひとつ前へ」で戻せます。</panel.string>
+	<panel.string name="comp_no_target">合わせる人がいません。「ピント」で人（自分か近くの人）を選び、見える所にいてください。</panel.string>
+	<panel.string name="comp_no_camera">いまはカメラを動かせません。</panel.string>
+	<panel.string name="comp_idle">「ピント」で選んだ人に、ちょうどよい距離と高さでカメラを置きます。</panel.string>
+	<panel.string name="cam_none">まだ記憶していません。</panel.string>
+	<panel.string name="cam_kept">このリージョンの位置を記憶しています。</panel.string>
+	<panel.string name="cam_saved">記憶しました。</panel.string>
+	<panel.string name="cam_other_region">記憶した位置は別のリージョンのものです。</panel.string>
+	<panel.string name="flycam_keys_0">W A S D で移動、Space / C で上下、矢印キーで向き、ホイールで速さ、Q / E で傾き。</panel.string>
+	<panel.string name="flycam_keys_1">W A S D で移動、Space / C で上下。右ボタンを押しながら見回し、ホイールで速さ、Q / E で傾き。</panel.string>
+	<panel.string name="flycam_keys_2">W A S D で移動、Space / C で上下。マウスで見回し（Alt でカーソル）、ホイールで速さ、Q / E で傾き。</panel.string>
+	<panel.string name="strip_flycam">フライカム中（[KEY] で終了）</panel.string>
+	<panel.string name="flycam_tip">カメラがアバターを離れて自由に飛びます。[KEY] でも切り替えられます。</panel.string>
+	<panel.string name="sky_none">インベントリに空・水が見つかりません。</panel.string>
+	<panel.string name="sky_land">リージョン標準</panel.string>
+	<panel.string name="sky_other">（手で変更済み）</panel.string>
+	<panel.string name="blur_switching">ぼかしをオンにしています。数秒ほど画面が止まります。</panel.string>
+	<panel.string name="mood_changed_title">雰囲気「[MOOD]」を選んだあとに設定を変えています。雰囲気を選ぶと、明るさ・ぼかし・色味などがもう一度まとめて決まります。続けますか？</panel.string>
+	<panel name="rail">
+		<button name="tab_focus" label="ピント" tool_tip="誰にピントを合わせるか" />
+		<button name="tab_mood" label="雰囲気" tool_tip="光の雰囲気。明るさ・ぼかし・色味をまとめて決めます" />
+		<button name="tab_comp" label="構図" tool_tip="全身・バストアップ・顔アップなど。人に合わせてカメラを置きます" />
+		<button name="tab_sky" label="空と水" tool_tip="空と水を選びます" />
+		<button name="tab_cam" label="位置" tool_tip="カメラの位置を記憶して、あとで戻ります" />
+		<button name="tab_conv" label="会話" tool_tip="IM とグループチャットをここで読んで返事できます。数字はまだ読んでいない数です。" />
+	</panel>
+	<panel name="body">
+		<panel name="page_focus">
+			<text name="title_focus">ピントを合わせる人</text>
+			<button name="btn_focus_auto" label="自動" tool_tip="ビューワにおまかせ（この画面を使わない時と同じ）" />
+			<button name="btn_focus_self" label="自分の顔" tool_tip="カメラをどこへ動かしても、自分の顔にピントを合わせます" />
+			<button name="btn_focus_other" label="相手の顔（下から選ぶ）" tool_tip="下の一覧で選んだ人の顔にピントを合わせます" />
+			<text name="lbl_nearby">近くの人</text>
+			<scroll_list name="list_nearby" tool_tip="名前を押すと、その人の顔にピントを合わせます" />
+			<button name="btn_blur_on" label="ぼかしをオンにする" tool_tip="被写界深度（背景ぼかし）をオンにします。数秒ほど画面が止まります。" />
+		</panel>
+		<panel name="page_mood">
+			<text name="title_mood">雰囲気</text>
+			<button name="mood_portrait" label="ポートレート" tool_tip="顔をやわらかく見せ、背景をぼかします。顔のアップや上半身に。" />
+			<button name="mood_backlight" label="逆光" tool_tip="太陽を人物の後ろに回し、輪郭を光らせます" />
+			<button name="mood_sunset" label="夕景" tool_tip="暖かいオレンジ寄りの色味。先に夕方の空を選んでください。" />
+			<button name="mood_night" label="夜景" tool_tip="青みがかり、灯りがにじみます。先に夜の空を選んでください。" />
+			<button name="mood_studio" label="スタジオ" tool_tip="均一な光で形をくっきり見せます。服や小物の紹介に。" />
+			<button name="mood_natural" label="自然光" tool_tip="見たままの素直な色。やり直す時の基準に。" />
+			<button name="mood_autumn" label="秋の路地" tool_tip="紅葉の赤を濃く、石畳や木の幹をくっきりさせ、影のふちは木漏れ日が残る柔らかさにします。太陽は動かさないので、低い午後の空を空の一覧から選んでください。" />
+			<text name="mood_hint">雰囲気は、明るさ・ぼかし・色味をまとめて決めます。ひとつずつ調整したい時は詳細表示へ。</text>
+		</panel>
+		<panel name="page_comp">
+			<text name="title_comp">構図</text>
+			<button name="comp_full" label="全身" />
+			<button name="comp_knee" label="ひざ上" />
+			<button name="comp_bust" label="バストアップ" />
+			<button name="comp_face" label="顔アップ" />
+			<button name="comp_low" label="ローアングル" tool_tip="全身を下から見上げます" />
+			<button name="comp_high" label="ハイアングル" tool_tip="全身を上から見下ろします" />
+			<button name="comp_undo" label="ひとつ前のカメラへ戻す" tool_tip="直前の構図を選ぶ前のカメラ位置へ戻します" />
+		</panel>
+		<panel name="page_sky">
+			<button name="btn_sky_kind_sky" label="空" />
+			<button name="btn_sky_kind_water" label="水" />
+			<line_editor name="ed_sky_search" label="検索" tool_tip="名前で絞り込みます" />
+			<scroll_list name="list_sky" tool_tip="押すとすぐ適用します" />
+			<button name="btn_sky_prev" tool_tip="一覧のひとつ前" />
+			<button name="btn_sky_next" tool_tip="一覧のひとつ次" />
+			<button name="btn_sky_land" label="リージョン標準に戻す" tool_tip="リージョン標準の空・水に戻します" />
+		</panel>
+		<panel name="page_cam">
+			<text name="title_cam">カメラ位置</text>
+			<button name="btn_cam_save" label="いまの位置を記憶" tool_tip="いまのカメラの位置を覚えておきます" />
+			<button name="btn_cam_go" label="記憶した位置へ戻る" tool_tip="記憶したカメラ位置へ移動します" />
+			<button name="btn_flycam" label="フライカム（キーボードとマウス）" tool_tip="カメラがアバターを離れて自由に飛びます。" />
+		</panel>
+	</panel>
+	<panel name="strip">
+		<button name="btn_thirds" label="三分割" tool_tip="画面を三分割する線を出します。人物の置き場所の目安に" />
+	</panel>
+	<line_editor name="ed_chat" label="チャット（Enter で送信）" tool_tip="近くの人に話しかけます。入力中は、カメラや撮影のキーは効きません。Esc か世界をクリックすると戻ります。" />
+</panel>

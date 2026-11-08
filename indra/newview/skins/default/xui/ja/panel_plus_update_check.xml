@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="plus_update_check">
+	<check_box name="plus_update_check_enabled" label="Charis Viewer の新しい版を知らせる（起動時に 1 日 1 回確認）" tool_tip="既定はオフです。オンにすると、起動時に 1 日 1 回まで、更新の確認先（設定 PlusUpdateCheckURL。空の間は何も読みません）の小さなファイルを 1 つ読みます。ふつうのウェブページと同じく、サイトのログには IP アドレスとビューワの版が残ります。アカウントやアバターの情報は送りません。" />
+</panel>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Texts of plus/detach (floaters in windows of their own, research/87).
+  Never shown: the viewer reads its strings.
+-->
+<panel
+ name="plus_detach"
+ visible="false"
+ height="10"
+ width="10">
+    <panel.string name="detach_tooltip">Show in a window of its own (to put on another monitor; the button there puts it back)</panel.string>
+    <panel.string name="return_tooltip">Put back in the main window (or drag the title bar onto the main window; hold Ctrl to keep it apart)</panel.string>
+    <panel.string name="too_many">Up to [MAX] windows can be shown apart. Put one back in the main window first.</panel.string>
+    <panel.string name="not_detachable">[TITLE] cannot be shown in a window of its own.</panel.string>
+    <panel.string name="no_frontmost">Click a window first, then choose this again.</panel.string>
+    <panel.string name="needs_vulkan">Windows of their own need the Vulkan renderer.</panel.string>
+</panel>

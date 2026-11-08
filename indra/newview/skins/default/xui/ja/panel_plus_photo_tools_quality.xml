@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="page_quality">
+	<scroll_container name="scroll_quality">
+		<panel name="content_quality">
+			<panel name="sec_qpreset">
+				<text name="title_qpreset">画質の段階</text>
+				<button name="btn_gl_low" label="低" tool_tip="低" />
+				<button name="btn_gl_lowmid" label="低〜中" tool_tip="低〜中" />
+				<button name="btn_gl_mid" label="中" tool_tip="中" />
+				<button name="btn_gl_midhigh" label="中〜高" tool_tip="中〜高: 全 OIT だけを使う段（ほかの Charis の機能はなし）" />
+				<button name="btn_gl_high" label="高" tool_tip="高" />
+				<button name="btn_gl_highultra" label="高〜超高" tool_tip="高〜超高" />
+				<button name="btn_gl_ultra" label="超高" tool_tip="超高" />
+			</panel>
+		</panel>
+	</scroll_container>
+</panel>

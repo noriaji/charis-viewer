@@ -1,0 +1,865 @@
+{
+  "backend_interfaces": [
+    "Buffers::Backend",
+    "LLRHIAvatar::Backend",
+    "PassStateBackend",
+    "PassStateCopy",
+    "ProbeList",
+    "ShaderReloadBuilder",
+    "ShadowList",
+    "Textures::Backend"
+  ],
+  "direct_entries": [
+    "TrackerHold",
+    "frameRecording",
+    "freeDeferred",
+    "holdTracker",
+    "onFrameNotShown",
+    "onGLFunctionsLoaded",
+    "onGLShutdown",
+    "releaseTracker"
+  ],
+  "format_version": 1,
+  "gl_answered": {
+    "glBindVertexArray": "context",
+    "glClientWaitSync": "context",
+    "glCompileShader": "shaderobj",
+    "glCreateProgram": "shaderobj",
+    "glCreateShader": "shaderobj",
+    "glDebugMessageCallback": "context",
+    "glDebugMessageControl": "context",
+    "glDebugMessageInsert": "context",
+    "glDeleteQueries": "context",
+    "glDeleteShader": "shaderobj",
+    "glDeleteSync": "context",
+    "glDeleteVertexArrays": "context",
+    "glFenceSync": "context",
+    "glFinish": "context",
+    "glFlush": "context",
+    "glGenBuffers": "context",
+    "glGenFramebuffers": "context",
+    "glGenQueries": "context",
+    "glGenTextures": "context",
+    "glGenVertexArrays": "context",
+    "glGetActiveUniform": "shaderobj",
+    "glGetAttachedShaders": "shaderobj",
+    "glGetAttribLocation": "shaderobj",
+    "glGetBooleanv": "context",
+    "glGetBufferParameteriv": "context",
+    "glGetError": "context",
+    "glGetFloatv": "context",
+    "glGetIntegerv": "context",
+    "glGetProgramBinary": "shaderobj",
+    "glGetProgramInfoLog": "shaderobj",
+    "glGetProgramiv": "shaderobj",
+    "glGetQueryObjectiv": "context",
+    "glGetQueryObjectui64v": "context",
+    "glGetShaderInfoLog": "shaderobj",
+    "glGetShaderiv": "shaderobj",
+    "glHint": "context",
+    "glIsBuffer": "context",
+    "glIsEnabled": "context",
+    "glIsFramebuffer": "context",
+    "glIsProgram": "shaderobj",
+    "glIsQuery": "context",
+    "glIsShader": "shaderobj",
+    "glIsSync": "context",
+    "glIsTexture": "context",
+    "glIsVertexArray": "context",
+    "glObjectLabel": "context",
+    "glPointSize": "context",
+    "glProgramParameteri": "shaderobj",
+    "glValidateProgram": "shaderobj",
+    "glWaitSync": "context",
+    "wglGetSwapIntervalEXT": "context",
+    "wglSwapIntervalEXT": "context"
+  },
+  "gl_wrapped": [
+    "glAttachShader",
+    "glBeginQuery",
+    "glBindAttribLocation",
+    "glBindBuffer",
+    "glBindBufferBase",
+    "glBindFramebuffer",
+    "glBufferData",
+    "glCheckFramebufferStatus",
+    "glClearColor",
+    "glClearStencil",
+    "glCompressedTexImage2D",
+    "glCompressedTexSubImage3D",
+    "glCopyTexSubImage2D",
+    "glCopyTexSubImage3D",
+    "glDeleteBuffers",
+    "glDeleteFramebuffers",
+    "glDeleteProgram",
+    "glDeleteTextures",
+    "glDetachShader",
+    "glDisableVertexAttribArray",
+    "glDrawArrays",
+    "glDrawRangeElements",
+    "glEnable",
+    "glEnableVertexAttribArray",
+    "glEndQuery",
+    "glFramebufferTexture2D",
+    "glGenerateMipmap",
+    "glGetCompressedTexImage",
+    "glGetQueryObjectuiv",
+    "glGetTexImage",
+    "glGetTexLevelParameteriv",
+    "glGetUniformBlockIndex",
+    "glGetUniformLocation",
+    "glLinkProgram",
+    "glPixelStorei",
+    "glProgramBinary",
+    "glReadPixels",
+    "glShaderSource",
+    "glStencilFunc",
+    "glStencilMask",
+    "glStencilOp",
+    "glTexImage2D",
+    "glTexImage3D",
+    "glTexParameteriv",
+    "glTexSubImage2D",
+    "glTexSubImage3D",
+    "glUniform1f",
+    "glUniform1fv",
+    "glUniform1i",
+    "glUniform1iv",
+    "glUniform2f",
+    "glUniform2fv",
+    "glUniform2i",
+    "glUniform3f",
+    "glUniform3fv",
+    "glUniform4f",
+    "glUniform4fv",
+    "glUniform4iv",
+    "glUniform4uiv",
+    "glUniformBlockBinding",
+    "glUniformMatrix2fv",
+    "glUniformMatrix3fv",
+    "glUniformMatrix3x4fv",
+    "glUniformMatrix4fv",
+    "glVertexAttrib4f",
+    "glVertexAttrib4fv",
+    "glVertexAttribIPointer",
+    "glVertexAttribPointer"
+  ],
+  "hash": "13d940b66b2d8db20bff7bed1342b702d80a44b02cdaee23eb2693a0b0710912",
+  "hooks": {
+    "sActiveTexture": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sAvatarBackendReport": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBackendCounters": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBakeShaders": {
+      "direction": "forward",
+      "flag": "function_pointer_arg",
+      "header": "llrhi.h"
+    },
+    "sBeginQuery": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBindBufferBase": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBindFramebuffer": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBindTarget": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhipass.h"
+    },
+    "sBindTexture": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBlendFunc": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBufferCompactCounts": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBufferData": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBufferHandle": {
+      "direction": "forward",
+      "flag": "pointer_return",
+      "header": "llrhiresource.h"
+    },
+    "sBufferSubData": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sBufferWriteRanges": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiresource.h"
+    },
+    "sCPUMark": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sCensusTake": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sClear": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sClearColor": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sColorMask": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sCompressedTexImage2D": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sContactShadows": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhigtao.h"
+    },
+    "sCopyTexSubImage2D": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sCopyTexSubImage3D": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sCullFace": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDepthFunc": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDepthMask": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDescribeDrawTarget": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDirectDraw": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDrawBuffer": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDrawBuffers": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDrawList": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhidrawlist.h"
+    },
+    "sDrawListReady": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhidrawlist.h"
+    },
+    "sDrawRunPrograms": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDrawShadowPackets": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDrawTemplate": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDrawTemplateReleased": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sDumpAllocations": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sEndQuery": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sFireflies": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiatmosphere.h"
+    },
+    "sForgetWindow": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sGPUBenchmark": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sGPUMark": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sGenerateMipmap": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sGetQueryObjectuiv": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sGlareComposite": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiglare.h"
+    },
+    "sGlareDownsample": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiglare.h"
+    },
+    "sGlareStreak": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiglare.h"
+    },
+    "sGlareStreakExtract": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiglare.h"
+    },
+    "sGlareSunVisibility": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiglare.h"
+    },
+    "sGlareUpsample": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiglare.h"
+    },
+    "sGroundFog": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiatmosphere.h"
+    },
+    "sGtaoApply": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhigtao.h"
+    },
+    "sGtaoApplyContact": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhigtao.h"
+    },
+    "sGtaoDenoise": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhigtao.h"
+    },
+    "sGtaoDepth": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhigtao.h"
+    },
+    "sGtaoOcclusion": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhigtao.h"
+    },
+    "sImmediateDraw": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiimmediate.h"
+    },
+    "sJoinShadowRecording": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sLightTableProgram": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sLineWidth": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sLookGrade": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhilook.h"
+    },
+    "sMemoryReport": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sNoteEvent": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sOITBegin": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sOITResolve": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sOITSnapshotCheck": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sOITSupported": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sOITVariant": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sOITWorld": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sObjectVersions": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sOcclusionBoxes": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiocclusion.h"
+    },
+    "sOcclusionBoxesReady": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiocclusion.h"
+    },
+    "sOcclusionResult": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiocclusion.h"
+    },
+    "sPacketDraw": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sParallelShaderReload": {
+      "direction": "forward",
+      "flag": "function_pointer_arg",
+      "header": "llrhi.h"
+    },
+    "sPassBegin": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhipass.h"
+    },
+    "sPassEnd": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhipass.h"
+    },
+    "sPixelStorei": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sPlacePalette": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sPolygonMode": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sPolygonOffset": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sPoolDetail": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sPostWork": {
+      "direction": "reverse",
+      "flag": "function_pointer_arg",
+      "header": "llrhi.h"
+    },
+    "sPresentWindow": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sPrewarmShaders": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sRainStreaks": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhirain.h"
+    },
+    "sRayTracingSource": {
+      "direction": "reverse",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sReadBuffer": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sResourceCounts": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sScissor": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sSetCap": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sSetUniform": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sSetUniformMatrix": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sShaderProgram": {
+      "direction": "forward",
+      "flag": "pointer_return",
+      "header": "llrhi.h"
+    },
+    "sSkinFillLight": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiskinfill.h"
+    },
+    "sSkinFillMask": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiskinfill.h"
+    },
+    "sSkinFillOcclusion": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiskinfill.h"
+    },
+    "sSkinFillShrink": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiskinfill.h"
+    },
+    "sSkinFillSoften": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiskinfill.h"
+    },
+    "sSkinSssDebug": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiskinsss.h"
+    },
+    "sSsgiCapture": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissgi.h"
+    },
+    "sSsgiCompactLight": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissgi.h"
+    },
+    "sSsgiDebugView": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissgi.h"
+    },
+    "sSsgiDenoise": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissgi.h"
+    },
+    "sSsgiOcclusion": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissgi.h"
+    },
+    "sSsgiReproject": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissgi.h"
+    },
+    "sSsrAvatarMask": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissr.h"
+    },
+    "sSsrFilter": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissr.h"
+    },
+    "sSsrHiZ": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissr.h"
+    },
+    "sSsrResolve": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissr.h"
+    },
+    "sSsrTrace": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhissr.h"
+    },
+    "sTaaDraw": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhitaa.h"
+    },
+    "sTableRows": {
+      "direction": "forward",
+      "flag": "pointer_return",
+      "header": "llrhi.h"
+    },
+    "sTexBCNReport": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTexConvertJoin": {
+      "direction": "forward",
+      "flag": "function_pointer_arg",
+      "header": "llrhi.h"
+    },
+    "sTexImage2D": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTexParameters": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTexScaleDown": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTexStorage2D": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTexSubImage2D": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTextureCompressed": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTextureImageBytes": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTextureMoveHold": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sTranslateFlush": {
+      "direction": "unused",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sUniformSlot": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sUpscaleDraw": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiupscale.h"
+    },
+    "sUsePaletteRow": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sUseProgram": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sVRAMBudget": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sViewport": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sVolumetricBlur": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhivolumetric.h"
+    },
+    "sVolumetricComposite": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhivolumetric.h"
+    },
+    "sVolumetricMarch": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhivolumetric.h"
+    },
+    "sVulkanUnavailableExit": {
+      "direction": "reverse",
+      "flag": null,
+      "header": "llrhi.h"
+    },
+    "sWetLookCompute": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiwetlook.h"
+    },
+    "sWetLookWriteBack": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiwetlook.h"
+    }
+  },
+  "scene_virtuals": [
+    "ready",
+    "addGroup",
+    "removeGroup",
+    "addRecord",
+    "updateRecord",
+    "removeRecord",
+    "addTransform",
+    "setTransform",
+    "removeTransform",
+    "addUVTransform",
+    "setUVTransform",
+    "removeUVTransform",
+    "setView",
+    "setGroupVisible",
+    "drawPass",
+    "drawSorted",
+    "drawShadow",
+    "shadowMasks",
+    "shadowSkins",
+    "setDrawing",
+    "drawing",
+    "canDrawPass",
+    "forgetPass",
+    "groupDrawable",
+    "viewTurn",
+    "problems",
+    "collect",
+    "takeStats"
+  ]
+}

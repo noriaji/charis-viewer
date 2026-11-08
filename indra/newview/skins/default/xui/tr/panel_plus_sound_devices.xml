@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="Cihaz Ayarları">
+    <panel.string name="default_text">
+        Varsayılan
+    </panel.string>
+    <string name="name_no_device">
+        Cihaz Yok
+    </string>
+    <string name="name_default_system_device">
+        Varsayılan Sistem Cihazı
+    </string>
+    <plus_ps_text name="Input">
+        Girdi
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        Çıktı
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        Mik. ses düzeyi:
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="Bu kaydırma butonunu kullanarak mikrofonun ses düzeyini değiştirin" />
+    <plus_ps_text name="wait_text">
+        Lütfen bekleyin
+    </plus_ps_text>
+</panel>

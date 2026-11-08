@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="Ustawienia urządzenia">
+    <panel.string name="default_text">
+        Domyślne
+    </panel.string>
+    <string name="name_no_device">
+        Brak
+    </string>
+    <string name="name_default_system_device">
+        Domyślne systemowe
+    </string>
+    <plus_ps_text name="Input">
+        Wejście
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        Wyjście
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        Moja głośność:
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="Zmień głośność używając tego suwaka" />
+    <plus_ps_text name="wait_text">
+        Proszę czekać
+    </plus_ps_text>
+</panel>

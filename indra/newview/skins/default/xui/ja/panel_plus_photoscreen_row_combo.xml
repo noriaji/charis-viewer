@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- ja: the words only. Places and sizes come from en/panel_plus_photoscreen_row_combo.xml (LLXMLNode::updateNode matches by name). -->
+<panel name="plus_photoscreen_row">
+    <text name="label">
+        Name
+    </text>
+</panel>

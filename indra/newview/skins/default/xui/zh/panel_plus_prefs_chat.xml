@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="chat" label="文字聊天">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="chat_scroll">
+			<panel name="chat_scroll_panel">
+				<panel name="general_chat_settings">
+					<plus_ps_check_compat name="auto_complete_gestures" label="在附近聊天中，自動完成姿勢" />
+					<plus_ps_check_compat name="play_typing_animation" label="聊天時呈現打字動作" />
+					<plus_ps_check_compat name="bubble_text_chat" label="聊天泡泡" />
+					<plus_ps_text name="font_size">
+						字型大小：
+					</plus_ps_text>
+					<plus_ps_combo name="chat_font_size">
+						<plus_ps_combo.item name="Small" label="小" />
+						<plus_ps_combo.item name="Medium" label="中" />
+						<plus_ps_combo.item name="Large" label="大" />
+					</plus_ps_combo>
+				</panel>
+				<panel name="im_notification_settings">
+					<plus_ps_check_compat name="voice_call_friends_only_check" label="只允許我的朋友和群組與我通話或 IM 給我" />
+					<plus_ps_text name="friend_ims">
+						朋友 IM：
+					</plus_ps_text>
+					<plus_ps_combo name="FriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="開啟交談視窗" />
+						<plus_ps_combo.item name="PopUpMessage" label="以突顯式視窗顯示訊息" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Flash 工具列按鈕" />
+						<plus_ps_combo.item name="NoAction" label="無動作" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_friend_im" label="播放聲音" />
+					<plus_ps_text name="non_friend_ims">
+						非朋友 IM：
+					</plus_ps_text>
+					<plus_ps_combo name="NonFriendIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="開啟交談視窗" />
+						<plus_ps_combo.item name="PopUpMessage" label="以突顯式視窗顯示訊息" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Flash 工具列按鈕" />
+						<plus_ps_combo.item name="NoAction" label="無動作" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_non_friend_im" label="播放聲音" />
+					<plus_ps_text name="conference_ims">
+						多方交談 IM：
+					</plus_ps_text>
+					<plus_ps_combo name="ConferenceIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="開啟交談視窗" />
+						<plus_ps_combo.item name="PopUpMessage" label="以突顯式視窗顯示訊息" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Flash 工具列按鈕" />
+						<plus_ps_combo.item name="NoAction" label="無動作" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_conference_im" label="播放聲音" />
+					<plus_ps_text name="group_chat">
+						群組聊天：
+					</plus_ps_text>
+					<plus_ps_combo name="GroupChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="開啟交談視窗" />
+						<plus_ps_combo.item name="PopUpMessage" label="以突顯式視窗顯示訊息" />
+						<plus_ps_combo.item name="FlashToolbarButton" label="Flash 工具列按鈕" />
+						<plus_ps_combo.item name="NoAction" label="無動作" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_group_chat_im" label="播放聲音" />
+					<plus_ps_text name="nearby_chat">
+						附近的聊天：
+					</plus_ps_text>
+					<plus_ps_combo name="NearbyChatOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="開啟交談視窗" />
+						<plus_ps_combo.item name="PopUpMessage" label="以突顯式視窗顯示訊息" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="Flash 工具列按鈕" />
+						<plus_ps_combo.item name="NoAction" label="無動作" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_nearby_chat_im" label="播放聲音" />
+					<plus_ps_text name="object_ims">
+						來自物件的 IM：
+					</plus_ps_text>
+					<plus_ps_combo name="ObjectIMOptions">
+						<plus_ps_combo.item name="OpenConversationsWindow" label="開啟交談視窗" />
+						<plus_ps_combo.item name="PopUpMessage" label="以突顯式視窗顯示訊息" />
+						<plus_ps_combo.item name="FlashToolBarButton" label="Flash 工具列按鈕" />
+						<plus_ps_combo.item name="NoAction" label="無動作" />
+					</plus_ps_combo>
+					<plus_ps_check_compat name="play_sound_object_im" label="播放聲音" />
+					<plus_ps_text name="notifications_alert">
+						若要暫時停止所有通知，請設定「溝通 &gt; 請勿打擾」。
+					</plus_ps_text>
+				</panel>
+				<panel name="play_sound_settings">
+					<plus_ps_text name="play_sound">
+						播放聲音：
+					</plus_ps_text>
+					<plus_ps_check_compat name="new_conversation" label="新交談" />
+					<plus_ps_check_compat name="teleport_offer" label="瞬間傳送邀請" />
+					<plus_ps_check_compat name="incoming_voice_call" label="語音通話來電" />
+					<plus_ps_check_compat name="inventory_offer" label="收納物品贈送" />
+				</panel>
+				<panel name="log_settings">
+					<plus_ps_text name="logging_label">
+						儲存：
+					</plus_ps_text>
+					<plus_ps_combo name="conversation_log_combo">
+						<plus_ps_combo.item name="log_and_transcripts" label="活動記錄和交談記錄" />
+						<plus_ps_combo.item name="log_only" label="僅活動記錄" />
+						<plus_ps_combo.item name="no_log_or_transcript" label="沒有活動記錄或交談記錄" />
+					</plus_ps_combo>
+					<plus_ps_button_compat name="clear_log" label="清空記錄…" />
+					<plus_ps_button_compat name="delete_transcripts" label="刪除交談內容記錄…" />
+					<plus_ps_text name="log_location_label">
+						位置：
+					</plus_ps_text>
+					<plus_ps_button_compat name="log_path_button" label="瀏覽…" label_selected="瀏覽" />
+				</panel>
+				<plus_ps_button_compat name="ok_btn" label="翻譯…" />
+				<plus_ps_button_compat name="autoreplace_showgui" label="自動取代…" />
+				<plus_ps_button_compat name="spellcheck_showgui" label="拼字檢查…" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

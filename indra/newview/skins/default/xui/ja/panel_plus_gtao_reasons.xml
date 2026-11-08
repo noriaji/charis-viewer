@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_gtao_reasons">
+	<panel.string name="reason_safe_mode">セーフモードで起動中のため使えません。</panel.string>
+	<panel.string name="reason_gtao_switched_off">起動時のスイッチ（LLRHI_GTAO=0）で切られているため使えません。</panel.string>
+	<panel.string name="reason_ssgi_switched_off">起動時のスイッチ（LLRHI_SSGI=0）で切られているため使えません。</panel.string>
+	<panel.string name="reason_no_backend">この GPU／ドライバでは使えません。</panel.string>
+	<panel.string name="reason_ssao_off">環境遮蔽（SSAO。環境設定の「アンビエントオクルージョン」、撮影ツールの「標準の SSAO」）がオフです。オンにすると使えます。</panel.string>
+	<panel.string name="reason_gtao_off">GTAO がオフです（環境設定の「GTAO（すみの陰を細かく）」、撮影ツールの「アンビエントオクルージョン（GTAO）」）。オンにすると使えます。</panel.string>
+	<panel.string name="reason_gtao_strength_zero">GTAO の強さが 0 です（環境設定・撮影ツールの「GTAO の強さ」）。上げると使えます。</panel.string>
+	<panel.string name="reason_ssao_unsupported">この GPU では環境遮蔽（SSAO）が使えないため、使えません。</panel.string>
+	<panel.string name="reason_hdr_off">HDR がオフです。オンにすると使えます。</panel.string>
+	<panel.string name="reason_probes_off">反射プローブがオフです（画質の段が低い時など）。オンにすると使えます。</panel.string>
+	<panel.string name="reason_probes_unsupported">この GPU では反射プローブが使えないため、使えません。</panel.string>
+</panel>

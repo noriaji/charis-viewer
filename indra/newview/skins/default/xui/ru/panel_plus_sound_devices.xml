@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="Настройки устройства">
+    <panel.string name="default_text">
+        По умолчанию
+    </panel.string>
+    <string name="name_no_device">
+        Нет устройства
+    </string>
+    <string name="name_default_system_device">
+        Системное устройство по умолчанию
+    </string>
+    <plus_ps_text name="Input">
+        Вход
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        Выход
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        Громкость микрофона:
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="Измените уровень в микрофоне, используя ползунок" />
+    <plus_ps_text name="wait_text">
+        Подождите
+    </plus_ps_text>
+</panel>

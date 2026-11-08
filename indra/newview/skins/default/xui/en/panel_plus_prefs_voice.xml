@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window (from: official Second_Life_Release#d567465e-26.5 panel_preferences_voice.xml;
+     research/266 4. prefs-w-basic). The official panel stays as it is (the ledger's source for
+     tools/ui-parity-diff.py); this page has all it does (name, control_name, functions, strings, choices,
+     ranges) in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml).
+     Height of the list (1080 base): 10 + volume 34 + 10 + 2 drop-down rows x 33 + 10 + 6 checks x 30 + 6
+     + devices button 40 + 6 + the devices 109 (panel_plus_sound_devices.xml) + 14 = 485 (fits in 515).
+     A volume row (34): slider 320 | 12 | Mute 84 | 12 | Enabled 101 (as the Sound & Media tab).
+     Other rows at left 14, 529 wide: label 317 | 12 | drop-down 200. -->
+<panel
+ name="voice_panel"
+ border="true"
+ follows="all"
+ height="515"
+ label="Voice"
+ layout="topleft"
+ left="0"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="voice_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="voice_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="485"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <plus_ps_slider_compat
+                 name="Voice Volume"
+                 control_name="AudioLevelVoice"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="31"
+                 increment="0.025"
+                 initial_value="0.5"
+                 label="Voice Chat"
+                 layout="topleft"
+                 left="14"
+                 show_text="false"
+                 top="11"
+                 volume="true"
+                 width="320">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.setControlFalse"
+                     parameter="MuteVoice" />
+                </plus_ps_slider_compat>
+                <plus_ps_button_compat
+                 name="mute_audio_voice"
+                 control_name="MuteVoice"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="28"
+                 is_toggle="true"
+                 label="Mute"
+                 layout="topleft"
+                 left="346"
+                 tab_stop="false"
+                 tool_tip="Mutes this volume. Blue while muted."
+                 top="13"
+                 width="84" />
+                <plus_ps_check_compat
+                 name="enable_voice_check"
+                 control_name="EnableVoiceChat"
+                 disabled_control="CmdLineDisableVoice"
+                 follows="left|top"
+                 height="30"
+                 label="Enabled"
+                 label_text.halign="left"
+                 layout="topleft"
+                 left="442"
+                 top="12"
+                 width="101" />
+                <plus_ps_text
+                 name="noise_suppression_label"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 top="54"
+                 width="317">
+                    Microphone Noise Suppression
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="noise_suppression_combo"
+                 control_name="VoiceNoiseSuppressionLevel"
+                 enabled_control="EnableVoiceChat"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="343"
+                 top="54"
+                 width="200">
+                    <item
+                     name="noise_suppression_none"
+                     label="Off"
+                     value="0" />
+                    <item
+                     name="noise_suppression_low"
+                     label="Low"
+                     value="1" />
+                    <item
+                     name="noise_suppression_moderate"
+                     label="Moderate"
+                     value="2" />
+                    <item
+                     name="noise_suppression_high"
+                     label="High"
+                     value="3" />
+                    <item
+                     name="noise_suppression_max"
+                     label="Max"
+                     value="4" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="Listen from"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="87"
+                 type="string"
+                 width="317">
+                    Hear voice from
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="ear_location_combo"
+                 control_name="VoiceEarLocation"
+                 enabled_control="EnableVoiceChat"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="343"
+                 top="87"
+                 width="200">
+                    <item
+                     name="camera_position"
+                     label="Camera position"
+                     value="0" />
+                    <item
+                     name="avatar_position"
+                     label="Avatar position"
+                     value="1" />
+                </plus_ps_combo>
+                <plus_ps_check_compat
+                 name="enable_lip_sync"
+                 control_name="LipSyncEnabled"
+                 enabled_control="EnableVoiceChat"
+                 follows="left|top|right"
+                 height="30"
+                 label="Move avatar lips when speaking"
+                 layout="topleft"
+                 left="14"
+                 top="130"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="push_to_talk_toggle_check"
+                 control_name="PushToTalkToggle"
+                 enabled_control="EnableVoiceChat"
+                 follows="left|top|right"
+                 height="30"
+                 label="Toggle speak on/off with toolbar button"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="When in toggle mode, press and release the trigger key ONCE to switch your microphone on or off. When not in toggle mode, the microphone broadcasts your voice only while the trigger is being held down."
+                 top="160"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="gesture_audio_play_btn"
+                 control_name="EnableGestureSounds"
+                 disabled_control="MuteAudio"
+                 follows="left|top|right"
+                 height="30"
+                 label="Play sounds from gestures"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="Check this to hear sounds from gestures"
+                 top="190"
+                 value="true"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="enable_echo_cancellation"
+                 control_name="VoiceEchoCancellation"
+                 enabled_control="EnableVoiceChat"
+                 follows="left|top|right"
+                 height="30"
+                 label="Echo Cancellation"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="Check to enable voice echo cancellation"
+                 top="220"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="voice_automatic_gain_control"
+                 control_name="VoiceAutomaticGainControl"
+                 enabled_control="EnableVoiceChat"
+                 follows="left|top|right"
+                 height="30"
+                 label="Automatic Gain Control"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="Check to enable automatic gain control"
+                 top="250"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="voice_dot_visualizer"
+                 control_name="VoiceVisualizerEnabled"
+                 enabled_control="EnableVoiceChat"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show voice dot above avatars"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="Check to show voice dot indicator above avatars"
+                 top="280"
+                 width="529" />
+                <plus_ps_button_compat
+                 name="device_settings_btn"
+                 control_name="ShowDeviceSettings"
+                 enabled_control="EnableVoiceChat"
+                 follows="left|top"
+                 height="40"
+                 is_toggle="true"
+                 label="Voice Input/Output devices"
+                 layout="topleft"
+                 left="14"
+                 top="316"
+                 width="260" />
+                <!-- the devices: panel_plus_sound_devices.xml (class panel_voice_device_settings, LLPanelVoiceDeviceSettings) -->
+                <panel
+                 name="device_settings_panel"
+                 class="panel_voice_device_settings"
+                 filename="panel_plus_sound_devices.xml"
+                 follows="left|top"
+                 height="109"
+                 layout="topleft"
+                 left="0"
+                 top="362"
+                 visiblity_control="ShowDeviceSettings"
+                 width="557" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

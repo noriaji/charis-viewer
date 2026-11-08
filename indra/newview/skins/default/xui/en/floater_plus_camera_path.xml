@@ -1,0 +1,808 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Camera path (plus/camerapath): camera points the camera goes through in turn, smoothly or with a cut; shake;
+  looking at an avatar; countdown; a picture for every frame. Control names and string names are used by
+  camerapathfloater.cpp. The error strings (path_err_*) are the keys camerapath.cpp gives back.
+  The timeline is a view the window makes inside the panel "timeline_holder".
+-->
+<floater
+ positioning="cascading"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="true"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="564"
+ width="420"
+ layout="topleft"
+ name="plus_camera_path"
+ title="CAMERA PATH">
+    <floater.string name="path_err_no_camera">There is no avatar or camera yet.</floater.string>
+    <floater.string name="path_err_full">The path has the most points it can (32).</floater.string>
+    <floater.string name="path_err_busy">Something is already playing. Stop it first.</floater.string>
+    <floater.string name="path_err_spin_point">Choose a point other than the first: the turn happens while the camera moves into it.</floater.string>
+    <floater.string name="list_motion_orbit">Orbit</floater.string>
+    <floater.string name="list_orbit">[LAPS] lap</floater.string>
+    <floater.string name="list_orbits">[LAPS] laps</floater.string>
+    <floater.string name="list_spin">[TURNS] turn</floater.string>
+    <floater.string name="list_spins">[TURNS] turns</floater.string>
+    <floater.string name="path_err_spin_max">This point already has the most turns (8).</floater.string>
+    <floater.string name="path_err_empty">The path has no points. Move the camera and press Add Point.</floater.string>
+    <floater.string name="path_err_flycam">The flycam (3D mouse) is moving the camera. Turn it off first.</floater.string>
+    <floater.string name="path_err_name">Enter a name to save under.</floater.string>
+    <floater.string name="path_err_write">The path could not be saved.</floater.string>
+    <floater.string name="path_err_read">The path could not be read.</floater.string>
+    <floater.string name="path_err_script">The script is not a camera script (see the notes on the JSON format).</floater.string>
+    <floater.string name="path_err_short">The path has no time to step through. Give a move or a stay some seconds first.</floater.string>
+    <floater.string name="path_err_export_busy">The photo button is busy. Try again in a moment.</floater.string>
+    <floater.string name="path_err_too_long">Too many frames at this rate (36000 at most). Lower the rate or shorten the path.</floater.string>
+    <floater.string name="path_err_name_reserved">Windows keeps that name for itself. Choose another name.</floater.string>
+    <floater.string name="path_idle">Ready. Esc ends a path and returns the camera to your avatar.</floater.string>
+    <floater.string name="path_playing">Playing... [TIME] / [TOTAL] s</floater.string>
+    <floater.string name="path_counting">Starting in [NUMBER]...</floater.string>
+    <floater.string name="path_in_place">Shaking in place. Stop or Esc ends it.</floater.string>
+    <floater.string name="path_exporting">Taking pictures... [FRAME] / [FRAMES]</floater.string>
+    <floater.string name="path_total">Length [TOTAL] s</floater.string>
+    <floater.string name="path_other_region">This path was made in another region ([REGION]). It plays at the same places on the map.</floater.string>
+    <floater.string name="path_start">Start</floater.string>
+    <floater.string name="path_cut">Cut</floater.string>
+    <floater.string name="path_seconds">[SECONDS] s</floater.string>
+    <floater.string name="path_point_default">Point [NUMBER]</floater.string>
+    <floater.string name="path_chosen_none">The chosen point</floater.string>
+    <floater.string name="path_chosen">The chosen point: [NUMBER] (tilt [DEGREES]°)</floater.string>
+    <floater.string name="motion_smooth">Smooth</floater.string>
+    <floater.string name="motion_linear">Even speed</floater.string>
+    <floater.string name="motion_ease">Ease in and out</floater.string>
+    <floater.string name="list_motion_smooth">Smooth</floater.string>
+    <floater.string name="list_motion_linear">Even</floater.string>
+    <floater.string name="list_motion_ease">Ease</floater.string>
+    <floater.string name="subject_none">The saved direction</floater.string>
+    <floater.string name="subject_me">Me ([NAME])</floater.string>
+    <floater.string name="subject_far">Another avatar (not near)</floater.string>
+    <combo_box
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="8"
+     top="26"
+     width="250"
+     name="saved"
+     tool_tip="The paths and scripts you saved (a name ending in .json is a script)" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Open"
+     layout="topleft"
+     left="262"
+     top="26"
+     width="60"
+     name="btn_load"
+     tool_tip="Opens the chosen saved path or script (the path now open is replaced)" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Delete file"
+     layout="topleft"
+     left="326"
+     top="26"
+     width="86"
+     name="btn_delete_file"
+     tool_tip="Deletes the chosen saved path or script" />
+    <line_editor
+     follows="left|top"
+     height="22"
+     layout="topleft"
+     left="8"
+     top="54"
+     width="190"
+     max_length_chars="64"
+     commit_on_focus_lost="false"
+     name="path_name"
+     tool_tip="The name to save the path under" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Save"
+     layout="topleft"
+     left="202"
+     top="54"
+     width="60"
+     name="btn_save"
+     tool_tip="Saves the path under this name" />
+    <button
+     follows="left|top"
+     height="22"
+     label="New"
+     layout="topleft"
+     left="266"
+     top="54"
+     width="56"
+     name="btn_new"
+     tool_tip="Starts an empty path" />
+    <check_box
+     follows="left|top"
+     height="16"
+     label="Loop"
+     layout="topleft"
+     left="332"
+     top="57"
+     width="80"
+     name="loop"
+     tool_tip="After the last point, go back to the first with a cut" />
+    <panel
+     follows="left|top"
+     height="44"
+     layout="topleft"
+     left="8"
+     top="84"
+     width="404"
+     name="timeline_holder" />
+    <tab_container
+     follows="left|top"
+     height="300"
+     layout="topleft"
+     left="8"
+     top="134"
+     width="404"
+     tab_position="top"
+     tab_height="20"
+     tab_min_width="80"
+     name="tabs">
+        <panel
+         follows="all"
+         label="Points"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="404"
+         height="274"
+         name="tab_points">
+            <scroll_list
+             name="points"
+             tool_tip="The camera goes through the points from the top. Choose one to change it."
+             left="0"
+             top="2"
+             width="404"
+             height="92"
+             multi_select="false"
+             draw_heading="true"
+             follows="left|top"
+             layout="topleft">
+                <scroll_list.columns
+                 label="No."
+                 name="num"
+                 dynamic_width="false"
+                 width="34" />
+                <scroll_list.columns
+                 label="Name"
+                 name="point_name"
+                 dynamic_width="true" />
+                <scroll_list.columns
+                 label="Time"
+                 name="seconds"
+                 dynamic_width="false"
+                 width="64" />
+                <scroll_list.columns
+                 label="Move"
+                 name="motion"
+                 dynamic_width="false"
+                 width="124" />
+                <scroll_list.columns
+                 label="Stay"
+                 name="hold"
+                 dynamic_width="false"
+                 width="52" />
+            </scroll_list>
+            <button
+             follows="left|top"
+             height="24"
+             label="Add Point"
+             layout="topleft"
+             left="0"
+             top="98"
+             width="100"
+             name="btn_add"
+             tool_tip="Adds the camera as it is now as the last point (key: K)" />
+            <button
+             follows="left|top"
+             height="24"
+             label="Overwrite Point"
+             layout="topleft"
+             left="104"
+             top="98"
+             width="112"
+             name="btn_overwrite"
+             tool_tip="Puts the camera as it is now into the chosen point" />
+            <button
+             follows="left|top"
+             height="24"
+             label="Go to Point"
+             layout="topleft"
+             left="220"
+             top="98"
+             width="84"
+             name="btn_goto"
+             tool_tip="Moves the camera to the chosen point to look at it" />
+            <button
+             follows="left|top"
+             height="24"
+             label="Remove Point"
+             layout="topleft"
+             left="308"
+             top="98"
+             width="96"
+             name="btn_remove"
+             tool_tip="Takes the chosen point out of the path" />
+            <button
+             follows="left|top"
+             height="22"
+             label="Up"
+             layout="topleft"
+             left="0"
+             top="126"
+             width="56"
+             name="btn_up"
+             tool_tip="Moves the chosen point earlier in the path" />
+            <button
+             follows="left|top"
+             height="22"
+             label="Down"
+             layout="topleft"
+             left="60"
+             top="126"
+             width="56"
+             name="btn_down"
+             tool_tip="Moves the chosen point later in the path" />
+            <button
+             follows="left|top"
+             height="22"
+             label="Copy Point"
+             layout="topleft"
+             left="120"
+             top="126"
+             width="96"
+             name="btn_copy"
+             tool_tip="Makes a copy of the chosen point right after it" />
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             font="SansSerifBold"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="152"
+             width="400"
+             name="lbl_point">
+                The chosen point
+            </text>
+            <line_editor
+             follows="left|top"
+             height="22"
+             layout="topleft"
+             left="0"
+             top="170"
+             width="196"
+             max_length_chars="64"
+             commit_on_focus_lost="true"
+             name="name"
+             tool_tip="A name for the point (can stay empty)" />
+            <combo_box
+             follows="left|top"
+             height="22"
+             layout="topleft"
+             left="200"
+             top="170"
+             width="204"
+             name="motion"
+             tool_tip="How the camera goes from the point before to this one">
+                <combo_box.item
+                 type="string"
+                 label="Smooth"
+                 name="motion_smooth"
+                 value="0" />
+                <combo_box.item
+                 type="string"
+                 label="Even speed"
+                 name="motion_linear"
+                 value="1" />
+                <combo_box.item
+                 type="string"
+                 label="Ease in and out"
+                 name="motion_ease"
+                 value="2" />
+                <combo_box.item
+                 type="string"
+                 label="Orbit round the subject"
+                 name="motion_orbit"
+                 value="3" />
+            </combo_box>
+            <spinner
+             follows="left|top"
+             height="20"
+             label="Time (s)"
+             label_width="62"
+             decimal_digits="1"
+             increment="0.5"
+             initial_value="3"
+             layout="topleft"
+             left="0"
+             top="197"
+             max_val="600"
+             min_val="0"
+             width="140"
+             name="seconds"
+             tool_tip="How long the camera takes from the point before to this one. 0 is a cut: the camera is here at once." />
+            <spinner
+             follows="left|top"
+             height="20"
+             label="Stay (s)"
+             label_width="58"
+             decimal_digits="1"
+             increment="0.5"
+             initial_value="0"
+             layout="topleft"
+             left="144"
+             top="197"
+             max_val="600"
+             min_val="0"
+             width="130"
+             name="hold"
+             tool_tip="How long the camera stays at this point before it goes on" />
+            <spinner
+             follows="left|top"
+             height="20"
+             label="Spin"
+             label_width="40"
+             decimal_digits="0"
+             increment="1"
+             initial_value="0"
+             layout="topleft"
+             left="278"
+             top="197"
+             max_val="8"
+             min_val="-8"
+             width="126"
+             name="spin"
+             tool_tip="Whole extra turns of the picture while the camera moves into this point: 1 is one full turn, -1 one full turn the other way" />
+            <combo_box
+             follows="left|top"
+             height="22"
+             layout="topleft"
+             left="0"
+             top="224"
+             width="232"
+             name="subject"
+             tool_tip="Look at an avatar: the camera turns to follow it while it moves. The first choice looks in the direction that was saved." />
+            <combo_box
+             follows="left|top"
+             height="22"
+             layout="topleft"
+             left="236"
+             top="224"
+             width="116"
+             name="part"
+             tool_tip="Which part of the avatar the camera looks at">
+                <combo_box.item
+                 type="string"
+                 label="Face"
+                 name="part_face"
+                 value="0" />
+                <combo_box.item
+                 type="string"
+                 label="Chest"
+                 name="part_chest"
+                 value="1" />
+                <combo_box.item
+                 type="string"
+                 label="Whole body"
+                 name="part_body"
+                 value="2" />
+            </combo_box>
+            <button
+             follows="left|top"
+             height="22"
+             label="Find"
+             layout="topleft"
+             left="356"
+             top="224"
+             width="48"
+             name="btn_refresh_subjects"
+             tool_tip="Look for avatars near the camera again" />
+            <spinner
+             follows="left|top"
+             height="20"
+             label="Laps"
+             label_width="40"
+             decimal_digits="0"
+             increment="1"
+             initial_value="0"
+             layout="topleft"
+             left="0"
+             top="251"
+             max_val="4"
+             min_val="-4"
+             width="200"
+             name="orbit"
+             tool_tip="For the Orbit move: whole laps round the subject on top of the short way round from the point before (+ or -). Two points in the same place with 1 lap make a full circle. It goes round the avatar chosen above, else the point this one looks at." />
+        </panel>
+        <panel
+         follows="all"
+         label="Effects"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="404"
+         height="274"
+         name="tab_effects">
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             font="SansSerifBold"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="2"
+             width="400"
+             name="lbl_shake">
+                Camera shake
+            </text>
+            <combo_box
+             follows="left|top"
+             height="22"
+             layout="topleft"
+             left="0"
+             top="20"
+             width="200"
+             name="shake_kind"
+             tool_tip="Shakes the camera over the whole path">
+                <combo_box.item
+                 type="string"
+                 label="None"
+                 name="shake_none"
+                 value="0" />
+                <combo_box.item
+                 type="string"
+                 label="Hand-held"
+                 name="shake_handheld"
+                 value="1" />
+                <combo_box.item
+                 type="string"
+                 label="Walking"
+                 name="shake_walking"
+                 value="2" />
+                <combo_box.item
+                 type="string"
+                 label="Running"
+                 name="shake_running"
+                 value="3" />
+                <combo_box.item
+                 type="string"
+                 label="Earthquake"
+                 name="shake_quake"
+                 value="4" />
+            </combo_box>
+            <button
+             follows="left|top"
+             height="22"
+             label="Weak"
+             layout="topleft"
+             left="204"
+             top="20"
+             width="64"
+             name="btn_shake_weak"
+             tool_tip="A small shake" />
+            <button
+             follows="left|top"
+             height="22"
+             label="Medium"
+             layout="topleft"
+             left="270"
+             top="20"
+             width="64"
+             name="btn_shake_medium"
+             tool_tip="A medium shake" />
+            <button
+             follows="left|top"
+             height="22"
+             label="Strong"
+             layout="topleft"
+             left="336"
+             top="20"
+             width="64"
+             name="btn_shake_strong"
+             tool_tip="A strong shake" />
+            <slider
+             can_edit_text="true"
+             decimal_digits="2"
+             follows="left|top|right"
+             height="16"
+             increment="0.05"
+             label="Size"
+             label_width="60"
+             layout="topleft"
+             left="0"
+             max_val="1"
+             min_val="0"
+             name="shake_amount"
+             right="-4"
+             top="48"
+             tool_tip="How strong the shake is" />
+            <slider
+             can_edit_text="true"
+             decimal_digits="2"
+             follows="left|top|right"
+             height="16"
+             increment="0.05"
+             label="Speed"
+             label_width="60"
+             layout="topleft"
+             left="0"
+             max_val="1"
+             min_val="0"
+             name="shake_speed"
+             right="-4"
+             top="68"
+             tool_tip="How quick the shake is" />
+            <spinner
+             follows="left|top"
+             height="20"
+             label="Seed"
+             label_width="40"
+             decimal_digits="0"
+             increment="1"
+             initial_value="1"
+             layout="topleft"
+             left="0"
+             top="91"
+             max_val="999999"
+             min_val="0"
+             width="160"
+             name="shake_seed"
+             tool_tip="The same seed gives the same shake every time, so a take can be shot again" />
+            <button
+             follows="left|top"
+             height="22"
+             label="Another"
+             layout="topleft"
+             left="164"
+             top="90"
+             width="76"
+             name="btn_shake_seed"
+             tool_tip="Picks another seed, another shake" />
+            <button
+             follows="left|top"
+             height="22"
+             label="Shake in place"
+             layout="topleft"
+             left="244"
+             top="90"
+             width="160"
+             name="btn_inplace"
+             tool_tip="Holds the camera where it is and shakes it, to try the shake out or to shoot a still scene (Stop or Esc ends it)" />
+            <spinner
+             follows="left|top"
+             height="20"
+             label="Countdown (s)"
+             label_width="90"
+             decimal_digits="0"
+             increment="1"
+             initial_value="0"
+             layout="topleft"
+             left="0"
+             top="120"
+             max_val="10"
+             min_val="0"
+             width="196"
+             name="countdown"
+             tool_tip="Counts 3, 2, 1 with a beep before the path starts, so you can start recording first. 0 starts at once." />
+            <check_box
+             follows="left|top"
+             height="16"
+             label="Show the route on the screen"
+             layout="topleft"
+             left="200"
+             top="122"
+             width="204"
+             name="show_route"
+             tool_tip="Draws the path and its points over the world while this window is open and nothing plays. It is never in a picture." />
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             font="SansSerifBold"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="146"
+             width="400"
+             name="lbl_export">
+                Pictures of every frame
+            </text>
+            <combo_box
+             follows="left|top"
+             height="22"
+             layout="topleft"
+             left="0"
+             top="162"
+             width="120"
+             name="export_fps"
+             tool_tip="Pictures a second for the video">
+                <combo_box.item
+                 type="string"
+                 label="24 frames/s"
+                 name="fps_24"
+                 value="24" />
+                <combo_box.item
+                 type="string"
+                 label="30 frames/s"
+                 name="fps_30"
+                 value="30" />
+                <combo_box.item
+                 type="string"
+                 label="60 frames/s"
+                 name="fps_60"
+                 value="60" />
+            </combo_box>
+            <button
+             follows="left|top"
+             height="22"
+             label="Take the pictures"
+             layout="topleft"
+             left="124"
+             top="162"
+             width="150"
+             name="btn_export"
+             tool_tip="Steps through the path and takes a picture at every frame with the photo tools' size and format, into a new folder. Slow, but every frame is exact. Stop ends it." />
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             font="SansSerifBold"
+             height="16"
+             layout="topleft"
+             left="0"
+             top="188"
+             width="400"
+             name="lbl_spin">
+                Spin the picture once round
+            </text>
+            <spinner
+             follows="left|top"
+             height="20"
+             label="Seconds"
+             label_width="56"
+             decimal_digits="1"
+             increment="0.5"
+             initial_value="4"
+             layout="topleft"
+             left="0"
+             top="206"
+             max_val="600"
+             min_val="0.5"
+             width="140"
+             name="spin_seconds"
+             tool_tip="How long one turn takes" />
+            <button
+             follows="left|top"
+             height="22"
+             label="Turn right"
+             layout="topleft"
+             left="144"
+             top="205"
+             width="126"
+             name="btn_spin_right"
+             tool_tip="Tilts the camera to the right through one full turn and back to the tilt it had (the horizon turns counter-clockwise). Works while you move the camera too." />
+            <button
+             follows="left|top"
+             height="22"
+             label="Turn left"
+             layout="topleft"
+             left="274"
+             top="205"
+             width="126"
+             name="btn_spin_left"
+             tool_tip="Tilts the camera to the left through one full turn and back to the tilt it had (the horizon turns clockwise)." />
+            <button
+             follows="left|top"
+             height="20"
+             label="Put a turn into the chosen point"
+             layout="topleft"
+             left="0"
+             top="230"
+             width="404"
+             name="btn_spin_point"
+             tool_tip="Saves one full turn in the chosen point (it can be changed under Spin in the Points tab): the picture turns once round while the camera moves into that point, every time the path plays." />
+        </panel>
+    </tab_container>
+    <slider
+     can_edit_text="true"
+     decimal_digits="1"
+     follows="left|top"
+     height="18"
+     increment="0.5"
+     label="Camera tilt"
+     label_width="84"
+     layout="topleft"
+     left="8"
+     max_val="180"
+     min_val="-180"
+     name="tilt"
+     top="438"
+     width="308"
+     tool_tip="Tilts the camera now, in degrees (+ to the right). The same tilt as the photo tools and the camera keys. A point saves the tilt the camera has when it is added." />
+    <button
+     follows="left|top"
+     height="22"
+     label="Level"
+     layout="topleft"
+     left="320"
+     top="436"
+     width="92"
+     name="btn_level"
+     tool_tip="Levels the camera at once (tilt 0)" />
+    <button
+     follows="left|top"
+     height="28"
+     label="Play"
+     layout="topleft"
+     left="8"
+     top="470"
+     width="110"
+     name="btn_play"
+     tool_tip="Plays the path from the first point (key: J)" />
+    <button
+     follows="left|top"
+     height="28"
+     label="Stop"
+     layout="topleft"
+     left="122"
+     top="470"
+     width="80"
+     name="btn_stop"
+     tool_tip="Ends the path where the camera is (key: J)" />
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="28"
+     layout="topleft"
+     left="210"
+     top="476"
+     width="202"
+     name="time">
+        Length 0 s
+    </text>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="28"
+     layout="topleft"
+     left="8"
+     top="506"
+     width="404"
+     word_wrap="true"
+     name="status">
+        Ready.
+    </text>
+    <text
+     type="string"
+     length="1"
+     follows="left|top"
+     font="SansSerifSmall"
+     height="28"
+     layout="topleft"
+     left="8"
+     top="534"
+     text_color="EmphasisColor"
+     width="404"
+     word_wrap="true"
+     name="warning">
+    </text>
+</floater>

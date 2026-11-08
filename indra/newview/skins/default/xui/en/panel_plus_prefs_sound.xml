@@ -1,0 +1,532 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window (from: official Second_Life_Release#d567465e-26.5 panel_preferences_sound.xml;
+     research/266 4. prefs-w-basic). The official panel stays as it is (the ledger's source for
+     tools/ui-parity-diff.py); this page has all it does (name, control_name, functions, strings, choices,
+     ranges) in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml).
+     Height of the list (1080 base): 10 + all 34 + mute when minimized 30 + 6 + 6 volumes x 34 + 10
+     + 3 drop-down rows x 33 + 10 + 2 checks x 30 + 10 + heading 40 + Bluetooth 33 + 14 = 560 (scrolls in 515).
+     A volume row (34): slider 320 (label 124, no value box as the official) | 12 | Mute 84 (a toggle,
+     blue while muted) | 12 | Enabled 101. Other rows at left 14, 529 wide: label 317 | 12 | drop-down 200. -->
+<panel
+ name="Preference Media panel"
+ border="true"
+ follows="all"
+ height="515"
+ label="Sounds"
+ layout="topleft"
+ left="0"
+ top="0"
+ width="574">
+    <panel.string
+     name="middle_mouse">
+        Middle Mouse
+    </panel.string>
+    <panel.string
+     name="button4_mouse">
+        Mouse Button 4
+    </panel.string>
+    <panel.string
+     name="button5_mouse">
+        Mouse Button 5
+    </panel.string>
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="sound_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="sound_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="560"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <plus_ps_slider_compat
+                 name="System Volume"
+                 control_name="AudioLevelMaster"
+                 follows="left|top"
+                 height="31"
+                 increment="0.025"
+                 initial_value="0.5"
+                 label="All volume"
+                 layout="topleft"
+                 left="14"
+                 show_text="false"
+                 top="11"
+                 volume="true"
+                 width="320">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.setControlFalse"
+                     parameter="MuteAudio" />
+                </plus_ps_slider_compat>
+                <plus_ps_button_compat
+                 name="mute_audio"
+                 control_name="MuteAudio"
+                 follows="left|top"
+                 height="28"
+                 is_toggle="true"
+                 label="Mute"
+                 layout="topleft"
+                 left="346"
+                 tab_stop="false"
+                 tool_tip="Mutes all sounds. Blue while muted."
+                 top="13"
+                 width="84" />
+                <plus_ps_check_compat
+                 name="mute_when_minimized"
+                 control_name="MuteWhenMinimized"
+                 follows="left|top|right"
+                 height="30"
+                 initial_value="true"
+                 label="Mute when minimized"
+                 layout="topleft"
+                 left="14"
+                 top="44"
+                 width="529"
+                 word_wrap="true" />
+                <plus_ps_slider_compat
+                 name="UI Volume"
+                 control_name="AudioLevelUI"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="31"
+                 increment="0.025"
+                 initial_value="0.5"
+                 label="Buttons"
+                 layout="topleft"
+                 left="14"
+                 show_text="false"
+                 top="81"
+                 volume="true"
+                 width="320">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.setControlFalse"
+                     parameter="MuteUI" />
+                </plus_ps_slider_compat>
+                <plus_ps_button_compat
+                 name="mute_audio_ui"
+                 control_name="MuteUI"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="28"
+                 is_toggle="true"
+                 label="Mute"
+                 layout="topleft"
+                 left="346"
+                 tab_stop="false"
+                 tool_tip="Mutes this volume. Blue while muted."
+                 top="83"
+                 width="84" />
+                <plus_ps_slider_compat
+                 name="Wind Volume"
+                 control_name="AudioLevelAmbient"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="31"
+                 increment="0.025"
+                 initial_value="0.5"
+                 label="Ambient"
+                 layout="topleft"
+                 left="14"
+                 show_text="false"
+                 top="115"
+                 volume="true"
+                 width="320">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.setControlFalse"
+                     parameter="MuteAmbient" />
+                </plus_ps_slider_compat>
+                <plus_ps_button_compat
+                 name="mute_audio_ambient"
+                 control_name="MuteAmbient"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="28"
+                 is_toggle="true"
+                 label="Mute"
+                 layout="topleft"
+                 left="346"
+                 tab_stop="false"
+                 tool_tip="Mutes this volume. Blue while muted."
+                 top="117"
+                 width="84" />
+                <plus_ps_slider_compat
+                 name="SFX Volume"
+                 control_name="AudioLevelSFX"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="31"
+                 increment="0.025"
+                 initial_value="0.5"
+                 label="Sound Effects"
+                 layout="topleft"
+                 left="14"
+                 show_text="false"
+                 top="149"
+                 volume="true"
+                 width="320">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.setControlFalse"
+                     parameter="MuteSounds" />
+                </plus_ps_slider_compat>
+                <plus_ps_button_compat
+                 name="mute_audio_sounds"
+                 control_name="MuteSounds"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="28"
+                 is_toggle="true"
+                 label="Mute"
+                 layout="topleft"
+                 left="346"
+                 tab_stop="false"
+                 tool_tip="Mutes this volume. Blue while muted."
+                 top="151"
+                 width="84">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.SetSounds" />
+                </plus_ps_button_compat>
+                <plus_ps_slider_compat
+                 name="Music Volume"
+                 control_name="AudioLevelMusic"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="31"
+                 increment="0.025"
+                 initial_value="0.5"
+                 label="Streaming music"
+                 layout="topleft"
+                 left="14"
+                 show_text="false"
+                 top="183"
+                 volume="true"
+                 width="320">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.setControlFalse"
+                     parameter="MuteMusic" />
+                </plus_ps_slider_compat>
+                <plus_ps_button_compat
+                 name="mute_audio_music"
+                 control_name="MuteMusic"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="28"
+                 is_toggle="true"
+                 label="Mute"
+                 layout="topleft"
+                 left="346"
+                 tab_stop="false"
+                 tool_tip="Mutes this volume. Blue while muted."
+                 top="185"
+                 width="84" />
+                <plus_ps_check_compat
+                 name="enable_music"
+                 control_name="AudioStreamingMusic"
+                 follows="left|top"
+                 height="30"
+                 label="Enabled"
+                 layout="topleft"
+                 left="442"
+                 top="184"
+                 width="101">
+                    <plus_ps_check_compat.commit_callback
+                     function="Pref.updateMediaAutoPlayCheckbox" />
+                </plus_ps_check_compat>
+                <plus_ps_slider_compat
+                 name="Media Volume"
+                 control_name="AudioLevelMedia"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="31"
+                 increment="0.025"
+                 initial_value="0.5"
+                 label="Media"
+                 layout="topleft"
+                 left="14"
+                 show_text="false"
+                 top="217"
+                 volume="true"
+                 width="320">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.setControlFalse"
+                     parameter="MuteMedia" />
+                </plus_ps_slider_compat>
+                <plus_ps_button_compat
+                 name="mute_audio_media"
+                 control_name="MuteMedia"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="28"
+                 is_toggle="true"
+                 label="Mute"
+                 layout="topleft"
+                 left="346"
+                 tab_stop="false"
+                 tool_tip="Mutes this volume. Blue while muted."
+                 top="219"
+                 width="84" />
+                <plus_ps_check_compat
+                 name="enable_media"
+                 control_name="AudioStreamingMedia"
+                 follows="left|top"
+                 height="30"
+                 label="Enabled"
+                 label_text.halign="left"
+                 layout="topleft"
+                 left="442"
+                 top="218"
+                 width="101">
+                    <plus_ps_check_compat.commit_callback
+                     function="Pref.updateMediaAutoPlayCheckbox" />
+                </plus_ps_check_compat>
+                <plus_ps_slider_compat
+                 name="Voice Volume"
+                 control_name="AudioLevelVoice"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="31"
+                 increment="0.025"
+                 initial_value="0.5"
+                 label="Voice Chat"
+                 layout="topleft"
+                 left="14"
+                 show_text="false"
+                 top="251"
+                 volume="true"
+                 width="320">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.setControlFalse"
+                     parameter="MuteVoice" />
+                </plus_ps_slider_compat>
+                <plus_ps_button_compat
+                 name="mute_audio_voice"
+                 control_name="MuteVoice"
+                 disabled_control="MuteAudio"
+                 follows="left|top"
+                 height="28"
+                 is_toggle="true"
+                 label="Mute"
+                 layout="topleft"
+                 left="346"
+                 tab_stop="false"
+                 tool_tip="Mutes this volume. Blue while muted."
+                 top="253"
+                 width="84" />
+                <plus_ps_check_compat
+                 name="enable_voice_check"
+                 control_name="EnableVoiceChat"
+                 disabled_control="CmdLineDisableVoice"
+                 follows="left|top"
+                 height="30"
+                 label="Enabled"
+                 label_text.halign="left"
+                 layout="topleft"
+                 left="442"
+                 top="252"
+                 width="101" />
+                <plus_ps_text
+                 name="Listen media from"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="294"
+                 type="string"
+                 width="317">
+                    Hear media and sounds from
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="media_ear_location_combo"
+                 control_name="MediaSoundsEarLocation"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="343"
+                 top="294"
+                 width="200">
+                    <item
+                     name="camera_position"
+                     label="Camera position"
+                     value="0" />
+                    <item
+                     name="avatar_position"
+                     label="Avatar position"
+                     value="1" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="media_autoplay_label"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 top="327"
+                 width="317">
+                    Auto-play media
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="media_auto_play_combo"
+                 control_name="ParcelMediaAutoPlayEnable"
+                 enabled_control="AudioStreamingMedia"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="343"
+                 top="327"
+                 width="200">
+                    <item
+                     name="autoplay_disabled"
+                     label="Never"
+                     value="0" />
+                    <item
+                     name="autoplay_enabled"
+                     label="Always"
+                     value="1" />
+                    <item
+                     name="autoplay_ask"
+                     label="Ask"
+                     value="2" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="media_firstinteract_label"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 top="360"
+                 width="317">
+                    Media first-interact
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="media_first_interact_combo"
+                 control_name="MediaFirstClickInteract"
+                 enabled_control="AudioStreamingMedia"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="343"
+                 tool_tip="This setting controls which media (once loaded) does not require a first click to focus before interaction can begin. This allows clicks to be passed directly to media bypassing the focus click requirement. Each option also inherits the previous ones."
+                 top="360"
+                 width="200">
+                    <item
+                     name="media_first_click_none"
+                     label="Disabled"
+                     value="0" />
+                    <item
+                     name="media_first_click_hud"
+                     label="Worn HUDs only"
+                     value="1" />
+                    <item
+                     name="media_first_click_own"
+                     label="Owned objects"
+                     value="3" />
+                    <item
+                     name="media_first_click_friend"
+                     label="Friends' objects"
+                     value="7" />
+                    <item
+                     name="media_first_click_group"
+                     label="Group objects"
+                     value="15" />
+                    <item
+                     name="media_first_click_land"
+                     label="Landowner objects"
+                     value="31" />
+                    <item
+                     name="media_first_interact_any"
+                     label="Anyone's objects"
+                     value="32767" />
+                    <item
+                     name="media_first_click_all"
+                     label="All MOAP"
+                     value="65535" />
+                </plus_ps_combo>
+                <plus_ps_check_compat
+                 name="media_show_on_others_btn"
+                 control_name="MediaShowOnOthers"
+                 enabled_control="AudioStreamingMedia"
+                 follows="left|top|right"
+                 height="30"
+                 label="Play media attached to other avatars"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="Uncheck this to hide media attached to other avatars nearby"
+                 top="403"
+                 value="true"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="media_huds_autoplay"
+                 control_name="MediaAutoPlayHuds"
+                 enabled_control="AudioStreamingMedia"
+                 follows="left|top|right"
+                 height="30"
+                 label="Auto-play media attached to your HUD"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="Uncheck this to make HUDs follow the standard media auto-play setting"
+                 top="433"
+                 value="true"
+                 width="529" />
+                <plus_ps_text
+                 name="bluetooth_lbl"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="473"
+                 type="string"
+                 width="529">
+                    Bluetooth only
+                </plus_ps_text>
+                <plus_ps_radio
+                 name="bluetooth_behavior"
+                 control_name="StopMicCaptureWhenMuted"
+                 follows="left|top|right"
+                 height="33"
+                 kind="segment"
+                 layout="topleft"
+                 left="14"
+                 top="513"
+                 width="529">
+                    <radio_item
+                     name="better_voice"
+                     height="33"
+                     label="Better voice"
+                     layout="topleft"
+                     left="0"
+                     top="0"
+                     value="0"
+                     width="264" />
+                    <radio_item
+                     name="better_audio"
+                     height="33"
+                     label="Better in-world audio"
+                     layout="topleft"
+                     left="264"
+                     top="0"
+                     value="1"
+                     width="265" />
+                </plus_ps_radio>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

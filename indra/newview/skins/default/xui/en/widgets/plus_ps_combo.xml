@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The photo screen's drop-down (plus/photoscreen/psui, research/221): combo_box.xml's defaults.
+     PsCombo draws the closed box itself; the official button below keeps the clicks. -->
+<plus_ps_combo font="SansSerif"
+           list_position="below"
+           max_chars="20"
+           height="23"
+           follows="right|top">
+  <plus_ps_combo.combo_button name="Combobox Button"
+                          hover_glow_amount="0.15"
+                          font="SansSerifSmall"
+                          scale_image="true"
+                          image_unselected="ComboButton_Off"
+                          image_selected="ComboButton_Selected"
+                          image_disabled="ComboButton_Disabled" />
+  <plus_ps_combo.drop_down_button name="Drop Down Button"
+                              hover_glow_amount="0.15"
+                              font="SansSerifSmall"
+                              scale_image="true"
+                              pad_right="24"
+                              halign="left"
+                              tab_stop="true"
+                              follows="all"
+                              image_unselected="DropDown_Off"
+                              image_selected="DropDown_On"
+                              image_pressed="DropDown_Press" 
+                              image_pressed_selected="DropDown_Press"
+                              image_disabled="DropDown_Disabled" />
+  <!-- the list's colours are set in PsCombo::Params (psstyle.h) -->
+  <plus_ps_combo.combo_list background_visible="true" />
+  <!-- Text is "tentative" if you have typed in a string that does not match
+    any item in the list, but we usually don't care, so use the same color
+    as normal text. -->
+  <plus_ps_combo.combo_editor name="Combo Text Entry"
+                          select_on_focus="true"
+                          font="SansSerifSmall" 
+                          text_tentative_color="TextFgColor" />
+</plus_ps_combo>

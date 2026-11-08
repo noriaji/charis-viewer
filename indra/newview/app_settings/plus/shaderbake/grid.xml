@@ -1,0 +1,183 @@
+<?xml version="1.0" ?>
+<!--
+  The shader bake's grid (the command line option bake-shaders, indra/newview/plus/shaderbake,
+  research/159 section 2.2):
+  which combinations of settings get their shaders compiled into the shader bundle that ships
+  with a release (app_settings/vk_shader_bundle/shaders.vkb), so that a first start, a quality
+  level met for the first time or a setting changed next to a level compiles nothing.
+
+  For each GPU vendor (vendors; the bake sets the viewer's vendor flags, which the shader sources
+  follow: IS_AMD_CARD, NVIDIA's texture lookups) and each quality level ("presets": the levels of
+  featuretable.txt, research/183; a level's settings are the smaller of "all" and the level's, no
+  GPU's masks), and then for each level under each GPU mask of "masks" (featuretable.txt's list of
+  that name, as LLFeatureManager::applyBaseMasks() puts it over a GPU of that maker: "High/Intel",
+  the settings an Intel GPU gets when it picks High), one set of settings is the level itself; then
+  for each axis,
+  the level with the axis at another of its values (tier 1: what changes some programs only;
+  tier 2: what changes every program's defines). "adjacent": only the values next to the level's
+  (one step up or down). A set whose shader settings (every axis's settings and "compare") are
+  those of a set before it is left out.
+
+  Each set starts from the settings of "reset", of every axis and of every level at their defaults
+  (so no set inherits the one before or the level the viewer started at: a setting's handlers, which
+  can write other settings, run on a change only), then the level's settings are set, then the axis
+  value is set. All in memory: the bake's viewer saves its settings to a file of its own in the bake
+  folder.
+
+  tools/bake-shaders.sh dry-run reads this file and featuretable.txt the same way (the set list it prints
+  is the one the viewer writes to grid-<vendor>.txt in the bake folder; the script compares them).
+  Bump "version" when the meaning of a field changes (both readers check it).
+
+  Only settings that change the shaders belong in an axis: PlusSSR does not (plus/ssr's PLUS_SSR
+  define follows RenderScreenSpaceReflections; its own passes are baked once), and with it in the
+  "ssr" axis the levels that have it on with the official SSR off would each get a set of the same
+  shaders again.
+-->
+<llsd>
+<map>
+  <key>version</key>
+  <integer>2</integer>
+  <key>vendors</key>
+  <array>
+    <string>nvidia</string>
+    <string>amd</string>
+    <string>other</string>
+  </array>
+  <key>presets</key>
+  <array>
+    <string>Low</string>
+    <string>LowMid</string>
+    <string>Mid</string>
+    <string>MidHigh</string>
+    <string>High</string>
+    <string>HighUltra</string>
+    <string>Ultra</string>
+  </array>
+  <key>masks</key>
+  <array>
+    <string>Intel</string>
+  </array>
+  <key>reset</key>
+  <array>
+    <string>RenderReflectionsEnabled</string>
+    <string>RenderMirrors</string>
+    <string>RenderAvatarCloth</string>
+    <string>RenderGlow</string>
+    <string>RenderGlowNoise</string>
+    <string>GLTFEnabled</string>
+    <string>LocalTerrainPaintEnabled</string>
+    <string>TerrainPaintBitDepth</string>
+    <string>RenderEnableEmissiveBuffer</string>
+    <string>RenderTerrainPBRDetail</string>
+    <string>RenderTerrainPBRPlanarSampleCount</string>
+    <string>RenderTerrainPBRTriplanarBlendFactor</string>
+    <string>RenderOITSnapshotFull</string>
+    <string>RenderMaxTextureIndex</string>
+    <string>RenderReservedTextureIndices</string>
+    <string>RenderShaderLightingMaxLevel</string>
+  </array>
+  <key>compare</key>
+  <array>
+    <string>RenderTerrainPBRDetail</string>
+    <string>RenderTerrainPBRPlanarSampleCount</string>
+    <string>RenderTerrainPBRTriplanarBlendFactor</string>
+  </array>
+  <key>axes</key>
+  <array>
+    <map>
+      <key>name</key><string>ssao</string>
+      <key>tier</key><integer>1</integer>
+      <key>adjacent</key><boolean>0</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>off</string><key>settings</key><map><key>RenderDeferredSSAO</key><integer>0</integer></map></map>
+        <map><key>label</key><string>on</string><key>settings</key><map><key>RenderDeferredSSAO</key><integer>1</integer></map></map>
+      </array>
+    </map>
+    <map>
+      <key>name</key><string>water</string>
+      <key>tier</key><integer>1</integer>
+      <key>adjacent</key><boolean>0</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>opaque</string><key>settings</key><map><key>RenderTransparentWater</key><integer>0</integer></map></map>
+        <map><key>label</key><string>transparent</string><key>settings</key><map><key>RenderTransparentWater</key><integer>1</integer></map></map>
+      </array>
+    </map>
+    <map>
+      <key>name</key><string>shadows</string>
+      <key>tier</key><integer>2</integer>
+      <key>adjacent</key><boolean>1</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>0</string><key>settings</key><map><key>RenderShadowDetail</key><integer>0</integer></map></map>
+        <map><key>label</key><string>1</string><key>settings</key><map><key>RenderShadowDetail</key><integer>1</integer></map></map>
+        <map><key>label</key><string>2</string><key>settings</key><map><key>RenderShadowDetail</key><integer>2</integer></map></map>
+      </array>
+    </map>
+    <map>
+      <key>name</key><string>reflections</string>
+      <key>tier</key><integer>2</integer>
+      <key>adjacent</key><boolean>1</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>off</string><key>settings</key><map><key>RenderReflectionsEnabled</key><integer>0</integer></map></map>
+        <map><key>label</key><string>0</string><key>settings</key><map><key>RenderReflectionsEnabled</key><integer>1</integer><key>RenderReflectionProbeLevel</key><integer>0</integer></map></map>
+        <map><key>label</key><string>1</string><key>settings</key><map><key>RenderReflectionsEnabled</key><integer>1</integer><key>RenderReflectionProbeLevel</key><integer>1</integer></map></map>
+        <map><key>label</key><string>2</string><key>settings</key><map><key>RenderReflectionsEnabled</key><integer>1</integer><key>RenderReflectionProbeLevel</key><integer>2</integer></map></map>
+        <map><key>label</key><string>3</string><key>settings</key><map><key>RenderReflectionsEnabled</key><integer>1</integer><key>RenderReflectionProbeLevel</key><integer>3</integer></map></map>
+      </array>
+    </map>
+    <map>
+      <key>name</key><string>ssr</string>
+      <key>tier</key><integer>2</integer>
+      <key>adjacent</key><boolean>0</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>off</string><key>settings</key><map><key>RenderScreenSpaceReflections</key><integer>0</integer></map></map>
+        <map><key>label</key><string>on</string><key>settings</key><map><key>RenderScreenSpaceReflections</key><integer>1</integer></map></map>
+      </array>
+    </map>
+    <map>
+      <key>name</key><string>mirrors</string>
+      <key>tier</key><integer>2</integer>
+      <key>adjacent</key><boolean>0</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>off</string><key>settings</key><map><key>RenderMirrors</key><integer>0</integer></map></map>
+        <map><key>label</key><string>on</string><key>settings</key><map><key>RenderMirrors</key><integer>1</integer></map></map>
+      </array>
+    </map>
+    <map>
+      <key>name</key><string>avatar_reflection</string>
+      <key>tier</key><integer>2</integer>
+      <key>adjacent</key><boolean>0</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>off</string><key>settings</key><map><key>PlusAvatarReflection</key><integer>0</integer></map></map>
+        <map><key>label</key><string>on</string><key>settings</key><map><key>PlusAvatarReflection</key><integer>3</integer></map></map>
+      </array>
+    </map>
+    <map>
+      <key>name</key><string>water_mirror</string>
+      <key>tier</key><integer>2</integer>
+      <key>adjacent</key><boolean>0</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>off</string><key>settings</key><map><key>PlusWaterMirror</key><integer>0</integer></map></map>
+        <map><key>label</key><string>on</string><key>settings</key><map><key>PlusWaterMirror</key><integer>2</integer></map></map>
+      </array>
+    </map>
+    <map>
+      <key>name</key><string>avatar_cloth</string>
+      <key>tier</key><integer>2</integer>
+      <key>adjacent</key><boolean>0</boolean>
+      <key>values</key>
+      <array>
+        <map><key>label</key><string>off</string><key>settings</key><map><key>RenderAvatarCloth</key><integer>0</integer></map></map>
+        <map><key>label</key><string>on</string><key>settings</key><map><key>RenderAvatarCloth</key><integer>1</integer></map></map>
+      </array>
+    </map>
+  </array>
+</map>
+</llsd>

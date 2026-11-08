@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Area search (plus/areasearch, from Firestorm's floater_fs_area_search.xml). Control names and
+  string names are used by areasearchfloater.cpp: col_<column> and tip_<column> are the titles
+  and tool tips of the list's columns (the columns are made there, from PlusAreaSearchColumns).
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ min_width="460"
+ min_height="380"
+ height="460"
+ width="620"
+ layout="topleft"
+ name="plus_area_search"
+ title="AREA SEARCH">
+    <floater.string name="counter_blank">Listed | Pending | Total</floater.string>
+    <floater.string name="counter_filled">[LISTED] listed | [PENDING] pending | [TOTAL] total</floater.string>
+    <floater.string name="cost_label">L$ [COST]</floater.string>
+    <floater.string name="regex_error">The regular expression cannot be used: [ERROR]</floater.string>
+    <!-- Shown in the empty owner field while "Show mine only" (the list's menu) is on -->
+    <floater.string name="owner_mine">(mine only)</floater.string>
+    <floater.string name="col_distance">Dist</floater.string>
+    <floater.string name="col_name">Name</floater.string>
+    <floater.string name="col_description">Description</floater.string>
+    <floater.string name="col_price">Price</floater.string>
+    <floater.string name="col_land_impact">LI</floater.string>
+    <floater.string name="col_prim_count">Prims</floater.string>
+    <floater.string name="col_owner">Owner</floater.string>
+    <floater.string name="col_group">Group</floater.string>
+    <floater.string name="col_creator">Creator</floater.string>
+    <floater.string name="col_last_owner">Last Owner</floater.string>
+    <floater.string name="tip_distance">Distance from your avatar to the object</floater.string>
+    <floater.string name="tip_price">What you would pay if the object is for sale</floater.string>
+    <floater.string name="tip_land_impact">Land impact: what the object counts against the parcel's limit</floater.string>
+    <floater.string name="tip_prim_count">Prims the object is made of</floater.string>
+    <floater.string name="tip_group">The group the object is set to</floater.string>
+    <floater.string name="tip_last_owner">Who owned it before</floater.string>
+    <tab_container
+     follows="all"
+     layout="topleft"
+     left="2"
+     right="-2"
+     top="20"
+     bottom="-2"
+     tab_position="top"
+     tab_height="20"
+     tab_min_width="80"
+     name="area_search_tabs">
+        <panel
+         follows="all"
+         label="List"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="616"
+         height="418"
+         name="list_panel">
+            <search_editor
+             follows="left|top|right"
+             height="22"
+             label="Narrow the list: name, description, owner, group or creator"
+             layout="topleft"
+             left="4"
+             right="-4"
+             top="4"
+             search_button_visible="false"
+             select_on_focus="true"
+             max_length_chars="256"
+             name="quick_filter"
+             tool_tip="Rows with these letters in any of their texts stay (upper or lower case alike). The Find and Filter tabs add more conditions." />
+            <plus_area_search_list
+             follows="all"
+             layout="topleft"
+             left="4"
+             right="-4"
+             top="30"
+             bottom="-32"
+             column_padding="0"
+             draw_heading="true"
+             multi_select="true"
+             search_column="1"
+             name="result_list" />
+            <button
+             follows="left|bottom"
+             height="22"
+             label="Refresh"
+             layout="topleft"
+             left="6"
+             bottom="-5"
+             width="90"
+             name="btn_refresh"
+             tool_tip="Forget what is known and ask the simulator about every object again" />
+            <text
+             follows="left|bottom"
+             height="16"
+             layout="topleft"
+             left="104"
+             bottom="-8"
+             width="300"
+             name="counter">
+                Listed | Pending | Total
+            </text>
+            <check_box
+             follows="right|bottom"
+             height="16"
+             label="Show beacons"
+             layout="topleft"
+             right="-6"
+             bottom="-8"
+             width="120"
+             name="beacons"
+             tool_tip="A beacon and the name over every listed object" />
+        </panel>
+        <panel
+         follows="all"
+         label="Find"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="616"
+         height="418"
+         name="find_panel">
+            <text follows="left|top" height="16" layout="topleft" left="10" top="10" width="280" name="name_label">Name:</text>
+            <text follows="left|top" height="16" layout="topleft" left="305" top="10" width="280" name="desc_label">Description:</text>
+            <line_editor follows="left|top" height="22" layout="topleft" left="8" top="28" width="285" max_length_chars="256" commit_on_focus_lost="false" name="name_search" />
+            <line_editor follows="left|top" height="22" layout="topleft" left="303" top="28" width="285" max_length_chars="256" commit_on_focus_lost="false" name="description_search" />
+            <text follows="left|top" height="16" layout="topleft" left="10" top="60" width="280" name="owner_label">Owner:</text>
+            <text follows="left|top" height="16" layout="topleft" left="305" top="60" width="280" name="group_label">Group:</text>
+            <line_editor follows="left|top" height="22" layout="topleft" left="8" top="78" width="285" max_length_chars="256" commit_on_focus_lost="false" name="owner_search" />
+            <line_editor follows="left|top" height="22" layout="topleft" left="303" top="78" width="285" max_length_chars="256" commit_on_focus_lost="false" name="group_search" />
+            <text follows="left|top" height="16" layout="topleft" left="10" top="110" width="280" name="creator_label">Creator:</text>
+            <text follows="left|top" height="16" layout="topleft" left="305" top="110" width="280" name="last_owner_label">Last owner:</text>
+            <line_editor follows="left|top" height="22" layout="topleft" left="8" top="128" width="285" max_length_chars="256" commit_on_focus_lost="false" name="creator_search" />
+            <line_editor follows="left|top" height="22" layout="topleft" left="303" top="128" width="285" max_length_chars="256" commit_on_focus_lost="false" name="last_owner_search" />
+            <check_box
+             follows="left|top"
+             height="16"
+             label="Use regular expressions (the whole text must match)"
+             layout="topleft"
+             left="8"
+             top="162"
+             width="400"
+             name="regular_expression" />
+            <text
+             follows="left|top|right"
+             height="32"
+             layout="topleft"
+             left="10"
+             top="186"
+             right="-10"
+             wrap="true"
+             text_color="Red"
+             name="find_status" />
+            <text
+             follows="left|top|right"
+             height="48"
+             layout="topleft"
+             left="10"
+             top="222"
+             right="-10"
+             wrap="true"
+             name="find_help">
+                Parts of the text are enough, in upper or lower case. Empty fields are not used. Enter in a field searches too.
+            </text>
+            <button follows="left|bottom" height="22" label="Search" layout="topleft" left="6" bottom="-5" width="90" name="btn_search" />
+            <button follows="left|bottom" height="22" label="Clear" layout="topleft" left="102" bottom="-5" width="90" name="btn_clear" />
+        </panel>
+        <panel
+         follows="all"
+         label="Filter"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="616"
+         height="418"
+         name="filter_panel">
+            <text follows="left|top" height="16" layout="topleft" left="8" top="8" width="400" name="only_label">Only list objects that are:</text>
+            <check_box follows="left|top" height="16" label="Locked" layout="topleft" left="12" top="28" width="150" name="filter_locked" />
+            <check_box follows="left|top" height="16" label="Physical" layout="topleft" left="172" top="28" width="150" name="filter_physical" />
+            <check_box follows="left|top" height="16" label="Phantom" layout="topleft" left="332" top="28" width="150" name="filter_phantom" />
+            <check_box follows="left|top" height="16" label="Temporary" layout="topleft" left="12" top="50" width="150" name="filter_temporary" />
+            <check_box follows="left|top" height="16" label="Attachment" layout="topleft" left="172" top="50" width="150" name="filter_attachment" />
+            <check_box follows="left|top" height="16" label="Shared Media" layout="topleft" left="332" top="50" width="150" name="filter_moap" />
+            <check_box follows="left|top" height="16" label="Copy" layout="topleft" left="12" top="72" width="150" name="filter_perm_copy" tool_tip="The owner may copy it" />
+            <check_box follows="left|top" height="16" label="Modify" layout="topleft" left="172" top="72" width="150" name="filter_perm_modify" tool_tip="The owner may modify it" />
+            <check_box follows="left|top" height="16" label="Transfer" layout="topleft" left="332" top="72" width="150" name="filter_perm_transfer" tool_tip="The owner may give it away" />
+            <check_box follows="left|top" height="16" label="Reflection Probes" layout="topleft" left="12" top="94" width="150" name="filter_reflection_probe" tool_tip="Manual probes only, not the automatic ones. Mirror probes only while mirrors are on in the graphics preferences." />
+            <check_box follows="left|top" height="16" label="On my parcel" layout="topleft" left="172" top="94" width="200" name="filter_agent_parcel_only" tool_tip="On the parcel you are standing on" />
+            <check_box follows="left|top" height="16" label="For sale, L$" layout="topleft" left="12" top="122" width="150" name="filter_for_sale" />
+            <spinner decimal_digits="0" follows="left|top" height="20" increment="1" initial_value="0" layout="topleft" left="166" top="120" max_val="999999999" min_val="0" width="90" name="min_price" />
+            <text follows="left|top" height="16" layout="topleft" left="262" top="122" width="20" name="price_to">-</text>
+            <spinner decimal_digits="0" follows="left|top" height="20" increment="1" initial_value="999999" layout="topleft" left="282" top="120" max_val="999999999" min_val="0" width="90" name="max_price" />
+            <check_box follows="left|top" height="16" label="Distance, m" layout="topleft" left="12" top="148" width="150" name="filter_distance" />
+            <spinner decimal_digits="0" follows="left|top" height="20" increment="1" initial_value="0" layout="topleft" left="166" top="146" max_val="999999" min_val="0" width="90" name="min_distance" />
+            <text follows="left|top" height="16" layout="topleft" left="262" top="148" width="20" name="distance_to">-</text>
+            <spinner decimal_digits="0" follows="left|top" height="20" increment="1" initial_value="100" layout="topleft" left="282" top="146" max_val="999999" min_val="0" width="90" name="max_distance" />
+            <text follows="left|top" height="16" layout="topleft" left="14" top="176" width="150" name="click_label">Click action:</text>
+            <combo_box follows="left|top" height="22" layout="topleft" left="166" top="172" width="140" name="click_action" tool_tip="What clicking on the object does">
+                <combo_box.item label="(any or none)" name="click_blank" value="0" />
+                <combo_box.item label="Any" name="click_any" value="1" />
+                <combo_box.item label="Touch" name="click_touch" value="2" />
+                <combo_box.item label="Sit" name="click_sit" value="3" />
+                <combo_box.item label="Buy" name="click_buy" value="4" />
+                <combo_box.item label="Pay" name="click_pay" value="5" />
+                <combo_box.item label="Open" name="click_open" value="6" />
+                <combo_box.item label="Play" name="click_play" value="7" />
+                <combo_box.item label="Open Media" name="click_open_media" value="8" />
+                <combo_box.item label="Zoom" name="click_zoom" value="9" />
+            </combo_box>
+            <text follows="left|top" height="16" layout="topleft" left="8" top="206" width="400" name="exclude_label">Leave out objects that are:</text>
+            <check_box follows="left|top" height="16" label="Attachment" layout="topleft" left="12" top="226" width="150" name="exclude_attachment" />
+            <check_box follows="left|top" height="16" label="Physical" layout="topleft" left="172" top="226" width="150" name="exclude_physical" />
+            <check_box follows="left|top" height="16" label="Temporary" layout="topleft" left="332" top="226" width="150" name="exclude_temporary" />
+            <check_box follows="left|top" height="16" label="Reflection Probes" layout="topleft" left="12" top="248" width="150" name="exclude_reflection_probes" />
+            <check_box follows="left|top" height="16" initial_value="true" label="Child prims" layout="topleft" left="172" top="248" width="150" name="exclude_childprim" tool_tip="The linked prims other than the root" />
+            <check_box follows="left|top" height="16" initial_value="true" label="Neighboring regions" layout="topleft" left="332" top="248" width="180" name="exclude_neighbor_region" />
+            <check_box follows="left|top" height="16" control_name="PlusAreaSearchIncludeAttached" label="Include Attachments" layout="topleft" left="12" top="276" width="400" name="include_attached" tool_tip="Also list what avatars wear (attachments and HUDs, yours and everyone's). Off: they are left out. Objects rezzed in world, animesh too, are listed either way. Takes effect at once." />
+            <button follows="left|bottom" height="22" label="Apply" layout="topleft" left="6" bottom="-5" width="90" name="btn_apply" />
+            <button follows="left|bottom" height="22" label="Save as Default" layout="topleft" left="102" bottom="-5" width="150" name="btn_save_default" tool_tip="Open the window with these choices from now on" />
+        </panel>
+        <panel
+         follows="all"
+         label="Options"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="616"
+         height="418"
+         name="options_panel">
+            <text follows="left|top" height="16" layout="topleft" left="8" top="8" width="250" name="columns_label">Columns:</text>
+            <check_box follows="left|top" height="16" label="Distance" layout="topleft" left="12" top="28" width="200" name="col_distance" />
+            <check_box follows="left|top" height="16" label="Name" layout="topleft" left="12" top="50" width="200" name="col_name" />
+            <check_box follows="left|top" height="16" label="Description" layout="topleft" left="12" top="72" width="200" name="col_description" />
+            <check_box follows="left|top" height="16" label="Price" layout="topleft" left="12" top="94" width="200" name="col_price" />
+            <check_box follows="left|top" height="16" label="Land Impact" layout="topleft" left="12" top="116" width="200" name="col_land_impact" />
+            <check_box follows="left|top" height="16" label="Prim Count" layout="topleft" left="12" top="138" width="200" name="col_prim_count" />
+            <check_box follows="left|top" height="16" label="Owner" layout="topleft" left="12" top="160" width="200" name="col_owner" />
+            <check_box follows="left|top" height="16" label="Group" layout="topleft" left="12" top="182" width="200" name="col_group" />
+            <check_box follows="left|top" height="16" label="Creator" layout="topleft" left="12" top="204" width="200" name="col_creator" />
+            <check_box follows="left|top" height="16" label="Last Owner" layout="topleft" left="12" top="226" width="200" name="col_last_owner" />
+            <text follows="left|top" height="16" layout="topleft" left="280" top="8" width="300" name="double_click_label">A double click shows the object on the map, and:</text>
+            <check_box follows="left|top" height="16" label="Zooms the camera in on it" layout="topleft" left="284" top="28" width="250" name="double_click_zoom" tool_tip="Esc brings the camera back to your avatar" />
+            <check_box follows="left|top" height="16" label="Touches it" layout="topleft" left="284" top="50" width="250" name="double_click_touch" />
+            <check_box follows="left|top" height="16" label="Buys it" layout="topleft" left="284" top="72" width="250" name="double_click_buy" />
+            <check_box follows="left|top" height="16" label="Sits on it" layout="topleft" left="284" top="94" width="250" name="double_click_sit" />
+            <text follows="left|top" height="32" layout="topleft" left="280" top="130" width="320" word_wrap="true" name="range_label" tool_tip="Only objects within this distance of you are listed (the Distance filter narrows it further). The simulator is also asked to send objects from this far, or from the draw distance when that is farther (they are not drawn, only listed). 0: no distance limit to the list (everything the viewer has, loaded or in its cache), and the simulator is asked only up to the draw distance. More takes more memory and time to fill the list.">Search range (m, 0 = no limit):</text>
+            <spinner control_name="PlusAreaSearchRange" decimal_digits="0" follows="left|top" height="20" increment="32" initial_value="0" layout="topleft" left="284" top="164" max_val="512" min_val="0" width="90" name="search_range" />
+        </panel>
+    </tab_container>
+</floater>

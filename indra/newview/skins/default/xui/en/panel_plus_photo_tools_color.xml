@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The photo tools' page "color" (floater_plus_photo_tools.xml, research/265).
+  Light & Color: the note for old skies (shown only for one), the look list (phototools_env.cpp), then the
+  rows of the tab (the look list's own row is not among them). pt-ui-env makes the list over to psui.
+  The parts of content_color are put under each other by the code in the order of their tops (the
+  hidden ones take no room); a block keeps its height, a column (rows_*) gets the height of its rows.
+  Blocks are 583 wide at 10, columns 597 at 0 (the content: the page less the scroll bar).
+-->
+<panel
+ name="page_color"
+ background_visible="false"
+ follows="all"
+ height="688"
+ layout="topleft"
+ mouse_opaque="false"
+ width="612">
+    <scroll_container
+     name="scroll_color"
+     border_visible="false"
+     follows="all"
+     height="688"
+     ignore_arrow_keys="true"
+     layout="topleft"
+     left="0"
+     opaque="false"
+     reserve_scroll_corner="false"
+     top="0"
+     width="612">
+        <panel
+         name="content_color"
+         background_visible="false"
+         follows="left|top"
+         height="688"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="0"
+         width="597">
+            <panel
+             name="sec_tone_note"
+             background_visible="false"
+             follows="left|top"
+             height="62"
+             layout="topleft"
+             left="10"
+             top="0"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 word_wrap="true"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="30"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="4"
+                 name="tone_note"
+                 text_color="EmphasisColor">
+                    Old-format sky: Brightness, Contrast and the tone mapper do not work. Turn on "Adjust old skies automatically" and they do.
+                </text>
+                <check_box
+                 control_name="RenderSkyAutoAdjustLegacy"
+                 follows="left|top|right"
+                 height="16"
+                 label="Adjust old skies automatically"
+                 layout="topleft"
+                 left="6"
+                 right="-6"
+                 top="38"
+                 name="chk_tone_legacy"
+                 tool_tip="Old skies (made before the HDR skies) are adjusted so that the tone mapper and the lighting work on them" />
+            </panel>
+            <panel
+             name="sec_look"
+             background_visible="false"
+             follows="left|top"
+             height="232"
+             layout="topleft"
+             left="10"
+             top="62"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_look"
+                 width="170">
+                    Look (Color Grading)
+                </text>
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="16"
+                 layout="topleft"
+                 left="180"
+                 right="-30"
+                 top="4"
+                 name="look_current"
+                 use_ellipses="true">
+                    In use: -
+                </text>
+                <button
+                 follows="right|top"
+                 height="22"
+                 image_selected="Favorite_Star_Active"
+                 image_unselected="Favorite_Star_Off"
+                 is_toggle="true"
+                 label=""
+                 layout="topleft"
+                 right="-4"
+                 top="0"
+                 width="22"
+                 name="btn_look_cur_star"
+                 tool_tip="Add the current look to Favorites" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="All"
+                 layout="topleft"
+                 left="4"
+                 top="22"
+                 width="70"
+                 name="btn_looktab_all"
+                 tool_tip="Every look: the built-in ones and yours" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="Favorites"
+                 layout="topleft"
+                 left="76"
+                 top="22"
+                 width="90"
+                 name="btn_looktab_fav"
+                 tool_tip="The looks with a star. The arrows go through them in this order." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="Recent"
+                 layout="topleft"
+                 left="168"
+                 top="22"
+                 width="80"
+                 name="btn_looktab_recent"
+                 tool_tip="The last ten put on in this window" />
+                <filter_editor
+                 follows="left|top|right"
+                 height="22"
+                 label="Search looks"
+                 layout="topleft"
+                 left="252"
+                 right="-4"
+                 top="22"
+                 name="flt_look" />
+                <scroll_list
+                 background_visible="true"
+                 draw_border="true"
+                 draw_heading="false"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="48"
+                 bottom="-30"
+                 name="list_look"
+                 tool_tip="Click a look to put it on. The arrow keys go through the list.">
+                    <scroll_list.columns
+                     name="star"
+                     width="20" />
+                    <scroll_list.columns
+                     dynamic_width="true"
+                     name="name" />
+                    <scroll_list.columns
+                     name="kind"
+                     width="64" />
+                </scroll_list>
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="&lt;"
+                 layout="topleft"
+                 left="4"
+                 bottom="-4"
+                 width="30"
+                 name="btn_look_prev"
+                 tool_tip="The previous look in this list" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="&gt;"
+                 layout="topleft"
+                 left="36"
+                 bottom="-4"
+                 width="30"
+                 name="btn_look_next"
+                 tool_tip="The next look in this list" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="Open the Look Folder"
+                 layout="topleft"
+                 left="70"
+                 bottom="-4"
+                 width="170"
+                 name="btn_look_folder"
+                 tool_tip="Your looks: put .cube or .png LUTs (or a folder with a look.xml) in this folder, then press Reload" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="Reload"
+                 layout="topleft"
+                 left="244"
+                 bottom="-4"
+                 width="100"
+                 name="btn_look_reload"
+                 tool_tip="Read the look folders again: new LUTs show up, an edited one is read again (the same as Charis &gt; Look (Color Grading) &gt; Reload the Looks)" />
+            </panel>
+            <panel name="rows_color" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="294" width="597" />
+        </panel>
+    </scroll_container>
+</panel>

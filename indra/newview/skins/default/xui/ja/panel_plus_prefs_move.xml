@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_move.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="move_panel" label="移動">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="move_scroll">
+            <panel name="move_scroll_panel">
+                <plus_ps_slider_compat name="camera_fov" label="視野角" />
+                <plus_ps_slider_compat name="camera_offset_scale" label="距離" />
+                <plus_ps_text name="heading2">
+                    カメラを自動で動かす場面：
+                </plus_ps_text>
+                <plus_ps_check_compat name="edit_camera_movement" label="制作・編集" tool_tip="編集モードのオン・オフの切り替えに、自動カメラポジションを使います" />
+                <plus_ps_check_compat name="appearance_camera_movement" label="容姿" tool_tip="編集モードに入ったときに、自動カメラポジションを使います" />
+                <plus_ps_text name="keyboard_lbl">
+                    キーボード：
+                </plus_ps_text>
+                <plus_ps_check_compat name="arrow_keys_move_avatar_check" label="チャットの入力中も方向キーで移動する" />
+                <plus_ps_check_compat name="tap_tap_hold_to_run" label="移動キーの 2 度押し＋長押しで走る" />
+                <plus_ps_check_compat name="automatic_fly" label="ジャンプ／しゃがみキーの長押しで飛び始める・降りる" />
+                <plus_ps_text name="mouse_lbl">
+                    マウス：
+                </plus_ps_text>
+                <plus_ps_check_compat name="first_person_avatar_visible" label="一人称視点で表示する" />
+                <plus_ps_text name=" Mouse Sensitivity">
+                    一人称視点時のマウスの感度：
+                </plus_ps_text>
+                <plus_ps_check_compat name="invert_mouse" label="上下反転" />
+                <plus_ps_text name="mouse_warp_lbl">
+                    マウスの中央寄せ：
+                </plus_ps_text>
+                <plus_ps_combo name="mouse_warp_combo" tool_tip="Alt ズームやマウスルックのとき、マウスを画面の中央に戻すかどうかを決めます。">
+                    <plus_ps_combo.item name="0" label="自動" />
+                    <plus_ps_combo.item name="1" label="オン" />
+                    <plus_ps_combo.item name="2" label="オフ" />
+                </plus_ps_combo>
+                <plus_ps_text name="single_click_action_lbl">
+                    土地をシングルクリック：
+                </plus_ps_text>
+                <plus_ps_combo name="single_click_action_combo">
+                    <plus_ps_combo.item name="0" label="動作なし" />
+                    <plus_ps_combo.item name="1" label="クリックされた地点に移動" />
+                </plus_ps_combo>
+                <plus_ps_text name="double_click_action_lbl">
+                    土地をダブルクリック：
+                </plus_ps_text>
+                <plus_ps_combo name="double_click_action_combo">
+                    <plus_ps_combo.item name="0" label="動作なし" />
+                    <plus_ps_combo.item name="1" label="クリックされた地点に移動" />
+                    <plus_ps_combo.item name="2" label="クリックされた地点にテレポート" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="sound_on_collisions" label="ぶつかったときにサウンドを鳴らす" />
+                <plus_ps_check_compat name="tp_screen_toggle" label="テレポート画面を表示しない" tool_tip="テレポート中の暗い画面を出さず、周りを見たまま移動します。途中で取り消すボタンは出ません。読み込み中の物は実体化の演出で現れます。" />
+                <plus_ps_button_compat name="joystick_setup_button" label="3Dconnexion の機器…" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

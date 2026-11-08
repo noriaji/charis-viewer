@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="Avanceret">
+	<panel.string name="aspect_ratio_text">
+		[NUM]:[DEN]
+	</panel.string>
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_text name="UI Size:">
+					UI størrelse:
+				</plus_ps_text>
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="Tillad flere åbne klienter" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="Vælg netværk ved login" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="Vælg avanceret menu" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="Vis udvikler menu" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

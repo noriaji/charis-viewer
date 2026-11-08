@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Photo tools (plus/photomode, research/photo-mode-ui.md, research/265): the frame of the window; each tab's page is
+  its own file (panel_plus_photo_tools_<tab>.xml). Laid out as Preferences > Charis (research/263): on a plus_ps_box,
+  the search and Compare on top, a row of plus_ps_tab (Home, Quality, Sky & Weather, Light & Color, Camera, Avatar,
+  Shoot: the order of TABS in phototoolsfloater_impl.h; the names and tips are set by the code from tabName() and
+  the strings tab_tip_*) over one page each, "N changed", "See Changes" and "Undo All" at the bottom. The search's
+  results and the list of changes have a page of their own (page_results) over the tabs and the pages.
+  A page is a scroll_container whose content holds blocks (panels of the XUI) and columns (rows_*: the rows of
+  settings, made in code from app_settings/plus/phototools/catalog.xml with psui::Stack); the code puts the visible
+  ones under each other in the order of their tops. A plain floater of the main window, so plus/detach can take it
+  to a window of its own. Control names are used by phototoolsfloater.cpp, phototools_env.cpp, phototools_blocks.cpp.
+  Every text the code shows is a <string> here (en and ja with the same names).
+  Height (1080 base, the window 620 x 860, least 610 x 520): the title 18, the body box from 20 to 4 above the
+  bottom (836); in it the search (33) and Compare (40) at 6, the tabs 36 at 52, the pages from 92 to 780 (688),
+  the bottom band at 788 (buttons 40, 8 under them). At the least height the pages are 348 high and scroll.
+  Width: the body 612; the search 444, Compare 130; the status 294, See Changes 130, Undo All 140 (14 at the edges,
+  10 between). The pages' content is 597 wide (612 less the scroll bar, 15).
+-->
+<floater
+ positioning="cascading"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="true"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="860"
+ min_height="520"
+ width="620"
+ min_width="610"
+ layout="topleft"
+ name="plus_photo_tools"
+ title="PHOTO TOOLS">
+    <floater.string name="focus_part_eyes">Eyes</floater.string>
+    <floater.string name="focus_part_chest">Chest</floater.string>
+    <floater.string name="focus_part_body">Whole body</floater.string>
+    <floater.string name="focus_nobody">(choose someone)</floater.string>
+    <floater.string name="focus_st_off">The viewer's own focus: where you zoom in with Alt.</floater.string>
+    <floater.string name="focus_st_cursor">Sharp under the mouse cursor.</floater.string>
+    <floater.string name="focus_st_locked">Sharp on [WHO] ([PART]), [DIST] m away.</floater.string>
+    <floater.string name="focus_st_locked_self">Sharp on you ([PART]), [DIST] m away.</floater.string>
+    <floater.string name="focus_st_lost">Cannot see [WHO]: the viewer's own focus is used meanwhile.</floater.string>
+    <floater.string name="focus_st_lost_cursor">The mouse is not over the picture: the viewer's own focus is used.</floater.string>
+    <floater.string name="focus_st_nobody">Choose someone near you.</floater.string>
+    <floater.string name="focus_st_blur_off">Blur (depth of field) is off: there is no focus to set.</floater.string>
+    <floater.string name="focus_st_switching">Turning blur on...</floater.string>
+    <floater.string name="focus_st_click_wait">Click the place to focus on.</floater.string>
+    <floater.string name="focus_st_click_picking">Held, [DIST] m. Click to move it; Esc to stop.</floater.string>
+    <floater.string name="focus_st_click_locked">Held on the place clicked, [DIST] m away.</floater.string>
+    <floater.string name="focus_st_click_none">Choose "Clicked Spot" again, then click the place.</floater.string>
+    <floater.string name="shot_size_tip">How big the photo is (the long side)</floater.string>
+    <floater.string name="size_window">Same as window</floater.string>
+    <floater.string name="size_2k">2K</floater.string>
+    <floater.string name="size_4k">4K</floater.string>
+    <floater.string name="size_6k">6K</floater.string>
+    <floater.string name="size_8k">8K</floater.string>
+    <floater.string name="aspect_window">Same as window</floater.string>
+    <floater.string name="aspect_16x9">16:9</floater.string>
+    <floater.string name="aspect_3x2">3:2</floater.string>
+    <floater.string name="aspect_4x3">4:3</floater.string>
+    <floater.string name="aspect_1x1">1:1</floater.string>
+    <floater.string name="aspect_9x16">9:16 (portrait)</floater.string>
+    <floater.string name="aspect_2x3">2:3 (portrait)</floater.string>
+    <floater.string name="shot_dims">[W] × [H], about [MP] MP</floater.string>
+    <floater.string name="shot_dims_no">[W] × [H], about [MP] MP. Cannot be taken: [WHY]</floater.string>
+    <floater.string name="shot_ok">Saved: [FILE] ([W] × [H], [KB] KB, [S] s)</floater.string>
+    <floater.string name="shot_fail">The photo was not taken. [WHY]</floater.string>
+    <floater.string name="shot_none">No photo yet.</floater.string>
+    <floater.string name="save_dir">Save to: [DIR]</floater.string>
+    <floater.string name="save_dir_missing">The save folder was not found. Press "Change Folder..." to choose another.</floater.string>
+    <floater.string name="save_dir_default">Save to (Pictures, none chosen yet): [DIR]</floater.string>
+    <floater.string name="shot_btn">Take Photo</floater.string>
+    <floater.string name="shot_btn_taking">Taking...</floater.string>
+    <floater.string name="shot_btn_wait">Wait ([S] s)</floater.string>
+    <floater.string name="shot_btn_wait_memory">Wait...</floater.string>
+    <floater.string name="why_memory">Not enough GPU memory: about [NEED] GB are needed, [FREE] GB are free.</floater.string>
+    <floater.string name="why_side">The viewer takes at most 7680 pixels on a side.</floater.string>
+    <floater.string name="why_unknown">The GPU memory cannot be read here, so only sizes up to 4K are allowed.</floater.string>
+    <floater.string name="fav_missing">[NAME] (not found)</floater.string>
+    <floater.string name="fav_remove">Remove</floater.string>
+    <floater.string name="sky_fav_empty">Press the star of a sky to keep it here.</floater.string>
+    <floater.string name="water_fav_empty">Press the star of a water setting to keep it here.</floater.string>
+    <floater.string name="sky_recent_empty">The skies you use are listed here.</floater.string>
+    <floater.string name="water_recent_empty">The water settings you use are listed here.</floater.string>
+    <floater.string name="fav_full">There are 100 favorites already. Remove one first.</floater.string>
+    <floater.string name="fav_not_found">This item is not in your inventory (deleted, or not loaded yet).</floater.string>
+    <floater.string name="sky_not_in_inventory">This sky is not an item of your inventory. Save it there first, then star it.</floater.string>
+    <floater.string name="water_not_in_inventory">This water setting is not an item of your inventory. Save it there first, then star it.</floater.string>
+    <floater.string name="fav_gone">This sky or water setting is not in the inventory (yet).</floater.string>
+    <floater.string name="now_line">Now: [NAME]</floater.string>
+    <floater.string name="now_adjusted">(adjusted)</floater.string>
+    <floater.string name="sky_now_land">the land's sky</floater.string>
+    <floater.string name="water_now_land">the land's water</floater.string>
+    <floater.string name="sky_now_item">a sky of the inventory</floater.string>
+    <floater.string name="water_now_item">a water setting from the inventory</floater.string>
+    <floater.string name="sky_now_other">an adjusted sky</floater.string>
+    <floater.string name="water_now_other">an adjusted water setting</floater.string>
+    <floater.string name="sky_list_open">Choose a Sky ▼</floater.string>
+    <floater.string name="water_list_open">Choose a Water Setting ▼</floater.string>
+    <floater.string name="env_list_close">Close ▲</floater.string>
+    <floater.string name="gaze_open">- Eye Tuning</floater.string>
+    <floater.string name="gaze_closed">+ Eye Tuning</floater.string>
+    <floater.string name="sky_mark_classic">(old format)</floater.string>
+    <floater.string name="sky_mark_modern">(HDR)</floater.string>
+    <floater.string name="auto_name">Camera [N]</floater.string>
+    <floater.string name="region_label">[REGION]: [COUNT] of [MAX]</floater.string>
+    <floater.string name="cam_all_full">Not saved: up to [MAX] camera positions are kept for all regions together, and that many are saved. Delete positions you no longer use (each region's list shows that region's only).</floater.string>
+    <floater.string name="freeze_start">Stop the World</floater.string>
+    <floater.string name="freeze_resume">Resume the World (stopped [SECONDS] s)</floater.string>
+    <floater.string name="no_region">(not in a region)</floater.string>
+    <floater.string name="status_none">Nothing changed</floater.string>
+    <floater.string name="status_compare">Showing the picture before your changes</floater.string>
+    <floater.string name="compare_label">Compare</floater.string>
+    <floater.string name="compare_label_latched">Back to Now</floater.string>
+    <floater.string name="compare_badge">Before your changes</floater.string>
+    <floater.string name="compare_badge_latched">Before your changes (press Back to Now to return)</floater.string>
+    <floater.string name="status_changes">[N] changed</floater.string>
+    <floater.string name="changes_show">See Changes</floater.string>
+    <floater.string name="changes_hide">Close the List</floater.string>
+    <floater.string name="details_row">Details ([N])</floater.string>
+    <floater.string name="details_row_open">Hide Details ([N])</floater.string>
+    <floater.string name="search_none">Nothing found.</floater.string>
+    <floater.string name="my_presets_none">(none yet)</floater.string>
+    <floater.string name="my_presets_label">My Presets</floater.string>
+    <floater.string name="my_presets_full">Not saved: you can keep up to [MAX] presets of your own. Delete one first, or save under the name of one to replace it.</floater.string>
+    <floater.string name="my_name_auto">Preset [N]</floater.string>
+    <floater.string name="tab_tip_home">Start here: the photo presets, brightness, blur and color tone, the sky and water, the shutter, Stop the World, the composition guide and the settings you starred.</floater.string>
+    <floater.string name="tab_tip_quality">Set the overall quality and performance cost first: the quality level (seven levels, Low to Ultra), draw distance, object detail, cleaner photos; in Details, shading (GTAO), reflections, mirrors, water and anti-aliasing.</floater.string>
+    <floater.string name="tab_tip_light">The sky, the water and the weather: lists of skies and water settings; the water mirror, your reflection and splashes; rain, wet ground and puddles, dripping eaves, rain on your umbrella, snow; ground fog, fireflies and light shafts. The tab scrolls.</floater.string>
+    <floater.string name="tab_tip_color">The light and the colors: light direction, shadow depth, glare, lens flare and star rays; brightness, contrast, color tone and the looks (LUTs); in Details, how soft, far and fine shadows are, tone mapping, exposure and sharpness.</floater.string>
+    <floater.string name="tab_tip_camera">The camera itself: field of view, tilt, background blur and depth of field, saved camera positions, the composition guide, camera movement and the 3D mouse.</floater.string>
+    <floater.string name="tab_tip_subject">The avatar in the picture: softer face shadows, contact shadows (fingertips, feet), eyes that look at the camera and how far they and the head may turn, and hair that sways in the wind.</floater.string>
+    <floater.string name="tab_tip_shoot">Taking the photo: its size and shape, the shutter, the last photo and its folder, the standard snapshot window, the file format and JPEG quality.</floater.string>
+    <floater.string name="rebuild_tip">The picture stops for a few seconds when this changes.</floater.string>
+    <floater.string name="rebuild_tip_maybe">The picture may stop for a few seconds when this changes.</floater.string>
+    <floater.string name="changed_tip">Changed since the photo tools were first opened in this session</floater.string>
+    <floater.string name="pin_tip">Show this on the Home tab</floater.string>
+    <floater.string name="sun_unset">(as the sky has it)</floater.string>
+    <floater.string name="details_name">Details</floater.string>
+    <floater.string name="blur_off">Turn on "Depth of Field" above to use this.</floater.string>
+    <floater.string name="dof_switching">Switching...</floater.string>
+    <floater.string name="reset_pause">Some settings make the picture stop for a few seconds when they go back.</floater.string>
+    <floater.string name="look_none">None (original colors)</floater.string>
+    <floater.string name="look_missing">[NAME] (not found)</floater.string>
+    <floater.string name="look_user_mark">(yours)</floater.string>
+    <floater.string name="look_kind_shipped">Built-in</floater.string>
+    <floater.string name="look_kind_user">Yours</floater.string>
+    <floater.string name="look_tip">The color grading of the picture (a LUT). The same looks as Charis &gt; Look (Color Grading).</floater.string>
+    <floater.string name="look_prev_tip">The previous look</floater.string>
+    <floater.string name="look_next_tip">The next look</floater.string>
+    <floater.string name="look_current">In use: [NAME]</floater.string>
+    <floater.string name="look_photo_only">(in photos only)</floater.string>
+    <floater.string name="look_fav_empty">Press the star beside the look in use to keep it here.</floater.string>
+    <floater.string name="look_recent_empty">Looks you put on in this window are listed here.</floater.string>
+    <floater.string name="look_none_found">No looks found.</floater.string>
+    <floater.string name="look_fav_full">There are 100 favorite looks already. Remove one first.</floater.string>
+    <floater.string name="look_reloaded">Looks read again: [SHIPPED] built-in, [USER] of yours.</floater.string>
+    <floater.string name="easy_title">Adjust</floater.string>
+    <floater.string name="pins_title">Favorites</floater.string>
+    <floater.string name="pins_empty">Press the star of any setting to keep it here.</floater.string>
+    <floater.string name="text_hint">e.g. 2026-12-14 22:00 (empty: now)</floater.string>
+
+    <plus_ps_box
+     name="body"
+     follows="all"
+     height="836"
+     kind="panel"
+     layout="topleft"
+     left="4"
+     top="20"
+     width="612">
+        <plus_ps_box
+         name="search_box"
+         follows="left|top|right"
+         height="33"
+         kind="glass"
+         layout="topleft"
+         left="14"
+         mouse_opaque="false"
+         top="10"
+         width="444">
+            <filter_editor
+             name="flt_search"
+             bg_color="Transparent"
+             border.visible="false"
+             draw_focus_border="false"
+             follows="left|top|right"
+             height="25"
+             label="Search settings"
+             layout="topleft"
+             left="4"
+             text_color="PsTextWhite"
+             top="4"
+             use_bg_color="true"
+             width="436" />
+        </plus_ps_box>
+        <plus_photo_compare_button
+         name="btn_compare"
+         follows="right|top"
+         height="40"
+         label="Compare"
+         layout="topleft"
+         left="468"
+         top="6"
+         tool_tip="Hold it to see the picture as it was before your changes. A quick click keeps the before image on screen; click again to come back. Works from any tab."
+         width="130" />
+        <plus_ps_row
+         name="tabs"
+         follows="left|top|right"
+         height="36"
+         kind="tabs"
+         layout="topleft"
+         left="0"
+         pad="14"
+         spacing="0"
+         top="52"
+         width="612">
+            <plus_ps_tab name="tab_home"    auto_width="false" height="36" initial_value="true" label="Home" layout="topleft" left="0" top="0" width="80" />
+            <plus_ps_tab name="tab_quality" auto_width="false" height="36" label="Quality"       layout="topleft" left="80"  top="0" width="80" />
+            <plus_ps_tab name="tab_light"   auto_width="false" height="36" label="Sky &amp; Weather" layout="topleft" left="160" top="0" width="80" />
+            <plus_ps_tab name="tab_color"   auto_width="false" height="36" label="Light &amp; Color" layout="topleft" left="240" top="0" width="80" />
+            <plus_ps_tab name="tab_camera"  auto_width="false" height="36" label="Camera"        layout="topleft" left="320" top="0" width="80" />
+            <plus_ps_tab name="tab_subject" auto_width="false" height="36" label="Avatar"        layout="topleft" left="400" top="0" width="80" />
+            <plus_ps_tab name="tab_shoot"   auto_width="false" height="36" label="Shoot"         layout="topleft" left="480" top="0" width="80" />
+        </plus_ps_row>
+        <!-- the pages: one file each, shown one at a time (TabPages) -->
+        <panel name="page_home"    filename="panel_plus_photo_tools_home.xml"    follows="all" height="688" layout="topleft" left="0" top="92" width="612" />
+        <panel name="page_quality" filename="panel_plus_photo_tools_quality.xml" follows="all" height="688" layout="topleft" left="0" top="92" width="612" />
+        <panel name="page_light"   filename="panel_plus_photo_tools_light.xml"   follows="all" height="688" layout="topleft" left="0" top="92" width="612" />
+        <panel name="page_color"   filename="panel_plus_photo_tools_color.xml"   follows="all" height="688" layout="topleft" left="0" top="92" width="612" />
+        <panel name="page_camera"  filename="panel_plus_photo_tools_camera.xml"  follows="all" height="688" layout="topleft" left="0" top="92" width="612" />
+        <panel name="page_subject" filename="panel_plus_photo_tools_subject.xml" follows="all" height="688" layout="topleft" left="0" top="92" width="612" />
+        <panel name="page_shoot"   filename="panel_plus_photo_tools_shoot.xml"   follows="all" height="688" layout="topleft" left="0" top="92" width="612" />
+        <!-- the search's results and the list of changes, over the tabs and the pages -->
+        <panel
+         name="page_results"
+         background_visible="false"
+         follows="all"
+         height="728"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="52"
+         visible="false"
+         width="612">
+            <scroll_container
+             name="scroll_results"
+             border_visible="false"
+             follows="all"
+             height="728"
+             ignore_arrow_keys="true"
+             layout="topleft"
+             left="0"
+             opaque="false"
+             reserve_scroll_corner="false"
+             top="0"
+             width="612">
+                <panel
+                 name="content_results"
+                 background_visible="false"
+                 follows="left|top"
+                 height="728"
+                 layout="topleft"
+                 left="0"
+                 mouse_opaque="false"
+                 top="0"
+                 width="597">
+                    <panel name="rows_results" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="0" width="597" />
+                </panel>
+            </scroll_container>
+        </panel>
+        <plus_ps_label
+         name="status"
+         follows="left|right|bottom"
+         height="33"
+         kind="sub"
+         label="Nothing changed"
+         layout="topleft"
+         left="14"
+         top="791"
+         width="294" />
+        <plus_ps_button
+         name="btn_changes"
+         follows="right|bottom"
+         height="40"
+         label="See Changes"
+         layout="topleft"
+         left="318"
+         top="788"
+         width="130" />
+        <plus_ps_button
+         name="btn_reset_all"
+         follows="right|bottom"
+         height="40"
+         label="Undo All"
+         layout="topleft"
+         left="458"
+         top="788"
+         tool_tip="Put every setting here back as it was when the photo tools were first opened in this session"
+         width="140" />
+    </plus_ps_box>
+</floater>

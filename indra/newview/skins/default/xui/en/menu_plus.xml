@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+  Items of the top-level "Plus" menu (features ported from other viewers,
+  indra/newview/plus/). menu_viewer.xml only declares the empty "Plus" menu;
+  plus::registerFloaters() moves these items into it once the menu bar exists.
+  The menu opens the Charis windows; the Charis settings are in Preferences > Charis
+  (panel_preferences_charis.xml, research/263), with the same settings and functions.
+-->
+<menu
+ create_jump_keys="true"
+ label="Charis"
+ name="plus_menu_items">
+    <!-- photomode: the photo card, a floater of the main window (plus/photomode). Checked: shown. -->
+    <menu_item_check
+     label="Photo Tools"
+     name="PhotoTools">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_photo_tools" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_photo_tools" />
+    </menu_item_check>
+    <!-- photoscreen: the whole-window photo mode (plus/photoscreen). Checked: on. No shortcut here: its key
+         (F12 by default) is the global key photo_screen_toggle of the key settings, and a menu shortcut too
+         would toggle it a second time on the same press. -->
+    <menu_item_check
+     label="Photo Screen"
+     name="PhotoScreen">
+        <menu_item_check.on_check
+         function="Plus.PhotoScreen.IsOn" />
+        <menu_item_check.on_click
+         function="Plus.PhotoScreen.Toggle" />
+    </menu_item_check>
+    <!-- quickprefs: the settings the user picks and the environment presets (plus/quickprefs). Checked: shown. -->
+    <menu_item_check
+     label="Quick Preferences"
+     name="QuickPreferences">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_quickprefs" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_quickprefs" />
+    </menu_item_check>
+    <!-- prefscharis: Preferences on its Charis tab, where the Charis settings are (plus/prefscharis, research/263) -->
+    <menu_item_call
+     label="Charis Settings..."
+     name="PrefsCharis">
+        <menu_item_call.on_click
+         function="Plus.PrefsCharis.Show" />
+    </menu_item_call>
+    <!-- camerashot: slow push-in / pull-out, zoom and dolly zoom (plus/camerashot). Checked: shown. -->
+    <menu_item_check
+     label="Camera Shot"
+     name="CameraShot">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_camera_shot" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_camera_shot" />
+    </menu_item_check>
+    <!-- camerapath: camera points the camera goes through in turn (plus/camerapath). Checked: shown. -->
+    <menu_item_check
+     label="Camera Path"
+     name="CameraPath">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_camera_path" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_camera_path" />
+    </menu_item_check>
+    <!-- flycammouse: the flycam on the keyboard and the mouse, no device needed (plus/flycammouse). Checked: on.
+         FS has the flycam only in the hidden Advanced > Shortcuts (Joystick Flycam, also here and still there); this
+         is the shown one. The same functions; Alt+Shift+F is the official and Firestorm shortcut of that item, and the
+         key bindings' toggle_flycam has it too (the menu takes the press first, so it toggles once). -->
+    <menu_item_check
+     label="Flycam (Keyboard and Mouse)"
+     name="FlycamKeyboardMouse"
+     shortcut="alt|shift|F">
+        <menu_item_check.on_check
+         function="View.CheckJoystickFlycam" />
+        <menu_item_check.on_click
+         function="View.JoystickFlycam" />
+        <menu_item_check.on_enable
+         function="View.EnableJoystickFlycam" />
+    </menu_item_check>
+    <!-- areasearch: the objects of the region by name, owner and more (plus/areasearch). Checked: shown. -->
+    <menu_item_check
+     label="Area Search"
+     name="AreaSearch">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_area_search" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_area_search" />
+    </menu_item_check>
+    <!-- timeconv: SL time, UTC and the time of other places on one window (plus/timeconv). Checked: shown. -->
+    <menu_item_check
+     label="Time Converter"
+     name="TimeConv">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_time_conv" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_time_conv" />
+    </menu_item_check>
+    <!-- radar: the avatars around you, and reports when one comes or goes (plus/radar). Checked: shown. -->
+    <menu_item_check
+     label="Radar"
+     name="Radar">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_radar" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_radar" />
+    </menu_item_check>
+    <!-- subtitle: the voice you hear, as text, recognized on this PC (plus/subtitle). Checked: shown. -->
+    <menu_item_check
+     label="Subtitles (Voice)"
+     name="Subtitle">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_subtitle" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_subtitle" />
+    </menu_item_check>
+    <!-- localmesh: a mesh file on this computer shown on an object, without uploading (plus/localmesh). Checked: shown. -->
+    <menu_item_check
+     label="Local Mesh"
+     name="LocalMesh">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_local_mesh" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_local_mesh" />
+    </menu_item_check>
+    <!-- protectedfolders: the folders marked "Protect" in the inventory, which cannot be deleted or moved (plus/protectedfolders). Checked: shown. -->
+    <menu_item_check
+     label="Protected Folders"
+     name="ProtectedFolders">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_protected_folders" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_protected_folders" />
+    </menu_item_check>
+    <!-- keywords: a line of chat that holds a listed word gets a color, a sound and/or a notice (plus/keywords). Checked: shown. -->
+    <menu_item_check
+     label="Chat Keywords"
+     name="Keywords">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_keywords" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_keywords" />
+    </menu_item_check>
+    <!-- slwx: the "Parcel Weather..." entry (Floater.Toggle plus_weather_parcel, plus/slwx) is withdrawn from the menu for now (decided
+         2026-11-07): the floater code stays registered, it just has no way to be opened. To bring it back, restore the menu_item_check here
+         (name="ParcelWeather") and the ja label in ja/menu_plus.xml. -->
+    <menu_item_separator />
+    <!-- look: colour grading of the finished image with a LUT (plus/look, research/102).
+         The graphics presets set none (a matter of taste: picking one keeps the preset in use). The looks are added by plus::look: the shipped
+         ones before LookShippedEnd, the user's (the look folder) before LookUserNone. -->
+    <menu
+     create_jump_keys="true"
+     label="Look (Color Grading)"
+     name="Look">
+        <menu_item_check
+         label="None"
+         name="LookNone">
+            <menu_item_check.on_check
+             function="Plus.Look.IsSelected"
+             parameter="" />
+            <menu_item_check.on_click
+             function="Plus.Look.Select"
+             parameter="" />
+        </menu_item_check>
+        <menu_item_separator
+         name="LookShippedEnd" />
+        <menu_item_call
+         label="Your Looks (the Look Folder)"
+         name="LookUserHeader">
+            <menu_item_call.on_enable
+             function="Plus.Look.Never" />
+        </menu_item_call>
+        <menu_item_call
+         label="   (None yet: put .cube or .png LUTs in the look folder)"
+         name="LookUserNone">
+            <menu_item_call.on_enable
+             function="Plus.Look.Never" />
+            <menu_item_call.on_visible
+             function="Plus.Look.HasNoUserLooks" />
+        </menu_item_call>
+        <menu_item_separator />
+        <menu_item_call
+         label="Open the Look Folder"
+         name="LookOpenFolder">
+            <menu_item_call.on_click
+             function="Plus.Look.OpenFolder" />
+        </menu_item_call>
+        <menu_item_call
+         label="Reload the Looks"
+         name="LookReload">
+            <menu_item_call.on_click
+             function="Plus.Look.Reload" />
+        </menu_item_call>
+    </menu>
+    <!-- chatconsole: nearby chat at the bottom left of the screen while the chat window is closed (plus/chatconsole).
+         plus.cpp's FS_MENU_PLACES moves it to Communicate (Firestorm's place); also in Preferences > Charis. -->
+    <menu_item_check
+     label="Chat Console (Show Chat at the Bottom Left)"
+     name="ChatConsoleOn">
+        <menu_item_check.on_check
+         function="CheckControl"
+         parameter="PlusChatConsoleOn" />
+        <menu_item_check.on_click
+         function="ToggleControl"
+         parameter="PlusChatConsoleOn" />
+    </menu_item_check>
+    <menu_item_separator />
+    <!-- poser (from Firestorm) -->
+    <menu_item_check
+     label="Poser"
+     name="Poser">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="fs_poser" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="fs_poser" />
+    </menu_item_check>
+    <!-- ao: Animation Overrider (from Firestorm, plus/ao). The window; on/off and stands
+         are per-account settings (PlusAOEnabled, PlusAOStands), switched in Preferences > Charis too. -->
+    <menu_item_check
+     label="Animation Overrider"
+     name="AnimationOverrider">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_ao" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_ao" />
+    </menu_item_check>
+    <!-- rlv: "RestrainedLove API" (plus/rlv, research/248 7.2). plus.cpp's FS_MENU_PLACES moves it to Advanced, above Show
+         Debug Settings (Firestorm's place). The label gets "(pending restart)" while the setting and the running state differ. -->
+    <menu_item_check
+     label="RestrainedLove API"
+     name="RLV API">
+        <menu_item_check.on_check
+         function="CheckControl"
+         parameter="RestrainedLove" />
+        <menu_item_check.on_click
+         function="ToggleControl"
+         parameter="RestrainedLove" />
+        <menu_item_check.on_visible
+         function="RLV.MainToggleVisible" />
+    </menu_item_check>
+</menu>

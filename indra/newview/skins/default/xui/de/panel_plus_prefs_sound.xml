@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_sound.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="Preference Media panel" label="Sounds">
+    <panel.string name="middle_mouse">
+        Mittlere Maustaste
+    </panel.string>
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="sound_scroll">
+            <panel name="sound_scroll_panel">
+                <plus_ps_slider_compat name="System Volume" label="Master-Lautstärke" />
+                <plus_ps_slider_compat name="UI Volume" label="Schaltflächen" />
+                <plus_ps_slider_compat name="Wind Volume" label="Umgebung" />
+                <plus_ps_slider_compat name="SFX Volume" label="Soundeffekte" />
+                <plus_ps_slider_compat name="Music Volume" label="Musik wird gestreamt" />
+                <plus_ps_check_compat name="enable_music" label="Aktiviert" />
+                <plus_ps_slider_compat name="Media Volume" label="Medien" />
+                <plus_ps_check_compat name="enable_media" label="Aktiviert" />
+                <plus_ps_slider_compat name="Voice Volume" label="Voice-Chat" />
+                <plus_ps_check_compat name="enable_voice_check" label="Aktiviert" />
+                <plus_ps_combo name="media_auto_play_combo">
+                    <item name="autoplay_disabled" label="Nein" />
+                    <item name="autoplay_enabled" label="Ja" />
+                    <item name="autoplay_ask" label="Fragen" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="media_show_on_others_btn" label="Medien, die an andere Avatare angehängt sind, wiedergeben." tool_tip="Diese Option deaktivieren, um Medien für andere Avataren, die sich in der Nähe befinden, auszublenden." />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

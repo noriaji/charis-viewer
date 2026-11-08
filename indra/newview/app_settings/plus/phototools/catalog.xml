@@ -1,0 +1,2505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Photo tools (plus/photomode): the settings listed on the tabs. One entry per setting; the tool reads it at start. -->
+<!-- kind: slider | check | combo | look (the look list of plus/look: a row of its own, phototoolsfloater.cpp). detail: under "Details". -->
+<!-- tab: an id, not the name shown (phototools.cpp tabName()); the ids were kept when the tabs were made over (2026-10-22):
+     quality = Quality / 画質; light = Sky & Weather / 空と天気 (the sky and water lists, water, rain and snow, fog and light in the air);
+     color = Light & Color / 光と色 (light direction, shadows, glare, flare, star rays, brightness, colors, looks);
+     camera = Camera / カメラ; subject = Avatar / アバター (skin, face shadows, contact shadows, hair); shoot = Shoot / 撮影.
+     A new setting goes on a tab by this key alone; within a tab the rows keep the order of this file. -->
+<!-- heading (instead of setting): a title line over a group of rows, above the item "before" names, or else above the next
+     setting of this file on the same tab (main rows only). -->
+<!-- before (on a setting): the row stands before that item (the lens flare and star rays after the glare, before the brightness). -->
+<!-- rebuild: 0 no, 1 the pipeline or its shaders are rebuilt (a pause of seconds), 2 a render target may be made (unverified). -->
+<!-- composite (instead of setting): a row that is more than one setting, read and written in phototools.cpp ("starplace": the real sky's
+     place, keys PlusSkyStarsLat / Lon; "startime": its date and time, kind "text", a box to type in). "keys": the settings it writes. -->
+<!-- needs (on any row): the row is greyed out while that setting is 0 (or, with "needs_value", while it is not that value). -->
+<!-- needs_feature (on any row): "gtao" or "ssgi": the row is greyed out while that feature cannot be used at all (no backend, safe mode,
+     what it builds on is off: plus::gtao / plus::ssgi unavailableReason()), the reason first in its tip (phototools.h FeatureGate). -->
+<!-- look: 0 for no part of a look (the camera's tilt of the moment, a display switch): not compared, not kept in the user's presets. Left out: 1. Only rebuild 0 items are compared and kept anyway. -->
+<!-- scale: shown value = setting * scale (the field of view is radians in the setting). -->
+<!-- keywords_en, keywords_ja: more words the search finds the entry by (both languages are always searched). -->
+<!-- place (instead of setting): a block of the tool that is more than a setting, for the search to lead to (phototoolsfloater.cpp goToPlace). -->
+<!-- tip_en, tip_ja: the short explanation shown when the mouse rests on the name of the row (1-2 sentences: what up or down does, how heavy it is). Empty: none. -->
+<llsd>
+<array>
+<map>
+<key>place</key><string>sky</string>
+<key>tab</key><string>light</string>
+<key>label_en</key><string>Sky (choose a sky)</string>
+<key>label_ja</key><string>空（空の設定を選ぶ）</string>
+<key>keywords_en</key><string>sky skies weather cloud clouds sunset sunrise night environment eep windlight lighting</string>
+<key>keywords_ja</key><string>空 天気 雲 夕焼け 朝焼け 夜空 星空 環境 ライティング</string>
+</map>
+<map>
+<key>place</key><string>water</string>
+<key>tab</key><string>light</string>
+<key>label_en</key><string>Water (choose a water)</string>
+<key>label_ja</key><string>水面（水面の設定を選ぶ）</string>
+<key>keywords_en</key><string>water waters sea ocean lake river pond pool underwater fog environment eep</string>
+<key>keywords_ja</key><string>水 水面 海 湖 川 池 プール 水中 水の色 環境</string>
+</map>
+<map>
+<key>heading</key><string>water</string>
+<key>tab</key><string>light</string>
+<key>label_en</key><string>Water and Reflections</string>
+<key>label_ja</key><string>水面と映り込み</string>
+</map>
+<map>
+<key>setting</key><string>PlusWaterMirror</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Water Mirror</string>
+<key>label_ja</key><string>水面の映り込み</string>
+<key>tip_en</key><string>Makes the water surface reflect the scene like a mirror. Higher levels reflect more things but are slower.</string>
+<key>tip_ja</key><string>水面に景色を鏡のように映します。段階が上がるほど映る物が増えますが、重くなります。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Sky and terrain</string><key>label_ja</key><string>空と地形</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>+ Trees and grass</string><key>label_ja</key><string>＋木・草</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>+ Objects</string><key>label_ja</key><string>＋オブジェクト</string></map>
+<map><key>value</key><string>4</string><key>label_en</key><string>+ Avatars</string><key>label_ja</key><string>＋アバター</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusWaterMirrorAA</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Mirror Anti-aliasing</string>
+<key>label_ja</key><string>映り込みのギザギザ軽減</string>
+<key>keywords_en</key><string>water mirror reflection anti-aliasing antialiasing aa fxaa jaggies jagged edges smooth</string>
+<key>keywords_ja</key><string>水面 映り込み 反射 アンチエイリアス ジャギー ギザギザ 輪郭 なめらか</string>
+<key>tip_en</key><string>Hides the jagged, stair-stepped edges in the water mirror. Smooth edges blends only the outlines; Soft blurs the reflection slightly for the smoothest look. Both are light.</string>
+<key>tip_ja</key><string>水面の映り込みの輪郭に出るギザギザを目立たなくします。「ふちを滑らかに」は輪郭だけをなじませ、「やわらかく」は映り込み全体を少しぼかしてさらに滑らかにします。どちらも軽い処理です。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Smooth edges (FXAA)</string><key>label_ja</key><string>ふちを滑らかに</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Soft</string><key>label_ja</key><string>やわらかく</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusWaterMirrorScale</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Mirror Resolution (x)</string>
+<key>label_ja</key><string>映り込みの解像度（倍）</string>
+<key>keywords_en</key><string>water mirror reflection resolution scale sharp supersampling jaggies</string>
+<key>keywords_ja</key><string>水面 映り込み 反射 解像度 細かさ くっきり スーパーサンプリング ギザギザ</string>
+<key>tip_en</key><string>How detailed the water mirror is, against the screen's resolution. Higher is sharper with smoother edges, but the mirror's drawing and VRAM grow with the pixels (2x is 16 times the default 0.5x).</string>
+<key>tip_ja</key><string>水面の映り込みの細かさを、画面の解像度に対する倍率で決めます。上げるとくっきりしてギザギザも減りますが、映り込みを描く重さと VRAM が画素の数に比例して増えます（2 倍は既定の 0.5 倍の 16 倍）。</string>
+<key>min</key><real>0.5</real><key>max</key><real>2</real><key>step</key><real>0.25</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusAvatarReflection</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Your Reflection</string>
+<key>label_ja</key><string>自分の反射（床・水面）</string>
+<key>keywords_en</key><string>reflection floor water mirror</string>
+<key>keywords_ja</key><string>反射 映り込み 床 水面 鏡 自分</string>
+<key>tip_en</key><string>Shows your own avatar's reflection on shiny floors and water (other avatars are not reflected).</string>
+<key>tip_ja</key><string>つやのある床や水面に、自分のアバターの映り込みを出します（ほかのアバターは映りません）。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Floor</string><key>label_ja</key><string>床だけ</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Water</string><key>label_ja</key><string>水面だけ</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Floor and water</string><key>label_ja</key><string>床と水面</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusSplash</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Water Splash</string>
+<key>label_ja</key><string>水しぶき（飛び込み）</string>
+<key>tip_en</key><string>Water splashes up when you dive into it, and a little when you climb out. The faster you go in, the bigger it is. Only you see it.</string>
+<key>tip_ja</key><string>水に飛び込むと水しぶきが上がります（上がる時は小さめ）。勢いよく入るほど大きくなります。自分の画面だけに出ます。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Small</string><key>label_ja</key><string>小</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Normal</string><key>label_ja</key><string>中</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Big</string><key>label_ja</key><string>大</string></map>
+</array>
+</map>
+<map>
+<key>heading</key><string>rain</string>
+<key>tab</key><string>light</string>
+<key>label_en</key><string>Rain and Snow</string>
+<key>label_ja</key><string>雨と雪</string>
+</map>
+<map>
+<key>setting</key><string>PlusRain</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Rain</string>
+<key>label_ja</key><string>雨を降らせる</string>
+<key>tip_en</key><string>Makes it rain on the screen. Heavier rain has more drops, denser and falling faster. It does not rain while HDR is off.</string>
+<key>tip_ja</key><string>画面に雨を降らせます。大雨ほど雨粒が多く、濃く、速く落ちます。HDR がオフの時は降りません。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Drizzle</string><key>label_ja</key><string>小雨</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Rain</string><key>label_ja</key><string>雨</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Downpour</string><key>label_ja</key><string>大雨</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusRainWetAll</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Rain Wets Everything</string>
+<key>label_ja</key><string>雨で全体を濡らす</string>
+<key>tip_en</key><string>While it rains, everything the rain falls on (ground, walls, roofs, avatars) gets wet, and dries slowly after the rain stops. Places under a roof stay dry.</string>
+<key>tip_ja</key><string>雨の間、雨が当たる所（地面・壁・屋根・アバター）を全部濡らします。止むと少しずつ乾きます。屋根の下は濡れません。</string>
+<key>keywords_en</key><string>wet rain puddle damp soaked</string>
+<key>keywords_ja</key><string>濡れ 雨 水たまり しっとり 濡らす</string>
+</map>
+<map>
+<key>setting</key><string>PlusWetLook</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Wet Look (after rain)</string>
+<key>label_ja</key><string>濡れ表現（雨上がり）</string>
+<key>tip_en</key><string>Makes the ground and things look wet, as after rain.</string>
+<key>tip_ja</key><string>雨上がりのように、地面や物をしっとり濡れた見た目にします。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Weak</string><key>label_ja</key><string>弱</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Medium</string><key>label_ja</key><string>中</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Strong</string><key>label_ja</key><string>強</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusWetPuddles</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Puddles (%)</string>
+<key>label_ja</key><string>水たまりの量（%）</string>
+<key>tip_en</key><string>How much of the ground is covered by puddles.</string>
+<key>tip_ja</key><string>地面に水たまりができる広さの割合です。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>0</integer>
+<key>scale</key><real>100</real>
+</map>
+<map>
+<key>setting</key><string>PlusWetAvatars</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Wet Look on Avatars</string>
+<key>label_ja</key><string>アバターも濡らす</string>
+<key>tip_en</key><string>How wet the wet look makes avatars (skin, clothes, hair). Off keeps them dry (with "Rain Wets Everything" on, the rain still wets them a little).</string>
+<key>tip_ja</key><string>濡れ表現でアバター（肌・服・髪）をどれだけ濡らすかです。「なし」だと乾いたままです（「雨で全体を濡らす」がオンなら、雨で少し濡れます）。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>A little</string><key>label_ja</key><string>少し</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Like everything else</string><key>label_ja</key><string>周りと同じ</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusRainEaves</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Dripping Eaves</string>
+<key>label_ja</key><string>軒先の雨だれ</string>
+<key>tip_en</key><string>While it rains, water drips off the edges of roofs: drops hang at the eaves and fall. Heavier rain drips more. It needs the rain; it does not drip in the snow.</string>
+<key>tip_ja</key><string>雨の間、屋根の縁から水滴がぶら下がって垂れ落ちます。大雨ほど多く垂れます。雨が降っている時だけで、雪の時は出ません。</string>
+<key>keywords_en</key><string>rain drip eaves roof edge drops</string>
+<key>keywords_ja</key><string>雨 雨だれ 軒先 屋根 しずく 水滴</string>
+</map>
+<map>
+<key>setting</key><string>PlusRainUmbrella</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Rain on My Umbrella</string>
+<key>label_ja</key><string>傘にあたる雨</string>
+<key>tip_en</key><string>If you wear an umbrella (an attachment named umbrella, parasol, 傘 and the like), the rain or snow does not fall through it; in rain (not snow) splashes also dance on top and drops drip off the rim. Only your own umbrella; it works from the shape of the attachment's bounding box.</string>
+<key>tip_ja</key><string>名前に「umbrella」「parasol」「傘」などが付いた装着物（傘）を付けていると、雨や雪がそこで止まります。上で跳ねる水しぶきと縁から垂れる水滴は、雨の時だけです。自分の傘だけが対象で、装着物を囲む箱の形から傘の大きさを決めます。</string>
+<key>keywords_en</key><string>umbrella rain splash drip parasol</string>
+<key>keywords_ja</key><string>傘 雨 かさ 水しぶき アンブレラ 雨傘 傘に当たる雨</string>
+</map>
+<map>
+<key>setting</key><string>PlusRainWind</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Wind on Rain and Snow (m/s)</string>
+<key>label_ja</key><string>雨・雪の風の強さ（m/秒）</string>
+<key>tip_en</key><string>How hard the wind blows the rain sideways. 0 falls straight down. It works on the snow too (snow drifts about a third as far). Not the wind in the hair.</string>
+<key>tip_ja</key><string>雨を横へ流す風の強さです。0 で真っすぐ落ちます。雪にも効きます（雪は雨の 3 分の 1 ほど流れます）。髪にあたる風とは別です。</string>
+<key>keywords_en</key><string>wind rain snow weather</string>
+<key>keywords_ja</key><string>風 雨 雪 天気</string>
+<key>min</key><real>0</real><key>max</key><real>15</real><key>step</key><real>0.5</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusRainWindDirection</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Rain/Snow Wind From (°)</string>
+<key>label_ja</key><string>雨・雪の風の方角（度）</string>
+<key>tip_en</key><string>Which way the wind on the rain and snow comes from. 0 is north, 90 east, 180 south.</string>
+<key>tip_ja</key><string>雨と雪を流す風が吹いてくる方角です。0 が北、90 が東、180 が南です。</string>
+<key>keywords_en</key><string>wind direction rain snow weather</string>
+<key>keywords_ja</key><string>風 風向き 方角 雨 雪 天気</string>
+<key>min</key><real>0</real><key>max</key><real>359</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusRainSplashes</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Splashes (max per m²/s)</string>
+<key>label_ja</key><string>雨の水しぶきの数</string>
+<key>tip_en</key><string>How many splashes the rain makes where it hits the ground, at most per square meter per second. 0 shows none.</string>
+<key>tip_ja</key><string>雨が地面に当たって跳ねる水しぶきの数（1 m² あたり毎秒の上限）です。0 でなしになります。</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>5</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusRainDropScale</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Downpour Drop Size (x)</string>
+<key>label_ja</key><string>大雨の雨粒の太さ（倍）</string>
+<key>tip_en</key><string>In strong rain the drops are large: this many times as wide (1 is the same as the other levels). There are fewer of them, and the splashes grow too. A parcel's weather grows them gradually as its rain gets heavier.</string>
+<key>tip_ja</key><string>強い雨（土砂降り）の雨粒の太さです（1 で弱・中と同じ）。太くした分、粒の数は減り、水しぶきも大きくなります。区画の天気では、雨が強くなるにつれて少しずつ大きくなります。</string>
+<key>keywords_en</key><string>rain drop size downpour heavy</string>
+<key>keywords_ja</key><string>雨 雨粒 大粒 大雨 土砂降り</string>
+<key>min</key><real>1</real><key>max</key><real>4</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusRainDropLength</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Downpour Streak Length (x)</string>
+<key>label_ja</key><string>大雨の雨筋の長さ（倍）</string>
+<key>tip_en</key><string>In strong rain each drop's streak is this many times as long (1 is the same as the other levels).</string>
+<key>tip_ja</key><string>強い雨（土砂降り）の雨筋の長さです（1 で弱・中と同じ）。</string>
+<key>keywords_en</key><string>rain streak length downpour heavy</string>
+<key>keywords_ja</key><string>雨 雨筋 長さ 大雨 土砂降り</string>
+<key>min</key><real>1</real><key>max</key><real>2.5</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSnow</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Snow</string>
+<key>label_ja</key><string>雪を降らせる</string>
+<key>tip_en</key><string>Makes it snow on the screen: large, slow flakes that flutter in the wind. Snow also builds up on the ground and roofs (not under a roof) and melts slowly after it stops (Snow Cover at 0% clears it at once). While it snows there is no rain. It does not snow while HDR is off.</string>
+<key>tip_ja</key><string>画面に雪を降らせます。大きくゆっくりした雪片が、風に揺れながら舞います。地面や屋根（屋根の下は除く）に雪も積もり、止むとゆっくり解けます（積雪の量を 0% にするとすぐ消えます）。雪の間は雨は降りません。HDR がオフの時は降りません。</string>
+<key>keywords_en</key><string>snow winter flake blizzard</string>
+<key>keywords_ja</key><string>雪 冬 雪景色 吹雪 積雪</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Light</string><key>label_ja</key><string>小雪</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Snow</string><key>label_ja</key><string>雪</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Heavy</string><key>label_ja</key><string>大雪</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusSnowAccumulate</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Let Snow Settle</string>
+<key>label_ja</key><string>雪を積もらせる</string>
+<key>tip_en</key><string>Off: no snow lies at all. The snow lying disappears at once and falling snow does not settle. On: the Snow Cover amount lies, and falling snow piles up on top.</string>
+<key>tip_ja</key><string>オフにすると雪は一切積もりません。積もっていた雪もすぐ消え、降る雪も積もりません。オンにすると「積雪の量」の分が積もり、降る雪がその上に積もります。</string>
+<key>keywords_en</key><string>snow cover settle winter white</string>
+<key>keywords_ja</key><string>積雪 雪を積もらせる 雪景色 冬 白</string>
+</map>
+<map>
+<key>setting</key><string>PlusSnowGround</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Snow Cover (%)</string>
+<key>label_ja</key><string>積雪の量（%）</string>
+<key>tip_en</key><string>How much snow lies on the ground and on what faces up, now. 0% is no snow at all; turning it down clears the snow at once. While it snows, the falling snow piles up on top; after it stops it slowly melts back to this. Flat places go white first, slopes as it gets deeper. Places under a roof stay bare. It does not settle on avatars' skin (body warmth melts it). No effect while Let Snow Settle is off.</string>
+<key>tip_ja</key><string>地面や上を向いた面に今積もっている雪の量です。0% は積もっていない状態で、下げるとすぐ消えます。雪を降らせている間はその上に積もり、止むとゆっくり溶けてこの値まで戻ります。平らな所から白くなり、多いほど斜面にも積もります。屋根の下は積もりません。アバターの肌には積もりません（体温で溶けるため）。「雪を積もらせる」がオフの間は効きません。</string>
+<key>keywords_en</key><string>snow cover winter white</string>
+<key>keywords_ja</key><string>積雪 雪景色 冬 白</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>0</integer>
+<key>scale</key><real>100</real>
+</map>
+<map>
+<key>setting</key><string>PlusWeatherAllowParcel</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><integer>0</integer>
+<key>label_en</key><string>Use the Parcel's Weather</string>
+<key>label_ja</key><string>区画の天候を受け取る</string>
+<key>tip_en</key><string>Takes the weather written into the description of the parcel you stand in (a [slwx ...] tag, Slipstream's format): rain, snow and wind, the same for everybody who reads it. Nothing is sent. Used only while Rain and Snow above are both Off.</string>
+<key>tip_ja</key><string>今いる区画の説明欄に書かれた天候（[slwx ...] のタグ。Slipstream と同じ書式）を受け取り、雨・雪・風にします。読んだ人みんなに同じ天候が見えます。何も送信しません。上の「雨」「雪」が両方「なし」の時だけ効きます。</string>
+<key>keywords_en</key><string>slwx parcel weather land description slipstream synced shared</string>
+<key>keywords_ja</key><string>区画 天候 天気 土地 説明欄 同期 共有 スリップストリーム</string>
+</map>
+<map>
+<key>heading</key><string>air</string>
+<key>tab</key><string>light</string>
+<key>label_en</key><string>Fog, Light Shafts and Fireflies</string>
+<key>label_ja</key><string>霧・光の筋・光の粒</string>
+</map>
+<map>
+<key>setting</key><string>PlusCloudShaftsScene</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>look</key><integer>0</integer>
+<key>label_en</key><string>Sunbeams Through Clouds (All in One)</string>
+<key>label_ja</key><string>雲間の光の筋をまとめて入れる</string>
+<key>tip_en</key><string>Puts on together what the beams of sunlight through gaps in the clouds need (god rays): the volumetric clouds, their shadows, the sunbeams through clouds and the light shafts, with their density and quality raised to what is needed. Off puts back only what it changed (a value you changed afterwards stays). Lowering one of these settings by hand shows this as off, but the other values it raised stay; to put them back, turn it on and then off again. The quality level, the sun's shadows and the sky are left alone; choosing a quality level turns it off. Best with the sun 15 to 40 degrees high and the camera turned toward it, under a sky of scattered clouds and a little haze (such as Fluffy Big Clouds in the library). Drawn only while the sun's shadows are on (quality Mid or higher). Uses more GPU time.</string>
+<key>tip_ja</key><string>雲の切れ間から差す光の筋（ゴッドレイ）に要る設定を、まとめて入れます。立体的な雲・雲の影・雲間の光の筋・光の筋（ボリューメトリック）をオンにし、濃さと品質を足りる所まで上げます。切ると、入れた時に変えた設定だけ元に戻ります（その後に自分で変えた値はそのままです）。設定を手で 1 つ下げると、ここは「切」と表示されますが、まとめて上げた他の値はそのまま残ります。元に戻すには、いったん入れてから切ってください。画質の段・太陽の影・空は変えません。画質の段を選び直すと切れます。太陽の高さが 15〜40° くらいの時に、太陽の方を向いて撮るとよく見えます。雲がまばらで少しかすんだ空（ライブラリの Fluffy Big Clouds など）がおすすめです。太陽の影がオンの時（画質「中」以上）だけ描かれます。GPU を多めに使います。</string>
+<key>keywords_en</key><string>god rays sunbeams crepuscular rays clouds light shafts one press all in one recipe backlight</string>
+<key>keywords_ja</key><string>ゴッドレイ 天使のはしご 薄明光線 雲間 光の筋 雲 まとめて ワンクリック 逆光</string>
+</map>
+<map>
+<key>setting</key><string>PlusGroundFog</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Ground Fog</string>
+<key>label_ja</key><string>地面の霧・朝もや</string>
+<key>tip_en</key><string>Mist that pools low and thins out higher up. It glows when you shoot toward the sun, so it looks best backlit. Light on the GPU.</string>
+<key>tip_ja</key><string>低い所に溜まって、上にいくほど薄くなる霧です。太陽に向かって撮ると光って見えるので、逆光の写真に映えます。描画への負担は軽めです。</string>
+<key>keywords_en</key><string>fog mist haze morning atmosphere backlight foggy</string>
+<key>keywords_ja</key><string>霧 もや 朝もや 靄 逆光 雰囲気 大気</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Light haze</string><key>label_ja</key><string>うっすら</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Morning mist</string><key>label_ja</key><string>朝もや</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Thick fog</string><key>label_ja</key><string>濃い霧</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusGroundFogHeight</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Fog Height (m)</string>
+<key>label_ja</key><string>霧の高さ（m）</string>
+<key>tip_en</key><string>How high the fog reaches above the ground. Low keeps it around your ankles; high wraps the whole scene.</string>
+<key>tip_ja</key><string>霧が地面からどのくらいの高さまで立ち上るかです。低いと足元に溜まり、高いと景色全体を包みます。</string>
+<key>min</key><real>1</real><key>max</key><real>60</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusGroundFogGlow</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Fog Glow</string>
+<key>label_ja</key><string>霧の光り方</string>
+<key>tip_en</key><string>How much the fog shines in the sun's light. 0 gives a flat gray fog; higher glows brightly when you face the sun.</string>
+<key>tip_ja</key><string>霧が太陽の光で輝く度合いです。0 だと平らな灰色の霧、上げると太陽に向かった時に明るく光ります。</string>
+<key>min</key><real>0</real><key>max</key><real>4</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStars</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Night Stars</string>
+<key>label_ja</key><string>夜空の星</string>
+<key>tip_en</key><string>How the stars of the night sky are drawn. The star field has thousands of stars, mostly faint and a few bright, in the colors of real stars, with a gentle twinkle. The Milky Way adds a soft band of starlight with a dark rift across the sky. Both are very light on the GPU. The sky's star brightness (environment editor) still decides when they show.</string>
+<key>tip_ja</key><string>夜空の星の描き方です。「星空」は数千の星を、明るい星は少なく暗い星は多く、実際の星の色で描き、ゆるやかにまたたかせます。「星空＋天の川」は、空にかかる淡い光の帯と暗黒帯を足します。どちらも GPU への負荷はごくわずかです。星が見える時間帯は、空の設定の星の明るさで決まります。</string>
+<key>keywords_en</key><string>stars night sky milky way galaxy twinkle starry astro</string>
+<key>keywords_ja</key><string>星 星空 夜空 天の川 銀河 またたき 天体</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Default</string><key>label_ja</key><string>標準</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Star field</string><key>label_ja</key><string>星空</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Star field + Milky Way</string><key>label_ja</key><string>星空＋天の川</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarGain</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Star Brightness</string>
+<key>label_ja</key><string>星の明るさ</string>
+<key>tip_en</key><string>Makes the stars and the Milky Way brighter or fainter. 1 is as made. Does nothing while the stars are set to Default.</string>
+<key>tip_ja</key><string>星と天の川を明るく、または暗くします。1 が元の明るさです。星の描き方が「標準」の時は効きません。</string>
+<key>keywords_en</key><string>stars brightness milky way gain</string>
+<key>keywords_ja</key><string>星 明るさ 天の川</string>
+<key>min</key><real>0.25</real><key>max</key><real>4</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsMilkyWayGain</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStars</string>
+<key>needs_value</key><integer>2</integer>
+<key>label_en</key><string>Milky Way Brightness</string>
+<key>label_ja</key><string>天の川の明るさ</string>
+<key>tip_en</key><string>Makes the Milky Way alone brighter or fainter; the stars stay as they are. 0 hides it, 0.25 is the default. Works with "Star field + Milky Way".</string>
+<key>tip_ja</key><string>天の川だけを明るく、または暗くします。星の明るさは変わりません。0 で消え、0.25 が標準です。「星空＋天の川」の時に効きます。</string>
+<key>keywords_en</key><string>milky way galaxy brightness band stars</string>
+<key>keywords_ja</key><string>天の川 銀河 明るさ 星空</string>
+<key>min</key><real>0</real><key>max</key><real>2</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsMilkyWayHQ</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStars</string>
+<key>needs_value</key><integer>2</integer>
+<key>label_en</key><string>Fine Milky Way</string>
+<key>label_ja</key><string>天の川を精細にする</string>
+<key>tip_en</key><string>Draws the Milky Way as a finely detailed picture instead of soft patches: dark dust lanes, clumps of light and the grain of countless faint stars. It is made once when you turn it on (a second or so, in the background) and takes about 21 MB of video memory. Works with "Star field + Milky Way".</string>
+<key>tip_ja</key><string>天の川を、やわらかい光の斑ではなく精細な絵で描きます。暗黒帯、光の塊、数えきれない暗い星の粒が出ます。オンにした時に一度だけ作り（1 秒ほど、裏で）、ビデオメモリを約 21 MB 使います。「星空＋天の川」の時に効きます。</string>
+<key>keywords_en</key><string>milky way galaxy dust lane detail quality hq fine band dark rift</string>
+<key>keywords_ja</key><string>天の川 銀河 暗黒帯 精細 高画質 きれい 帯</string>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsDense</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStars</string>
+<key>label_en</key><string>Many Faint Stars</string>
+<key>label_ja</key><string>暗い星を増やす</string>
+<key>tip_en</key><string>Adds about 40,000 faint stars, gathered along the Milky Way, so the sky has the depth and grain of a long-exposure photograph. A little more for the GPU to draw.</string>
+<key>tip_ja</key><string>暗い星を約 4 万個増やします。天の川に沿って集まり、長時間露光の写真のような奥行きと粒状感が出ます。GPU の描く量が少し増えます。</string>
+<key>keywords_en</key><string>faint stars dense many more sky depth grain long exposure photograph</string>
+<key>keywords_ja</key><string>暗い星 星を増やす 高密度 星空 奥行き 粒状感 長時間露光</string>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsTwinkle</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStars</string>
+<key>label_en</key><string>Star Twinkle</string>
+<key>label_ja</key><string>星のきらめき</string>
+<key>tip_en</key><string>How much the stars twinkle. Bright stars and those low in the sky twinkle the most; 0 keeps them still. A photo keeps the twinkle of the moment it is taken. Almost no load.</string>
+<key>tip_ja</key><string>星のまたたきの強さです。明るい星と低い空の星ほど強くまたたきます。0 で止まります。写真はシャッターを切った瞬間の輝きで写ります。負荷はほぼありません。</string>
+<key>keywords_en</key><string>stars twinkle twinkling scintillation flicker sparkle</string>
+<key>keywords_ja</key><string>星 きらめき またたき 瞬き ちらつき 輝き</string>
+<key>min</key><real>0</real><key>max</key><real>2</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsTwinkleHold</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>needs</key><string>PlusSkyStars</string>
+<key>label_en</key><string>Hold the Twinkle</string>
+<key>label_ja</key><string>きらめきを止める</string>
+<key>tip_en</key><string>Holds the stars' twinkle still where it is, to frame a photo. It is let go at the next start.</string>
+<key>tip_ja</key><string>星のまたたきを今の状態で止めます（写真の構図を決める時に）。次に起動すると元に戻ります。</string>
+<key>keywords_en</key><string>stars twinkle hold freeze still photo</string>
+<key>keywords_ja</key><string>星 きらめき またたき 止める 固定 撮影</string>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsReal</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Star Map</string>
+<key>label_ja</key><string>星の並び</string>
+<key>tip_en</key><string>Real stars: the stars of a real star catalogue (about 9,100, as many as the eye sees on a dark night), where they stand for the place and the time below; the season's constellations come out, and Polaris stands as high as the latitude. Made-up: the star field as before. Both are very light on the GPU.</string>
+<key>tip_ja</key><string>「実在の星」は、実際の星表の星（約 9,100 個、暗い夜に肉眼で見える数）を、下の場所と時刻で見える位置に描きます。季節の星座が出て、北極星は緯度と同じ高さに来ます。「架空の星」はこれまでの星空です。どちらも GPU への負荷はごくわずかです。</string>
+<key>keywords_en</key><string>real stars star map constellation catalogue planetarium astronomy sky night</string>
+<key>keywords_ja</key><string>実在 本物 星 星座 星表 星図 プラネタリウム 天体 夜空</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Made-up stars</string><key>label_ja</key><string>架空の星</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Real stars</string><key>label_ja</key><string>実在の星</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsConstellationBoost</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStarsReal</string>
+<key>label_en</key><string>Constellation Stars</string>
+<key>label_ja</key><string>星座の星を目立たせる</string>
+<key>tip_en</key><string>Draws the stars of the constellations a little brighter, so their shapes (the Big Dipper, Orion) can be followed without the lines. 0 is as the catalogue. Real stars only.</string>
+<key>tip_ja</key><string>星座を作る星を少し明るく描き、線がなくても北斗七星やオリオンの形を目で追えるようにします。0 で星表どおりです。実在の星の時だけ効きます。</string>
+<key>keywords_en</key><string>constellation stars brighter emphasis big dipper orion real stars</string>
+<key>keywords_ja</key><string>星座 星 強調 目立たせる 北斗七星 オリオン 実在の星</string>
+<key>min</key><real>0</real><key>max</key><real>2</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>composite</key><string>starplace</string>
+<key>kind</key><string>combo</string>
+<key>keys</key><array><string>PlusSkyStarsLat</string><string>PlusSkyStarsLon</string></array>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>look</key><boolean>0</boolean>
+<key>needs</key><string>PlusSkyStarsReal</string>
+<key>label_en</key><string>Seen From</string>
+<key>label_ja</key><string>見る場所</string>
+<key>tip_en</key><string>Where on Earth the real sky is seen from: about 50 places by region (Japan, Asia, Europe, the Americas, Oceania, the poles and the tropics). Choosing one puts its latitude and longitude in the rows below; changing those by hand shows "Custom". The farther south, the more of the southern sky (the Southern Cross from about Naha southwards).</string>
+<key>tip_ja</key><string>実在の星空を、地球のどこから見るかです。日本・アジア・ヨーロッパ・南北アメリカ・オセアニア・極や回帰線など、地域ごとに約 50 か所から選べます。選ぶと下の緯度と経度にその場所の値が入り、緯度や経度を手で変えると「自分で指定」になります。南へ行くほど南の空の星が見えます（南十字は那覇あたりより南で）。</string>
+<key>keywords_en</key><string>place location latitude longitude city tokyo world southern cross pole equator real stars</string>
+<key>keywords_ja</key><string>場所 地点 緯度 経度 都市 東京 世界 海外 南半球 南十字 北極 南極 赤道 実在の星</string>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsLat</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>needs</key><string>PlusSkyStarsReal</string>
+<key>label_en</key><string>Latitude</string>
+<key>label_ja</key><string>緯度</string>
+<key>tip_en</key><string>The latitude the real sky is seen from, in degrees: north positive, south negative.</string>
+<key>tip_ja</key><string>実在の星空を見る場所の緯度（度）です。北緯は正、南緯は負です。</string>
+<key>keywords_en</key><string>latitude place real stars</string>
+<key>keywords_ja</key><string>緯度 場所 実在の星</string>
+<key>min</key><real>-90</real><key>max</key><real>90</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsLon</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>needs</key><string>PlusSkyStarsReal</string>
+<key>label_en</key><string>Longitude</string>
+<key>label_ja</key><string>経度</string>
+<key>tip_en</key><string>The longitude the real sky is seen from, in degrees: east positive, west negative. Used with the real time or a given time (not while the sky follows SL's sun).</string>
+<key>tip_ja</key><string>実在の星空を見る場所の経度（度）です。東経は正、西経は負です。現実の時刻か日時を指定した時に使います（SL の空に合わせる時は使いません）。</string>
+<key>keywords_en</key><string>longitude place real stars</string>
+<key>keywords_ja</key><string>経度 場所 実在の星</string>
+<key>min</key><real>-180</real><key>max</key><real>180</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsTimeMode</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>needs</key><string>PlusSkyStarsReal</string>
+<key>label_en</key><string>Sky Time</string>
+<key>label_ja</key><string>星空の時刻</string>
+<key>tip_en</key><string>Follow SL's sky: the stars turn with SL's sun, so an SL night shows the season's real night sky (the date below, or today). Real time now: the sky of this moment at the place (it may be day in SL). Given time: the sky of the date and time below, for a photo.</string>
+<key>tip_ja</key><string>「SL の空に合わせる」は、SL の太陽に合わせて星を回します。SL の夜に、その季節の本物の夜空が出ます（日付は下の日時、空なら今日）。「今の現実の時刻」は、その場所の今この時の空です（SL が昼のこともあります）。「日時を指定」は、下の日時の空です（撮影向け）。</string>
+<key>keywords_en</key><string>time date now real stars season</string>
+<key>keywords_ja</key><string>時刻 日時 今 現実 季節 実在の星</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Follow SL's sky</string><key>label_ja</key><string>SL の空に合わせる</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Real time now</string><key>label_ja</key><string>今の現実の時刻</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Given time</string><key>label_ja</key><string>日時を指定</string></map>
+</array>
+</map>
+<map>
+<key>composite</key><string>startime</string>
+<key>kind</key><string>text</string>
+<key>keys</key><array><string>PlusSkyStarsTime</string></array>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>look</key><boolean>0</boolean>
+<key>needs</key><string>PlusSkyStarsReal</string>
+<key>label_en</key><string>Date and Time</string>
+<key>label_ja</key><string>日時</string>
+<key>tip_en</key><string>The date and time, in this PC's time zone, as 2026-12-14 22:00. "Given time" shows the sky of then; "Follow SL's sky" takes only its date (the season). Leave it empty for now. Press Enter to set it.</string>
+<key>tip_ja</key><string>日時を、この PC の時刻で「2026-12-14 22:00」のように入れます。「日時を指定」はその時の空、「SL の空に合わせる」は日付（季節）だけを使います。空にすると今になります。Enter で決まります。</string>
+<key>keywords_en</key><string>date time when real stars meteor</string>
+<key>keywords_ja</key><string>日時 日付 時刻 いつ 実在の星 流星群</string>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsLines</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStarsReal</string>
+<key>label_en</key><string>Constellation Lines</string>
+<key>label_ja</key><string>星座の線</string>
+<key>tip_en</key><string>Faint lines between the stars of the constellations (the real stars only), on any sky that shows the stars, as faint as its stars are. They show in photos too.</string>
+<key>tip_ja</key><string>星座の星を結ぶ淡い線を描きます（実在の星の時だけ）。星が出る空では線も出て、星の明るさに合わせて淡くなります。写真にも写ります。</string>
+<key>keywords_en</key><string>constellation lines figures star chart real stars</string>
+<key>keywords_ja</key><string>星座 星座線 線 星図 実在の星</string>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsLineAlpha</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStarsLines</string>
+<key>label_en</key><string>Line Strength</string>
+<key>label_ja</key><string>線の濃さ</string>
+<key>tip_en</key><string>How bright the constellation lines are. 0.35 is about as faint as a dim star.</string>
+<key>tip_ja</key><string>星座の線の明るさです。0.35 で暗い星くらいの淡さです。</string>
+<key>keywords_en</key><string>constellation lines strength brightness</string>
+<key>keywords_ja</key><string>星座 線 濃さ 明るさ</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsLineWidth</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStarsLines</string>
+<key>label_en</key><string>Line Width</string>
+<key>label_ja</key><string>線の太さ</string>
+<key>tip_en</key><string>How wide the constellation lines are, in pixels.</string>
+<key>tip_ja</key><string>星座の線の太さ（ピクセル）です。</string>
+<key>keywords_en</key><string>constellation lines width thickness</string>
+<key>keywords_ja</key><string>星座 線 太さ</string>
+<key>min</key><real>0.5</real><key>max</key><real>3</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsArt</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStarsReal</string>
+<key>label_en</key><string>Constellation Pictures</string>
+<key>label_ja</key><string>星座の絵</string>
+<key>tip_en</key><string>Faint bluish pictures of the constellations over the real stars (the figures of Stellarium's modern sky, by Johan Meuris, Free Art License), on any sky that shows the stars, as faint as its stars are. Apart from the lines. They show in photos too.</string>
+<key>tip_ja</key><string>実在の星空に、星座の絵を淡い青白で重ねます（Stellarium の現代の星座絵。作者 Johan Meuris、Free Art License）。星が出る空では絵も出て、星の明るさに合わせて淡くなります。線とは別に選べます。写真にも写ります。</string>
+<key>keywords_en</key><string>constellation pictures art figures illustration real stars</string>
+<key>keywords_ja</key><string>星座 星座絵 絵 イラスト 図 実在の星</string>
+</map>
+<map>
+<key>setting</key><string>PlusSkyStarsArtAlpha</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusSkyStarsArt</string>
+<key>label_en</key><string>Picture Strength</string>
+<key>label_ja</key><string>絵の濃さ</string>
+<key>tip_en</key><string>How bright the constellation pictures are. At 0.5 their brightest lines are about as faint as a dim star.</string>
+<key>tip_ja</key><string>星座の絵の明るさです。0.5 で絵の一番明るい所が暗い星くらいの淡さです。</string>
+<key>keywords_en</key><string>constellation pictures strength brightness</string>
+<key>keywords_ja</key><string>星座 絵 濃さ 明るさ</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusNightCloudLift</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Night Clouds</string>
+<key>label_ja</key><string>夜の雲の明るさ</string>
+<key>tip_en</key><string>With "auto-adjust legacy skies" on, the night clouds of a legacy sky can turn black. This keeps them a readable grey: 0 leaves them unchanged, 1 as the same sky shows them without the auto-adjust. Only the clouds change, only at night; nothing else in the picture changes.</string>
+<key>tip_ja</key><string>「昔の空を自動調整する」がオンの時、古い形式の空では夜の雲が真っ黒になることがあります。これを灰色の濃淡で見えるようにします。0 は手を加えない明るさ、1 は自動調整オフの時と同じ明るさです。変わるのは夜の雲だけで、ほかの見た目は変わりません。</string>
+<key>keywords_en</key><string>clouds night dark black legacy sky auto adjust</string>
+<key>keywords_ja</key><string>雲 夜 暗い 黒 昔の空 自動調整</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusVolumetricClouds</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Volumetric Clouds</string>
+<key>label_ja</key><string>立体的な雲</string>
+<key>tip_en</key><string>Draws the clouds as a layer with a thickness: the base lit as the flat clouds are, the top brighter. The clouds are where the flat clouds are and as many, so the sky keeps its look. Costs some GPU time. Reflections and mirrors keep the flat clouds.</string>
+<key>tip_ja</key><string>雲を厚みのある層として描きます。底は今までの平らな雲と同じ明るさで、上へ行くほど日が当たって明るくなります。雲の場所と量は今までの平らな雲と同じなので、空の雰囲気は変わりません。GPU を少し使います。水面や鏡に映る雲は今までの平らな雲のままです。</string>
+<key>keywords_en</key><string>clouds volumetric 3d thick cumulus sky weather</string>
+<key>keywords_ja</key><string>雲 立体 体積 厚み 積雲 空 天気</string>
+</map>
+<map>
+<key>setting</key><string>PlusCloudThickness</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cloud Thickness</string>
+<key>label_ja</key><string>雲の厚み</string>
+<key>tip_en</key><string>How thick the volumetric clouds' layer is, as a share of the cloud altitude. Thicker clouds pile up higher; the amount of cloud in the sky stays the same.</string>
+<key>tip_ja</key><string>立体的な雲の層の厚みを、雲の高さに対する割合で決めます。厚いほど雲が高く盛り上がります。空に見える雲の量は変わりません。</string>
+<key>keywords_en</key><string>clouds thickness volumetric height cumulus</string>
+<key>keywords_ja</key><string>雲 厚み 立体 高さ 積雲</string>
+<key>min</key><real>0.1</real><key>max</key><real>0.8</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusCloudShade</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cloud Shading</string>
+<key>label_ja</key><string>雲の陰影</string>
+<key>tip_en</key><string>How much brighter the sunlit tops of the volumetric clouds are than their bases, which are lit as the flat clouds are. 0 lights them all as the flat clouds are lit.</string>
+<key>tip_ja</key><string>立体的な雲の、日の当たる頂をどれだけ明るくするかです。底は平らな雲と同じ明るさです。0 で全体が平らな雲と同じ光り方になります。</string>
+<key>keywords_en</key><string>clouds shading light dark contrast volumetric</string>
+<key>keywords_ja</key><string>雲 陰影 明暗 コントラスト 立体</string>
+<key>min</key><real>0</real><key>max</key><real>2</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusCloudGrain</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cloud Grain</string>
+<key>label_ja</key><string>雲の粒立ち</string>
+<key>tip_en</key><string>How much the fine pattern of the clouds raises them into small lumps. Higher looks more mottled; 0 keeps the large rounded shapes, with the fine pattern showing only as in the flat clouds.</string>
+<key>tip_ja</key><string>雲の細かい模様で、雲をどれだけ小さな塊に盛り上げるかです。上げるほどまだらに見えます。0 では大きな丸い塊の形になり、細かい模様は平らな雲と同じ見え方だけになります。</string>
+<key>keywords_en</key><string>clouds grain mottled lumps fine detail volumetric</string>
+<key>keywords_ja</key><string>雲 粒 まだら 細かさ 塊 立体</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusCloudDetail</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cloud Billows</string>
+<key>label_ja</key><string>雲の頂のでこぼこ</string>
+<key>tip_en</key><string>How bumpy the tops of the volumetric clouds are. Only the clouds low in the sky (below about 12 to 27 degrees above the horizon) get the bumps; looking up, the clouds stay smooth whatever this is. 0 makes smooth rounded tops. The amount of cloud in the sky stays the same.</string>
+<key>tip_ja</key><string>立体的な雲の頂の、もこもこしたでこぼこの強さです。でこぼこが付くのは地平線に近い低い空の雲だけで（見上げる角度がおよそ 12〜27° より下）、見上げた所の雲はこの値を動かしても変わりません。0 で丸くなめらかな頂になります。空に見える雲の量は変わりません。</string>
+<key>keywords_en</key><string>clouds billows bumps detail tops volumetric cumulus</string>
+<key>keywords_ja</key><string>雲 でこぼこ もこもこ 細部 頂 立体 積雲</string>
+<key>min</key><real>0</real><key>max</key><real>1.5</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusCloudSteps</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cloud Detail (Steps)</string>
+<key>label_ja</key><string>雲のなめらかさ（歩数）</string>
+<key>tip_en</key><string>How many steps each pixel takes through the volumetric clouds. More is smoother and costs more GPU time.</string>
+<key>tip_ja</key><string>立体的な雲を、画素ごとに何歩で調べるかです。多いほどなめらかですが、GPU を使います。</string>
+<key>keywords_en</key><string>clouds steps quality march volumetric</string>
+<key>keywords_ja</key><string>雲 歩数 品質 立体</string>
+<key>min</key><real>8</real><key>max</key><real>32</real><key>step</key><real>4</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusCloudShadow</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cloud Shadows</string>
+<key>label_ja</key><string>雲の影</string>
+<key>tip_en</key><string>How dark the shadows of the volumetric clouds are on the ground. 0 turns them off. Only with the volumetric clouds; water and translucent surfaces are not shaded by it.</string>
+<key>tip_ja</key><string>立体的な雲が地面に落とす影の濃さです。0 でオフ。立体的な雲をオンにした時だけ効きます。水面と半透明の面には掛かりません。</string>
+<key>keywords_en</key><string>clouds shadow ground sun volumetric</string>
+<key>keywords_ja</key><string>雲 影 地面 太陽 立体</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusCloudShafts</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusVolumetric</string>
+<key>label_en</key><string>Sunbeams Through Clouds</string>
+<key>label_ja</key><string>雲間の光の筋</string>
+<key>tip_en</key><string>How strongly the sky's haze shows the beams of light between the volumetric clouds and their shadows; strongest looking towards the sun, and stronger in a hazier sky. 0 turns it off. It needs the volumetric clouds, their shadows, the light shafts and the sun's shadows (the sun above about 7 degrees, not under an HDRI sky).</string>
+<key>tip_ja</key><string>立体的な雲の隙間から差す光の筋と、雲の陰の暗い筋の濃さです。太陽の方を見ると強く、霞の濃い空ほど濃く出ます。0 でオフ。立体的な雲・雲の影・光の筋・太陽の影がオンの時だけ効きます（太陽が 7° くらいより上、HDRI の空では出ません）。</string>
+<key>keywords_en</key><string>sunbeams god rays crepuscular rays clouds shafts beams haze volumetric</string>
+<key>keywords_ja</key><string>雲間 光芒 ゴッドレイ 薄明光線 天使のはしご 光の筋 雲 霞 立体</string>
+<key>min</key><real>0</real><key>max</key><real>4</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFireflies</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Fireflies</string>
+<key>label_ja</key><string>ホタル・光の粒</string>
+<key>tip_en</key><string>Glowing specks that drift and blink in the air. They stay put in the world, so you can walk around them. Bright ones turn into stars with the Cross Filter and bloom with Glare. HDR must be on.</string>
+<key>tip_ja</key><string>ふわふわ漂って明滅する光の粒です。世界に固定されているので、周りを歩いて撮れます。グレアで光がにじみ、クロスフィルターで星の形になります。HDR がオンの時だけ映ります。</string>
+<key>keywords_en</key><string>firefly fireflies glow particles sparkle lights bokeh fantasy night</string>
+<key>keywords_ja</key><string>ホタル 蛍 光の粒 粒子 パーティクル 光 ファンタジー 夜</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>A few</string><key>label_ja</key><string>少なめ</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Some</string><key>label_ja</key><string>ふつう</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Many</string><key>label_ja</key><string>たくさん</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusFireflyColor</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Firefly Color</string>
+<key>label_ja</key><string>光の粒の色</string>
+<key>tip_en</key><string>The color of the specks of light.</string>
+<key>tip_ja</key><string>光の粒の色です。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Yellow-green</string><key>label_ja</key><string>黄緑（ホタル）</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Warm white</string><key>label_ja</key><string>暖かい白</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Gold</string><key>label_ja</key><string>金色</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Blue</string><key>label_ja</key><string>青</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusFireflyBrightness</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Firefly Brightness</string>
+<key>label_ja</key><string>光の粒の明るさ</string>
+<key>tip_en</key><string>How brightly the specks shine. Brighter ones bloom and get stars more easily.</string>
+<key>tip_ja</key><string>光の粒の明るさです。明るいほどにじみやすく、星の形も出やすくなります。</string>
+<key>min</key><real>0</real><key>max</key><real>4</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFireflyHeight</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Firefly Height (m)</string>
+<key>label_ja</key><string>光の粒の高さ（m）</string>
+<key>tip_en</key><string>How high above the ground the specks drift.</string>
+<key>tip_ja</key><string>光の粒が地面からどのくらいの高さまで漂うかです。</string>
+<key>min</key><real>1.5</real><key>max</key><real>10</real><key>step</key><real>0.5</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusVolumetric</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Light Shafts</string>
+<key>label_ja</key><string>光の筋（ボリューメトリック）</string>
+<key>tip_en</key><string>Beams of light through air, dust and trees (god rays). Looks great at sunrise or sunset, but makes the picture slower. Needs shadows from the sun and moon.</string>
+<key>tip_ja</key><string>空気やほこり、木立の間を通る光の筋を描きます。朝夕に映えますが、描画が重くなります。太陽と月の影がオンの時だけ描かれます。</string>
+</map>
+<map>
+<key>setting</key><string>PlusVolumetricStrength</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Light Shaft Density</string>
+<key>label_ja</key><string>光の筋の濃さ</string>
+<key>tip_en</key><string>How thick the light beams look. Raise it for a hazy, dramatic scene.</string>
+<key>tip_ja</key><string>光の筋の濃さです。上げるともやがかかったドラマチックな絵になります。</string>
+<key>min</key><real>0</real><key>max</key><real>4</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusVolumetricQuality</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Light Shaft Quality</string>
+<key>label_ja</key><string>光の筋の品質</string>
+<key>tip_en</key><string>The smoothness of the light beams. Higher is finer but slower.</string>
+<key>tip_ja</key><string>光の筋のなめらかさです。高いほどきれいですが重くなります。</string>
+<key>options</key><array>
+<map><key>value</key><string>1</string><key>label_en</key><string>Low</string><key>label_ja</key><string>低</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Medium</string><key>label_ja</key><string>中</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>High</string><key>label_ja</key><string>高</string></map>
+</array>
+</map>
+<map>
+<key>heading</key><string>light</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:sun</string>
+<key>label_en</key><string>Light and Shadow</string>
+<key>label_ja</key><string>光と影</string>
+</map>
+<map>
+<key>setting</key><string>PlusLensFlare</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:brightness</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Lens Flare</string>
+<key>label_ja</key><string>レンズフレア</string>
+<key>tip_en</key><string>Ghosts and rings of light when the camera faces the sun. Stronger means more visible.</string>
+<key>tip_ja</key><string>太陽にカメラを向けた時に出る、光の輪やゴーストです。強いほどはっきり出ます。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Weak</string><key>label_ja</key><string>弱</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Medium</string><key>label_ja</key><string>中</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Strong</string><key>label_ja</key><string>強</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusCrossFilter</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:brightness</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cross Filter (Star Rays)</string>
+<key>label_ja</key><string>光芒（クロスフィルター）</string>
+<key>tip_en</key><string>Star-shaped rays from bright points, like a cross filter on a lens. Stronger also lets weaker lights have rays (weak: only the brightest lights).</string>
+<key>tip_ja</key><string>明るい点から放射状に伸びる光芒（星のような光）です。強くするほど、弱い光にも出ます（弱は、とても強い光だけ）。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Weak</string><key>label_ja</key><string>弱</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Medium</string><key>label_ja</key><string>中</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Strong</string><key>label_ja</key><string>強</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusCrossFilterRays</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:brightness</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cross Filter Rays</string>
+<key>label_ja</key><string>光芒の本数</string>
+<key>tip_en</key><string>How many rays each star has. 4 makes a cross, 8 a fuller star.</string>
+<key>tip_ja</key><string>光芒の本数です。4 本で十字、8 本でより華やかな星になります。</string>
+<key>options</key><array>
+<map><key>value</key><string>4</string><key>label_en</key><string>4 (cross)</string><key>label_ja</key><string>4 本（十字）</string></map>
+<map><key>value</key><string>6</string><key>label_en</key><string>6</string><key>label_ja</key><string>6 本</string></map>
+<map><key>value</key><string>8</string><key>label_en</key><string>8</string><key>label_ja</key><string>8 本</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusCrossFilterAngle</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:brightness</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cross Filter Angle (°)</string>
+<key>label_ja</key><string>光芒の角度（度）</string>
+<key>tip_en</key><string>Turns the whole star. Try a few degrees to keep the rays off other lines in the picture.</string>
+<key>tip_ja</key><string>光芒全体を回します。ほかの線と重なる時は、少し回すと見やすくなります。</string>
+<key>min</key><real>0</real><key>max</key><real>90</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusCrossFilterSky</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:brightness</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Cross Filter on Stars</string>
+<key>label_ja</key><string>星の光芒</string>
+<key>tip_en</key><string>How strong the rays on small bright points of the night sky (the stars) are. 0 gives the stars no rays, 1 the same as a lamp's. By default very faint.</string>
+<key>tip_ja</key><string>夜空の小さな明るい点（星）に付く光芒の強さです。0 で星に光芒なし、1 でランプと同じになります。既定はごく淡くしてあります。</string>
+<key>keywords_en</key><string>star stars night sky cross filter rays starburst</string>
+<key>keywords_ja</key><string>星 星空 夜空 光芒 クロスフィルター</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSsgi</string>
+<key>needs_feature</key><string>ssgi</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:brightness</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Light Into Shade (Indirect Light)</string>
+<key>label_ja</key><string>日陰への照り返し（間接光）</string>
+<key>keywords_en</key><string>indirect light global illumination gi ssgi bounce light color bleeding shade shadow fill</string>
+<key>keywords_ja</key><string>間接光 照り返し 反射光 色移り 日陰 グローバルイルミネーション GI SSGI</string>
+<key>tip_en</key><string>The colour of sunny ground and walls spills into the shade nearby, so shade does not sink too dark and takes on colour. Works with Ambient Occlusion (GTAO) and HDR on. It makes the picture a little slower.</string>
+<key>tip_ja</key><string>日なたの地面や壁の色が、近くの日陰に回り込みます。日陰が暗く沈みすぎず、色が付きます。アンビエントオクルージョン（GTAO）と HDR がオンの時に働きます。描画が少し重くなります。</string>
+</map>
+<map>
+<key>setting</key><string>PlusSsgiStrength</string>
+<key>needs_feature</key><string>ssgi</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:brightness</string>
+<key>needs</key><string>PlusSsgi</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Light Into Shade Strength</string>
+<key>label_ja</key><string>照り返しの強さ</string>
+<key>tip_en</key><string>How much of that light comes back into the shade. 1 is as gathered.</string>
+<key>tip_ja</key><string>日陰に回り込む光の強さです。1 で集めたままの強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSsgiRadius</string>
+<key>needs_feature</key><string>ssgi</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>needs</key><string>PlusSsgi</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Light Into Shade Reach (m)</string>
+<key>label_ja</key><string>照り返しの届く距離（m）</string>
+<key>tip_en</key><string>How far from a lit surface its light reaches into the shade, in meters. Larger reaches further but is grainier.</string>
+<key>tip_ja</key><string>照らされた面の光が、日陰にどこまで届くかです（メートル）。大きいほど遠くまで届きますが、ざらつきやすくなります。</string>
+<key>min</key><real>0.5</real><key>max</key><real>5</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSsgiThickness</string>
+<key>needs_feature</key><string>ssgi</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>needs</key><string>PlusSsgi</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Light Into Shade Thickness (m)</string>
+<key>label_ja</key><string>照り返しの物の厚み（m）</string>
+<key>tip_en</key><string>How thick things are taken to be behind what the camera sees. Smaller lets light pass behind thin things such as trunks and posts; larger keeps thick walls from letting light through.</string>
+<key>tip_ja</key><string>見えている面の奥に、物がどれだけの厚みで続いていると見なすかです。小さいと幹や柱など細い物の裏に光が回り、大きいと厚い壁から光が漏れにくくなります。</string>
+<key>min</key><real>0.1</real><key>max</key><real>2</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusShadowSoftness</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Shadow Edges</string>
+<key>label_ja</key><string>影の硬さ</string>
+<key>keywords_en</key><string>shadow softness soft sharp blur</string>
+<key>keywords_ja</key><string>影のやわらかさ ソフト シャープ ぼかし</string>
+<key>tip_en</key><string>How sharp or soft the edges of shadows are. Sharp suits bright midday, soft suits cloudy light. Default: as the viewer draws them without this setting.</string>
+<key>tip_ja</key><string>影の輪郭をくっきりさせるか、やわらかくするかです。シャープは晴れた昼、ソフトは曇りの光に合います。「標準」はこの設定で手を加えない、もとの描き方です。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Sharp</string><key>label_ja</key><string>シャープ</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Slightly sharp</string><key>label_ja</key><string>ややシャープ</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Normal</string><key>label_ja</key><string>ふつう</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Slightly soft</string><key>label_ja</key><string>ややソフト</string></map>
+<map><key>value</key><string>4</string><key>label_en</key><string>Soft</string><key>label_ja</key><string>ソフト</string></map>
+<map><key>value</key><string>-1</string><key>label_en</key><string>Default</string><key>label_ja</key><string>標準</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusShadowPenumbra</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Shadow Penumbra</string>
+<key>label_ja</key><string>影の半影（距離でぼやける）</string>
+<key>tip_en</key><string>Makes a shadow sharp where it starts at its caster's foot and softer the farther it falls, as the sun's disc does: 1 is the real size, 3 shows it. 0 is off. Costs a little GPU time near the camera.</string>
+<key>tip_ja</key><string>影が、落とす物の足元では鋭く、離れるほどぼやけるようにします（太陽の大きさによる本物のぼけ方）。1 が実際の大きさ、3 で見て分かる強さです。0 でオフ。カメラの近くで少し重くなります。</string>
+<key>keywords_en</key><string>shadow penumbra soft contact hardening pcss blur distance</string>
+<key>keywords_ja</key><string>影 半影 やわらかい 接触 ぼやける 距離 ぼかし</string>
+<key>min</key><real>0</real><key>max</key><real>8</real><key>step</key><real>0.5</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusShadowDistance</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Shadow Distance</string>
+<key>label_ja</key><string>影の距離</string>
+<key>keywords_en</key><string>shadow shadows distance range far</string>
+<key>keywords_ja</key><string>影の届く距離</string>
+<key>tip_en</key><string>How far from the camera shadows are drawn. Farther covers a wide view but is slower and uses more video memory. Default: as the viewer draws them without this setting.</string>
+<key>tip_ja</key><string>カメラからどこまで影を描くかです。遠いほど広い景色に影が付きますが、重くなりメモリも使います。「標準」はこの設定で手を加えない、もとの描き方です。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Near (96 m)</string><key>label_ja</key><string>近い（96 m）</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Normal (192 m)</string><key>label_ja</key><string>ふつう（192 m）</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Far (384 m)</string><key>label_ja</key><string>遠い（384 m）</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Very far (512 m)</string><key>label_ja</key><string>とても遠い（512 m）</string></map>
+<map><key>value</key><string>-1</string><key>label_en</key><string>Default</string><key>label_ja</key><string>標準</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusShadowPrecision</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Shadow Detail</string>
+<key>label_ja</key><string>影の細かさ</string>
+<key>tip_en</key><string>How well thin shadows (legs, railings, hair) hold up at a distance. Fine and Very fine draw the sun's shadows finer, which uses more video memory. Default: as the viewer draws them without this setting.</string>
+<key>tip_ja</key><string>細い影（脚・手すり・髪）が、遠くでもどれだけ残るかです。「細かい」「とても細かい」は太陽の影を細かく描くので、ビデオメモリを多く使います。「標準」はこの設定で手を加えない、もとの描き方です。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Normal</string><key>label_ja</key><string>ふつう</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Fine</string><key>label_ja</key><string>細かい</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Very fine</string><key>label_ja</key><string>とても細かい</string></map>
+<map><key>value</key><string>-1</string><key>label_en</key><string>Default</string><key>label_ja</key><string>標準</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusShadowFocus</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Shadow Focus</string>
+<key>label_ja</key><string>影の焦点</string>
+<key>tip_en</key><string>Where the shadow detail is spent. 'Follow the subject' gives the best quality near the middle of the picture.</string>
+<key>tip_ja</key><string>影の細かさをどこに集めるかです。「被写体に合わせる」は画面の中心付近が一番きれいになります。</string>
+<key>options</key><array>
+<map><key>value</key><string>1</string><key>label_en</key><string>Follow the subject</string><key>label_ja</key><string>被写体に合わせる</string></map>
+<map><key>value</key><string>0</string><key>label_en</key><string>Even from the camera</string><key>label_ja</key><string>カメラから均等に</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>RenderShadowDetail</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Shadows</string>
+<key>label_ja</key><string>影の種類</string>
+<key>tip_en</key><string>What casts shadows. None: no shadows. Sun and moon: only the sun and moon. All: lamps and other lights too (slowest).</string>
+<key>tip_ja</key><string>影を落とすものの範囲です。なし: 影なし。太陽と月: 太陽と月だけ。すべて: 照明の光も（いちばん重い）。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>None</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Sun and moon</string><key>label_ja</key><string>太陽と月</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>All</string><key>label_ja</key><string>すべて</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>CameraAngle</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Field of View</string>
+<key>label_ja</key><string>画角</string>
+<key>tip_en</key><string>The width of the view. Small: zoomed in, like a telephoto lens. Large: wide-angle, shows more but bends the edges. The widest angle depends on the window's shape: about 98 degrees in a 16:9 window, less in a wider one; past it the view stops widening.</string>
+<key>tip_ja</key><string>写る範囲の広さです。小さいと望遠で寄った絵に、大きいと広角で広く写りますが、端がゆがみます。いちばん広い画角はウィンドウの縦横比で決まり、16:9 のウィンドウではおよそ 98 度（横長のウィンドウほど狭い）です。それより右に動かしても広がりません。</string>
+<key>min</key><real>0.2</real><key>max</key><real>2.6</real><key>step</key><real>0.02</real><key>digits</key><integer>0</integer>
+<key>scale</key><real>57.29578</real>
+</map>
+<map>
+<key>setting</key><string>PlusCameraRoll</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Tilt (+ right, - left)</string>
+<key>label_ja</key><string>傾き（＋ 右、－ 左）</string>
+<key>tip_en</key><string>Tilts the picture sideways. 0 is level. Use it for a slanted, dynamic look.</string>
+<key>tip_ja</key><string>カメラを横に傾けます。0 が水平です。斜めに傾けて動きのある絵にしたい時に。</string>
+<key>min</key><real>-45</real><key>max</key><real>45</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusCameraRollKeySpeed</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Key Tilt Speed (°/s)</string>
+<key>label_ja</key><string>キーで傾ける速さ（度/秒）</string>
+<key>tip_en</key><string>How fast the tilt keys turn the camera, in degrees a second. With Shift it is 3 times as fast.</string>
+<key>tip_ja</key><string>傾けるキーを押した時に、1 秒に何度傾くかです。Shift を押しながらだと 3 倍の速さです。</string>
+<key>min</key><real>1</real><key>max</key><real>90</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>ZoomTime</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Zoom Time (s)</string>
+<key>label_ja</key><string>ズームの時間（秒）</string>
+<key>tip_en</key><string>How many seconds the zoom takes. 0 jumps at once. Longer is smoother.</string>
+<key>tip_ja</key><string>ズームにかかる秒数です。0 で一瞬、長いほどゆっくりなめらかに寄ります。</string>
+<key>min</key><real>0</real><key>max</key><real>10</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>DynamicCameraStrength</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Camera Lag</string>
+<key>label_ja</key><string>カメラの遅れ</string>
+<key>tip_en</key><string>How much the camera lags behind when the avatar moves. 0 follows exactly.</string>
+<key>tip_ja</key><string>アバターが動いた時、カメラが遅れて付いてくる度合いです。0 でぴったり追います。</string>
+<key>min</key><real>0</real><key>max</key><real>30</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>CameraOffsetScale</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Camera Distance Scale</string>
+<key>label_ja</key><string>カメラ距離の倍率</string>
+<key>tip_en</key><string>Multiplies the usual distance between the camera and your avatar. Above 1: farther away, below 1: closer.</string>
+<key>tip_ja</key><string>いつものカメラとアバターの距離を何倍にするかです。1 より大きいと遠く、小さいと近くなります。</string>
+<key>min</key><real>0.1</real><key>max</key><real>10</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>CameraPositionSmoothing</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Camera Smoothing</string>
+<key>label_ja</key><string>カメラのなめらかさ</string>
+<key>tip_en</key><string>How smoothly the camera glides to a new position. Higher is slower and smoother.</string>
+<key>tip_ja</key><string>カメラが新しい位置へ動く時のなめらかさです。大きいほどゆっくりなめらかに動きます。</string>
+<key>min</key><real>0</real><key>max</key><real>300</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>MouseSensitivity</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Mouselook Sensitivity</string>
+<key>label_ja</key><string>マウスルックの感度</string>
+<key>tip_en</key><string>How far the view turns for each movement of the mouse in mouselook (first person).</string>
+<key>tip_ja</key><string>マウスルック（一人称視点）で、マウスを動かした時にどれだけ視点が回るかです。</string>
+<key>min</key><real>0</real><key>max</key><real>15</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>FirstPersonAvatarVisible</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Show Avatar in Mouselook</string>
+<key>label_ja</key><string>マウスルックでアバターを見せる</string>
+<key>tip_en</key><string>Shows your own body in mouselook (first person).</string>
+<key>tip_ja</key><string>マウスルック（一人称視点）で、自分の体を画面に出します。</string>
+</map>
+<map>
+<key>setting</key><string>MouseSmooth</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Smooth Mouselook</string>
+<key>label_ja</key><string>マウスルックをなめらかに</string>
+<key>tip_en</key><string>Smooths the turn of the mouselook view so it is less jerky.</string>
+<key>tip_ja</key><string>マウスルックの視点の動きをなめらかにして、カクつきを減らします。</string>
+</map>
+<map>
+<key>setting</key><string>JoystickEnabled</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse</string>
+<key>label_ja</key><string>3D マウスを使う</string>
+<key>tip_en</key><string>Uses a 3D mouse or joystick to move the camera.</string>
+<key>tip_ja</key><string>3D マウスやジョイスティックでカメラを動かします。</string>
+</map>
+<map>
+<key>setting</key><string>FlycamAxisScale1</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Move Left/Right</string>
+<key>label_ja</key><string>3D マウス: 左右の移動</string>
+<key>tip_en</key><string>How strongly the 3D mouse moves the camera sideways.</string>
+<key>tip_ja</key><string>3D マウスで、カメラを左右に動かす強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>5</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>FlycamAxisScale2</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Move Up/Down</string>
+<key>label_ja</key><string>3D マウス: 上下の移動</string>
+<key>tip_en</key><string>How strongly the 3D mouse moves the camera up and down.</string>
+<key>tip_ja</key><string>3D マウスで、カメラを上下に動かす強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>5</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>FlycamAxisScale0</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Move In/Out</string>
+<key>label_ja</key><string>3D マウス: 前後の移動</string>
+<key>tip_en</key><string>How strongly the 3D mouse moves the camera forward and back.</string>
+<key>tip_ja</key><string>3D マウスで、カメラを前後に動かす強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>5</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>FlycamAxisScale4</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Pitch</string>
+<key>label_ja</key><string>3D マウス: 上下の向き</string>
+<key>tip_en</key><string>How strongly the 3D mouse tilts the view up and down.</string>
+<key>tip_ja</key><string>3D マウスで、視線を上下に向ける強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>3</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>FlycamAxisScale5</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Yaw</string>
+<key>label_ja</key><string>3D マウス: 左右の向き</string>
+<key>tip_en</key><string>How strongly the 3D mouse turns the view left and right.</string>
+<key>tip_ja</key><string>3D マウスで、視線を左右に向ける強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>3</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>FlycamAxisScale3</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Roll</string>
+<key>label_ja</key><string>3D マウス: 傾き</string>
+<key>tip_en</key><string>How strongly the 3D mouse rolls (tilts) the view.</string>
+<key>tip_ja</key><string>3D マウスで、視界を傾ける強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>3</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>FlycamAxisScale6</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Zoom Speed</string>
+<key>label_ja</key><string>3D マウス: ズームの速さ</string>
+<key>tip_en</key><string>How fast the zoom axis of the controller zooms (a device with a seventh axis; the zoom button of a 3D mouse has its own speed).</string>
+<key>tip_ja</key><string>コントローラーのズーム軸でズームする速さです（7 本目の軸がある機器。3D マウスのズームボタンは別の設定です）。</string>
+<key>min</key><real>0</real><key>max</key><real>2</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>FlycamFeathering</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Response</string>
+<key>label_ja</key><string>3D マウス: 追従の速さ</string>
+<key>tip_en</key><string>How quickly the 3D mouse follows your hand. Lower starts and stops more gently; higher follows at once.</string>
+<key>tip_ja</key><string>3D マウスの動きに、カメラがどれだけすぐ付いてくるかです。小さいほど動き出しと止まり際がゆるやかに、大きいほどきびきび動きます。</string>
+<key>min</key><real>1</real><key>max</key><real>32</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFlycamMouseMode</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Flycam: Mouse Look</string>
+<key>label_ja</key><string>フライカム: マウスで見回す</string>
+<key>keywords_en</key><string>flycam drone free camera mouse look keyboard wasd</string>
+<key>keywords_ja</key><string>フライカム ドローン 自由カメラ マウス 視点 キーボード</string>
+<key>tip_en</key><string>How the mouse turns the flycam (Z turns it on; fly with W A S D, Space and C; Q and E tilt it). While the right button is held turns it only then; a short right click still works as a click. Always turns it all the time; hold Alt to get the cursor back.</string>
+<key>tip_ja</key><string>フライカム（Z で入ります。W A S D とスペース・C で飛び、Q・E で傾けます）をマウスで見回す方法です。「右ボタンを押している間」はそのときだけ向きが変わり、短い右クリックは今までどおりクリックになります。「常に」は常時マウスで向きが変わり、Alt を押している間だけカーソルが戻ります。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>While the right button is held</string><key>label_ja</key><string>右ボタンを押している間</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Always</string><key>label_ja</key><string>常に</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusFlycamMouseSens</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>needs</key><string>PlusFlycamMouseMode</string>
+<key>label_en</key><string>Flycam: Mouse Speed</string>
+<key>label_ja</key><string>フライカム: マウスの速さ</string>
+<key>tip_en</key><string>How far the flycam turns for a move of the mouse. 1 is the same as in mouselook.</string>
+<key>tip_ja</key><string>マウスを動かしたときにフライカムが向きを変える大きさです。1 でマウスルックと同じです。</string>
+<key>min</key><real>0.05</real><key>max</key><real>10</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFlycamBoost</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Flycam: Shift Boost</string>
+<key>label_ja</key><string>フライカム: Shift での加速</string>
+<key>tip_en</key><string>How many times faster the flycam flies while Shift is held. The mouse wheel changes the base speed (hold Shift, Ctrl or Alt with the wheel to zoom instead).</string>
+<key>tip_ja</key><string>Shift を押している間、フライカムが何倍の速さで飛ぶかです。普段の速さはマウスのホイールで変えられます（Shift・Ctrl・Alt を押しながらのホイールはズームです）。</string>
+<key>min</key><real>1</real><key>max</key><real>20</real><key>step</key><real>0.5</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFlycamSmooth</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Flycam: Gentle Keys</string>
+<key>label_ja</key><string>フライカム: 動き出しと止まり</string>
+<key>tip_en</key><string>How gently the flycam starts and stops when you press and release the keys. 0 is abrupt; higher drifts longer, like a drone. The Q / E tilt stops at once whatever this is.</string>
+<key>tip_ja</key><string>キーを押した時と離した時に、フライカムがどれだけゆっくり動き出し、止まるかです。0 だと急に動き、大きいほどドローンのようにゆるやかに動きます。Q・E の傾きはこれによらず、すぐ止まります。</string>
+<key>min</key><real>0</real><key>max</key><real>2</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFlycamRollSpeed</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Flycam: Q / E Tilt Speed (°/s)</string>
+<key>label_ja</key><string>フライカム: Q・E で傾ける速さ（度/秒）</string>
+<key>tip_en</key><string>How fast Q and E tilt the flycam, in degrees a second (the same tilt as the Tilt slider; Home levels it). With Shift it is 3 times as fast.</string>
+<key>tip_ja</key><string>フライカムで Q・E を押した時に、1 秒に何度傾くかです（「傾き」のスライダーと同じ傾きです。Home で水平に戻ります）。Shift を押しながらだと 3 倍の速さです。</string>
+<key>min</key><real>1</real><key>max</key><real>90</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>ZoomDirect</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Zoom Control</string>
+<key>label_ja</key><string>3D マウス: ズームの操作</string>
+<key>tip_en</key><string>Changes how the 3D mouse controls the zoom. Try it if zooming feels wrong.</string>
+<key>tip_ja</key><string>3D マウスでのズームの操作方法を切り替えます。ズームの効きがおかしい時に試してください。</string>
+</map>
+<map>
+<key>setting</key><string>AutoLeveling</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Keep Level</string>
+<key>label_ja</key><string>3D マウス: 水平を保つ</string>
+<key>tip_en</key><string>Keeps the horizon level while you move the camera with the 3D mouse.</string>
+<key>tip_ja</key><string>3D マウスでカメラを動かしても、水平が傾かないようにします。</string>
+</map>
+<map>
+<key>setting</key><string>JoystickAxis6</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse: Zoom Axis (-1 off)</string>
+<key>label_ja</key><string>3D マウス: ズームの軸（-1 でなし）</string>
+<key>tip_en</key><string>Which axis of the 3D mouse zooms. -1 turns the zoom axis off.</string>
+<key>tip_ja</key><string>ズームに使う 3D マウスの軸の番号です。-1 でズームの軸を使いません。</string>
+<key>min</key><real>-1</real><key>max</key><real>5</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>DisableCameraConstraints</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Camera Moves Freely</string>
+<key>label_ja</key><string>カメラを自由に動かす</string>
+<key>keywords_en</key><string>around avatar distance limit constraints</string>
+<key>keywords_ja</key><string>カメラ 距離 制限 自由 離れる</string>
+<key>tip_en</key><string>The camera moves freely around the avatar: it can go as far from the avatar as you like, without the usual limit.</string>
+<key>tip_ja</key><string>カメラをアバターから好きなだけ離せるようにします。通常の距離の制限がなくなります。</string>
+</map>
+<map>
+<key>setting</key><string>PlusIgnoreSimCameraConstraint</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Camera Through Walls (Photo Mode)</string>
+<key>label_ja</key><string>壁から押し戻さない（撮影中のみ）</string>
+<key>keywords_en</key><string>pushed out walls region collision constraint photo mode only</string>
+<key>keywords_ja</key><string>壁 押し戻し すり抜け 地域 衝突 制限 カメラ 撮影中</string>
+<key>tip_en</key><string>The region does not push the camera back out of walls and objects (the region's camera collision plane). It works only while the photo screen or this window is open (not minimized): out of them the region's camera collision applies again.</string>
+<key>tip_ja</key><string>地域がカメラを壁や物の外へ押し戻す動きを止めます。効くのは撮影モードかこの窓を開いている間だけで、閉じる（最小化する）と押し戻しが戻ります。</string>
+</map>
+<map>
+<key>setting</key><string>JoystickAvatarEnabled</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse Moves the Avatar</string>
+<key>label_ja</key><string>3D マウスでアバターを動かす</string>
+<key>tip_en</key><string>Lets the 3D mouse walk your avatar too.</string>
+<key>tip_ja</key><string>3D マウスでアバターも歩かせます。</string>
+</map>
+<map>
+<key>setting</key><string>JoystickBuildEnabled</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>3D Mouse Moves Objects</string>
+<key>label_ja</key><string>3D マウスで物を動かす</string>
+<key>tip_en</key><string>Lets the 3D mouse move objects when you are building.</string>
+<key>tip_ja</key><string>3D マウスで、制作中の物も動かせるようにします。</string>
+</map>
+<map>
+<key>setting</key><string>PlusPhotoGuideOn</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Composition Guide</string>
+<key>label_ja</key><string>構図ガイド</string>
+<key>tip_en</key><string>Draws guide lines over the screen to help with composition. They are not in the photo.</string>
+<key>tip_ja</key><string>構図の補助線を画面に重ねて出します。写真には写りません。</string>
+</map>
+<map>
+<key>setting</key><string>PlusPhotoGuideKind</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Guide Lines</string>
+<key>label_ja</key><string>ガイドの種類</string>
+<key>tip_en</key><string>The pattern of the guide lines. Thirds is the classic: put the subject on a line or a crossing.</string>
+<key>tip_ja</key><string>補助線の種類です。三分割が定番で、被写体を線や交点に置くとバランスよく見えます。</string>
+<key>options</key><array>
+<map><key>value</key><string>1</string><key>label_en</key><string>Thirds</string><key>label_ja</key><string>三分割</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Golden ratio</string><key>label_ja</key><string>黄金比</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Center cross</string><key>label_ja</key><string>中央の十字</string></map>
+<map><key>value</key><string>4</string><key>label_en</key><string>Diagonals</string><key>label_ja</key><string>対角線</string></map>
+<map><key>value</key><string>5</string><key>label_en</key><string>Grid 4 x 4</string><key>label_ja</key><string>方眼（4×4）</string></map>
+<map><key>value</key><string>6</string><key>label_en</key><string>Grid 6 x 6</string><key>label_ja</key><string>方眼（6×6）</string></map>
+<map><key>value</key><string>7</string><key>label_en</key><string>Horizon (camera tilt)</string><key>label_ja</key><string>水平線（カメラの傾き）</string></map>
+<map><key>value</key><string>0</string><key>label_en</key><string>None (frame only)</string><key>label_ja</key><string>なし（撮影枠だけ）</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusPhotoGuideColor</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Guide Color</string>
+<key>label_ja</key><string>ガイドの色</string>
+<key>tip_en</key><string>The color of the guide lines. Pick one that shows against the scene.</string>
+<key>tip_ja</key><string>補助線の色です。景色の上で見やすい色を選びます。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>White</string><key>label_ja</key><string>白</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Black</string><key>label_ja</key><string>黒</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Yellow</string><key>label_ja</key><string>黄</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Red</string><key>label_ja</key><string>赤</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusPhotoGuideOpacity</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Guide Strength</string>
+<key>label_ja</key><string>ガイドの濃さ</string>
+<key>tip_en</key><string>How strong the guide lines look. Lower is fainter.</string>
+<key>tip_ja</key><string>補助線の濃さです。下げるほど薄くなります。</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusPhotoGuideThickness</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Guide Thickness</string>
+<key>label_ja</key><string>ガイドの太さ</string>
+<key>tip_en</key><string>How thick the guide lines are.</string>
+<key>tip_ja</key><string>補助線の太さです。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Thin</string><key>label_ja</key><string>細</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Medium</string><key>label_ja</key><string>中</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>CameraFocusTransitionTime</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Focus Change Time (s)</string>
+<key>label_ja</key><string>ピントが移る時間（秒）</string>
+<key>tip_en</key><string>How many seconds the focus takes to move to a new subject. Longer feels like a slow, cinematic focus pull.</string>
+<key>tip_ja</key><string>ピントが次の被写体へ移るまでの秒数です。長くするとゆっくりしたピント送りになります。</string>
+<key>min</key><real>0</real><key>max</key><real>5</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>RenderDepthOfField</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>camera</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Depth of Field (for the blur)</string>
+<key>label_ja</key><string>被写界深度（背景ぼかしを使う）</string>
+<key>tip_en</key><string>Required for the background blur.</string>
+<key>tip_ja</key><string>背景ぼかしを使うために必要な機能です。</string>
+<key>before</key><string>param:blur</string>
+</map>
+<map>
+<key>heading</key><string>color</string>
+<key>tab</key><string>color</string>
+<key>before</key><string>param:brightness</string>
+<key>label_en</key><string>Brightness and Color</string>
+<key>label_ja</key><string>明るさと色</string>
+</map>
+<map>
+<key>setting</key><string>PlusLook</string>
+<key>kind</key><string>look</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Look (Color Grading)</string>
+<key>label_ja</key><string>ルック（色合い）</string>
+<key>tip_en</key><string>The color grading of the whole picture, like a film or photo filter. Pick one to see it at once.</string>
+<key>tip_ja</key><string>写真全体の色合い（フィルターのようなもの）です。選ぶとすぐ反映されます。</string>
+<key>keywords_en</key><string>look looks lut color colour grading filter</string>
+<key>keywords_ja</key><string>ルック 色合い 色調 カラーグレーディング フィルター</string>
+</map>
+<map>
+<key>setting</key><string>PlusLookStrength</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Look Strength (%)</string>
+<key>label_ja</key><string>ルックの強さ（%）</string>
+<key>tip_en</key><string>How strongly the look is applied. 0 is the original colors, 100 is the full look.</string>
+<key>tip_ja</key><string>ルックをどれだけ強く掛けるかです。0 で元の色、100 でルックをそのまま掛けます。</string>
+<key>keywords_en</key><string>look lut color colour grading strength</string>
+<key>keywords_ja</key><string>ルック 色合い 強さ</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusLookSnapshotOnly</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Look in Photos Only</string>
+<key>label_ja</key><string>ルックは写真にだけ掛ける（画面は元の色）</string>
+<key>tip_en</key><string>Applies the look only to photos. The screen keeps its normal colors, so it stays easy to see while you work.</string>
+<key>tip_ja</key><string>ルックを写真にだけ掛けます。画面は元の色のままなので、作業中も見やすいです。</string>
+<key>keywords_en</key><string>look lut snapshot photo</string>
+<key>keywords_ja</key><string>ルック 色合い 写真 スナップショット</string>
+</map>
+<map>
+<key>heading</key><string>clarity</string>
+<key>tab</key><string>color</string>
+<key>label_en</key><string>Clarity and Texture</string>
+<key>label_ja</key><string>明瞭度と質感</string>
+</map>
+<map>
+<key>setting</key><string>PlusFxClarity</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Clarity (%)</string>
+<key>label_ja</key><string>明瞭度（%）</string>
+<key>tip_en</key><string>Strengthens the light and dark between nearby areas, for more depth and punch. The colors stay as they are. Too much looks harsh. Costs a little speed.</string>
+<key>tip_ja</key><string>近くの明暗の差を強めて、立体感と力強さを出します。色はそのままです。上げすぎるとギラついた絵になります。少し重くなります。</string>
+<key>keywords_en</key><string>clarity local contrast punch crisp detail texture</string>
+<key>keywords_ja</key><string>明瞭度 クラリティ ローカルコントラスト 立体感 くっきり メリハリ</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFxTexture</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Texture (%)</string>
+<key>label_ja</key><string>質感（%）</string>
+<key>tip_en</key><string>Brings out fine detail such as paving stones, bark and leaves. The colors stay as they are. Too much makes skin look rough too.</string>
+<key>tip_ja</key><string>石畳・木の幹・葉などの細かい凹凸をくっきりさせます。色はそのままです。上げすぎると肌まで荒れて見えます。</string>
+<key>keywords_en</key><string>texture detail fine crisp stone bark leaves clarity sharpen</string>
+<key>keywords_ja</key><string>テクスチャ 質感 細部 ディテール 凹凸 石畳 くっきり</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>heading</key><string>softglow</string>
+<key>tab</key><string>color</string>
+<key>label_en</key><string>Soft Glow</string>
+<key>label_ja</key><string>ふんわり光</string>
+</map>
+<map>
+<key>setting</key><string>PlusFxSoftGlow</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Soft Glow (%)</string>
+<key>label_ja</key><string>ふんわり光（%）</string>
+<key>tip_en</key><string>Lays a wide, soft blur of the whole picture over it, so everything glows gently, like a dreamy photo. Costs a little speed.</string>
+<key>tip_ja</key><string>絵全体を大きくぼかしたものを重ねて、全体をほんわか光らせます。写真をぼかして重ねた時のような、やわらかい雰囲気になります。少し重くなります。</string>
+<key>keywords_en</key><string>soft glow haze dreamy bloom blur diffusion</string>
+<key>keywords_ja</key><string>ふんわり ほんわか グロー ぼかし ソフト 光 ブルーム</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFxSoftGlowSize</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusFxSoftGlow</string>
+<key>label_en</key><string>Soft Glow Width (%)</string>
+<key>label_ja</key><string>ふんわり光の広さ（%）</string>
+<key>tip_en</key><string>How far the glow spreads. Low is a faint sheen close to edges; high is a wide haze.</string>
+<key>tip_ja</key><string>光のにじむ広さです。低いと輪郭のそばだけうっすら、高いと広くふわっと広がります。</string>
+<key>keywords_en</key><string>soft glow width size radius haze</string>
+<key>keywords_ja</key><string>ふんわり 広さ 半径 ぼかし</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusFxSoftGlowLift</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>needs</key><string>PlusFxSoftGlow</string>
+<key>label_en</key><string>Soft Glow Brightness (%)</string>
+<key>label_ja</key><string>ふんわり光の明るさ（%）</string>
+<key>tip_en</key><string>How much light the glow adds. At 0 it is only a blur laid over the picture; higher makes it brighter and airier.</string>
+<key>tip_ja</key><string>光として足す明るさです。0だとぼかしを重ねるだけ、上げると明るくふわっとします。</string>
+<key>keywords_en</key><string>soft glow brightness lift screen airy</string>
+<key>keywords_ja</key><string>ふんわり 明るさ 明るく ふわっと</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>heading</key><string>miniature</string>
+<key>tab</key><string>color</string>
+<key>label_en</key><string>Miniature (Tilt-Shift)</string>
+<key>label_ja</key><string>ミニチュア</string>
+</map>
+<map>
+<key>setting</key><string>PlusMiniature</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Miniature Look</string>
+<key>label_ja</key><string>ミニチュアにする</string>
+<key>tip_en</key><string>Makes the scene look like a small model: a sharp band across the picture, blur above and below it, and brighter colors. Best from high up, looking down.</string>
+<key>tip_ja</key><string>模型を接写したような絵にします。帯の所だけくっきりさせ、上下をぼかして、色を少し鮮やかにします。高い所から見下ろす場面がよく合います。</string>
+<key>keywords_en</key><string>miniature diorama tilt shift tiltshift toy model blur</string>
+<key>keywords_ja</key><string>ジオラマ ミニチュア チルトシフト 模型 おもちゃ ぼかし</string>
+</map>
+<map>
+<key>setting</key><string>PlusMiniatureBlur</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>needs</key><string>PlusMiniature</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Miniature Blur (%)</string>
+<key>label_ja</key><string>ミニチュアのぼかし（%）</string>
+<key>tip_en</key><string>How strongly the parts away from the band are blurred. Stronger blur makes the scene look smaller, and is a little heavier.</string>
+<key>tip_ja</key><string>帯から離れた所のぼかしの強さです。強いほど小さな模型らしくなりますが、少し重くなります。</string>
+<key>keywords_en</key><string>miniature diorama tilt shift blur</string>
+<key>keywords_ja</key><string>ジオラマ ミニチュア ぼかし</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusMiniatureBand</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>needs</key><string>PlusMiniature</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Sharp Band Position</string>
+<key>label_ja</key><string>くっきりさせる帯の位置</string>
+<key>tip_en</key><string>Moves the sharp band up or down (across itself when tilted). 0 is the middle of the picture, 1 the top, -1 the bottom. Put it over the subject.</string>
+<key>tip_ja</key><string>くっきりさせる帯を上下に動かします（傾けた時は帯に垂直な向きに動きます）。0 で画面の真ん中、1 で上端、-1 で下端です。見せたい物に合わせます。</string>
+<key>keywords_en</key><string>miniature diorama tilt shift band focus</string>
+<key>keywords_ja</key><string>ジオラマ ミニチュア 帯 ピント</string>
+<key>min</key><real>-1</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusMiniatureWidth</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>needs</key><string>PlusMiniature</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Sharp Band Width</string>
+<key>label_ja</key><string>くっきりさせる帯の幅</string>
+<key>tip_en</key><string>How much of the picture's height stays sharp (0.25: a quarter). Narrower looks more like a miniature.</string>
+<key>tip_ja</key><string>画面の高さのうち、くっきり残す割合です（0.25 で 4 分の 1）。狭いほどミニチュアらしくなります。</string>
+<key>keywords_en</key><string>miniature diorama tilt shift band width</string>
+<key>keywords_ja</key><string>ジオラマ ミニチュア 帯 幅</string>
+<key>min</key><real>0.02</real><key>max</key><real>1</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusMiniatureTilt</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>needs</key><string>PlusMiniature</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Sharp Band Tilt (°)</string>
+<key>label_ja</key><string>くっきりさせる帯の傾き（度）</string>
+<key>tip_en</key><string>Slants the band, for a road or a river that runs across the picture at an angle. 0 is level.</string>
+<key>tip_ja</key><string>帯を斜めに傾けます。斜めに走る道や川に合わせる時に使います。0 で水平です。</string>
+<key>keywords_en</key><string>miniature diorama tilt shift band angle</string>
+<key>keywords_ja</key><string>ジオラマ ミニチュア 帯 傾き 角度</string>
+<key>min</key><real>-90</real><key>max</key><real>90</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusMiniatureSaturation</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>needs</key><string>PlusMiniature</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Miniature Colors (%)</string>
+<key>label_ja</key><string>ミニチュアの色の鮮やかさ（%）</string>
+<key>tip_en</key><string>Makes the colors brighter and the contrast a little stronger, like painted toys. 0 leaves the colors as they are. At night, keep it low.</string>
+<key>tip_ja</key><string>色を鮮やかにし、明暗を少し強めて、塗装した模型らしくします。0 で色はそのままです。夜は低めがおすすめです。</string>
+<key>keywords_en</key><string>miniature diorama tilt shift saturation color contrast</string>
+<key>keywords_ja</key><string>ジオラマ ミニチュア 彩度 鮮やか 色 コントラスト</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>RenderTonemapType</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Tone Mapper</string>
+<key>label_ja</key><string>トーンマッパー</string>
+<key>tip_en</key><string>How very bright and very dark parts are fitted into the picture. It changes the overall look: try each and compare.</string>
+<key>tip_ja</key><string>明るすぎる所・暗すぎる所を画面に収める方式です。絵全体の雰囲気が変わるので、見比べて選びます。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Khronos Neutral</string><key>label_ja</key><string>Khronos Neutral</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>ACES</string><key>label_ja</key><string>ACES</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Reinhard (keeps hue)</string><key>label_ja</key><string>Reinhard（色相を保つ）</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Hable (film look)</string><key>label_ja</key><string>Hable（映画調）</string></map>
+<map><key>value</key><string>4</string><key>label_en</key><string>Hejl (film look, soft)</string><key>label_ja</key><string>Hejl（フィルム調・やわらかめ）</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>RenderTonemapMix</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Tone Mapper Mix</string>
+<key>label_ja</key><string>トーンマッパーの混ぜ具合</string>
+<key>tip_en</key><string>How strongly the tone mapper works. Lower looks flatter and more natural, higher looks punchier.</string>
+<key>tip_ja</key><string>トーンマッパーの効き具合です。低いと平らで自然、高いと力強い絵になります。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>RenderExposure</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Exposure</string>
+<key>label_ja</key><string>露出</string>
+<key>tip_en</key><string>The camera's exposure. Raise it to brighten the whole scene, lower it to darken.</string>
+<key>tip_ja</key><string>カメラの露出（明るさの基準）です。上げると全体が明るく、下げると暗くなります。</string>
+<key>min</key><real>0.5</real><key>max</key><real>4</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>RenderCASSharpness</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Sharpening</string>
+<key>label_ja</key><string>シャープさ</string>
+<key>tip_en</key><string>Sharpens the picture to bring out details. Too much looks harsh.</string>
+<key>tip_ja</key><string>絵をシャープにして細部を際立たせます。やりすぎるとギスギスします。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>RenderHDREnabled</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>color</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>HDR</string>
+<key>label_ja</key><string>HDR</string>
+<key>tip_en</key><string>Draws with a wider range of brightness for natural lights and colors.</string>
+<key>tip_ja</key><string>明るさの幅を広く取って、自然な光と色で描きます。</string>
+</map>
+<map>
+<key>setting</key><string>DebugShowRenderInfo</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Show FPS and Render Info</string>
+<key>label_ja</key><string>FPS と描画情報を表示</string>
+<key>tip_en</key><string>Shows the frame rate and other numbers on screen. Turn it off for a clean photo.</string>
+<key>tip_ja</key><string>画面に FPS などの数字を出します。きれいな写真にしたい時はオフにしてください。</string>
+</map>
+<map>
+<key>setting</key><string>RenderFarClip</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Draw Distance (m)</string>
+<key>label_ja</key><string>描画距離（m）</string>
+<key>tip_en</key><string>How far away things are drawn. Farther shows a wider scene but is slower.</string>
+<key>tip_ja</key><string>どこまで遠くを描くかです。遠いほど広い景色が写りますが、重くなります。</string>
+<key>min</key><real>64</real><key>max</key><real>512</real><key>step</key><real>16</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSnapshotBoost</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Beautiful Snapshots</string>
+<key>label_ja</key><string>撮影時にきれいにする</string>
+<key>tip_en</key><string>Raises the quality only while a photo is taken, so you get the best picture without slowing the screen as you work.</string>
+<key>tip_ja</key><string>写真を撮る瞬間だけ画質を上げます。作業中の画面を重くせずに、いちばんきれいな写真が撮れます。</string>
+</map>
+<map>
+<key>setting</key><string>RenderFSAAType</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Anti-aliasing</string>
+<key>label_ja</key><string>ギザギザの軽減</string>
+<key>tip_en</key><string>Smooths jagged edges. SMAA is cleaner than FXAA.</string>
+<key>tip_ja</key><string>ギザギザした輪郭をなめらかにします。SMAA の方が FXAA よりきれいです。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>None</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>FXAA</string><key>label_ja</key><string>FXAA</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>SMAA</string><key>label_ja</key><string>SMAA</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusTAA</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Temporal Anti-aliasing (TAA)</string>
+<key>label_ja</key><string>テンポラル AA（TAA）</string>
+<key>keywords_en</key><string>taa temporal anti-aliasing antialiasing aa jaggies jagged flicker shimmer thin lines edges</string>
+<key>keywords_ja</key><string>ギザギザ ちらつき アンチエイリアス 細い線 輪郭 TAA</string>
+<key>tip_en</key><string>Mixes the last few frames into this one, so thin lines and edges that stay jagged or flicker smooth out where the view is still. It comes after FXAA/SMAA (they stay on); moving things may leave a faint trail. It works on the screen only, not on saved snapshots. Light, and it switches at once.</string>
+<key>tip_ja</key><string>直前の数フレームを重ねて、止まった景色の細い線や輪郭のギザギザ・ちらつきをならします。FXAA/SMAA の後に掛かり、両方とも効きます。動く物の後ろにかすかな尾が出ることがあります。画面の表示だけに効き、保存する写真には掛かりません。軽く、すぐ切り替わります。</string>
+</map>
+<map>
+<key>setting</key><string>PlusTAABlend</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><integer>0</integer>
+<key>needs</key><string>PlusTAA</string>
+<key>label_en</key><string>TAA Strength</string>
+<key>label_ja</key><string>TAA の強さ</string>
+<key>tip_en</key><string>How much of the last frames is kept. Higher is smoother, but a moving thing leaves a longer trail. 0.9 is the default.</string>
+<key>tip_ja</key><string>前のフレームをどれだけ残すかです。高いほどなめらかですが、動く物の後ろの尾が長くなります。標準は 0.9 です。</string>
+<key>min</key><real>0.5</real><key>max</key><real>0.98</real><key>step</key><real>0.01</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusTAAJitterScale</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><integer>0</integer>
+<key>needs</key><string>PlusTAA</string>
+<key>label_en</key><string>TAA Jitter</string>
+<key>label_ja</key><string>TAA の揺らし幅</string>
+<key>tip_en</key><string>How far the scene is shifted, by part of a pixel each frame, for TAA to gather. 1 smooths edges the most; lower is sharper; 0 shifts nothing (TAA then only steadies flicker).</string>
+<key>tip_ja</key><string>TAA が集めるために、毎フレーム景色を 1 画素未満ずらす幅です。1 がいちばんなめらかで、下げるとくっきりします。0 ではずらさず、ちらつきを抑えるだけになります。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusTAAThinGaps</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><integer>0</integer>
+<key>needs</key><string>PlusTAA</string>
+<key>label_en</key><string>TAA Fine Detail</string>
+<key>label_ja</key><string>TAA の細かい物</string>
+<key>keywords_en</key><string>taa thin gap gaps fence lattice grille blind blinds louver slat bar flicker blink shimmer</string>
+<key>keywords_ja</key><string>細い隙間 柵 格子 ブラインド ルーバー 細い棒 ちらつき 点滅 TAA</string>
+<key>tip_en</key><string>Keeps fine things (gaps between fence bars or blind slats, thin bars, a lattice seen at a slant) steady where TAA made them flicker while the view is still. 1 is the default; 0 keeps nothing. While the view is still, a light blinking every 1, 2 or 4 frames is evened out too. Lower it if a change over a fine lattice (a shadow coming over it) shows up to about a second late.</string>
+<key>tip_ja</key><string>止まった景色で、柵やブラインドのすき間、細い棒、斜めに見える格子などが TAA でちらつく所を止めます。下げるとちらつきが戻ります。標準は 1 で、0 にすると保持しません。止まっている間は、1・2・4 フレームごとに点滅する光も均されます。細かい格子の上の変化（影がかかるなど）が 1 秒近く遅れて見える時は下げてください。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusGtao</string>
+<key>needs_feature</key><string>gtao</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Ambient Occlusion (GTAO)</string>
+<key>label_ja</key><string>アンビエントオクルージョン（GTAO）</string>
+<key>keywords_en</key><string>ambient occlusion ao gtao shading corners contrast</string>
+<key>keywords_ja</key><string>陰影 陰影のコントラスト 環境遮蔽 AO</string>
+<key>tip_en</key><string>Darkens corners and creases where light would be blocked (ambient occlusion). Adds depth. It makes the picture slower.</string>
+<key>tip_ja</key><string>隅やすき間など、光が届きにくい所を暗くします。奥行きが出ますが、描画が重くなります。</string>
+</map>
+<map>
+<key>setting</key><string>PlusGtaoQuality</string>
+<key>needs_feature</key><string>gtao</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>GTAO Quality</string>
+<key>label_ja</key><string>GTAO の品質</string>
+<key>tip_en</key><string>The smoothness of that shading. Higher is cleaner but slower.</string>
+<key>tip_ja</key><string>GTAO の陰影のなめらかさです。高いほどきれいですが重くなります。</string>
+<key>options</key><array>
+<map><key>value</key><string>1</string><key>label_en</key><string>Low</string><key>label_ja</key><string>低</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Medium</string><key>label_ja</key><string>中</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>High</string><key>label_ja</key><string>高</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusGtaoStrength</string>
+<key>needs_feature</key><string>gtao</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>GTAO Strength</string>
+<key>label_ja</key><string>GTAO の強さ</string>
+<key>tip_en</key><string>How dark the corners and creases get.</string>
+<key>tip_ja</key><string>隅やすき間の暗さの強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>4</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusGtaoRadius</string>
+<key>needs_feature</key><string>gtao</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>GTAO Radius (m)</string>
+<key>label_ja</key><string>GTAO の半径（m）</string>
+<key>tip_en</key><string>How far from a corner the darkening reaches, in meters. Small gives fine detail, large gives a broad soft shade.</string>
+<key>tip_ja</key><string>隅からどれだけ離れた所まで暗くするかです（メートル）。小さいと細かく、大きいと広くやわらかい陰になります。</string>
+<key>min</key><real>0.1</real><key>max</key><real>5</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>RenderDeferredSSAO</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Standard SSAO</string>
+<key>label_ja</key><string>標準の SSAO</string>
+<key>keywords_en</key><string>ambient occlusion</string>
+<key>keywords_ja</key><string>環境遮蔽 陰影 AO 標準</string>
+<key>tip_en</key><string>The standard ambient occlusion (SSAO): the viewer's built-in version of the same corner shading. Keep it on to use GTAO above: GTAO then takes its place (they are not added together); turning this off turns GTAO off too.</string>
+<key>tip_ja</key><string>ビューワ標準の、同じ種類の隅の陰影です。上の GTAO を使う時もオンのままにします（GTAO がこれの代わりに描き、重ねません）。オフにすると GTAO も消えます。</string>
+</map>
+<map>
+<key>setting</key><string>RenderGlow</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Standard Glow</string>
+<key>label_ja</key><string>標準のグロー</string>
+<key>tip_en</key><string>The standard glow around bright objects.</string>
+<key>tip_ja</key><string>明るい物のまわりに出る、標準のにじみ（グロー）です。</string>
+</map>
+<map>
+<key>setting</key><string>RenderGlowStrength</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Standard Glow Strength</string>
+<key>label_ja</key><string>標準のグローの強さ</string>
+<key>tip_en</key><string>How strong the standard glow is.</string>
+<key>tip_ja</key><string>標準のグローの強さです。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>RenderReflectionProbeDetail</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Reflections</string>
+<key>label_ja</key><string>反射</string>
+<key>tip_en</key><string>What shiny surfaces reflect. Higher shows more (moving things, then everything live) but is slower.</string>
+<key>tip_ja</key><string>つやのある面に何を映すかです。上げるほど映る物が増えます（動く物、最後はすべてリアルタイム）が、重くなります。</string>
+<key>options</key><array>
+<map><key>value</key><string>-1</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>0</string><key>label_en</key><string>Static only</string><key>label_ja</key><string>静止物のみ</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Static and dynamic</string><key>label_ja</key><string>静止物と動く物</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Realtime</string><key>label_ja</key><string>リアルタイム</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>RenderMirrors</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Mirrors</string>
+<key>label_ja</key><string>鏡</string>
+<key>tip_en</key><string>Lets mirror objects show a true reflection. Costs speed.</string>
+<key>tip_ja</key><string>鏡の物に本物の映り込みを出します。重くなります。</string>
+</map>
+<map>
+<key>setting</key><string>PlusMirrorAvatars</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Avatars in Every Mirror</string>
+<key>label_ja</key><string>どの鏡にもアバターを映す</string>
+<key>tip_en</key><string>Mirrors show avatars even when their maker did not set them to. Needs Mirrors on. Each mirror then draws the avatars in it, which is slower.</string>
+<key>tip_ja</key><string>作り手が設定していない鏡にも、アバターを映します。「鏡」がオンの時だけ効きます。鏡ごとにアバターを描くので重くなります。</string>
+<key>keywords_en</key><string>mirror reflection avatar dynamic</string>
+<key>keywords_ja</key><string>鏡 ミラー 映り込み アバター</string>
+</map>
+<map>
+<key>setting</key><string>RenderScreenSpaceReflections</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Screen-space Reflections</string>
+<key>label_ja</key><string>画面内の反射</string>
+<key>tip_en</key><string>Reflects what is on screen in shiny floors and walls.</string>
+<key>tip_ja</key><string>画面に写っている物を、つやのある床や壁に映します。</string>
+</map>
+<map>
+<key>setting</key><string>PlusSSR</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Reflections: New Method</string>
+<key>label_ja</key><string>画面内の反射: 新方式</string>
+<key>tip_en</key><string>Screen-space reflections, new method: reflections reach farther, and slightly rough floors get blurred ones too. Needs Screen-space Reflections on. A little slower.</string>
+<key>tip_ja</key><string>映り込みが遠くまで届き、少し粗い床にもぼけた反射が付きます。「画面内の反射」がオンの時だけ効きます。少し重くなります。</string>
+<key>keywords_en</key><string>ssr reflection screen space screen-space new method</string>
+<key>keywords_ja</key><string>反射 映り込み SSR</string>
+</map>
+<map>
+<key>setting</key><string>RenderTransparentWater</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>1</integer>
+<key>label_en</key><string>Transparent Water</string>
+<key>label_ja</key><string>透明な水</string>
+<key>tip_en</key><string>See-through water. Off makes the water an opaque surface.</string>
+<key>tip_ja</key><string>透き通った水にします。オフだと水面が不透明になります。</string>
+</map>
+<map>
+<key>setting</key><string>RenderVolumeLODFactor</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Object Detail (LOD factor)</string>
+<key>label_ja</key><string>物の細かさ（LOD の倍率）</string>
+<key>keywords_en</key><string>distance factor lod</string>
+<key>keywords_ja</key><string>細かさ 詳細 遠く 距離 LOD</string>
+<key>tip_en</key><string>Keeps objects detailed even from far away (the LOD distance factor). Higher is more detailed but slower.</string>
+<key>tip_ja</key><string>遠くの物も細かいまま描きます。大きいほど細かくなりますが、重くなります。</string>
+<key>min</key><real>0.5</real><key>max</key><real>4</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>RenderTerrainLODFactor</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Terrain Detail</string>
+<key>label_ja</key><string>地面の細かさ</string>
+<key>tip_en</key><string>How detailed the ground is. Higher is smoother hills but slower.</string>
+<key>tip_ja</key><string>地面（地形）の細かさです。高いほど丘がなめらかになりますが、重くなります。</string>
+<key>min</key><real>0.5</real><key>max</key><real>2</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>RenderAvatarLODFactor</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Avatar Detail</string>
+<key>label_ja</key><string>アバターの細かさ</string>
+<key>tip_en</key><string>How detailed avatars stay from far away. Higher keeps them finer.</string>
+<key>tip_ja</key><string>離れたアバターの細かさです。高いほど遠くでも細かいままです。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>RenderTreeLODFactor</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Tree and Plant Detail</string>
+<key>label_ja</key><string>木と草の細かさ</string>
+<key>tip_en</key><string>How detailed trees and plants stay from far away. Higher keeps them finer but is slower.</string>
+<key>tip_ja</key><string>離れた木や草の細かさです。高いほど遠くでも細かいままですが、重くなります。</string>
+<key>min</key><real>0</real><key>max</key><real>2</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>IgnoreFOVZoomForLODs</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Fixed Detail When Zooming</string>
+<key>label_ja</key><string>ズームで細かさを変えない</string>
+<key>keywords_en</key><string>zoom detail lod follow</string>
+<key>keywords_ja</key><string>ズーム 細かさ 詳細 LOD</string>
+<key>tip_en</key><string>When you zoom in, things normally get more detailed. Turn this on to keep the detail the same, which can look wrong up close.</string>
+<key>tip_ja</key><string>ズームで寄ると、物は通常さらに細かく描かれます。オンにすると細かさを変えません。寄った時に荒く見えることがあります。</string>
+</map>
+<map>
+<key>setting</key><string>RenderAvatarMaxNonImpostors</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Fully Drawn Avatars (0: all)</string>
+<key>label_ja</key><string>完全に描くアバター数（0: 全員）</string>
+<key>tip_en</key><string>How many avatars are drawn fully. The farther ones are simplified. 0 draws everyone fully, which can be slow in a crowd.</string>
+<key>tip_ja</key><string>完全な姿で描くアバターの数です。それより遠い人は簡略化されます。0 は全員を完全に描きますが、人混みでは重くなります。</string>
+<key>min</key><real>0</real><key>max</key><real>64</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>RenderMaxPartCount</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>quality</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Particles</string>
+<key>label_ja</key><string>パーティクルの数</string>
+<key>tip_en</key><string>The most particles (smoke, sparkles, rain-like effects) shown at once. Higher is richer but slower.</string>
+<key>tip_ja</key><string>同時に出せるパーティクル（煙・きらめき・水しぶきなど）の最大数です。多いほど豪華ですが、重くなります。</string>
+<key>min</key><real>0</real><key>max</key><real>8192</real><key>step</key><real>128</real><key>digits</key><integer>0</integer>
+</map>
+<map>
+<key>setting</key><string>PlusSkinFill</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>subject</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Softer Face Shadows</string>
+<key>label_ja</key><string>顔の影をやわらげる（肌）</string>
+<key>tip_en</key><string>Brightens the dark shadows on faces and skin so they look softer. Stronger means softer.</string>
+<key>tip_ja</key><string>顔や肌の暗い影を明るくして、やわらかく見せます。強いほどやわらかくなります。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Weak</string><key>label_ja</key><string>弱</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Medium</string><key>label_ja</key><string>中</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Strong</string><key>label_ja</key><string>強</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusContactShadows</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>subject</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>2</integer>
+<key>label_en</key><string>Contact Shadows</string>
+<key>label_ja</key><string>接触の影（指・足元などの細かい影）</string>
+<key>tip_en</key><string>Adds small, sharp shadows where things touch: fingers, feet, objects on a table. Makes the picture look more solid.</string>
+<key>tip_ja</key><string>指先・足元・テーブルの上の物など、触れている所に細かい影を足します。絵に立体感が出ます。</string>
+</map>
+<map>
+<key>setting</key><string>PlusContactShadowLength</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>subject</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Contact Shadow Length</string>
+<key>label_ja</key><string>接触の影の長さ</string>
+<key>tip_en</key><string>How far the small contact shadows reach. Raise it if they look too faint, lower it if they look smudgy.</string>
+<key>tip_ja</key><string>接触の影が届く長さです。薄い時は上げ、にじんで見える時は下げます。</string>
+<key>min</key><real>0.02</real><key>max</key><real>1</real><key>step</key><real>0.02</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>PlusHairSway</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>subject</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Hair Sway</string>
+<key>label_ja</key><string>髪の揺れ</string>
+<key>tip_en</key><string>Lets hair sway softly as the avatar moves. Hair is found by its shape and textures; right-click an attachment for "Hair Sway: Sway as Hair" or "Do Not Sway" when it guesses wrong.</string>
+<key>tip_ja</key><string>アバターが動いた時、髪をやわらかく揺らします。髪は形とテクスチャで自動で見分けます。違う時は装着物を右クリックして「髪の揺れ: 髪として揺らす／揺らさない」で指定できます。</string>
+</map>
+<map>
+<key>setting</key><string>PlusHairSwayWind</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>subject</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Wind in the Hair</string>
+<key>label_ja</key><string>髪にあたる風</string>
+<key>tip_en</key><string>Wind blowing through the hair, even when the avatar stands still.</string>
+<key>tip_ja</key><string>立ち止まっていても、髪に風があたって揺れるようにします。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>Off</string><key>label_ja</key><string>なし</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>Light</string><key>label_ja</key><string>弱</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>Medium</string><key>label_ja</key><string>中</string></map>
+<map><key>value</key><string>3</string><key>label_en</key><string>Strong</string><key>label_ja</key><string>強</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>PlusHairSwayStrength</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>subject</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Hair Sway Strength</string>
+<key>label_ja</key><string>髪の揺れの大きさ</string>
+<key>tip_en</key><string>How far the hair swings.</string>
+<key>tip_ja</key><string>髪の揺れの大きさです。</string>
+<key>min</key><real>0</real><key>max</key><real>2</real><key>step</key><real>0.1</real><key>digits</key><integer>1</integer>
+</map>
+<map>
+<key>setting</key><string>PlusHairSwayBounce</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>subject</string>
+<key>detail</key><boolean>1</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>label_en</key><string>Hair Bounce</string>
+<key>label_ja</key><string>髪の弾み</string>
+<key>tip_en</key><string>How bouncy the hair is. Higher keeps swinging for longer.</string>
+<key>tip_ja</key><string>髪の弾み具合です。高いと揺れがなかなか収まりません。</string>
+<key>min</key><real>0</real><key>max</key><real>1</real><key>step</key><real>0.05</real><key>digits</key><integer>2</integer>
+</map>
+<map>
+<key>setting</key><string>QuietSnapshotsToDisk</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>shoot</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Quiet Snapshots to Disk</string>
+<key>label_ja</key><string>ディスクへの撮影は音とアニメなし</string>
+<key>tip_en</key><string>When a photo is saved to disk, your avatar does not raise a camera and no shutter sound plays (the sound is heard by people nearby too).</string>
+<key>tip_ja</key><string>ディスクに保存する時、シャッター音（周りの人にも聞こえます）と、アバターがカメラを構える動作を出しません。</string>
+</map>
+<map>
+<key>setting</key><string>SnapshotFormat</string>
+<key>kind</key><string>combo</string>
+<key>tab</key><string>shoot</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>Save Format</string>
+<key>label_ja</key><string>ファイル形式</string>
+<key>keywords_en</key><string>save format file type png jpeg jpg bmp</string>
+<key>keywords_ja</key><string>保存形式 PNG JPEG BMP</string>
+<key>tip_en</key><string>The file type photos are saved as. PNG is lossless. JPEG is smaller. BMP is large and plain.</string>
+<key>tip_ja</key><string>写真を保存するファイルの種類です。PNG は劣化なし、JPEG は小さく、BMP は大きいです。</string>
+<key>options</key><array>
+<map><key>value</key><string>0</string><key>label_en</key><string>PNG</string><key>label_ja</key><string>PNG</string></map>
+<map><key>value</key><string>1</string><key>label_en</key><string>JPEG</string><key>label_ja</key><string>JPEG</string></map>
+<map><key>value</key><string>2</string><key>label_en</key><string>BMP</string><key>label_ja</key><string>BMP</string></map>
+</array>
+</map>
+<map>
+<key>setting</key><string>SnapshotQuality</string>
+<key>kind</key><string>slider</string>
+<key>tab</key><string>shoot</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><boolean>0</boolean>
+<key>label_en</key><string>JPEG Quality</string>
+<key>label_ja</key><string>JPEG の品質</string>
+<key>tip_en</key><string>The quality of JPEG photos. Higher is cleaner but the file gets larger.</string>
+<key>tip_ja</key><string>JPEG で保存する時の画質です。高いほどきれいですが、ファイルが大きくなります。</string>
+<key>min</key><real>0</real><key>max</key><real>100</real><key>step</key><real>1</real><key>digits</key><integer>0</integer>
+</map>
+</array>
+</llsd>

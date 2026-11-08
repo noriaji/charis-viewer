@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_colors.xml, by name. -->
+<panel label="Colori" name="colors_panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="colors_scroll">
+			<panel name="colors_scroll_panel">
+				<plus_ps_text name="effects_color_textbox">
+					I miei effetti (raggio indicatore):
+				</plus_ps_text>
+				<plus_ps_box name="glass_effect_color_swatch">
+					<color_swatch tool_tip="Clicca per aprire il selettore dei colori" name="effect_color_swatch"/>
+				</plus_ps_box>
+				<plus_ps_text name="font_colors">
+					Colori font della chat:
+				</plus_ps_text>
+				<plus_ps_text name="text_box1">
+					Io
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					Altri
+				</plus_ps_text>
+				<plus_ps_text name="text_box3">
+					Oggetti
+				</plus_ps_text>
+				<plus_ps_text name="text_box4">
+					Sistema
+				</plus_ps_text>
+				<plus_ps_text name="text_box5">
+					Errori
+				</plus_ps_text>
+				<plus_ps_text name="text_box10">
+					Diretto
+				</plus_ps_text>
+				<plus_ps_text name="text_box7">
+					Proprietario
+				</plus_ps_text>
+				<plus_ps_text name="text_box9">
+					URL
+				</plus_ps_text>
+				<plus_ps_text name="bubble_chat">
+					Colore sfondo etichetta nome (influenza anche Chat a vignetta):
+				</plus_ps_text>
+				<plus_ps_box name="glass_background">
+					<color_swatch tool_tip="Seleziona colore etichetta nome" name="background"/>
+				</plus_ps_box>
+				<plus_ps_slider_compat label="Opacità:" tool_tip="Seleziona opacità etichetta nome" name="bubble_chat_opacity"/>
+				<plus_ps_text name="floater_opacity">
+					Opacità finestra:
+				</plus_ps_text>
+				<plus_ps_slider_compat label="Attiva:" name="active"/>
+				<plus_ps_slider_compat label="Disattivata:" name="inactive"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

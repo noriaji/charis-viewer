@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Privacy panel">
+	<plus_ps_box name="ps_ground">
+		<plus_ps_tabs name="privacy_tab_container">
+			<panel name="privacy_preferences_general">
+				<panel.string name="log_in_to_change">
+					autentique-se para mudar
+				</panel.string>
+				<scroll_container name="privacy_general_scroll">
+					<panel name="privacy_general_list">
+						<plus_ps_check_compat name="online_searchresults" label="Exibir meu perfil em resultados de Pesquisa" />
+						<plus_ps_check_compat name="online_visibility" label="Apenas amigos e grupos sabem que estou online" />
+						<plus_ps_check_compat name="auto_disengage_mic_check" label="Desligar o microfone quando terminar chamadas" />
+						<plus_ps_button_compat name="clear_cache" label="Limpar histórico" tool_tip="Apagar imagem do login, última localização, histórico de teletransporte, cache de texturas e web" />
+						<plus_ps_text name="cache_size_label_l">
+							(Locações, imagens, web, histórico de busca)
+						</plus_ps_text>
+						<plus_ps_button_compat name="block_list" label="Lista de bloqueados" />
+						<plus_ps_text name="block_list_label">
+							(Pessoas ou objetos que você bloqueou)
+						</plus_ps_text>
+					</panel>
+				</scroll_container>
+			</panel>
+		</plus_ps_tabs>
+	</plus_ps_box>
+</panel>

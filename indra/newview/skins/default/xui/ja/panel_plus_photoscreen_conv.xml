@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- ja: the words only. Places and sizes come from en/panel_plus_photoscreen_conv.xml (LLXMLNode::updateNode matches by name). -->
+<panel name="plus_photoscreen_conv">
+    <string name="Empty">会話はまだありません。届いた IM やグループチャットがここに並びます。</string>
+    <string name="KindIM">IM</string>
+    <string name="KindGroup">グループチャット</string>
+    <string name="KindConference">会議</string>
+    <string name="Connecting">[KIND]・接続しています…</string>
+    <string name="QuietTip">バッジには数えない会話です（この種類の通知が「何もしない」の設定か、ミュート中）。</string>
+    <string name="NoneChosen">会話を選んでください</string>
+    <string name="To">[NAME] へ</string>
+    <string name="InputTip">返事を入力して Enter。上に出ている会話の相手にだけ届きます。</string>
+    <string name="Me">自分</string>
+    <string name="NotSent">送れませんでした（接続中）</string>
+    <string name="Ended">この会話は終了しました</string>
+    <string name="EndedTip">この会話は終了しました。一覧で別の会話を選ぶか、このタブを開き直すと、ここに残った文は消えます（ほかの人には送られません）。</string>
+    <string name="Refused">この会話には文字を送れません。</string>
+    <plus_ps_header name="conv_head" label="会話" />
+    <plus_ps_label name="conv_peer" label="会話を選んでください" />
+    <plus_ps_box name="conv_input_box">
+        <plus_ps_icon_button name="conv_send" tool_tip="上に出ている会話に送ります（Enter）" />
+    </plus_ps_box>
+</panel>

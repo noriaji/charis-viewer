@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_avatar_attachments" title="装着物の一覧">
+	<floater.string name="title_format">装着物の一覧: [NAME]</floater.string>
+	<floater.string name="loading">読み込み中…</floater.string>
+	<floater.string name="name_unavailable">（取得できません）</floater.string>
+	<floater.string name="no_name">（名前なし）</floater.string>
+	<floater.string name="hud_point">HUD の[POINT]</floater.string>
+	<floater.string name="hud_distance">HUD</floater.string>
+	<floater.string name="count_self">装着物 [COUNT] 個</floater.string>
+	<floater.string name="count_other">装着物 [COUNT] 個（他の人の HUD は見えません）</floater.string>
+	<floater.string name="none">何も装着していません。</floater.string>
+	<floater.string name="gone">このアバターは見える範囲にいません（立ち去ったか、遠すぎます）。</floater.string>
+	<text name="status">読み込み中…</text>
+	<scroll_list name="attachments_list" tool_tip="行をダブルクリックすると、そのオブジェクトを調べます">
+		<scroll_list.columns label="装着箇所" name="point"/>
+		<scroll_list.columns label="名前" name="name"/>
+		<scroll_list.columns label="制作者" name="creator" tool_tip="オブジェクトを作った人"/>
+		<scroll_list.columns label="プリム" name="prims" tool_tip="リンクセットのプリム数（ルートと子プリムの合計）"/>
+		<scroll_list.columns label="距離 (m)" name="distance" tool_tip="自分からの距離（メートル）"/>
+	</scroll_list>
+	<button label="名前をコピー" name="copy_name_btn" tool_tip="選んだオブジェクトの名前をコピーします"/>
+	<button label="UUID をコピー" name="copy_id_btn" tool_tip="選んだオブジェクトの UUID をコピーします"/>
+	<button label="調べる" name="inspect_btn" tool_tip="そのオブジェクトを選んで、情報のウィンドウを出します（オブジェクトの右クリックの「調べる」と同じ）"/>
+	<button label="更新" name="refresh_btn" tool_tip="今すぐ一覧を更新し、名前が来なかったものをもう一度問い合わせます"/>
+</floater>

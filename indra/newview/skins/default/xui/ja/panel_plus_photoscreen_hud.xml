@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- ja: the words only. Places and sizes come from en/panel_plus_photoscreen_hud.xml (LLXMLNode::updateNode matches by name). -->
+<panel name="plus_photoscreen_hud">
+    <string name="FrameClick">クリックした場所 · [DIST] m</string>
+    <string name="FlycamBadge">フライカム中・[KEY] で終了</string>
+    <string name="FlycamTip0">フライカム（キーボードとマウス）のオン・オフ。W A S D で移動、矢印キーで向き、ホイールで速さ、Q / E で傾き（[KEY] でも切り替え）</string>
+    <string name="FlycamTip1">フライカム（キーボードとマウス）のオン・オフ。W A S D で移動、右ボタンを押しながら見回し、ホイールで速さ、Q / E で傾き（[KEY] でも切り替え）</string>
+    <string name="FlycamTip2">フライカム（キーボードとマウス）のオン・オフ。W A S D で移動、マウスで見回し（Alt でカーソル）、ホイールで速さ、Q / E で傾き（[KEY] でも切り替え）</string>
+    <string name="FocusTipWide">ピントの設定（右の「レンズ」）を開きます</string>
+    <string name="FocusTipNarrow">ピントの設定を左に開きます（世界の上に重ねて表示）</string>
+    <plus_ps_readout name="readout" label="F 1.8|1/125|ISO 100|50 mm" />
+    <plus_ps_box name="chat_box">
+        <line_editor name="chat_input" label="チャット" tool_tip="チャット: ここに入力して Enter。Esc か世界をクリックすると、キーがカメラ操作に戻ります。" />
+    </plus_ps_box>
+    <plus_ps_box name="flycam_badge">
+        <plus_ps_label name="flycam_badge_text" label="フライカム中" />
+    </plus_ps_box>
+    <plus_ps_box name="icon_box">
+        <plus_ps_icon_button name="b_shoot" tool_tip="上で決めた大きさと形で今すぐ撮影します" />
+        <plus_ps_icon_button name="b_focus" tool_tip="ピントの設定（右の「レンズ」）を開きます" />
+        <plus_ps_icon_button name="b_area" tool_tip="ピント枠の表示・非表示" />
+        <plus_ps_icon_button name="b_flycam" tool_tip="フライカム（キーボードとマウス）のオン・オフ" />
+    </plus_ps_box>
+    <plus_ps_box name="full_box">
+        <plus_ps_icon_button name="b_full" tool_tip="簡易表示に切り替えます（世界が画面いっぱいになります）" />
+    </plus_ps_box>
+</panel>

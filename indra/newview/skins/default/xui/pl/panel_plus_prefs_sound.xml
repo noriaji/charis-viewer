@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_sound.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="Preference Media panel" label="Dźwięki">
+    <panel.string name="middle_mouse">
+        Środkowy przycisk myszy
+    </panel.string>
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="sound_scroll">
+            <panel name="sound_scroll_panel">
+                <plus_ps_slider_compat name="System Volume" label="Głośność ogólna" />
+                <plus_ps_slider_compat name="UI Volume" label="Interfejs" />
+                <plus_ps_slider_compat name="Wind Volume" label="Otoczenie" />
+                <plus_ps_slider_compat name="SFX Volume" label="Efekty dźwiękowe" />
+                <plus_ps_slider_compat name="Music Volume" label="Muz. strumieniowa" />
+                <plus_ps_check_compat name="enable_music" label="Włączona" />
+                <plus_ps_check_compat name="enable_media" label="Włączone" />
+                <plus_ps_slider_compat name="Voice Volume" label="Rozmowy głosowe" />
+                <plus_ps_check_compat name="enable_voice_check" label="Włączone" />
+                <plus_ps_check_compat name="media_show_on_others_btn" label="Uruchamiaj media dołączone do innych awatarów" tool_tip="Odznacz tę funkcję by ukryć media załączone do awatarów w pobliżu" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

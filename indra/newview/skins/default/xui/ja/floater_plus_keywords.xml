@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_keywords" title="チャットのキーワード通知">
+	<floater.string name="try_hint">ここに 1 行打つと、リストに引っかかるか確かめられます。</floater.string>
+	<floater.string name="try_hit">引っかかります: [WORD]</floater.string>
+	<floater.string name="try_miss">引っかかりません。</floater.string>
+	<check_box name="on" label="キーワード通知を使う"/>
+	<check_box name="in_chat" label="周辺チャットを見る"/>
+	<check_box name="in_im" label="IM とグループチャットを見る"/>
+	<text name="list_label">語（カンマ「,」「、」で区切る）:</text>
+	<check_box name="own_name" label="自分の名前も入れる（表示名・ユーザー名・名）"/>
+	<check_box name="speaker" label="話している人の名前も調べる"/>
+	<check_box name="case" label="英字の大文字と小文字を区別する"/>
+	<check_box name="whole" label="英単語として独立している時だけ（日本語はどこでも見つける）"/>
+	<check_box name="fold" label="全角・半角、ひらがな・カタカナの違いを無視する"/>
+	<check_box name="change_color" label="行の色を変える"/>
+	<check_box name="play_sound" label="音を鳴らす"/>
+	<text name="sound_label">音の UUID:</text>
+	<button name="sound_preview" label="試聴" tool_tip="この音を鳴らします。"/>
+	<button name="sound_default" label="戻す" tool_tip="既定の音に戻します。"/>
+	<check_box name="toast" label="画面に通知を出す"/>
+	<text name="try_label">試し打ち:</text>
+</floater>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="page_color">
+	<scroll_container name="scroll_color">
+		<panel name="content_color">
+			<panel name="sec_tone_note">
+				<text name="tone_note">この空は昔の形式です。明るさ・コントラスト・トーンマッパーは効きません。「昔の空を自動調整する」をオンにすると効きます。</text>
+				<check_box name="chk_tone_legacy" label="昔の空を自動調整する" tool_tip="HDR 対応より前の空を、トーンマッパーやライティングが効くように自動で調整します" />
+			</panel>
+			<panel name="sec_look">
+				<text name="title_look">ルック（色合い）</text>
+				<text name="look_current">使用中: -</text>
+				<button name="btn_look_cur_star" tool_tip="使用中のルックをお気に入りに入れます" />
+				<button name="btn_looktab_all" label="すべて" tool_tip="同梱と自分のルック、すべて" />
+				<button name="btn_looktab_fav" label="お気に入り" tool_tip="星を付けたルック。矢印はこの並びで進みます。" />
+				<button name="btn_looktab_recent" label="最近" tool_tip="ここで最後に使った 10 件" />
+				<filter_editor name="flt_look" label="ルックを検索" />
+				<scroll_list name="list_look" tool_tip="クリックでそのルックを掛けます。矢印キーで順に試せます。" />
+				<button name="btn_look_prev" tool_tip="この一覧の前のルック" />
+				<button name="btn_look_next" tool_tip="この一覧の次のルック" />
+				<button name="btn_look_folder" label="ルックフォルダを開く" tool_tip="自分のルック: .cube か .png の LUT（または look.xml のあるフォルダ）をここに置いて、「読み直す」を押します" />
+				<button name="btn_look_reload" label="読み直す" tool_tip="ルックのフォルダを読み直します。置いた LUT が増え、書き換えた LUT は読み直されます（Charis メニューの「ルックの一覧を読み直す」と同じ）" />
+			</panel>
+		</panel>
+	</scroll_container>
+</panel>

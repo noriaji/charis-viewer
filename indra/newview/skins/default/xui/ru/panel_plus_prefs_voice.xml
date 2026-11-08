@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_voice.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="voice_panel">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="voice_scroll">
+            <panel name="voice_scroll_panel">
+                <plus_ps_slider_compat name="Voice Volume" label="Голосовой чат" />
+                <plus_ps_check_compat name="enable_voice_check" label="Включено" />
+                <plus_ps_text name="Listen from">
+                    Слушать с:
+                </plus_ps_text>
+                <plus_ps_check_compat name="enable_lip_sync" label="Губы аватара двигаются при разговоре" />
+                <plus_ps_check_compat name="push_to_talk_toggle_check" label="Включать/выключать микрофон, когда я нажимаю:" tool_tip="В режиме переключения ОДНОКРАТНОЕ нажатие и отпускание данной клавиши включает/выключает микрофон. Если режим переключения отключен, то микрофон передает голос, только когда клавиша нажата." />
+                <plus_ps_check_compat name="gesture_audio_play_btn" label="Сопровождать жесты звуками" tool_tip="Установите флажок, чтобы слышать звуки при жестах" />
+                <plus_ps_button_compat name="device_settings_btn" label="Устройства ввода-вывода" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

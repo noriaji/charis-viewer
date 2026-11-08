@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The update check's on/off box (plus/updatecheck), in Preferences > Setup under
+     "Software updates:". Included from panel_preferences_setup.xml.
+     fix-round103: plus/updatecheck's UpdateCheckPanel shows the box only while PlusUpdateCheckURL
+     is not empty (research/123); hidden, the rows below move up into its place. -->
+<panel
+ background_visible="false"
+ border="false"
+ follows="left|top"
+ height="16"
+ layout="topleft"
+ mouse_opaque="false"
+ name="plus_update_check"
+ width="420">
+    <check_box
+     control_name="PlusUpdateCheck"
+     follows="left|top"
+     height="14"
+     label="Tell me when a new Charis Viewer is out (checked at start, once a day)"
+     layout="topleft"
+     left="0"
+     name="plus_update_check_enabled"
+     tool_tip="Off by default. When on, reads one small file from the update site (setting PlusUpdateCheckURL; nothing is read while it is empty) at most once a day, at start. As with any web page, the site keeps your IP address and the viewer's version in its log. Nothing about your account or avatar is sent."
+     top="0"
+     width="420" />
+</panel>

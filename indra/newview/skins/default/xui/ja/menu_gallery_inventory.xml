@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<context_menu name="Gallery">
+	<menu_item_call name="Share" label="共有"/>
+	<menu_item_call name="Empty Trash" label="ゴミ箱を空に"/>
+	<menu_item_call name="Empty Lost And Found" label="遺失物フォルダを空に"/>
+	<menu_item_call name="Landmark Open" label="テレポート"/>
+	<menu_item_call name="Replace Outfit" label="今のアウトフィットと入れ替える"/>
+	<menu_item_call name="Add To Outfit" label="フォルダのアイテムを追加"/>
+	<menu_item_call name="Remove From Outfit" label="フォルダのアイテムを脱ぐ"/>
+	<menu_item_call name="Copy outfit list to clipboard" label="アウトフィット一覧をクリップボードにコピー"/>
+	<menu_item_call name="Find Original" label="オリジナルを探す"/>
+	<menu_item_call name="Purge Item" label="アイテムを完全に削除"/>
+	<menu_item_call name="Restore Item" label="アイテムを復元"/>
+	<menu_item_call name="Open" label="開く"/>
+	<menu_item_call name="Open Original" label="オリジナルを開く"/>
+	<menu_item_call name="Properties" label="プロパティ"/>
+	<menu_item_call name="thumbnail" label="画像…"/>
+	<menu_item_call name="Copy Asset UUID" label="アセットのUUIDをコピー"/>
+	<menu_item_call name="open_in_current_window" label="開く"/>
+	<menu_item_call name="open_in_new_window" label="新しいウィンドウで開く"/>
+	<menu_item_call name="Rename" label="名前変更"/>
+	<menu_item_call name="Cut" label="カット"/>
+	<menu_item_call name="Copy" label="コピー"/>
+	<menu_item_call name="Paste" label="ペースト"/>
+	<menu_item_call name="Paste As Link" label="リンクとしてペースト"/>
+	<menu_item_call name="Replace Links" label="リンクを置き換える"/>
+	<menu_item_call name="Delete" label="削除"/>
+	<menu_item_call name="Delete System Folder" label="システムフォルダを削除"/>
+	<menu_item_call name="Sound Play" label="再生"/>
+	<menu_item_call name="url_copy" label="SLurlをコピー"/>
+	<menu_item_call name="About Landmark" label="ランドマークの情報"/>
+	<menu_item_call name="show_on_map" label="マップに表示"/>
+	<menu_item_call name="Animation Play" label="インワールドで再生"/>
+	<menu_item_call name="Animation Audition" label="ローカル再生"/>
+	<menu_item_call name="Send Instant Message" label="インスタントメッセージを送信"/>
+	<menu_item_call name="Offer Teleport..." label="テレポートを送る…"/>
+	<menu_item_call name="Request Teleport..." label="テレポートをリクエスト…"/>
+	<menu_item_call name="Activate" label="有効に"/>
+	<menu_item_call name="Deactivate" label="無効に"/>
+	<menu_item_call name="Save As" label="名前をつけて保存"/>
+	<menu_item_call name="Save Selected As" label="選択部分を名前を付けて保存"/>
+	<menu_item_call name="Wearable And Object Wear" label="装着"/>
+	<menu name="Attach To" label="装着先"/>
+	<menu name="Attach To HUD" label="HUDの装着先"/>
+	<menu_item_call name="Attachment Touch" label="触る"/>
+	<menu_item_call name="Wearable Edit" label="編集"/>
+	<menu_item_call name="Wearable Add" label="追加"/>
+	<menu_item_call name="Detach From Yourself" label="取り外す"/>
+	<menu_item_call name="Take Off" label="脱ぐ"/>
+	<menu_item_call name="Settings Apply Local" label="自分にのみ適用"/>
+	<menu_item_call name="Settings Apply Parcel" label="区画に適用"/>
+	<menu name="create_new" label="新規作成">
+		<menu_item_call name="New Folder" label="新規フォルダ"/>
+		<menu_item_call name="New Script" label="新規スクリプト"/>
+		<menu_item_call name="New Note" label="新しいノートカード"/>
+		<menu_item_call name="New Gesture" label="新規ジェスチャー"/>
+		<menu_item_call name="New Material" label="新しいマテリアル"/>
+		<menu name="New Clothes" label="新しい服装">
+			<menu_item_call name="New Shirt" label="新しいシャツ"/>
+			<menu_item_call name="New Pants" label="新しいズボン"/>
+			<menu_item_call name="New Shoes" label="新しい靴"/>
+			<menu_item_call name="New Socks" label="新しい靴下"/>
+			<menu_item_call name="New Jacket" label="新しいジャケット"/>
+			<menu_item_call name="New Skirt" label="新しいスカート"/>
+			<menu_item_call name="New Gloves" label="新しい手袋"/>
+			<menu_item_call name="New Undershirt" label="新しい下着（上半身）"/>
+			<menu_item_call name="New Underpants" label="新しい下着（下半身）"/>
+			<menu_item_call name="New Alpha Mask" label="新しいアルファマスク"/>
+			<menu_item_call name="New Tattoo" label="新しいタトゥ"/>
+			<menu_item_call name="New Universal" label="新しいユニバーサル"/>
+			<menu_item_call name="New Physics" label="新しい物理作用"/>
+		</menu>
+		<menu name="New Body Parts" label="新しい身体部位">
+			<menu_item_call name="New Shape" label="新しいシェイプ"/>
+			<menu_item_call name="New Skin" label="新しいスキン"/>
+			<menu_item_call name="New Hair" label="新しい髪型"/>
+			<menu_item_call name="New Eyes" label="新しい目"/>
+		</menu>
+		<!-- plus: fix-round112 空・水・デイサイクルの設定アイテム（Preferences の「環境設定」と分ける） -->
+		<menu name="New Settings" label="新しい空と水の設定">
+		<!-- /plus -->
+			<menu_item_call name="New Sky" label="新しい空"/>
+			<menu_item_call name="New Water" label="新しい水面"/>
+			<menu_item_call name="New Day Cycle" label="新しいデイサイクル"/>
+		</menu>
+	</menu>
+	<menu_item_call name="New folder from selected" label="選択したものでフォルダを作成"/>
+	<menu_item_call name="Ungroup folder items" label="フォルダの中身を出す"/>
+	<menu_item_call name="Add to Favorites" label="お気に入りに追加"/>
+	<menu_item_call name="Remove from Favorites" label="お気に入りから削除"/>
+	<menu name="upload_options" label="このフォルダにアップロード">
+		<menu_item_call name="Upload Image" label="画像…"/>
+		<menu_item_call name="Upload Sound" label="サウンド （L$ [COST]）…"/>
+		<menu_item_call name="Upload Animation" label="アニメーション （L$ [COST]）…"/>
+		<menu_item_call name="Upload Model" label="モデル…"/>
+		<menu_item_call name="Upload Material" label="マテリアル…"/>
+		<menu_item_call name="Bulk Upload Files" label="複数のファイル…"/>
+		<menu_item_call name="Bulk Upload Folder" label="フォルダ…"/>
+	</menu>
+	<menu name="upload_def" label="次のデフォルトとして使用">
+		<menu_item_check name="Image uploads" label="画像のアップロード"/>
+		<menu_item_check name="Sound uploads" label="サウンドのアップロード"/>
+		<menu_item_check name="Animation uploads" label="アニメーションのアップロード"/>
+		<menu_item_check name="Model uploads" label="モデルのアップロード"/>
+		<menu_item_check name="PBR uploads" label="PBR マテリアルのアップロード"/>
+	</menu>
+	<menu_item_call name="Marketplace Copy" label="マーケットプレイスのリストにコピー"/>
+	<menu_item_call name="Marketplace Move" label="マーケットプレイスのリストに移動"/>
+	<menu_item_call name="--no options--" label="－オプションなし－"/>
+</context_menu>

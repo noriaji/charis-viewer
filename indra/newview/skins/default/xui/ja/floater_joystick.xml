@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="3Dconnexion Device" title="3Dconnexion デバイスの設定">
+	<floater.string name="JoystickDisabled">
+		なし
+	</floater.string>
+	<text name="joystick_lbl">
+		デバイス：
+	</text>
+	<spinner label="X軸の割り当て" name="JoystickAxis1"/>
+	<spinner label="Y軸の割り当て" name="JoystickAxis2"/>
+	<spinner label="Z軸の割り当て" name="JoystickAxis0"/>
+	<spinner label="ピッチの割り当て" name="JoystickAxis4"/>
+	<spinner label="ヨーの割り当て" name="JoystickAxis5"/>
+	<spinner label="ロールの割り当て" name="JoystickAxis3"/>
+	<spinner label="ズームの割り当て" name="JoystickAxis6"/>
+	<check_box label="直接ズーム" name="ZoomDirect"/>
+	<check_box label="3Dカーソル" name="Cursor3D"/>
+	<check_box label="自動で水平に戻す" name="AutoLeveling"/>
+	<text name="Control Modes:">
+		操作の対象：
+	</text>
+	<check_box label="アバター" name="JoystickAvatarEnabled"/>
+	<check_box label="制作" name="JoystickBuildEnabled"/>
+	<check_box label="フライカム" name="JoystickFlycamEnabled" tool_tip="このデバイスでカメラを自由に飛ばします。"/>
+	<stat_view label="軸の動き" name="axis_view">
+		<stat_bar label="軸0" name="axis0"/>
+		<stat_bar label="軸1" name="axis1"/>
+		<stat_bar label="軸2" name="axis2"/>
+		<stat_bar label="軸3" name="axis3"/>
+		<stat_bar label="軸4" name="axis4"/>
+		<stat_bar label="軸5" name="axis5"/>
+	</stat_view>
+	<text name="XScale">
+		Xの倍率
+	</text>
+	<text name="YScale">
+		Yの倍率
+	</text>
+	<text name="ZScale">
+		Zの倍率
+	</text>
+	<text name="PitchScale">
+		ピッチの倍率
+	</text>
+	<text name="YawScale">
+		ヨーの倍率
+	</text>
+	<text name="RollScale">
+		ロールの倍率
+	</text>
+	<text name="XDeadZone">
+		Xの遊び
+	</text>
+	<text name="YDeadZone">
+		Yの遊び
+	</text>
+	<text name="ZDeadZone">
+		Zの遊び
+	</text>
+	<text name="PitchDeadZone">
+		ピッチの遊び
+	</text>
+	<text name="YawDeadZone">
+		ヨーの遊び
+	</text>
+	<text name="RollDeadZone">
+		ロールの遊び
+	</text>
+	<text name="Feathering">
+		なめらかさ
+	</text>
+	<text name="ZoomScale2">
+		ズームの倍率
+	</text>
+	<text name="ZoomDeadZone">
+		ズームの遊び
+	</text>
+	<button label="SpaceNavigator の既定値" name="SpaceNavigatorDefaults"/>
+	<button label="OK" label_selected="OK" name="ok_btn"/>
+	<button label="キャンセル" label_selected="キャンセル" name="cancel_btn"/>
+</floater>

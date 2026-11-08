@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<toggleable_menu name="Sort Outfit">
+	<menu_item_check name="sort_favorites_to_top" label="お気に入りを上に"/>
+	<menu_item_check name="sort_images_to_top" label="画像のあるものを上に"/>
+	<menu_item_check name="sort_by_name" label="名前で並べ替え"/>
+</toggleable_menu>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_general.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="general_panel" label="Generale">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="general_scroll">
+            <panel name="general_scroll_panel">
+                <plus_ps_text name="language_textbox">
+                    Lingua:
+                </plus_ps_text>
+                <plus_ps_combo name="language_combobox">
+                    <plus_ps_combo.item name="English" label="English" />
+                    <plus_ps_combo.item name="Danish" label="Dansk (Danese) - Beta" />
+                    <plus_ps_combo.item name="Deutsch(German)" label="Deutsch (Tedesco) - Beta" />
+                    <plus_ps_combo.item name="Spanish" label="Español (Spagnolo) - Beta" />
+                    <plus_ps_combo.item name="French" label="Français (Francese) - Beta" />
+                    <plus_ps_combo.item name="Italian" label="Italiano - Beta" />
+                    <plus_ps_combo.item name="Polish" label="Polski (Polacco) - Beta" />
+                    <plus_ps_combo.item name="Portugese" label="Português (Portoghese) - Beta" />
+                    <plus_ps_combo.item name="Russian" label="Русский (Russo) - Beta" />
+                    <plus_ps_combo.item name="Turkish" label="Türkçe (Turco) - Beta" />
+                    <plus_ps_combo.item name="(Japanese)" label="日本語 (Giapponese) - Beta" />
+                    <plus_ps_combo.item name="Traditional Chinese" label="正體中文 (Cinese tradizionale) - Beta" />
+                </plus_ps_combo>
+                <plus_ps_text name="language_textbox2">
+                    (Richiede il riavvio)
+                </plus_ps_text>
+                <plus_ps_text name="maturity_desired_prompt">
+                    Voglio accedere ai contenuti di tipo:
+                </plus_ps_text>
+                <plus_ps_combo name="maturity_desired_combobox">
+                    <plus_ps_combo.item name="Desired_Adult" label="Generale, Moderato e Adulti" />
+                    <plus_ps_combo.item name="Desired_Mature" label="Generale e Moderato" />
+                    <plus_ps_combo.item name="Desired_PG" label="Generale" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="favorites_on_login_check" label="Mostra le ubicazioni preferite sulla schermata di accesso" />
+                <plus_ps_text name="favorites_check_extra_text">
+                    (Le vedranno anche gli altri utenti che usano questo computer)
+                </plus_ps_text>
+                <plus_ps_text name="name_tags_textbox">
+                    Nome:
+                </plus_ps_text>
+                <plus_ps_radio name="Name_Tag_Preference">
+                    <radio_item name="radio" label="Off" />
+                    <radio_item name="radio2" label="On" />
+                    <radio_item name="radio3" label="Mostra brevemente" />
+                </plus_ps_radio>
+                <plus_ps_check_compat name="show_my_name_checkbox1" label="Il mio nome" />
+                <plus_ps_check_compat name="show_slids" label="Nomi utente" tool_tip="Mostra il nome utente, come bobsmith123" />
+                <plus_ps_check_compat name="display_names_check" label="Mostra nomi visualizzati" tool_tip="Seleziona per visualizzare i nomi in chat, IM, etichette, ecc." />
+                <plus_ps_check_compat name="show_friends" label="Evidenzia amici" tool_tip="Evidenzia le etichette dei nomi dei tuoi amici" />
+                <plus_ps_text name="inworld_typing_rg_label">
+                    Premere i tasti lettera:
+                </plus_ps_text>
+                <plus_ps_radio name="inworld_typing_preference">
+                    <radio_item name="radio_start_chat" label="Avvia chat locale" />
+                    <radio_item name="radio_move" label="Influenza il movimento (per es. WASD)" />
+                </plus_ps_radio>
+                <plus_ps_text name="title_afk_text">
+                    Pausa assenza:
+                </plus_ps_text>
+                <plus_ps_combo name="afk" label="Pausa assenza:">
+                    <plus_ps_combo.item name="item0" label="2 minuti" />
+                    <plus_ps_combo.item name="item1" label="5 minuti" />
+                    <plus_ps_combo.item name="item2" label="10 minuti" />
+                    <plus_ps_combo.item name="item3" label="30 minuti" />
+                    <plus_ps_combo.item name="item4" label="mai" />
+                </plus_ps_combo>
+                <plus_ps_text name="text_box3">
+                    Risposta Non disturbare:
+                </plus_ps_text>
+                <plus_ps_box name="dnd_response_glass">
+                    <text_editor name="do_not_disturb_response">
+                        log_in_to_change
+                    </text_editor>
+                </plus_ps_box>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

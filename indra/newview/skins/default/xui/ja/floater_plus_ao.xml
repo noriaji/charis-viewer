@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_ao" title="AO（アニメーションの置き換え）">
+	<floater.string name="ao_no_sets_loaded">セットがありません（＋で作成）</floater.string>
+	<floater.string name="ao_loading">AO フォルダを読み込み中…</floater.string>
+	<floater.string name="ao_reloading">AO フォルダを読み直し中…</floater.string>
+	<floater.string name="ao_saving">インベントリに保存中（[COUNT]）…</floater.string>
+	<floater.string name="ao_drop_animations_here">ここにアニメーションをドロップ</floater.string>
+	<floater.string name="ao_dnd_only_on_full_interface">アニメーションやノートカードは、大きい表示のときだけドロップできます。レンチのボタンで切り替えてください。</floater.string>
+	<floater.string name="ao_new_set_name">新しいセット</floater.string>
+	<floater.string name="ao_new_set_hint">セット「[NAME]」を作りました。名前を変えるには、セット欄に名前を入力して Enter を押します。</floater.string>
+	<floater.string name="ao_remove_confirm">AO セット「[NAME]」を削除しますか？ #AO フォルダからリンクが消えるだけで、アニメーション自体はインベントリに残ります。</floater.string>
+	<floater.string name="ao_name_invalid">「[NAME]」はセット名に使えません。「:」と「|」は使えず、長さは 51 バイト（日本語で約 17 文字）までです。</floater.string>
+	<floater.string name="ao_name_taken">「[NAME]」という名前のセットはもうあります。</floater.string>
+	<floater.string name="ao_foreign_items">AO フォルダにアニメーションのリンク以外のものが入っていたので、「遺失物」フォルダに移しました。</floater.string>
+	<floater.string name="ao_folder_kept_moved">フォルダにアニメーションのリンク以外のものが入っていたので、「遺失物」フォルダに移しました。今回はフォルダを残しています。セットを削除するところだった場合は、もう一度削除してください。</floater.string>
+	<floater.string name="ao_folder_kept_foreign">フォルダにアニメーションのリンク以外のものが入っていて、移す先の「遺失物」フォルダが見つからないため、フォルダを残しました。インベントリでそれらをフォルダの外に移してから、もう一度試してください。</floater.string>
+	<floater.string name="ao_fs_busy">インベントリか AO が処理中です。少し待ってからもう一度どうぞ。</floater.string>
+	<floater.string name="ao_fs_none">インベントリに Firestorm の AO フォルダ（#Firestorm/#AO）が見つかりません。</floater.string>
+	<floater.string name="ao_fs_failed">Firestorm の AO セットをコピーできませんでした。時間をおいてもう一度試してください。</floater.string>
+	<floater.string name="ao_fs_nothing_new">新しく取り込むセットはありません。Firestorm の AO の [SKIPPED] セットは、すべてここにあります。</floater.string>
+	<floater.string name="ao_fs_done">Firestorm の AO から [COUNT] セットをコピーしました（同じ名前の [SKIPPED] セットは取り込んでいません）。</floater.string>
+	<floater.string name="ao_fs_partial">Firestorm の AO から [COUNT] セットをコピーしましたが、失敗した要求があります。「読み直す」を押して中身を確かめてください。</floater.string>
+	<floater.string name="ao_folder_failed">インベントリに #AO フォルダを作れませんでした。時間をおいてもう一度試してください。</floater.string>
+	<floater.string name="ao_set_failed">セット「[NAME]」のフォルダを作れなかったので、セットを取り消しました。</floater.string>
+	<floater.string name="ao_link_failed">次のアニメーションを「[STATE]」に追加できませんでした: [NAMES]</floater.string>
+	<floater.string name="ao_export_all_name">AO セット</floater.string>
+	<floater.string name="ao_export_done">[COUNT] 個のセットを [FILE] に書き出しました。</floater.string>
+	<floater.string name="ao_export_failed">[FILE] に書き込めませんでした。</floater.string>
+	<floater.string name="ao_import_file_unreadable">[FILE] はこのビューワの AO ファイルではありません。</floater.string>
+	<floater.string name="ao_import_file_too_large">[FILE] は AO ファイルにしては大きすぎる（1 MB を超えている）ため、読み込みませんでした。</floater.string>
+	<floater.string name="ao_import_limited">読み込んだのは最初の [SETS] セット、1 つの状態につき [ANIMS] 個、全部で [TOTAL] 個のアニメーションまでです。残りは入れていません。</floater.string>
+	<floater.string name="ao_import_failed">セットを作れませんでした。</floater.string>
+	<floater.string name="ao_import_done">[NAME] を作りました（アニメーション [COUNT] 個）。</floater.string>
+	<floater.string name="ao_import_partial">[NAME] を作りました（アニメーション [COUNT] 個）。次のアニメーションはインベントリにないため入れていません（自分で持っているものしか使えません）:
+[DETAILS]</floater.string>
+	<floater.string name="ao_import_notecard_partial">[NAME] を作りました（アニメーション [COUNT] 個）。使えなかったもの:
+[DETAILS]</floater.string>
+	<floater.string name="ao_import_more">…ほか [COUNT] 件</floater.string>
+	<floater.string name="ao_import_inventory_loading">（インベントリをまだ読み込み中です。あとでもう一度読み込むと見つかるものがあるかもしれません）</floater.string>
+	<floater.string name="ao_import_permission">このノートカードはコピーできないため、読み込めません。</floater.string>
+	<floater.string name="ao_import_no_text">ノートカードが空か、読み取れません。</floater.string>
+	<floater.string name="ao_import_no_folder">ノートカードのあるフォルダが見つかりません。</floater.string>
+	<floater.string name="ao_import_download_failed">ノートカードをダウンロードできませんでした。</floater.string>
+	<floater.string name="ao_import_invalid">ノートカードに、同じフォルダにあるアニメーションが書かれていないため、何も読み込みませんでした。</floater.string>
+	<floater.string name="ao_import_no_state_prefix">[LINE] 行目が、括弧で囲んだ状態名で始まっていません。</floater.string>
+	<floater.string name="ao_import_no_delimiter">[LINE] 行目に閉じ括弧がありません。</floater.string>
+	<floater.string name="ao_import_unknown_state">「[NAME]」という状態はありません。</floater.string>
+	<floater.string name="ao_import_animation_not_found">「[NAME]」がノートカードと同じフォルダにありません。</floater.string>
+	<floater.string name="state_0">立つ</floater.string>
+	<floater.string name="state_1">歩く</floater.string>
+	<floater.string name="state_2">走る</floater.string>
+	<floater.string name="state_3">座る</floater.string>
+	<floater.string name="state_4">地面に座る</floater.string>
+	<floater.string name="state_5">しゃがむ</floater.string>
+	<floater.string name="state_6">しゃがみ歩き</floater.string>
+	<floater.string name="state_7">着地</floater.string>
+	<floater.string name="state_8">軽い着地</floater.string>
+	<floater.string name="state_9">立ち上がる</floater.string>
+	<floater.string name="state_10">落下</floater.string>
+	<floater.string name="state_11">飛行（下降）</floater.string>
+	<floater.string name="state_12">飛行（上昇）</floater.string>
+	<floater.string name="state_13">飛行</floater.string>
+	<floater.string name="state_14">ゆっくり飛行</floater.string>
+	<floater.string name="state_15">空中で静止</floater.string>
+	<floater.string name="state_16">ジャンプ</floater.string>
+	<floater.string name="state_17">ジャンプの準備</floater.string>
+	<floater.string name="state_18">右に回る</floater.string>
+	<floater.string name="state_19">左に回る</floater.string>
+	<floater.string name="state_20">タイピング</floater.string>
+	<floater.string name="state_21">水中で静止</floater.string>
+	<floater.string name="state_22">泳ぐ</floater.string>
+	<floater.string name="state_23">水中で上昇</floater.string>
+	<floater.string name="state_24">水中で下降</floater.string>
+	<floater.string name="state_25">常時</floater.string>
+	<floater.string name="ao_add_blank_label">空のセットを作る…</floater.string>
+	<floater.string name="ao_add_clone_label">今のセットを複製…</floater.string>
+	<floater.string name="ao_clone_name">[NAME] のコピー</floater.string>
+	<floater.string name="ao_track_main">メイン</floater.string>
+	<floater.string name="ao_no_track_animations">空のトラックです。ここにアニメーションをドロップ</floater.string>
+	<floater.string name="ao_group_tooltip">アニメーションのグループ: 中身がいっしょに再生されます</floater.string>
+	<floater.string name="ao_member_tooltip">グループの一員: グループのほかのものといっしょに再生されます。ダブルクリックで、これだけを再生して確かめられます。</floater.string>
+	<floater.string name="ao_cm_expand">中身を表示</floater.string>
+	<floater.string name="ao_cm_collapse">中身を隠す</floater.string>
+	<floater.string name="ao_cm_rename_group">グループ名を変える…</floater.string>
+	<floater.string name="ao_cm_move_out">グループから出す</floater.string>
+	<floater.string name="ao_cm_find_original">元のアイテムを探す</floater.string>
+	<floater.string name="ao_cm_delete">外す</floater.string>
+	<floater.string name="ao_cm_remove_track">このトラックを外す</floater.string>
+	<floater.string name="ao_group_name_invalid">「[NAME]」はグループ名に使えません。「:」と「|」は使えません。</floater.string>
+	<floater.string name="ao_folder_not_animations">このフォルダにはアニメーションがありません。</floater.string>
+	<panel name="animation_overrider_panel">
+		<check_box name="ao_enabled" label="AO を使う" tool_tip="立つ・歩く・座るなどのアニメーションを、使用中のセットのものに置き換えます。"/>
+		<combo_box name="ao_set_selection_combo" tool_tip="編集するセット。名前を入力して Enter を押すと名前を変えられます。"/>
+		<button name="ao_activate" tool_tip="このセットを今すぐ使います。"/>
+		<check_box name="ao_default" label="既定のセット" tool_tip="ログインしたときにこのセットを使います。既定のセットがないときは、前回使っていたセットになります。"/>
+		<menu_button name="ao_add" tool_tip="新しいセットを作ります（今のセットの複製もここから）。"/>
+		<button name="ao_remove" tool_tip="このセットを削除します。"/>
+		<check_box name="ao_sit_override" label="座りも置き換える" width="122" tool_tip="座るアニメーションも置き換えます。"/>
+		<check_box name="ao_smart" label="座る物を優先" tool_tip="座った物が自分のアニメーションを流しているときは、座りの置き換えを止めます。"/>
+		<check_box name="ao_disable_stands_in_mouselook" label="マウスルックでは立ちを変えない" tool_tip="マウスルックのときは、ふつうの立つアニメーションを使います。"/>
+		<combo_box name="ao_state_selection_combo" tool_tip="編集する状態。数字はアニメーションの数です。"/>
+		<scroll_list name="ao_state_animation_list" tool_tip="このウィンドウにアニメーション（何個まとめてでも）、インベントリのフォルダ、AO のノートカードをドロップします。アニメーションを別のアニメーションの上にドロップすると、いっしょに再生されるグループになります。ダブルクリックでそのアニメーションをすぐ再生します。右クリックでメニューが出ます。"/>
+		<panel name="ao_animation_move_trash_panel">
+			<button name="ao_move_up" tool_tip="選んだアニメーションかグループを上へ移します。"/>
+			<button name="ao_move_down" tool_tip="選んだアニメーションかグループを下へ移します。"/>
+			<button name="ao_rename" tool_tip="選んだグループの名前を変えます。"/>
+			<button name="ao_trash" tool_tip="選んだアニメーションをこの状態から外します（アニメーション自体はインベントリに残ります）。"/>
+		</panel>
+		<combo_box name="ao_track_selection_combo" tool_tip="この状態のどのリストを表示するか。メインのリストはふつうに再生され、ほかのトラックはその横で、それぞれ別に再生・切り替えされます（歩く全部のアニメーションに、しっぽ振りを並べる、など）。"/>
+		<button name="ao_track_add" tool_tip="この状態にトラックを足します。"/>
+		<check_box name="ao_cycle" label="順に切り替え" width="104" tool_tip="この状態になるたびに、リストの別のアニメーションを再生します。"/>
+		<check_box name="ao_randomize" label="ランダムな順" tool_tip="ランダムな順で切り替えます。"/>
+		<text name="ao_cycle_time_seconds_label" value="切り替え間隔（秒）:"/>
+		<spinner name="ao_cycle_time" tool_tip="この秒数ごとに次のアニメーションに切り替えます。0 にすると、その状態になったときだけ切り替えます。"/>
+		<layout_stack name="ao_file_buttons_stack">
+			<layout_panel name="ao_import_panel">
+				<button name="ao_import" label="読み込み…" tool_tip="AO ファイル（.charis-ao.xml）からセットを作ります。アニメーションは自分のインベントリから探します。Firestorm や ZHAO のノートカードを読み込むときは、このウィンドウにドロップします。"/>
+			</layout_panel>
+			<layout_panel name="ao_export_panel">
+				<button name="ao_export" label="書き出し…" tool_tip="このセットをファイルに保存します。"/>
+			</layout_panel>
+			<layout_panel name="ao_export_all_panel">
+				<button name="ao_export_all" label="全部保存…" tool_tip="すべてのセットを 1 つのファイルに保存します。"/>
+			</layout_panel>
+		</layout_stack>
+		<layout_stack name="ao_reload_stack">
+			<layout_panel name="ao_reload_panel">
+				<button name="ao_reload" label="読み直す" tool_tip="インベントリの #AO フォルダを読み直します（ほかのビューワで変えたときなど）。AO は止まりません。"/>
+			</layout_panel>
+			<layout_panel name="ao_fs_import_panel">
+				<button name="ao_fs_import" label="Firestorm から取り込む" tool_tip="Firestorm がインベントリに置いている AO セット（#Firestorm/#AO）を、このビューワの #Charis/#AO フォルダにコピーします。すでにある名前のセットは取り込みません。Firestorm 側のフォルダはそのままです。"/>
+			</layout_panel>
+		</layout_stack>
+		<layout_stack name="next_previous_buttons_stack">
+			<layout_panel name="next_previous_buttons_stack_left">
+				<button name="ao_previous" tool_tip="今の状態の前のアニメーションを再生します。"/>
+			</layout_panel>
+			<layout_panel name="next_previous_buttons_stack_right">
+				<button name="ao_next" tool_tip="今の状態の次のアニメーションを再生します。"/>
+			</layout_panel>
+		</layout_stack>
+		<button name="ao_less" tool_tip="小さい表示にします。"/>
+	</panel>
+	<panel name="animation_overrider_panel_small">
+		<check_box name="ao_enabled_small" label="AO を使う" tool_tip="立つ・歩く・座るなどのアニメーションを、使用中のセットのものに置き換えます。"/>
+		<combo_box name="ao_set_selection_combo_small" tool_tip="このセットを使います。"/>
+		<button name="ao_more" tool_tip="編集用の大きい表示にします。"/>
+		<button name="ao_previous_small" tool_tip="今の状態の前のアニメーションを再生します。"/>
+		<button name="ao_next_small" tool_tip="今の状態の次のアニメーションを再生します。"/>
+		<check_box name="ao_sit_override_small" label="座り" tool_tip="座るアニメーションも置き換えます。"/>
+	</panel>
+</floater>

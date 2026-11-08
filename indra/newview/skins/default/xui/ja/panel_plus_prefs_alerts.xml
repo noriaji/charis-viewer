@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="popups" label="ポップアップ">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="popups_scroll">
+			<panel name="popups_scroll_panel">
+				<plus_ps_text name="tell_me_label">
+					知らせる：
+				</plus_ps_text>
+				<plus_ps_check_compat name="notify_money_spend_checkbox" label="L$ を使った時" />
+				<plus_ps_check_compat name="notify_money_received_checkbox" label="L$ を受け取った時" />
+				<plus_ps_check_compat name="friends_online_notify_checkbox" label="フレンドがログイン・ログアウトした時" />
+				<plus_ps_text name="show_label">
+					常に表示するメッセージ：
+				</plus_ps_text>
+				<plus_ps_button_compat name="enable_this_popup" tool_tip="下の一覧で選んだメッセージを、常に表示する方へ移します" />
+				<plus_ps_button_compat name="disable_this_popup" tool_tip="上の一覧で選んだメッセージを、表示しない方へ移します" />
+				<plus_ps_text name="dont_show_label">
+					表示しないメッセージ：
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

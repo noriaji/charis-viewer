@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The photo screen's parts sample (plus/photoscreen/psui/psgallery.cpp, research/221).
+     Written by plus/photoscreen/psui/make_ps_gallery.py: change the script and run it again. -->
+<floater
+  name="plus_ps_gallery"
+  title="撮影モードの部品見本（開発用）">
+  <string name="StackHead">ラベルが横に並ぶ行</string>
+  <string name="StackExposure">露出</string>
+  <string name="StackSoftness">影の柔らかさ</string>
+  <string name="StackParticles">パーティクルを表示</string>
+  <string name="StackShadows">影</string>
+  <string name="StackShadows0">なし</string>
+  <string name="StackShadows1">太陽と月</string>
+  <string name="StackShadows2">太陽・月・光源</string>
+  <string name="StackGaze">視線</string>
+  <string name="StackGazeChoices">しない|カメラ|みんな</string>
+  <string name="StackTime">実際の空の時刻</string>
+  <string name="StackTimeHint">例: 2026-12-14 22:00（空なら今）</string>
+  <string name="StackLook">ルック</string>
+  <string name="StackLookPrev">前のルック</string>
+  <string name="StackLookNext">次のルック</string>
+  <string name="StackLook0">なし</string>
+  <string name="StackLook1">シネマ</string>
+  <string name="StackLook2">暖色</string>
+  <string name="StackDetails">詳細 (2)</string>
+  <string name="StackFog">地面の霧</string>
+  <string name="StackGlow">霧の光</string>
+  <string name="StackStarTip">ホームに出す</string>
+  <string name="StackChangedTip">変更あり</string>
+  <string name="StackRebuildTip">変えると数秒止まります</string>
+  <plus_ps_check
+    name="show_disabled"
+    label="無効の見た目を表示" />
+  <plus_ps_label
+    name="hint"
+    label="完成イメージを 1080 の高さにした寸法（research/221）。マウスを乗せる・押す・Tab で状態を確かめる" />
+  <scroll_container
+    name="scroll">
+    <panel
+      name="sample">
+      <plus_ps_box
+        name="rail">
+        <plus_ps_rail_tab
+          name="tab_scene"
+          label="シーン" />
+        <plus_ps_rail_tab
+          name="tab_avatar"
+          label="アバター" />
+        <plus_ps_rail_tab
+          name="tab_environment"
+          label="環境" />
+        <plus_ps_rail_tab
+          name="tab_lighting"
+          label="ライティング" />
+        <plus_ps_rail_tab
+          name="tab_pose"
+          label="ポーズと&#10;アニメ" />
+        <plus_ps_rail_tab
+          name="tab_camera"
+          label="カメラ" />
+        <plus_ps_rail_tab
+          name="tab_effects"
+          label="エフェクト" />
+        <plus_ps_rail_tab
+          name="tab_presets"
+          label="プリセット" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="left">
+        <plus_ps_header
+          name="h_scene"
+          label="シーン" />
+        <plus_ps_label
+          name="l_location"
+          label="場所" />
+        <plus_ps_card
+          name="c_location"
+          label="自分の区画"
+          subtitle="海辺の別荘" />
+        <plus_ps_label
+          name="l_time"
+          label="時刻" />
+        <plus_ps_label
+          name="l_sky"
+          label="空の設定" />
+        <plus_ps_card
+          name="c_sky"
+          label="ゴールデンアワー" />
+        <plus_ps_header
+          name="h_env"
+          label="環境" />
+        <plus_ps_check
+          name="chk_env_0"
+          label="HUD を表示" />
+        <plus_ps_check
+          name="chk_env_1"
+          label="他のアバターを表示" />
+        <plus_ps_check
+          name="chk_env_2"
+          label="装着物を表示" />
+        <plus_ps_check
+          name="chk_env_3"
+          label="パーティクルを表示" />
+        <plus_ps_check
+          name="chk_env_4"
+          label="影を表示" />
+        <plus_ps_check
+          name="chk_env_5"
+          label="最高の細かさ（LOD）" />
+        <plus_ps_header
+          name="h_avatar"
+          label="アバター" />
+        <plus_ps_card
+          name="c_avatar"
+          label="ひなた"
+          subtitle="複雑さ 134,217" />
+        <plus_ps_check
+          name="chk_avatar_0"
+          label="AO を止める" />
+        <plus_ps_check
+          name="chk_avatar_1"
+          label="ポーズを止める" />
+        <plus_ps_check
+          name="chk_avatar_2"
+          label="頭の向きを止める" />
+        <plus_ps_check
+          name="chk_avatar_3"
+          label="装着物を隠す" />
+        <plus_ps_check
+          name="chk_avatar_4"
+          label="最高画質で描く" />
+        <plus_ps_button
+          name="b_reset"
+          label="アバターを元に戻す" />
+      </plus_ps_box>
+      <plus_ps_row
+        name="chips">
+        <plus_ps_chip
+          name="chip_look"
+          label="シネマ" />
+        <plus_ps_chip
+          name="chip_grid"
+          label="グリッド" />
+      </plus_ps_row>
+      <plus_ps_box
+        name="icon_box">
+        <plus_ps_icon_button
+          name="ib_shoot"
+          tool_tip="撮影" />
+        <plus_ps_icon_button
+          name="ib_focus"
+          tool_tip="ピント" />
+        <plus_ps_icon_button
+          name="ib_frame"
+          tool_tip="ピント枠" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="full_box">
+        <plus_ps_icon_button
+          name="ib_full"
+          tool_tip="簡易表示へ" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="bottom">
+        <plus_ps_row
+          name="tabs">
+          <plus_ps_tab
+            name="tab_camera"
+            label="カメラ" />
+          <plus_ps_tab
+            name="tab_pose"
+            label="ポーズ" />
+          <plus_ps_tab
+            name="tab_scene"
+            label="シーン" />
+          <plus_ps_tab
+            name="tab_mine"
+            label="マイ" />
+        </plus_ps_row>
+        <plus_ps_preset_card
+          name="preset_0"
+          label="ポートレート"
+          subtitle="顔アップ" />
+        <plus_ps_preset_card
+          name="preset_1"
+          label="ファッション"
+          subtitle="上半身" />
+        <plus_ps_preset_card
+          name="preset_2"
+          label="全身"
+          subtitle="アバター全体" />
+        <plus_ps_preset_card
+          name="preset_3"
+          label="ローアングル"
+          subtitle="迫力" />
+        <plus_ps_preset_card
+          name="preset_4"
+          label="ハイアングル"
+          subtitle="見下ろし" />
+        <plus_ps_preset_card
+          name="preset_5"
+          label="風景"
+          subtitle="景色" />
+        <plus_ps_preset_card
+          name="preset_6"
+          label="マーケット"
+          subtitle="商品写真" />
+        <plus_ps_add_card
+          name="preset_add"
+          label="現在の設定を保存" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="right">
+        <plus_ps_header
+          name="h_camera"
+          label="カメラ" />
+        <plus_ps_header
+          name="sh_lens"
+          label="レンズ" />
+        <plus_ps_slider
+          name="s_focal"
+          label="焦点距離" />
+        <plus_ps_slider
+          name="s_fov"
+          label="画角" />
+        <plus_ps_slider
+          name="s_aperture"
+          label="絞り（F 値）" />
+        <plus_ps_label
+          name="l_focus_mode"
+          label="ピントの合わせ方" />
+        <plus_ps_combo
+          name="c_focus_mode">
+          <plus_ps_combo.item
+            name="auto"
+            label="自動（アバター）" />
+          <plus_ps_combo.item
+            name="cursor"
+            label="カーソル" />
+          <plus_ps_combo.item
+            name="self"
+            label="自分の顔" />
+          <plus_ps_combo.item
+            name="other"
+            label="相手の顔" />
+        </plus_ps_combo>
+        <plus_ps_icon_button
+          name="ib_focus_frame"
+          tool_tip="ピント枠を表示" />
+        <plus_ps_slider
+          name="s_focus_distance"
+          label="ピント距離" />
+        <plus_ps_header
+          name="sh_dof"
+          label="被写界深度" />
+        <plus_ps_label
+          name="l_bokeh"
+          label="ボケの形" />
+        <plus_ps_combo
+          name="c_bokeh">
+          <plus_ps_combo.item
+            name="circle"
+            label="円形" />
+          <plus_ps_combo.item
+            name="hexagon"
+            label="六角形" />
+        </plus_ps_combo>
+        <plus_ps_slider
+          name="s_bokeh"
+          label="ボケの強さ" />
+        <plus_ps_header
+          name="h_exposure"
+          label="露出と階調" />
+        <plus_ps_slider
+          name="s_exposure"
+          label="露出" />
+        <plus_ps_slider
+          name="s_contrast"
+          label="コントラスト" />
+        <plus_ps_slider
+          name="s_highlights"
+          label="ハイライト" />
+        <plus_ps_slider
+          name="s_shadows"
+          label="シャドウ" />
+        <plus_ps_slider
+          name="s_whites"
+          label="白" />
+        <plus_ps_slider
+          name="s_blacks"
+          label="黒" />
+        <plus_ps_header
+          name="h_grading"
+          label="カラーグレーディング" />
+        <plus_ps_label
+          name="l_lut"
+          label="ルック（LUT）" />
+        <plus_ps_combo
+          name="c_lut">
+          <plus_ps_combo.item
+            name="cinematic"
+            label="シネマ 01" />
+          <plus_ps_combo.item
+            name="warm"
+            label="暖色" />
+          <plus_ps_combo.item
+            name="none"
+            label="なし" />
+        </plus_ps_combo>
+        <plus_ps_slider
+          name="s_temperature"
+          label="色温度" />
+        <plus_ps_slider
+          name="s_tint"
+          label="色かぶり" />
+        <plus_ps_slider
+          name="s_vibrance"
+          label="自然な彩度" />
+        <plus_ps_slider
+          name="s_saturation"
+          label="彩度" />
+        <plus_ps_header
+          name="h_effects"
+          label="エフェクト" />
+        <plus_ps_header
+          name="h_output"
+          label="出力" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="shutter">
+        <plus_ps_segment
+          name="seg_mode"
+          left_label="写真" />
+        <plus_ps_shutter
+          name="shutter_button"
+          tool_tip="撮影" />
+        <plus_ps_icon_button
+          name="ib_settings"
+          tool_tip="撮影ツール" />
+        <plus_ps_label
+          name="l_exit"
+          label="F12 で撮影モードを抜ける" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="more_choices">
+        <plus_ps_header
+          name="h_more"
+          label="ほかの窓の部品" />
+        <plus_ps_label
+          name="l_seg3"
+          label="3 択" />
+        <plus_ps_segment
+          name="seg_three"
+          labels="しない|自分|みんな" />
+        <plus_ps_label
+          name="l_seg7"
+          label="画質の段" />
+        <plus_ps_segment
+          name="seg_levels"
+          labels="低|低〜中|中|中〜高|高|高〜超高|超高" />
+        <plus_ps_label
+          name="l_star"
+          label="ホームに出す（星）" />
+        <plus_ps_icon_button
+          name="ib_star_off"
+          tool_tip="ホームに出す" />
+        <plus_ps_icon_button
+          name="ib_star_on"
+          tool_tip="ホームに出す" />
+      </plus_ps_box>
+      <plus_ps_box
+        name="tabs_box">
+        <plus_ps_header
+          name="h_tabs"
+          label="サブタブ" />
+        <plus_ps_row
+          name="sub_tabs">
+          <plus_ps_tab
+            name="tab_display"
+            label="表示" />
+          <plus_ps_tab
+            name="tab_graphics"
+            label="グラフィック" />
+          <plus_ps_tab
+            name="tab_other"
+            label="その他" />
+        </plus_ps_row>
+        <panel
+          name="page_display">
+          <plus_ps_label
+            name="l_page_display"
+            label="1 枚目のタブのページ。" />
+        </panel>
+        <panel
+          name="page_graphics">
+          <plus_ps_label
+            name="l_page_graphics"
+            label="2 枚目のタブのページ。" />
+        </panel>
+        <panel
+          name="page_other">
+          <plus_ps_label
+            name="l_page_other"
+            label="3 枚目のタブのページ。" />
+        </panel>
+      </plus_ps_box>
+      <plus_ps_box
+        name="compat_box">
+        <plus_ps_header
+          name="h_compat"
+          label="互換の部品（公式の部品: 環境設定）" />
+        <plus_ps_check_compat
+          name="cc_on"
+          label="ヒントを表示" />
+        <plus_ps_check_compat
+          name="cc_off"
+          label="起動時に更新を確かめる" />
+        <plus_ps_slider_compat
+          name="sc_distance"
+          label="描画距離" />
+        <plus_ps_slider_compat
+          name="sc_scale"
+          label="UI の大きさ" />
+        <plus_ps_spinner
+          name="sp_cache"
+          label="キャッシュ（MB）" />
+        <plus_ps_text
+          name="tx_note"
+          value="公式の文字欄と同じ文字: 複数行、https://secondlife.com のようなリンク、引数。" />
+        <plus_ps_button_compat
+          name="bc_clear"
+          label="キャッシュを消す" />
+        <plus_ps_button_compat
+          name="bc_toggle"
+          label="切り替え（オン）" />
+        <plus_ps_button_compat
+          name="bc_icon"
+          label="設定" />
+        <plus_ps_button_compat
+          name="bc_icon_only"
+          tool_tip="設定" />
+        <plus_ps_text
+          name="tx_label"
+          value="ラベル（label）" />
+        <plus_ps_text
+          name="tx_white"
+          value="値（white）" />
+        <plus_ps_text
+          name="tx_dim"
+          value="選ばれていない（dim）" />
+        <plus_ps_text
+          name="tx_sub"
+          value="2 行目（sub）" />
+        <plus_ps_text
+          name="tx_hint"
+          value="ヒント（hint）" />
+        <plus_ps_text
+          name="tx_title"
+          value="題（title）" />
+        <plus_ps_label
+          name="l_radio_list"
+          label="一覧の択一（list）" />
+        <plus_ps_radio
+          name="rc_list">
+          <radio_item
+            name="low"
+            label="低" />
+          <radio_item
+            name="normal"
+            label="普通" />
+          <radio_item
+            name="high"
+            label="高" />
+        </plus_ps_radio>
+        <plus_ps_label
+          name="l_radio_bar"
+          label="1 本の択一（segment）" />
+        <plus_ps_radio
+          name="rc_bar">
+          <radio_item
+            name="nobody"
+            label="しない" />
+          <radio_item
+            name="me"
+            label="自分" />
+          <radio_item
+            name="everyone"
+            label="みんな" />
+        </plus_ps_radio>
+      </plus_ps_box>
+    </panel>
+  </scroll_container>
+</floater>

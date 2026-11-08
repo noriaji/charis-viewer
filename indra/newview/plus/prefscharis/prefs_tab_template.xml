@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The model of a preferences tab in the Charis look (research/266 2.-4., prefs-frame). NOT read by the viewer (it is
+     not under skins/): copy it to skins/default/xui/en/panel_plus_prefs_<tab>.xml (and ja/ with the words only), then
+     change only the filename= of that tab in floater_preferences.xml (en; ja and the other languages follow by name).
+
+     The frame (floater_preferences.xml): the tabs are a plus_ps_tabs named "pref core" (the official tab container,
+     so LastPrefTab, selectPanel(), setTabVisibility() and the search keep working); each tab's <panel> keeps its
+     class=, name=, label=, help_topic= and order. A page is placed by the tabs at 574 x 515 (follows all; the
+     window may be made larger or shorter: 515 at the default height, 438 at the least one).
+
+     Inside a page (all in 1080 base pixels; the sizes are tokens.txt's and charis-ui-style's):
+       plus_ps_box "ps_ground" kind panel   574 x 515, follows all: the page's ground
+       scroll_container "<tab>_scroll"      574 x 515, follows all, opaque false, reserve_scroll_corner false
+         panel "<tab>_scroll_panel"         557 wide (574 less the scroll bar 15 and the border 2: no sideways bar),
+                                            as high as its rows (the sum below), follows left|top
+           rows at left 14, 529 wide (follows left|top|right), from top 10:
+             a heading (plus_ps_header size sub, divider top but for the first)   40
+             a check box (plus_ps_check, or the compat check when the C++ asks for an LLCheckBoxCtrl)   30
+             a slider (plus_ps_slider / compat)   31        a drop-down row (label + plus_ps_combo)   33
+             a button (plus_ps_button / compat; 260 wide, follows left|top)   40, 6 over it
+             a note (plus_ps_label kind dim)   18           between sections   10
+           and 14 under the last row. Write the sum in the file's first comment (the reviewers add it again).
+       ja: at most 38 characters on a line (529 less the check box, / 13); longer words get the label's
+       ellipsis and its tool tip.
+
+     What the official panel had is all kept (tools/ui-parity-diff.py check: missing 0, wrong types 0, ja 0):
+     name, control_name / enabled_control / visibility_control, commit_callback / init_callback / validate_callback,
+     <string>, tool_tip, label, choices (combo items, radio items), ranges (min_val, max_val, increment). A widget the
+     C++ asks for by type (getChild<LLButton>, <LLCheckBoxCtrl>, <LLSliderCtrl>, <LLSpinCtrl>, <LLTextBox>,
+     <LLRadioGroup>, <LLTabContainer>) is the compat widget of that type (ui-compat, psui/pscompat.h; plus_ps_tabs
+     for a tab container); one the C++ only reads as an LLUICtrl may be a plain psui widget. A text field, editor,
+     list, colour swatch or icon stays the official widget, inside a plus_ps_box kind glass (its colours Ps*). No
+     colour literals (predeliver (u)); the official file is left as it is (research/266 4. prefs-clean takes its
+     old plus marks back). Words go in this panel's <string> (en and ja the same names), not strings_plus.
+     A tab of tabs inside (privacy, game controls): a plus_ps_tabs with tab_position top (strip 36: pages 36 lower
+     and 36 shorter), its pages' label and tool_tip are the tabs' (the Charis tab is the example). -->
+<panel
+ border="true"
+ follows="all"
+ height="515"
+ label="Example"
+ layout="topleft"
+ left="0"
+ name="example"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="example_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <!-- Height: 10 + heading 40 + check 30 + drop-down row 33 + slider 31 + 6 + button 40 + 14 = 204 -->
+            <panel
+             name="example_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="204"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <plus_ps_header
+                 name="h_example"
+                 divider="none"
+                 follows="left|top|right"
+                 height="40"
+                 label="Example"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="10"
+                 width="529" />
+                <plus_ps_check
+                 name="example_check"
+                 control_name="ExampleSetting"
+                 follows="left|top|right"
+                 height="30"
+                 label="A check box"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="What it does."
+                 top="50"
+                 width="529" />
+                <plus_ps_label
+                 name="example_combo_label"
+                 height="33"
+                 label="A choice"
+                 layout="topleft"
+                 left="14"
+                 top="80"
+                 width="317" />
+                <plus_ps_combo
+                 name="example_combo"
+                 control_name="ExampleChoice"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="343"
+                 top="80"
+                 width="200">
+                    <plus_ps_combo.item
+                     name="one"
+                     label="One"
+                     value="1" />
+                    <plus_ps_combo.item
+                     name="two"
+                     label="Two"
+                     value="2" />
+                </plus_ps_combo>
+                <plus_ps_slider
+                 name="example_slider"
+                 control_name="ExampleAmount"
+                 decimal_digits="2"
+                 follows="left|top|right"
+                 height="31"
+                 increment="0.01"
+                 label="An amount"
+                 layout="topleft"
+                 left="14"
+                 max_value="1"
+                 min_value="0"
+                 top="113"
+                 width="529" />
+                <plus_ps_button
+                 name="example_button"
+                 follows="left|top"
+                 height="40"
+                 label="A button"
+                 layout="topleft"
+                 left="14"
+                 top="150"
+                 width="260">
+                    <plus_ps_button.commit_callback
+                     function="Example.Function" />
+                </plus_ps_button>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

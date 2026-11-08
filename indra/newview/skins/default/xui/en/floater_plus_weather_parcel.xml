@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Parcel weather (plus/slwx; research/229 section 8): sets the [slwx ...] tag in the description of the
+  parcel the agent stands on (same format as Slipstream). Fixed size, nothing to scroll. Heights:
+  reason 26-74 (3 lines), six sliders 78-216 (24 apart), storm note 220-252, tag preview 256-304,
+  bytes 308-340 (2 lines), warning 344-376 (2 lines), buttons 382-406, window 418.
+-->
+<floater
+ positioning="specified"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="418"
+ width="380"
+ layout="topleft"
+ name="plus_weather_parcel"
+ title="PARCEL WEATHER">
+    <floater.string name="can_edit">Writes into the description of this parcel. Anyone can read it. People who turned on "Use the Parcel's Weather" see this weather.</floater.string>
+    <floater.string name="cannot_edit">Only the owner of this parcel, or a group member allowed to edit it, can set its weather.</floater.string>
+    <floater.string name="bytes_left">[LEFT] bytes left in the description (255 at most).</floater.string>
+    <floater.string name="bytes_over">The tag does not fit: shorten the description (255 bytes at most).</floater.string>
+    <floater.string name="tag_warning">[N] item(s) of the tag in the description are broken and ignored.</floater.string>
+    <floater.string name="tag_unclosed">The description has a "[slwx" without a closing "]". Close or remove it first.</floater.string>
+    <floater.string name="confirm_apply">Write this into the description of this parcel?
+
+[TAG]
+
+The description is public: anyone can read it. [LEFT] bytes will be left.</floater.string>
+    <floater.string name="confirm_clear">Remove the weather tag from the description of this parcel?</floater.string>
+    <floater.string name="write_failed">The parcel weather could not be written. You may not be allowed to edit this parcel any more, or you are in another parcel now.</floater.string>
+    <text
+     follows="left|top"
+     height="48"
+     layout="topleft"
+     left="12"
+     name="reason"
+     top="26"
+     width="356" word_wrap="true"></text>
+    <slider
+     can_edit_text="true"
+     decimal_digits="2"
+     follows="left|top"
+     height="18"
+     increment="0.05"
+     initial_value="0"
+     label="Rain"
+     label_width="130"
+     layout="topleft"
+     left="12"
+     max_val="1"
+     min_val="0"
+     name="rain"
+     tool_tip="How much it rains."
+     top="78"
+     width="356" />
+    <slider
+     can_edit_text="true"
+     decimal_digits="2"
+     follows="left|top"
+     height="18"
+     increment="0.05"
+     initial_value="0"
+     label="Snow"
+     label_width="130"
+     layout="topleft"
+     left="12"
+     max_val="1"
+     min_val="0"
+     name="snow"
+     tool_tip="How much it snows."
+     top="102"
+     width="356" />
+    <slider
+     can_edit_text="true"
+     decimal_digits="0"
+     follows="left|top"
+     height="18"
+     increment="5"
+     initial_value="225"
+     label="Wind from (deg)"
+     label_width="130"
+     layout="topleft"
+     left="12"
+     max_val="360"
+     min_val="0"
+     name="wind_dir"
+     tool_tip="The direction the wind blows from (0 = north, 90 = east)."
+     top="126"
+     width="356" />
+    <slider
+     can_edit_text="true"
+     decimal_digits="1"
+     follows="left|top"
+     height="18"
+     increment="0.5"
+     initial_value="3"
+     label="Wind speed (m/s)"
+     label_width="130"
+     layout="topleft"
+     left="12"
+     max_val="40"
+     min_val="0"
+     name="wind_speed"
+     tool_tip="Wind speed in m/s."
+     top="150"
+     width="356" />
+    <slider
+     can_edit_text="true"
+     decimal_digits="2"
+     follows="left|top"
+     height="18"
+     increment="0.05"
+     initial_value="0.5"
+     label="Gusts"
+     label_width="130"
+     layout="topleft"
+     left="12"
+     max_val="1"
+     min_val="0"
+     name="gust"
+     tool_tip="How easily gusts come."
+     top="174"
+     width="356" />
+    <slider
+     can_edit_text="true"
+     decimal_digits="2"
+     follows="left|top"
+     height="18"
+     increment="0.05"
+     initial_value="0"
+     label="Storm"
+     label_width="130"
+     layout="topleft"
+     left="12"
+     max_val="1"
+     min_val="0"
+     name="storm"
+     tool_tip="Thunderstorm. It has no effect in this viewer yet."
+     top="198"
+     width="356" />
+    <text
+     follows="left|top"
+     height="32"
+     layout="topleft"
+     left="12"
+     name="storm_note"
+     top="220"
+     width="356" word_wrap="true">Storm has no effect in this viewer yet (lightning comes later). It is saved in the tag for viewers that use it.</text>
+    <text
+     follows="left|top"
+     height="48"
+     layout="topleft"
+     left="12"
+     name="preview"
+     top="256"
+     width="356" word_wrap="true" font="SansSerifSmall"></text>
+    <text
+     follows="left|top"
+     height="32"
+     layout="topleft"
+     left="12"
+     name="bytes"
+     top="308"
+     width="356" word_wrap="true"></text>
+    <text
+     follows="left|top"
+     height="32"
+     layout="topleft"
+     left="12"
+     name="warning"
+     top="344"
+     width="356" word_wrap="true" text_color="0.9 0.3 0.2 1"></text>
+    <button
+     follows="left|top"
+     height="24"
+     label="Set as this parcel's weather"
+     layout="topleft"
+     left="12"
+     name="apply"
+     top="382"
+     width="200" />
+    <button
+     follows="left|top"
+     height="24"
+     label="Remove"
+     layout="topleft"
+     left="220"
+     name="clear"
+     top="382"
+     width="148" />
+</floater>

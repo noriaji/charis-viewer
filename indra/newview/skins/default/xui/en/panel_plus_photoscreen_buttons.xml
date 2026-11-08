@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The smallest set of buttons of the photo screen (plus/photoscreen/photoscreen.cpp), at the bottom right of the
+  world's rectangle: HUD attachments on / off, the 360 snapshot window, the switch between the detailed and
+  the simple mode, the shutter, and the exit. The later branches put the real panels on the photo screen's overlay.
+-->
+<panel
+ background_visible="true"
+ bg_alpha_color="0 0 0 0.6"
+ follows="left|bottom"
+ height="30"
+ layout="topleft"
+ name="plus_photoscreen_buttons"
+ width="344">
+    <panel.string name="mode_to_simple">Simple view</panel.string>
+    <panel.string name="mode_to_detail">Detailed view</panel.string>
+    <button
+     follows="left|top"
+     height="22"
+     label="HUD"
+     layout="topleft"
+     left="4"
+     top="4"
+     width="44"
+     name="btn_hud"
+     tool_tip="Show or hide the HUD attachments. They come back as they were when you leave the photo screen." />
+    <button
+     follows="left|top"
+     height="22"
+     label="360°"
+     layout="topleft"
+     left="52"
+     top="4"
+     width="44"
+     name="btn_360"
+     tool_tip="Open the 360° snapshot window" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Simple view"
+     layout="topleft"
+     left="100"
+     top="4"
+     width="104"
+     name="btn_mode"
+     tool_tip="Switch between the detailed view (the world is the shape of the photo, the panels are around it) and the simple view (the world fills the window)" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Photo"
+     layout="topleft"
+     left="208"
+     top="4"
+     width="64"
+     name="btn_shoot"
+     tool_tip="Take the photo now, at the size and shape set in the photo tools" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Exit"
+     layout="topleft"
+     left="276"
+     top="4"
+     width="64"
+     name="btn_exit"
+     tool_tip="Leave the photo screen; the windows and bars come back" />
+</panel>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Input panel" label="セットアップ">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="setup_scroll">
+			<panel name="setup_scroll_panel">
+				<plus_ps_text name="Network:">
+					ネットワーク：
+				</plus_ps_text>
+				<plus_ps_text name="Maximum bandwidth">
+					最大帯域幅
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					kbps
+				</plus_ps_text>
+				<plus_ps_check_compat name="connection_port_enabled" label="ポートを指定する" />
+				<plus_ps_spinner name="connection_port" label="ポート番号：" />
+				<plus_ps_text name="Web:">
+					Web：
+				</plus_ps_text>
+				<plus_ps_radio name="preferred_browser_behavior">
+					<radio_item name="internal" label="すべてのリンクをシステムの既定のブラウザで開く" tool_tip="ヘルプや Web のリンクなどを、システムの既定のブラウザで開きます。全画面で使っている時はおすすめしません。" />
+					<radio_item name="external" label="Second Life のリンクだけ内蔵ブラウザで開く" tool_tip="ヘルプや Web のリンクなどはシステムの既定のブラウザで開き、Linden Lab／Second Life のリンクだけを内蔵ブラウザで開きます。" />
+					<radio_item name="external_all" label="すべてのリンクを内蔵ブラウザで開く" tool_tip="ヘルプや Web のリンクなどを内蔵ブラウザで開きます。内蔵ブラウザは [APP_NAME] の中に新しいウィンドウとして開きます。" />
+				</plus_ps_radio>
+				<plus_ps_check_compat name="browser_javascript_enabled" label="JavaScript を有効にする" />
+				<plus_ps_text name="Software updates:">
+					ソフトウェアの更新：
+				</plus_ps_text>
+				<plus_ps_combo name="updater_service_combobox">
+					<plus_ps_combo.item name="Install_automatically" label="更新を自動でインストールする" />
+					<plus_ps_combo.item name="Install_ask" label="任意の更新の準備ができたら確認する" />
+					<plus_ps_combo.item name="Install_manual" label="必須の更新だけインストールする" />
+				</plus_ps_combo>
+				<plus_ps_check_compat name="update_willing_to_test" label="ベータ版への更新も受け取る" />
+				<plus_ps_check_compat name="update_show_release_notes" label="更新の後にリリースノートを表示する" />
+				<plus_ps_text name="Proxy Settings:">
+					プロキシ：
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_proxy" label="プロキシの設定…" label_selected="プロキシの設定…" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

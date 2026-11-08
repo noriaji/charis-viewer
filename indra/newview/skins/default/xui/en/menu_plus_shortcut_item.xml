@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The right click on an item of the menu bar (plus/shortcutbar: Plus.Shortcut.Item / .Enable). -->
+<context_menu
+ layout="topleft"
+ name="plus_shortcut_item_menu">
+    <menu_item_call label="Add to the Shortcut Bar" layout="topleft" name="add">
+        <menu_item_call.on_click function="Plus.Shortcut.Item" parameter="add" />
+        <menu_item_call.on_visible function="Plus.Shortcut.Item.Enable" parameter="not_added" />
+    </menu_item_call>
+    <menu_item_call label="Take off the Shortcut Bar" layout="topleft" name="remove">
+        <menu_item_call.on_click function="Plus.Shortcut.Item" parameter="remove" />
+        <menu_item_call.on_visible function="Plus.Shortcut.Item.Enable" parameter="added" />
+    </menu_item_call>
+</context_menu>

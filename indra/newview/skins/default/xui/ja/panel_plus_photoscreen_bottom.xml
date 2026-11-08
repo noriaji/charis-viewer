@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- ja: the words only. Places and sizes come from en/panel_plus_photoscreen_bottom.xml (LLXMLNode::updateNode matches by name). -->
+<panel name="plus_photoscreen_bottom">
+    <string name="sub_pose">ポーザーで開きます</string>
+    <string name="sub_portrait">顔にやわらかい光</string>
+    <string name="sub_backlight">後ろからの光</string>
+    <string name="sub_sunset">低く暖かい日差し</string>
+    <string name="sub_night">暗い空と灯り</string>
+    <string name="sub_studio">むらのない素直な光</string>
+    <string name="sub_natural">空のままの光</string>
+    <string name="name_autumn">秋の路地</string>
+    <string name="sub_autumn">紅葉と木漏れ日</string>
+    <string name="tip_autumn">紅葉の赤と橙を濃く、石畳や木の幹をくっきりさせ、グレアは控えめ、影のふちは木漏れ日が残る柔らかさにします。太陽は動かさないので、低い午後の空を空の一覧から選んでください。</string>
+    <string name="add_save">現在の設定を保存</string>
+    <string name="add_pose">ポーザーを開く</string>
+    <string name="add_tip_camera">今のカメラ位置を名前を付けて保存します（小さな写真つき）</string>
+    <string name="add_tip_pose">ポーズはポーザーで作って保存します。ポーザーを開きます</string>
+    <string name="add_tip_my">今の設定を自分のプリセットとして保存します（小さな写真つき）</string>
+    <plus_ps_box name="box">
+        <plus_ps_row name="ptabs">
+            <!-- The tabs are wider in ja than in en (the words are longer). -->
+            <plus_ps_tab name="ptab_camera" label="カメラプリセット" width="132" />
+            <plus_ps_tab name="ptab_pose" label="ポーズプリセット" left="140" width="132" />
+            <plus_ps_tab name="ptab_scene" label="シーンプリセット" left="280" width="132" />
+            <plus_ps_tab name="ptab_my" label="マイプリセット" left="420" width="120" />
+        </plus_ps_row>
+        <plus_ps_add_card name="btn_save" label="現在の設定を保存" tool_tip="今の設定を自分のプリセットとして保存します（小さな写真つき）" />
+        <plus_ps_box name="name_bubble">
+            <plus_ps_label name="name_label" label="名前（空なら番号を付けます）" />
+            <line_editor name="preset_name" tool_tip="保存する名前（空なら番号を付けます）" />
+            <plus_ps_button name="btn_save_ok" label="保存" />
+        </plus_ps_box>
+    </plus_ps_box>
+</panel>

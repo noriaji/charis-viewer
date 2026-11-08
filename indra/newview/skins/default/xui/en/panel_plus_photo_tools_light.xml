@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The photo tools' page "light" (floater_plus_photo_tools.xml, research/265).
+  Sky & Weather: the sky list and the water list (phototools_env.cpp; folded, a section is 72 high:
+  showEnvList()), then the rows of the tab. pt-ui-env makes the lists over to psui.
+  The parts of content_light are put under each other by the code in the order of their tops (the
+  hidden ones take no room); a block keeps its height, a column (rows_*) gets the height of its rows.
+  Blocks are 583 wide at 10, columns 597 at 0 (the content: the page less the scroll bar).
+-->
+<panel
+ name="page_light"
+ background_visible="false"
+ follows="all"
+ height="688"
+ layout="topleft"
+ mouse_opaque="false"
+ width="612">
+    <scroll_container
+     name="scroll_light"
+     border_visible="false"
+     follows="all"
+     height="688"
+     ignore_arrow_keys="true"
+     layout="topleft"
+     left="0"
+     opaque="false"
+     reserve_scroll_corner="false"
+     top="0"
+     width="612">
+        <panel
+         name="content_light"
+         background_visible="false"
+         follows="left|top"
+         height="688"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="0"
+         width="597">
+            <panel
+             name="sec_sky"
+             background_visible="false"
+             follows="left|top"
+             height="300"
+             layout="topleft"
+             left="10"
+             top="0"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_sky"
+                 width="44">
+                    Sky
+                </text>
+                <!-- folds the list part away (PlusPhotoSkyListOpen); the label is set in the code -->
+                <button
+                 follows="left|top"
+                 height="18"
+                 is_toggle="true"
+                 label="Choose a Sky"
+                 layout="topleft"
+                 left="50"
+                 top="1"
+                 width="150"
+                 name="btn_sky_list_toggle"
+                 tool_tip="Open or close the list of skies" />
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="14"
+                 layout="topleft"
+                 left="206"
+                 right="-4"
+                 top="4"
+                 name="sky_current"
+                 parse_urls="false"
+                 trusted_content="false"
+                 text_color="LtGray"
+                 use_ellipses="true">
+                    Now:
+                </text>
+                <button
+                 follows="left|top|right"
+                 height="22"
+                 label="Back to the Land's Sky"
+                 layout="topleft"
+                 left="4"
+                 right="-30"
+                 top="20"
+                 name="btn_sky_land"
+                 tool_tip="Use the sky the land has (the water stays as it is)" />
+                                          <button
+                 follows="right|top"
+                 height="22"
+                 image_selected="Favorite_Star_Active"
+                 image_unselected="Favorite_Star_Off"
+                 is_toggle="true"
+                 label=""
+                 layout="topleft"
+                 right="-4"
+                 top="20"
+                 width="22"
+                 name="btn_sky_cur_star"
+                 tool_tip="Add the current sky to Favorites" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="All"
+                 layout="topleft"
+                 left="4"
+                 top="46"
+                 width="70"
+                 name="btn_skytab_all"
+                 tool_tip="Every sky, in the folders of the inventory and the Library" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="Favorites"
+                 layout="topleft"
+                 left="76"
+                 top="46"
+                 width="90"
+                 name="btn_skytab_fav"
+                 tool_tip="The skies with a star. The arrows go through them in this order." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="Recent"
+                 layout="topleft"
+                 left="168"
+                 top="46"
+                 width="80"
+                 name="btn_skytab_recent"
+                 tool_tip="The last ten used" />
+                <button
+                 follows="right|top"
+                 height="22"
+                 label="Sort by Name"
+                 layout="topleft"
+                 right="-4"
+                 top="46"
+                 width="110"
+                 name="btn_sky_fav_sort"
+                 tool_tip="Put the favorite skies in the order of their names" />
+                <filter_editor
+                 follows="left|top|right"
+                 height="22"
+                 label="Search skies"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="72"
+                 name="flt_sky" />
+                <panel
+                 name="sky_wrap"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="98"
+                 bottom="-30"
+                 background_visible="true"
+                 bg_alpha_color="DkGray2"
+                 border="true">
+                    <plus_photo_sky_panel
+                     follows="all"
+                     layout="topleft"
+                     left="0"
+                     top="0"
+                     right="-1"
+                     bottom="-1"
+                     allow_multi_select="false"
+                     allow_drag="false"
+                     name="sky_list"
+                     filter_asset_types="settings" />
+                </panel>
+                                          <flat_list_view
+                 allow_select="false"
+                 allow_reorder="true"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="72"
+                 bottom="-30"
+                 item_pad="0"
+                 visible="false"
+                 name="sky_fav_list" />
+                <flat_list_view
+                 allow_select="false"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="72"
+                 bottom="-30"
+                 item_pad="0"
+                 visible="false"
+                 name="sky_recent_list" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="&lt;"
+                 layout="topleft"
+                 left="4"
+                 bottom="-4"
+                 width="30"
+                 name="btn_sky_prev"
+                 tool_tip="The previous sky in this folder" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="&gt;"
+                 layout="topleft"
+                 left="36"
+                 bottom="-4"
+                 width="30"
+                 name="btn_sky_next"
+                 tool_tip="The next sky in this folder" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="Adjust the Sky..."
+                 layout="topleft"
+                 left="70"
+                 bottom="-4"
+                 width="150"
+                 name="btn_sky_edit"
+                 tool_tip="Edit the sky in use" />
+                <button
+                 follows="right|bottom"
+                 height="22"
+                 label="Reset Both"
+                 layout="topleft"
+                 right="-4"
+                 bottom="-4"
+                 width="90"
+                 name="btn_sky_undo"
+                 tool_tip="Back to the land's sky and water" />
+            </panel>
+            <panel
+             name="sec_water"
+             background_visible="false"
+             follows="left|top"
+             height="260"
+             layout="topleft"
+             left="10"
+             top="300"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_water"
+                 width="44">
+                    Water
+                </text>
+                <!-- folds the list part away (PlusPhotoWaterListOpen); the label is set in the code -->
+                <button
+                 follows="left|top"
+                 height="18"
+                 is_toggle="true"
+                 label="Choose a Water Setting"
+                 layout="topleft"
+                 left="50"
+                 top="1"
+                 width="150"
+                 name="btn_water_list_toggle"
+                 tool_tip="Open or close the list of water settings" />
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="14"
+                 layout="topleft"
+                 left="206"
+                 right="-4"
+                 top="4"
+                 name="water_current"
+                 parse_urls="false"
+                 trusted_content="false"
+                 text_color="LtGray"
+                 use_ellipses="true">
+                    Now:
+                </text>
+                <button
+                 follows="left|top|right"
+                 height="22"
+                 label="Back to the Land's Water"
+                 layout="topleft"
+                 left="4"
+                 right="-30"
+                 top="20"
+                 name="btn_water_land"
+                 tool_tip="Use the water the land has (the sky stays as it is)" />
+                <button
+                 follows="right|top"
+                 height="22"
+                 image_selected="Favorite_Star_Active"
+                 image_unselected="Favorite_Star_Off"
+                 is_toggle="true"
+                 label=""
+                 layout="topleft"
+                 right="-4"
+                 top="20"
+                 width="22"
+                 name="btn_water_cur_star"
+                 tool_tip="Add the current water setting to Favorites" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="All"
+                 layout="topleft"
+                 left="4"
+                 top="46"
+                 width="70"
+                 name="btn_watertab_all"
+                 tool_tip="Every water, in the folders of the inventory and the Library" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="Favorites"
+                 layout="topleft"
+                 left="76"
+                 top="46"
+                 width="90"
+                 name="btn_watertab_fav"
+                 tool_tip="The water settings with a star. The arrows go through them in this order." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="Recent"
+                 layout="topleft"
+                 left="168"
+                 top="46"
+                 width="80"
+                 name="btn_watertab_recent"
+                 tool_tip="The last ten used" />
+                <button
+                 follows="right|top"
+                 height="22"
+                 label="Sort by Name"
+                 layout="topleft"
+                 right="-4"
+                 top="46"
+                 width="110"
+                 name="btn_water_fav_sort"
+                 tool_tip="Put the favorite water settings in the order of their names" />
+                <filter_editor
+                 follows="left|top|right"
+                 height="22"
+                 label="Search water settings"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="72"
+                 name="flt_water" />
+                <panel
+                 name="water_wrap"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="98"
+                 bottom="-30"
+                 background_visible="true"
+                 bg_alpha_color="DkGray2"
+                 border="true">
+                    <plus_photo_sky_panel
+                     follows="all"
+                     layout="topleft"
+                     left="0"
+                     top="0"
+                     right="-1"
+                     bottom="-1"
+                     allow_multi_select="false"
+                     allow_drag="false"
+                     name="water_list"
+                     filter_asset_types="settings" />
+                </panel>
+                <flat_list_view
+                 allow_select="false"
+                 allow_reorder="true"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="72"
+                 bottom="-30"
+                 item_pad="0"
+                 visible="false"
+                 name="water_fav_list" />
+                <flat_list_view
+                 allow_select="false"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="72"
+                 bottom="-30"
+                 item_pad="0"
+                 visible="false"
+                 name="water_recent_list" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="&lt;"
+                 layout="topleft"
+                 left="4"
+                 bottom="-4"
+                 width="30"
+                 name="btn_water_prev"
+                 tool_tip="The previous water in this folder" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="&gt;"
+                 layout="topleft"
+                 left="36"
+                 bottom="-4"
+                 width="30"
+                 name="btn_water_next"
+                 tool_tip="The next water in this folder" />
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|right|bottom"
+                 font="SansSerifSmall"
+                 height="14"
+                 layout="topleft"
+                 left="72"
+                 right="-4"
+                 bottom="-8"
+                 name="water_note"
+                 text_color="LtGray"
+                 use_ellipses="true">
+                    Choosing a water setting leaves the sky as it is.
+                </text>
+            </panel>
+            <panel name="rows_light" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="560" width="597" />
+        </panel>
+    </scroll_container>
+</panel>

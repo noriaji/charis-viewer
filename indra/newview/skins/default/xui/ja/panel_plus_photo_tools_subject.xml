@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="page_subject">
+	<scroll_container name="scroll_subject">
+		<panel name="content_subject">
+			<panel name="sec_focus">
+				<text name="title_focus">ピント</text>
+				<radio_group name="focus_mode" tool_tip="ぼかしでピントが合う所。対象かカメラが動いても追いかけます。">
+					<radio_item name="focus_normal" label="標準" tool_tip="ビューワの標準どおり（Alt で寄った所）。" />
+					<radio_item name="focus_cursor" label="マウス位置" tool_tip="マウスの下の点。絵の上にある間だけです。" />
+					<radio_item name="focus_self" label="自分の顔" tool_tip="自分のアバター。" />
+					<radio_item name="focus_other" label="相手の顔" tool_tip="近くにいる人。下で選びます。" />
+					<radio_item name="focus_click" label="クリックした場所" tool_tip="世界の場所をクリックすると、そこにピントを固定します。もう一度クリックすると移ります。選んでいる間、クリックで物は反応しません。Esc で指定を終えます（ピントは残ります）。" />
+				</radio_group>
+				<combo_box name="focus_who" tool_tip="ピントを追いかける人（カメラの近くの人、近い順）" />
+				<combo_box name="focus_part" tool_tip="アバターのどこにピントを合わせるか" />
+				<text name="focus_status">標準のピント</text>
+				<button name="btn_focus_blur" label="ぼかしをオンにする" tool_tip="被写界深度（ぼかし）がオフなので、ピントを合わせる対象がありません。オンにします。数秒、絵が止まります。" />
+			</panel>
+			<panel name="sec_gaze">
+				<text name="title_gaze">カメラ目線</text>
+				<radio_group name="gaze_mode">
+					<radio_item name="gaze_normal" label="通常" />
+					<radio_item name="gaze_me" label="自分だけ" />
+					<radio_item name="gaze_everyone" label="全員" />
+				</radio_group>
+				<text name="gaze_note">この版ではまだ使えません。</text>
+			</panel>
+			<panel name="head_gaze_adv">
+				<button name="btn_toggle_gaze" label="＋ 目の調整" />
+			</panel>
+			<panel name="body_gaze_adv">
+				<slider name="sl_gz_eye" label="目の振れ幅" tool_tip="目だけで向く限度（度）。0 なら頭が全部受け持ちます。" />
+				<slider name="sl_gz_head" label="頭の振れ幅" tool_tip="目が届かない分を頭が受け持つ限度（度）。0 なら目だけ。" />
+				<slider name="sl_gz_conv" label="寄り目" tool_tip="寄り目の度合い。1: 各目が自分の位置からカメラを向く（近いと寄り目）、0: 両目が平行。" />
+				<slider name="sl_gz_biasl" label="左目のずれ" tool_tip="左目を横に回します（度、+ がアバターの左向き）。メッシュの目が外を向いている時の補正に。" />
+				<slider name="sl_gz_biasr" label="右目のずれ" tool_tip="右目を横に回します（度、+ がアバターの左向き）。" />
+				<check_box name="chk_gz_fov" label="画角に合わせて届く範囲を広げる" tool_tip="広角の写真でも、画面の端の人が頭を回してレンズを見ます。" />
+				<slider name="sl_gz_headabs" label="広角の頭限度" tool_tip="広角の時の頭の限度。画角で上限が広がる時に、頭が回る最大（度）。" />
+			</panel>
+		</panel>
+	</scroll_container>
+</panel>

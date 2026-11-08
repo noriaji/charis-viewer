@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="move_floater" title="歩行／走行／飛行">
+	<string name="walk_forward_tooltip">
+		前に進む（上矢印か W を押す）
+	</string>
+	<string name="walk_back_tooltip">
+		後ろに歩く（下矢印か S を押す）
+	</string>
+	<string name="walk_left_tooltip">
+		左に水平移動（Shift + 左矢印か A を押す）
+	</string>
+	<string name="walk_right_tooltip">
+		右に水平移動（Shift + 右矢印か D を押す）
+	</string>
+	<string name="run_forward_tooltip">
+		前に走る（上矢印か W を押す）
+	</string>
+	<string name="run_back_tooltip">
+		後ろに走る（下矢印か S を押す）
+	</string>
+	<string name="run_left_tooltip">
+		左に水平移動（Shift + 左矢印か A を押す）
+	</string>
+	<string name="run_right_tooltip">
+		右に水平移動（Shift + 右矢印か D を押す）
+	</string>
+	<string name="fly_forward_tooltip">
+		前に飛ぶ（上矢印か W を押す）
+	</string>
+	<string name="fly_back_tooltip">
+		後ろに飛ぶ（下矢印か S を押す）
+	</string>
+	<string name="fly_left_tooltip">
+		左に水平移動（Shift + 左矢印か A を押す）
+	</string>
+	<string name="fly_right_tooltip">
+		右に水平移動（Shift + 右矢印か D を押す）
+	</string>
+	<string name="fly_up_tooltip">
+		上に移動（E を押す）
+	</string>
+	<string name="fly_down_tooltip">
+		下に移動（C を押す）
+	</string>
+	<string name="jump_tooltip">
+		ジャンプ（E を押す）
+	</string>
+	<string name="crouch_tooltip">
+		かがむ（C を押す）
+	</string>
+	<string name="walk_title">
+		歩く
+	</string>
+	<string name="run_title">
+		走る
+	</string>
+	<string name="fly_title">
+		飛ぶ
+	</string>
+	<panel name="panel_actions">
+		<button label="" label_selected="" name="turn left btn" tool_tip="左を向く（左矢印か A を押す）"/>
+		<joystick_slide name="move left btn" tool_tip="左に歩く（Shift + 左矢印か A を押す）"/>
+		<button label="" label_selected="" name="turn right btn" tool_tip="右を向く（右矢印か D を押す）"/>
+		<joystick_slide name="move right btn" tool_tip="右に歩く（Shift + 右矢印か D を押す）"/>
+		<joystick_turn name="forward btn" tool_tip="前に進む（上矢印か W を押す）"/>
+		<joystick_turn name="backward btn" tool_tip="後ろに歩く（下矢印か S を押す）"/>
+		<button label="" label_selected="" name="move up btn" tool_tip="上に移動（E を押す）"/>
+		<button label="" label_selected="" name="move down btn" tool_tip="下に移動（C を押す）"/>
+	</panel>
+	<panel name="panel_modes">
+		<button label="" name="mode_walk_btn" tool_tip="歩行モード"/>
+		<button label="" name="mode_run_btn" tool_tip="走行モード"/>
+		<button label="" name="mode_fly_btn" tool_tip="飛行モード"/>
+	</panel>
+	<!-- plus 微調整（plus/nudge） -->
+	<panel name="panel_nudge">
+		<text name="nudge_title">
+			微調整
+		</text>
+		<button name="nudge turn left btn" tool_tip="左へ一刻み向きを変える（Ctrl + 左矢印）。押し続けると繰り返す"/>
+		<spinner name="nudge turn step" tool_tip="向きを変える一刻みの角度（度）"/>
+		<button name="nudge turn right btn" tool_tip="右へ一刻み向きを変える（Ctrl + 右矢印）。押し続けると繰り返す"/>
+		<button name="nudge left btn" tool_tip="左へ少し動く（Ctrl + Shift + 左矢印）"/>
+		<button name="nudge forward btn" tool_tip="前へ少し動く（Ctrl + Shift + 上矢印）"/>
+		<button name="nudge back btn" tool_tip="後ろへ少し動く（Ctrl + Shift + 下矢印）"/>
+		<button name="nudge right btn" tool_tip="右へ少し動く（Ctrl + Shift + 右矢印）"/>
+		<text name="nudge_step_label">
+			距離(cm)
+		</text>
+		<spinner name="nudge step cm" tool_tip="一回の微調整で動く距離（cm）。シムは 1 回のナッジで一定の距離（約 17 cm）しか動かさないので、その整数倍に丸める（最小は 1 回分）"/>
+	</panel>
+	<!-- /plus -->
+</floater>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="設備設定">
+    <panel.string name="default_text">
+        預設
+    </panel.string>
+    <string name="name_no_device">
+        無設備
+    </string>
+    <string name="name_default_system_device">
+        預設系統設備
+    </string>
+    <plus_ps_text name="Input">
+        輸入
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        輸出
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        麥克風音量：
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="用這個控制條調整麥克風音量" />
+    <plus_ps_text name="wait_text">
+        請稍候
+    </plus_ps_text>
+</panel>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_weather_parcel" title="区画の天候">
+	<floater.string name="can_edit">この区画の説明欄に書き込みます。説明欄は誰でも読めます。「区画の天候を受け取る」をオンにした人に、この天候が見えます。</floater.string>
+	<floater.string name="cannot_edit">この区画の天候を決められるのは、持ち主か、編集を許された管理者だけです。</floater.string>
+	<floater.string name="bytes_left">説明欄の残りは [LEFT] バイトです（上限 255）。</floater.string>
+	<floater.string name="bytes_over">タグが入りません。説明欄を短くしてください（上限 255 バイト）。</floater.string>
+	<floater.string name="tag_warning">説明欄のタグに壊れた項目が [N] 個あり、無視されます。</floater.string>
+	<floater.string name="tag_unclosed">説明欄に、閉じていない「[slwx」があります。「]」で閉じるか消してから書き込んでください。</floater.string>
+	<floater.string name="confirm_apply">この区画の説明欄に、次の内容を書き込みます。
+
+[TAG]
+
+説明欄は誰でも読めます。書き込むと残りは [LEFT] バイトです。よろしいですか？</floater.string>
+	<floater.string name="confirm_clear">この区画の説明欄から、天候のタグを消します。よろしいですか？</floater.string>
+	<floater.string name="write_failed">区画の天候を書き込めませんでした。この区画を編集する権限がなくなったか、別の区画に移った可能性があります。</floater.string>
+	<slider name="rain" label="雨" tool_tip="雨の量。"/>
+	<slider name="snow" label="雪" tool_tip="雪の量。"/>
+	<slider name="wind_dir" label="風向（度・0=北）" tool_tip="風が吹いてくる方角（0=北、90=東）。"/>
+	<slider name="wind_speed" label="風速（m/s）" tool_tip="風の速さ（m/s）。"/>
+	<slider name="gust" label="突風" tool_tip="突風の出やすさ。"/>
+	<slider name="storm" label="嵐（雷）" tool_tip="雷雨。このビューワではまだ効果がありません。"/>
+	<text name="storm_note">嵐はこのビューワではまだ効果がありません（雷は後で対応）。これを使うビューワのために、タグには書き込まれます。</text>
+	<button name="apply" label="この区画の天候にする"/>
+	<button name="clear" label="この区画の天候を消す"/>
+</floater>

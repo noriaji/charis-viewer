@@ -1,0 +1,803 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Preferences > Charis (research/248 7.3, research/263, prefs-charis-tabs, research/266 prefs-frame): Charis's own
+     settings, the ones that were in the Charis menu and the switch of RLVa (plus/rlv), on sub-tabs: a plus_ps_tabs on
+     top (the official tab container, so the preferences' search opens a sub-tab with a match; each page's label and
+     tool_tip are its tab's). The class remembers the sub-tab picked in PlusPrefsCharisTab. The class
+     plus_panel_preference_charis (plus/prefscharis) is an LLPanelPreference: the controls with a control_name, on
+     every page, are saved when the floater opens and restored on Cancel; the items driven by a feature's registered
+     functions (commit_callback here; their state is read by the class through the same functions, for the page
+     shown) act at once, and so do the MCP switches and the FPS display (the class's IMMEDIATE).
+     Size (1080 base; a preferences page, research/266 3. and plus/prefscharis/prefs_tab_template.xml): 574 x 515;
+     the sub-tabs' strip 36 at the top 4, the pages under it 475 high, each a scroll_container (574) with a panel 557
+     wide (574 less the scroll bar 15 and the border 2) and as high as its rows. Headings 40, checks 30, buttons 40,
+     drop-down rows 33, notes 18, 10 between sections, 6 before buttons, 10 above and 14 below. The pages: display 241, graphics 285, controls 302, ai 130, rlva 266, other 282,
+     so none scrolls at the default size (they do in a window made shorter). Rows are 529 wide; ja lines are at
+     most 38 characters (529 less the check box, / 13). -->
+<panel
+ border="true"
+ follows="all"
+ height="515"
+ label="Charis"
+ layout="topleft"
+ left="0"
+ name="charis"
+ top="0"
+ width="574">
+  <plus_ps_box
+    name="body"
+    follows="all"
+    height="515"
+    kind="panel"
+    layout="topleft"
+    left="0"
+    top="0"
+    width="574">
+    <plus_ps_tabs
+      name="charis_tabs"
+      follows="all"
+      height="511"
+      layout="topleft"
+      left="0"
+      tab_height="36"
+      tab_position="top"
+      top="4"
+      width="574">
+      <panel
+        name="page_display"
+        background_visible="false"
+        follows="all"
+        height="475"
+        label="Display"
+        layout="topleft"
+        left="0"
+        mouse_opaque="false"
+        tool_tip="The screen, the windows and the bars."
+        top="36"
+        width="574">
+        <scroll_container
+          name="scroll_display"
+          follows="all"
+          height="475"
+          layout="topleft"
+          left="0"
+          opaque="false"
+          reserve_scroll_corner="false"
+          top="0"
+          width="574">
+          <panel
+            name="list_display"
+            background_visible="false"
+            follows="left|top"
+            height="241"
+            layout="topleft"
+            left="0"
+            mouse_opaque="false"
+            top="0"
+            width="557">
+            <plus_ps_check
+              name="c_chat_console"
+              control_name="PlusChatConsoleOn"
+              follows="left|top|right"
+              height="30"
+              label="Chat console (nearby chat at the bottom left)"
+              layout="topleft"
+              left="14"
+              tool_tip="Nearby chat at the bottom left of the screen while the chat window is closed. Also in the Communicate menu."
+              top="10"
+              width="529" />
+            <plus_ps_check
+              name="c_inv_folder_icons"
+              control_name="PlusInvFolderIcons"
+              follows="left|top|right"
+              height="30"
+              label="Colour-coded inventory folders (an icon for each kind)"
+              layout="topleft"
+              left="14"
+              tool_tip="One colour and emblem for each kind of inventory folder."
+              top="40"
+              width="529" />
+            <plus_ps_check
+              name="c_borderless"
+              control_name="PlusBorderless"
+              follows="left|top|right"
+              height="30"
+              label="Borderless fullscreen (the window fills the screen)"
+              layout="topleft"
+              left="14"
+              tool_tip="The window fills the screen without a frame. It changes at once."
+              top="70"
+              width="529" />
+            <plus_ps_check
+              name="c_shortcut_bar"
+              control_name="PlusShortcutBarShow"
+              follows="left|top|right"
+              height="30"
+              label="Shortcut bar (right-click a menu item to add it)"
+              layout="topleft"
+              left="14"
+              tool_tip="A row under the navigation bar with the menu items you picked. Right-click an item of the menu bar to add it."
+              top="100"
+              width="529" />
+            <plus_ps_check
+              name="c_fps"
+              control_name="PlusFpsCornerOn"
+              follows="left|top|right"
+              height="30"
+              label="Show the frame rate (FPS)"
+              layout="topleft"
+              left="14"
+              tool_tip="The frame rate in the status bar or a corner of the screen. It takes effect at once: Cancel does not undo it."
+              top="130"
+              width="529" />
+            <plus_ps_label
+              name="l_fps_position"
+              height="33"
+              label="Where to show it"
+              layout="topleft"
+              left="44"
+              top="160"
+              width="287" />
+            <plus_ps_combo
+              name="cb_fps_position"
+              follows="left|top"
+              height="33"
+              layout="topleft"
+              left="343"
+              tool_tip="Picking a place also turns the display on. It takes effect at once: Cancel does not undo it."
+              top="160"
+              width="200">
+              <plus_ps_combo.item
+                name="status_bar"
+                label="Status bar"
+                value="4" />
+              <plus_ps_combo.item
+                name="top_right"
+                label="Top right"
+                value="0" />
+              <plus_ps_combo.item
+                name="top_left"
+                label="Top left"
+                value="1" />
+              <plus_ps_combo.item
+                name="bottom_left"
+                label="Bottom left"
+                value="2" />
+              <plus_ps_combo.item
+                name="bottom_right"
+                label="Bottom right"
+                value="3" />
+              <plus_ps_combo.commit_callback
+                function="Plus.FpsCorner.SetPosition" />
+            </plus_ps_combo>
+            <plus_ps_check
+              name="c_ui_frame"
+              control_name="PlusUiFrame"
+              follows="left|top|right"
+              height="30"
+              label="Keep the UI smooth when slow (draw the world less often)"
+              layout="topleft"
+              left="14"
+              tool_tip="While you use the UI on a slow PC, the world is drawn less often so that the UI keeps up. On by default: turn it off if it misbehaves."
+              top="197"
+              width="529" />
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel
+        name="page_graphics"
+        background_visible="false"
+        follows="all"
+        height="475"
+        label="Graphics"
+        layout="topleft"
+        left="0"
+        mouse_opaque="false"
+        tool_tip="The graphics quality and the effects."
+        top="36"
+        width="574">
+        <scroll_container
+          name="scroll_graphics"
+          follows="all"
+          height="475"
+          layout="topleft"
+          left="0"
+          opaque="false"
+          reserve_scroll_corner="false"
+          top="0"
+          width="574">
+          <panel
+            name="list_graphics"
+            background_visible="false"
+            follows="left|top"
+            height="285"
+            layout="topleft"
+            left="0"
+            mouse_opaque="false"
+            top="0"
+            width="557">
+            <plus_ps_button
+              name="b_gl_recommended"
+              follows="left|top"
+              height="40"
+              label="Recommended for This PC"
+              layout="topleft"
+              left="14"
+              tool_tip="Sets the graphics quality recommended for this PC and turns on Beautiful snapshots. The quality levels: the Graphics tab and the photo tools' Quality tab."
+              top="10"
+              width="260">
+              <plus_ps_button.commit_callback
+                function="Plus.Presets.SetRecommended" />
+            </plus_ps_button>
+            <plus_ps_button
+              name="b_gl_advanced"
+              follows="left|top"
+              height="40"
+              label="Advanced Graphics..."
+              layout="topleft"
+              left="282"
+              tool_tip="Every graphics setting, with the Charis tab."
+              top="10"
+              width="260">
+              <plus_ps_button.commit_callback
+                function="Pref.Advanced" />
+            </plus_ps_button>
+            <plus_ps_check
+              name="c_snapshot_boost"
+              control_name="PlusSnapshotBoost"
+              follows="left|top|right"
+              height="30"
+              label="Beautiful snapshots (every enhancement while taking one)"
+              layout="topleft"
+              left="14"
+              tool_tip="For the moment a snapshot is taken only, the quality is raised to the most. Also in the photo tools' Quality tab."
+              top="56"
+              width="529" />
+            <plus_ps_check
+              name="c_cloud_shafts"
+              control_name="PlusCloudShaftsScene"
+              follows="left|top|right"
+              height="30"
+              label="Sunbeams through clouds (god rays)"
+              layout="topleft"
+              left="14"
+              tool_tip="Light shafts through the clouds in one press. The same switch as the photo tools' Sky and Weather tab and the photo screen."
+              top="86"
+              width="529" />
+            <plus_ps_check
+              name="c_derez"
+              control_name="PlusDerez"
+              follows="left|top|right"
+              height="30"
+              label="Crumble objects into glowing cubes as they vanish"
+              layout="topleft"
+              left="14"
+              tool_tip="The time and the colour: Advanced Graphics &gt; Charis &gt; Object appear / disappear effects."
+              top="116"
+              width="529" />
+            <plus_ps_button
+              name="b_objectfx"
+              follows="left|top|right"
+              height="40"
+              label="Object Appear / Disappear Effects..."
+              layout="topleft"
+              left="14"
+              tool_tip="Opens Advanced Graphics on the Charis tab at the object effects."
+              top="152"
+              width="529">
+              <plus_ps_button.commit_callback
+                function="Plus.ObjectFx.ShowPrefs" />
+            </plus_ps_button>
+            <plus_ps_label
+              name="l_dgc"
+              height="33"
+              label="DGC (GPU-written draw commands)"
+              layout="topleft"
+              left="14"
+              top="198"
+              width="317" />
+            <plus_ps_combo
+              name="cb_dgc"
+              follows="left|top"
+              height="33"
+              layout="topleft"
+              left="343"
+              tool_tip="Changes take effect at the next start. Greyed out while the environment variable LLRHI_GPU_DRIVEN_DGC decides."
+              top="198"
+              width="200">
+              <plus_ps_combo.item
+                name="auto"
+                label="Auto (NVIDIA only)"
+                value="0" />
+              <plus_ps_combo.item
+                name="on"
+                label="On"
+                value="1" />
+              <plus_ps_combo.item
+                name="off"
+                label="Off"
+                value="2" />
+              <plus_ps_combo.commit_callback
+                function="Plus.GpuDrivenDGC.Set" />
+            </plus_ps_combo>
+            <plus_ps_label
+              name="note_dgc_1"
+              height="18"
+              kind="dim"
+              label="Takes effect at the next start. Not checked on AMD or Intel:"
+              layout="topleft"
+              left="14"
+              top="235"
+              width="529" />
+            <plus_ps_label
+              name="note_dgc_2"
+              height="18"
+              kind="dim"
+              label="if something goes wrong with it on, set it back to Off."
+              layout="topleft"
+              left="14"
+              top="253"
+              width="529" />
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel
+        name="page_controls"
+        background_visible="false"
+        follows="all"
+        height="475"
+        label="Controls"
+        layout="topleft"
+        left="0"
+        mouse_opaque="false"
+        tool_tip="Windows, safe mode, chat read-aloud and the AO."
+        top="36"
+        width="574">
+        <scroll_container
+          name="scroll_controls"
+          follows="all"
+          height="475"
+          layout="topleft"
+          left="0"
+          opaque="false"
+          reserve_scroll_corner="false"
+          top="0"
+          width="574">
+          <panel
+            name="list_controls"
+            background_visible="false"
+            follows="left|top"
+            height="302"
+            layout="topleft"
+            left="0"
+            mouse_opaque="false"
+            top="0"
+            width="557">
+            <plus_ps_check
+              name="c_detach_on_drag"
+              control_name="PlusDetachAutoOnDrag"
+              follows="left|top|right"
+              height="30"
+              label="Detach windows moved out of the viewer"
+              layout="topleft"
+              left="14"
+              tool_tip="A window dragged off the main window goes into a window of its own, on any monitor. Off: each window has a detach button."
+              top="10"
+              width="529" />
+            <plus_ps_check
+              name="c_safe_mode_next"
+              follows="left|top|right"
+              height="30"
+              label="Start in safe mode next time too"
+              layout="topleft"
+              left="14"
+              tool_tip="Every start is a safe start until you turn this off. Greyed out when the file read before the start cannot be found (the log says why)."
+              top="40"
+              width="529">
+              <plus_ps_check.commit_callback
+                function="Plus.SafeMode.NextStart.Toggle" />
+            </plus_ps_check>
+            <plus_ps_label
+              name="note_safe_mode"
+              height="18"
+              kind="dim"
+              label="Holding Shift at the start: safe mode for that start only."
+              layout="topleft"
+              left="14"
+              top="70"
+              width="529" />
+            <plus_ps_header
+              name="h_chat"
+              divider="top"
+              follows="left|top|right"
+              height="40"
+              label="Chat and Sound"
+              layout="topleft"
+              left="14"
+              size="sub"
+              top="98"
+              width="529" />
+            <plus_ps_button
+              name="b_tts"
+              follows="left|top|right"
+              height="40"
+              label="Chat Read-Aloud..."
+              layout="topleft"
+              left="14"
+              tool_tip="Speaks the chat that arrives, a voice for each speaker. Opens its window."
+              top="138"
+              width="529">
+              <plus_ps_button.commit_callback
+                function="Floater.Show"
+                parameter="plus_tts" />
+            </plus_ps_button>
+            <plus_ps_header
+              name="h_ao"
+              divider="top"
+              follows="left|top|right"
+              height="40"
+              label="Animation Overrider (AO)"
+              layout="topleft"
+              left="14"
+              size="sub"
+              top="188"
+              width="529" />
+            <plus_ps_check
+              name="c_ao_enabled"
+              follows="left|top|right"
+              height="30"
+              label="AO on"
+              layout="topleft"
+              left="14"
+              tool_tip="Kept for each account: it can be changed after login. The AO window: Charis menu &gt; Animation Overrider."
+              top="228"
+              width="529">
+              <plus_ps_check.commit_callback
+                function="Plus.AO.ToggleEnabled" />
+            </plus_ps_check>
+            <plus_ps_check
+              name="c_ao_stands"
+              follows="left|top|right"
+              height="30"
+              label="Override stands"
+              layout="topleft"
+              left="14"
+              tool_tip="Kept for each account: it can be changed after login. The AO window: Charis menu &gt; Animation Overrider."
+              top="258"
+              width="529">
+              <plus_ps_check.commit_callback
+                function="Plus.AO.ToggleStands" />
+            </plus_ps_check>
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel
+        name="page_ai"
+        background_visible="false"
+        follows="all"
+        height="475"
+        label="AI"
+        layout="topleft"
+        left="0"
+        mouse_opaque="false"
+        tool_tip="AI assistants (MCP): the poser and inventory search."
+        top="36"
+        width="574">
+        <scroll_container
+          name="scroll_ai"
+          follows="all"
+          height="475"
+          layout="topleft"
+          left="0"
+          opaque="false"
+          reserve_scroll_corner="false"
+          top="0"
+          width="574">
+          <panel
+            name="list_ai"
+            background_visible="false"
+            follows="left|top"
+            height="130"
+            layout="topleft"
+            left="0"
+            mouse_opaque="false"
+            top="0"
+            width="557">
+            <plus_ps_check
+              name="c_mcp_server"
+              control_name="PlusPoserMcpEnabled"
+              follows="left|top|right"
+              height="30"
+              label="MCP server: poser and inventory (for AI assistants)"
+              layout="topleft"
+              left="14"
+              tool_tip="An endpoint on this PC only (loopback) for AI assistants: the poser and inventory search. Off by default. It takes effect at once: Cancel does not undo it."
+              top="10"
+              width="529" />
+            <plus_ps_check
+              name="c_mcp_ui_snapshot"
+              control_name="PlusPoserMcpAllowUiSnapshot"
+              follows="left|top|right"
+              height="30"
+              label="Allow snapshots with the UI (IMs and chat show)"
+              layout="topleft"
+              left="14"
+              tool_tip="Off: snapshots taken through MCP never show the UI, IMs, chat or the inventory. It takes effect at once: Cancel does not undo it."
+              top="40"
+              width="529" />
+            <plus_ps_button
+              name="b_mcp_new_token"
+              follows="left|top|right"
+              height="40"
+              label="New MCP Token"
+              layout="topleft"
+              left="14"
+              tool_tip="Makes a new token: an AI assistant with the old one has to read the new one."
+              top="76"
+              width="529">
+              <plus_ps_button.commit_callback
+                function="Plus.PoserMcp.NewToken" />
+            </plus_ps_button>
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel
+        name="page_rlva"
+        background_visible="false"
+        follows="all"
+        height="475"
+        label="RLVa"
+        layout="topleft"
+        left="0"
+        mouse_opaque="false"
+        tool_tip="RLVa (RestrainedLove API)."
+        top="36"
+        width="574">
+        <scroll_container
+          name="scroll_rlva"
+          follows="all"
+          height="475"
+          layout="topleft"
+          left="0"
+          opaque="false"
+          reserve_scroll_corner="false"
+          top="0"
+          width="574">
+          <panel
+            name="list_rlva"
+            background_visible="false"
+            follows="left|top"
+            height="266"
+            layout="topleft"
+            left="0"
+            mouse_opaque="false"
+            top="0"
+            width="557">
+            <plus_ps_header
+              name="h_rlva"
+              divider="none"
+              follows="left|top|right"
+              height="40"
+              label="RLVa (RestrainedLove API)"
+              layout="topleft"
+              left="14"
+              size="sub"
+              top="10"
+              width="529" />
+            <plus_ps_check
+              name="c_rlva"
+              control_name="RestrainedLove"
+              follows="left|top|right"
+              height="30"
+              label="Allow Remote Scripted Viewer Controls (RLVa)"
+              layout="topleft"
+              left="14"
+              tool_tip="When on, the viewer follows RLV commands from your own objects."
+              top="50"
+              width="529" />
+            <plus_ps_label
+              name="note_restart"
+              height="18"
+              kind="dim"
+              label="Takes effect at the next login (or restart, once logged in)."
+              layout="topleft"
+              left="14"
+              top="90"
+              width="529" />
+            <plus_ps_label
+              name="note_what_1"
+              height="18"
+              kind="dim"
+              label="Your own objects, and relays you wear, can restrict chat,"
+              layout="topleft"
+              left="14"
+              top="114"
+              width="529" />
+            <plus_ps_label
+              name="note_what_2"
+              height="18"
+              kind="dim"
+              label="IM, teleports, names, location, outfits and sitting."
+              layout="topleft"
+              left="14"
+              top="132"
+              width="529" />
+            <plus_ps_label
+              name="note_privacy_1"
+              height="18"
+              kind="dim"
+              label="Anyone who can IM you can learn that"
+              layout="topleft"
+              left="14"
+              top="156"
+              width="529" />
+            <plus_ps_label
+              name="note_privacy_2"
+              height="18"
+              kind="dim"
+              label="you use RLV, and which version."
+              layout="topleft"
+              left="14"
+              top="174"
+              width="529" />
+            <plus_ps_label
+              name="note_privacy_3"
+              height="18"
+              kind="dim"
+              label="Replies to RLV queries are said on a channel"
+              layout="topleft"
+              left="14"
+              top="192"
+              width="529" />
+            <plus_ps_label
+              name="note_privacy_4"
+              height="18"
+              kind="dim"
+              label="that nearby scripts can hear."
+              layout="topleft"
+              left="14"
+              top="210"
+              width="529" />
+            <plus_ps_label
+              name="note_escape"
+              height="18"
+              kind="dim"
+              label="Turning this off and restarting removes every restriction."
+              layout="topleft"
+              left="14"
+              top="234"
+              width="529" />
+          </panel>
+        </scroll_container>
+      </panel>
+      <panel
+        name="page_other"
+        background_visible="false"
+        follows="all"
+        height="475"
+        label="Other"
+        layout="topleft"
+        left="0"
+        mouse_opaque="false"
+        tool_tip="Settings from another viewer, and the development switches."
+        top="36"
+        width="574">
+        <scroll_container
+          name="scroll_other"
+          follows="all"
+          height="475"
+          layout="topleft"
+          left="0"
+          opaque="false"
+          reserve_scroll_corner="false"
+          top="0"
+          width="574">
+          <panel
+            name="list_other"
+            background_visible="false"
+            follows="left|top"
+            height="282"
+            layout="topleft"
+            left="0"
+            mouse_opaque="false"
+            top="0"
+            width="557">
+            <plus_ps_header
+              name="h_import"
+              divider="none"
+              follows="left|top|right"
+              height="40"
+              label="Settings From Another Viewer"
+              layout="topleft"
+              left="14"
+              size="sub"
+              top="10"
+              width="529" />
+            <plus_ps_button
+              name="b_import"
+              follows="left|top|right"
+              height="40"
+              label="Bring Settings Over from Another Viewer..."
+              layout="topleft"
+              left="14"
+              tool_tip="Opens the window to pick the viewer whose settings are brought over."
+              top="50"
+              width="529">
+              <plus_ps_button.commit_callback
+                function="Plus.ImportSettings.Open" />
+            </plus_ps_button>
+            <plus_ps_header
+              name="h_dev"
+              divider="top"
+              follows="left|top|right"
+              height="40"
+              label="Development"
+              layout="topleft"
+              left="14"
+              size="sub"
+              top="100"
+              width="529" />
+            <plus_ps_check
+              name="c_shadow_diag"
+              control_name="PlusShadowDiagnostics"
+              follows="left|top|right"
+              height="30"
+              label="Log shadow diagnostics"
+              layout="topleft"
+              left="14"
+              tool_tip="A line about your avatar's shadow casters every few seconds in the log."
+              top="140"
+              width="529" />
+            <plus_ps_check
+              name="c_skin_sss_debug"
+              control_name="PlusSkinSssDebug"
+              follows="left|top|right"
+              height="30"
+              label="Show the skin and eye mark"
+              layout="topleft"
+              left="14"
+              tool_tip="Magenta on skin, cyan on eyes."
+              top="170"
+              width="529" />
+            <plus_ps_button
+              name="b_comparison"
+              follows="left|top"
+              height="40"
+              label="Comparison: Official Mid-High"
+              layout="topleft"
+              left="14"
+              tool_tip="For comparing the speed with the official viewer: the Mid-High level with no Charis feature, partial OIT, the official LOD and anisotropic filtering, and a 256 m draw distance."
+              top="206"
+              width="260">
+              <plus_ps_button.commit_callback
+                function="Plus.Presets.ApplyComparison" />
+            </plus_ps_button>
+            <plus_ps_button
+              name="b_ps_gallery"
+              follows="left|top"
+              height="40"
+              label="Photo Screen Parts Sample..."
+              layout="topleft"
+              left="282"
+              tool_tip="Every part of the photo screen at the target picture's sizes."
+              top="206"
+              width="260">
+              <plus_ps_button.commit_callback
+                function="Floater.Show"
+                parameter="plus_ps_gallery" />
+            </plus_ps_button>
+            <plus_ps_label
+              name="note_comparison_on"
+              height="18"
+              kind="dim"
+              label="Now in use: the comparison settings (official Mid-High, 256 m)."
+              layout="topleft"
+              left="14"
+              top="250"
+              visible="false"
+              width="529" />
+          </panel>
+        </scroll_container>
+      </panel>
+    </plus_ps_tabs>
+  </plus_ps_box>
+</panel>

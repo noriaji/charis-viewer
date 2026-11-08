@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Protected folders (plus/protectedfolders, from Firestorm's floater_fs_protectedfolders.xml).
+  Control names and string names are used by protectedfoldersfloater.cpp.
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ save_visibility="true"
+ single_instance="true"
+ reuse_instance="true"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ min_width="220"
+ min_height="150"
+ height="350"
+ width="320"
+ layout="topleft"
+ name="plus_protected_folders"
+ title="PROTECTED FOLDERS">
+    <floater.string name="unknown_folder">(unknown folder)</floater.string>
+    <search_editor
+     follows="left|top|right"
+     height="22"
+     label="Narrow the list by name"
+     layout="topleft"
+     left="6"
+     right="-38"
+     top="24"
+     search_button_visible="false"
+     select_on_focus="true"
+     max_length_chars="256"
+     name="filter_input" />
+    <button
+     follows="top|right"
+     height="22"
+     image_hover_unselected="Toolbar_Middle_Over"
+     image_overlay="TrashItem_Off"
+     image_selected="Toolbar_Middle_Selected"
+     image_unselected="Toolbar_Middle_Off"
+     layout="topleft"
+     left_pad="4"
+     name="remove_btn"
+     tool_tip="Take the selected folders off the list (they can then be deleted and moved again)"
+     top_delta="0"
+     width="28" />
+    <scroll_list
+     column_padding="0"
+     draw_heading="true"
+     draw_stripes="true"
+     follows="all"
+     layout="topleft"
+     left="6"
+     right="-6"
+     top="52"
+     bottom="-6"
+     multi_select="true"
+     name="folder_list"
+     sort_column="0"
+     sort_ascending="true">
+        <scroll_list.columns
+         dynamic_width="true"
+         label="Folder"
+         name="name" />
+    </scroll_list>
+</floater>

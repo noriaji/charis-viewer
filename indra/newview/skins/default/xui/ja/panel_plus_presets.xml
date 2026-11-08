@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="plus_presets">
+	<panel.string name="applying">画質の設定を適用しています。数秒ほど画面が止まります（初めての組み合わせでは、シェーダーの準備に 20 秒ほどかかることがあります）。</panel.string>
+	<panel.string name="level_0">低</panel.string>
+	<panel.string name="level_1">低〜中</panel.string>
+	<panel.string name="level_2">中</panel.string>
+	<panel.string name="level_3">中〜高</panel.string>
+	<panel.string name="level_4">高</panel.string>
+	<panel.string name="level_5">高〜超高</panel.string>
+	<panel.string name="level_6">超高</panel.string>
+	<panel.string name="migrated">Charis の画質プリセットは、画質スライダー（環境設定のグラフィック、撮影ツールの「画質」タブ。低〜超高の 7 段）にまとめました。使っていたプリセットは「[LEVEL]」の段に移しました。描画距離とアバターの表示数は今のままです。</panel.string>
+	<panel.string name="migrated_custom">Charis の画質プリセットは、画質スライダー（環境設定のグラフィック、撮影ツールの「画質」タブ。低〜超高の 7 段）にまとめました。今の画質の設定はそのままです。</panel.string>
+</panel>

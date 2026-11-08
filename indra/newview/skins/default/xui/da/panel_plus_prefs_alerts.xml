@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="popups" label="Popups">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="popups_scroll">
+			<panel name="popups_scroll_panel">
+				<plus_ps_text name="tell_me_label">
+					Vis mig når:
+				</plus_ps_text>
+				<plus_ps_check_compat name="friends_online_notify_checkbox" label="Når mine venner logger på eller af" />
+				<plus_ps_text name="show_label">
+					Vis altid:
+				</plus_ps_text>
+				<plus_ps_text name="dont_show_label">
+					Vis aldrig:
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

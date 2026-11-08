@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="page_camera">
+	<scroll_container name="scroll_camera">
+		<panel name="content_camera">
+			<panel name="sec_cam_roll">
+				<button name="btn_roll_reset" label="水平に戻す" tool_tip="カメラの傾きをなくします（下の「傾き」が 0 に戻ります）" />
+			</panel>
+			<panel name="body_camera">
+				<button name="btn_cam_temp_save" label="一時保存" tool_tip="今のカメラを 1 件だけ覚えます（上書き）" />
+				<button name="btn_cam_temp_go" label="一時位置へ戻る" tool_tip="一時保存したカメラへ戻ります" />
+				<line_editor name="ed_cam_name" label="名前（未入力なら番号）" />
+				<button name="btn_cam_save" label="保存" tool_tip="この名前で今のカメラを覚えます" />
+				<text name="cam_region">
+						リージョン
+					</text>
+				<scroll_list name="list_cam" tool_tip="ダブルクリックでその位置へ。キー 1〜8 で上から 8 件へ移れます。" />
+				<button name="btn_cam_go" label="移動" />
+				<button name="btn_cam_rename" label="名前変更" tool_tip="選んだ項目を、上の欄の名前にします" />
+				<button name="btn_cam_delete" label="削除" />
+				<check_box name="chk_cam_smooth" label="なめらかに移動する（オフなら瞬間移動）" />
+			</panel>
+		</panel>
+	</scroll_container>
+</panel>

@@ -1,0 +1,597 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The photo tools' page "home" (floater_plus_photo_tools.xml, research/265).
+  Home: the presets, "Adjust" (a column of a few rows of other tabs), the sky and water buttons and the
+  favourites as buttons, the shutter and Stop the World, the photo's size, the level of detail, the guide, and the
+  settings starred (a column). The blocks are run by phototools_blocks.cpp (the sky and water ones by
+  phototools_env.cpp); pt-ui-blocks makes them over to psui.
+  The parts of content_home are put under each other by the code in the order of their tops (the
+  hidden ones take no room); a block keeps its height, a column (rows_*) gets the height of its rows.
+  Blocks are 583 wide at 10, columns 597 at 0 (the content: the page less the scroll bar).
+-->
+<panel
+ name="page_home"
+ background_visible="false"
+ follows="all"
+ height="688"
+ layout="topleft"
+ mouse_opaque="false"
+ width="612">
+    <scroll_container
+     name="scroll_home"
+     border_visible="false"
+     follows="all"
+     height="688"
+     ignore_arrow_keys="true"
+     layout="topleft"
+     left="0"
+     opaque="false"
+     reserve_scroll_corner="false"
+     top="0"
+     width="612">
+        <panel
+         name="content_home"
+         background_visible="false"
+         follows="left|top"
+         height="688"
+         layout="topleft"
+         left="0"
+         mouse_opaque="false"
+         top="0"
+         width="597">
+            <panel
+             name="sec_preset"
+             background_visible="false"
+             follows="left|top"
+             height="130"
+             layout="topleft"
+             left="10"
+             top="0"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_preset"
+                 tool_tip="Each preset sets several rows at once: Brightness, Color Tone, Light Direction, Shadow Depth, Contrast, Glare and Background Blur. Autumn Alley also sets a look, its screen effects and the softness of the shadows (another preset puts them back; Undo All goes back to the values the photo tools had when they were opened). The change is subtle: hold Compare to see before and after, then fine-tune those rows."
+                 width="300">
+                    Presets
+                </text>
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Portrait"
+                 layout="topleft"
+                 left="4"
+                 top="20"
+                 width="148"
+                 font="SansSerifSmall"
+                 is_toggle="true"
+                 tab_stop="false"
+                 name="preset_portrait"
+                 tool_tip="Soft light for faces: Light Direction 30 (the sun a little beside the camera), lighter shadows, a little less contrast, a slightly warm tone and a strong Background Blur (with Depth of Field on). For close-ups and upper-body shots." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Backlight"
+                 layout="topleft"
+                 left="156"
+                 top="20"
+                 width="148"
+                 font="SansSerifSmall"
+                 is_toggle="true"
+                 tab_stop="false"
+                 name="preset_backlight"
+                 tool_tip="Turns the sun in front of the camera (Light Direction 180), behind the subject, so its outline shines; brighter, with lighter shadows so the face is not lost, and strong Glare. Best under a low sun: the sun keeps its height." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Sunset"
+                 layout="topleft"
+                 left="308"
+                 top="20"
+                 width="148"
+                 font="SansSerifSmall"
+                 is_toggle="true"
+                 tab_stop="false"
+                 name="preset_sunset"
+                 tool_tip="A strong warm, orange tone, the sun turned behind the subject at an angle (Light Direction 150), a little more contrast and darker shadows, medium Glare. The sun keeps its height: choose an evening sky first." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Night"
+                 layout="topleft"
+                 left="4"
+                 top="46"
+                 width="148"
+                 font="SansSerifSmall"
+                 is_toggle="true"
+                 tab_stop="false"
+                 name="preset_night"
+                 tool_tip="A cool, bluish tone, brighter so the dark parts stay visible, more contrast and darker shadows, and strong Glare so lamps and signs glow. The light direction is left alone: choose a night sky first." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Studio"
+                 layout="topleft"
+                 left="156"
+                 top="46"
+                 width="148"
+                 font="SansSerifSmall"
+                 is_toggle="true"
+                 tab_stop="false"
+                 name="preset_studio"
+                 tool_tip="No color tone (your own look comes back), no Glare, and the sun from the front at an angle (Light Direction 60) for clear shapes; the strongest Background Blur (with Depth of Field on). For showing outfits and items." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Natural"
+                 layout="topleft"
+                 left="308"
+                 top="46"
+                 width="148"
+                 font="SansSerifSmall"
+                 is_toggle="true"
+                 tab_stop="false"
+                 name="preset_natural"
+                 tool_tip="Brightness, shadows and contrast back to the standard, no color tone, weak Glare; the light direction is left alone. A plain base after trying the others, or for a picture as the world looks." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Autumn Alley"
+                 layout="topleft"
+                 left="4"
+                 top="72"
+                 width="148"
+                 font="SansSerifSmall"
+                 is_toggle="true"
+                 tab_stop="false"
+                 name="preset_autumn"
+                 tool_tip="The Autumn Alley look (deep reds and oranges) with Clarity 35 and Texture 20, weak halation and vignette, slightly darker shadows and a little more contrast, weak Glare, and shadow edges soft enough for dappled light. The light direction and the quality (such as the shadow distance) are left alone: choose a low afternoon sky from the sky list first. Another preset puts the look and its effects back; Undo All goes back to the values the photo tools had when they were opened." />
+                <combo_box
+                 follows="left|top"
+                 height="22"
+                 label="My Presets"
+                 layout="topleft"
+                 left="4"
+                 top="102"
+                 width="150"
+                 name="my_preset_list"
+                 tool_tip="Your own presets: choose one to put it on" />
+                <line_editor
+                 follows="left|top"
+                 height="22"
+                 label="Name"
+                 layout="topleft"
+                 left="158"
+                 top="102"
+                 width="140"
+                 max_length_chars="40"
+                 name="ed_my_name"
+                 tool_tip="The name to save under (empty: a number is given). Saving under a name already in the list replaces that preset." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Save Mine"
+                 layout="topleft"
+                 left="302"
+                 top="102"
+                 width="90"
+                 name="btn_my_save"
+                 tool_tip="Keep the settings now as a preset with this name" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Delete"
+                 layout="topleft"
+                 left="396"
+                 top="102"
+                 width="60"
+                 name="btn_my_delete"
+                 tool_tip="Delete the preset chosen in the list" />
+            </panel>
+            <panel name="rows_easy" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="130" width="597" />
+            <panel
+             name="sec_home_sky"
+             background_visible="false"
+             follows="left|top"
+             height="58"
+             layout="topleft"
+             left="10"
+             top="131"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="2"
+                 name="title_home_sky"
+                 width="300">
+                    Sky
+                </text>
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="&lt;"
+                 layout="topleft"
+                 left="4"
+                 top="22"
+                 width="30"
+                 name="btn_home_sky_prev"
+                 tool_tip="The previous sky in the folder" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="&gt;"
+                 layout="topleft"
+                 left="38"
+                 top="22"
+                 width="30"
+                 name="btn_home_sky_next"
+                 tool_tip="The next sky in the folder" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Back to the Land's Sky"
+                 layout="topleft"
+                 left="72"
+                 top="22"
+                 width="200"
+                 name="btn_home_sky_land"
+                 tool_tip="Use the sky the land has (the water stays as it is)" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Choose..."
+                 layout="topleft"
+                 left="276"
+                 top="22"
+                 width="120"
+                 name="btn_home_sky_open"
+                 tool_tip="Open the lists of skies and water settings (Sky &amp; Weather)" />
+            </panel>
+            <panel
+             name="sec_home_chips"
+             background_visible="false"
+             follows="left|top"
+             height="30"
+             layout="topleft"
+             left="10"
+             top="189"
+             width="583">
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="4"
+                 top="4"
+                 width="72"
+                 visible="false"
+                 name="sky_chip_0" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="79"
+                 top="4"
+                 width="72"
+                 visible="false"
+                 name="sky_chip_1" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="154"
+                 top="4"
+                 width="72"
+                 visible="false"
+                 name="sky_chip_2" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="229"
+                 top="4"
+                 width="72"
+                 visible="false"
+                 name="sky_chip_3" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="304"
+                 top="4"
+                 width="72"
+                 visible="false"
+                 name="sky_chip_4" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="379"
+                 top="4"
+                 width="72"
+                 visible="false"
+                 name="sky_chip_5" />
+            </panel>
+            <panel
+             name="sec_home_water"
+             background_visible="false"
+             follows="left|top"
+             height="30"
+             layout="topleft"
+             left="10"
+             top="219"
+             width="583">
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 font="SansSerifBold"
+                 height="16"
+                 layout="topleft"
+                 left="6"
+                 top="8"
+                 name="title_home_water"
+                 width="46">
+                    Water
+                </text>
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="&lt;"
+                 layout="topleft"
+                 left="54"
+                 top="4"
+                 width="30"
+                 name="btn_home_water_prev"
+                 tool_tip="The previous water in the folder" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="&gt;"
+                 layout="topleft"
+                 left="86"
+                 top="4"
+                 width="30"
+                 name="btn_home_water_next"
+                 tool_tip="The next water in the folder" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Land's Water"
+                 layout="topleft"
+                 left="118"
+                 top="4"
+                 width="82"
+                 name="btn_home_water_land"
+                 tool_tip="Use the water the land has (the sky stays as it is)" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="204"
+                 top="4"
+                 width="62"
+                 visible="false"
+                 name="water_chip_0" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="268"
+                 top="4"
+                 width="62"
+                 visible="false"
+                 name="water_chip_1" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="332"
+                 top="4"
+                 width="62"
+                 visible="false"
+                 name="water_chip_2" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="-"
+                 layout="topleft"
+                 left="396"
+                 top="4"
+                 width="62"
+                 visible="false"
+                 name="water_chip_3" />
+            </panel>
+            <panel
+             name="sec_home_actions"
+             background_visible="false"
+             follows="left|top"
+             height="82"
+             layout="topleft"
+             left="10"
+             top="249"
+             width="583">
+                <!-- two rows: the photo and the freeze (wide enough for "Resume the World (stopped N s)"),
+                     then the camera positions and the freeze's check box under it -->
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Take Photo"
+                 layout="topleft"
+                 left="4"
+                 top="6"
+                 width="150"
+                 name="btn_home_shoot"
+                 tool_tip="Take the photo now, at the size and shape set below, and save it. This window stays."
+                 font="SansSerifBold" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Stop the World"
+                 layout="topleft"
+                 left="158"
+                 top="6"
+                 width="300"
+                 name="btn_freeze"
+                 tool_tip="Stop avatars, objects, particles, clouds and water where they are; press again to go on. The camera, the sky and every setting here keep working. Avatar poses cannot be adjusted meanwhile. The world goes on by itself when this window is closed or at a teleport." />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Camera Positions..."
+                 layout="topleft"
+                 left="4"
+                 top="30"
+                 width="150"
+                 name="btn_home_camera"
+                 tool_tip="Go to the Camera tab" />
+                <button
+                 follows="left|top"
+                 height="22"
+                 label="Photo Screen..."
+                 layout="topleft"
+                 left="4"
+                 top="56"
+                 width="150"
+                 name="btn_home_photoscreen"
+                 tool_tip="Go into the photo screen: the whole window for taking pictures. The windows and bars go away and come back when you leave." />
+                <check_box
+                 control_name="PlusWorldFreezeAppearance"
+                 follows="left|top"
+                 height="16"
+                 label="Also stop lights and colors (lightning, blinking)"
+                 layout="topleft"
+                 left="158"
+                 top="33"
+                 width="300"
+                 name="chk_freeze_appearance"
+                 tool_tip="While the world is stopped, lights, colors, glow and textures that a script switches (a lightning flash, a blinking sign) stay as they were at that moment, and catch up when the world goes on. New objects, avatars and their outfits, and what you are editing are not held. Off: only movement stops." />
+            </panel>
+            <panel
+             name="sec_home_shot"
+             background_visible="false"
+             follows="left|top"
+             height="62"
+             layout="topleft"
+             left="10"
+             top="331"
+             width="583">
+                <combo_box
+                 follows="left|top"
+                 height="22"
+                 layout="topleft"
+                 left="4"
+                 top="2"
+                 width="226"
+                 name="home_shot_size"
+                 tool_tip="How big the photo is (the long side)" />
+                <combo_box
+                 follows="left|top"
+                 height="22"
+                 layout="topleft"
+                 left="234"
+                 top="2"
+                 width="222"
+                 name="home_shot_aspect"
+                 tool_tip="The shape of the photo" />
+                <text
+                 type="string"
+                 length="1"
+                 word_wrap="true"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="32"
+                 layout="topleft"
+                 left="8"
+                 right="-6"
+                 top="28"
+                 name="home_shot_info">
+                    -
+                </text>
+            </panel>
+            <panel
+             name="sec_home_lod"
+             background_visible="false"
+             follows="left|top"
+             height="44"
+             layout="topleft"
+             left="10"
+             top="393"
+             width="583">
+                <check_box
+                 follows="left|top|right"
+                 height="16"
+                 label="Keep the detail when the camera moves away"
+                 layout="topleft"
+                 left="6"
+                 right="-6"
+                 top="4"
+                 name="chk_home_lod"
+                 tool_tip="Turns off the level of detail by distance (RenderDynamicLOD): things keep the detail they have close up, so they do not fall apart when the camera is pulled back. Back to normal when it is off." />
+                <text
+                 type="string"
+                 length="1"
+                 follows="left|top|right"
+                 font="SansSerifSmall"
+                 height="16"
+                 layout="topleft"
+                 left="24"
+                 right="-6"
+                 top="22"
+                 name="lod_note">
+                    Everything is drawn in full detail, so it can be slower.
+                </text>
+            </panel>
+            <panel
+             name="sec_home_guide"
+             background_visible="false"
+             follows="left|top"
+             height="30"
+             layout="topleft"
+             left="10"
+             top="437"
+             width="583">
+                <button
+                 follows="left|top"
+                 height="22"
+                 is_toggle="true"
+                 label="Guide"
+                 layout="topleft"
+                 left="4"
+                 top="4"
+                 width="100"
+                 name="btn_home_guide"
+                 tool_tip="Show lines over the screen to help the composition, and the frame of the photo when its shape is not the window's. They are not in the picture." />
+                <combo_box
+                 follows="left|top"
+                 height="22"
+                 layout="topleft"
+                 left="108"
+                 top="4"
+                 width="200"
+                 name="home_guide_kind"
+                 tool_tip="The lines of the guide" />
+            </panel>
+            <panel name="rows_pins" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="467" width="597" />
+        </panel>
+    </scroll_container>
+</panel>

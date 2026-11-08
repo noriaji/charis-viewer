@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="floater_about" title="[CAPITALIZED_APP_NAME]について">
+	<!-- plus: the license notice above the list on the Licenses tab (llfloaterabout.cpp; research/123 M2) -->
+	<string name="charis_license_header">Charis Viewer は GNU Lesser General Public License 2.1（LGPL 2.1）のもとで配布しているフリーソフトウェアです。ソースコードは Charis Viewer の配布ページで公開しています。同梱のライブラリのライセンスは、ビューワのフォルダの licenses.txt と licenses-charis.txt にあります。</string>
+	<!-- /plus -->
+	<tab_container name="about_tab">
+		<panel label="情報" name="support_panel">
+			<button label="コピー" name="copy_btn"/>
+			<button label="更新の確認" name="update_btn"/>
+		</panel>
+		<panel label="クレジット" name="credits_panel">
+			<!-- plus tpv-fix1: Charis のクレジットと、もとにした Second Life ビューワ（research/227 F3b） -->
+			<text name="charis_credits">
+				Charis Viewer は有志の開発者が作っています。次のプロジェクトのコードと素材を使っています: Firestorm Viewer（The Phoenix Firestorm Project）、Black Dragon Viewer（NiranV Dean）、Intel XeGTAO、AMD FidelityFX Super Resolution 1.0、Stellarium（星座の絵とデータ）、Lucide のアイコン、ほか licenses-charis.txt に載せたもの。
+			</text>
+			<text name="linden_intro">
+				Charis Viewer は Linden Lab の Second Life ビューワをもとにしています。オープンソースで貢献してくださった方々:
+			</text>
+			<!-- /plus -->
+			<text_editor name="contrib_names">
+				Dummy Nameは実行時間に置き換えられます。
+			</text_editor>
+		</panel>
+		<panel label="ライセンス" name="licenses_panel">
+			<!-- plus: Havok and jpeg2000 (KDU) lines removed, not in this build (research/123 M2). This text shows only without packages-info.txt; llfloaterabout.cpp puts charis_license_header above either -->
+			<text_editor name="licenses_editor">
+				3Dconnexion SDK Copyright (C) 1992-2009 3Dconnexion
+APR Copyright (C) 2011 The Apache Software Foundation
+Collada DOM Copyright 2006 Sony Computer Entertainment Inc.
+cURL Copyright (C) 1996-2010, Daniel Stenberg, (daniel@haxx.se)
+DBus/dbus-glib Copyright (C) 2002, 2003  CodeFactory AB / Copyright (C) 2003, 2004 Red Hat, Inc.
+expat Copyright (C) 1998, 1999, 2000 Thai Open Source Software Center Ltd.
+FreeType Copyright (C) 1996-2002, 2006 David Turner, Robert Wilhelm, and Werner Lemberg.
+GL Copyright (C) 1999-2004 Brian Paul.
+google-perftools Copyright (c) 2005, Google Inc.
+jpeglib Copyright (C) 1991-1998, Thomas G. Lane.
+luau Copyright (c) 1994–2019 Lua.org, PUC-Rio / Copyright (c) 2019-2024 Roblox Corporation
+meshoptimizer Copyright (c) 2016-2021 Arseny Kapoulkine
+ogg/vorbis Copyright (C) 2002, Xiphophorus
+OpenSSL Copyright (C) 1998-2008 The OpenSSL Project.
+PCRE Copyright (c) 1997-2012 University of Cambridge
+SDL Copyright (C) 1997, 1998, 1999, 2000, 2001, 2002 Sam Lantinga
+SSLeay Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+xxHash Copyright (C) 2012-2020 Yann Collet.
+zlib Copyright (C) 1995-2012 Jean-loup Gailly and Mark Adler.
+
+このソフトウェアには、NVIDIA Corporationによるソースコードが含まれます。
+
+無断複写・複製・転載を禁じます。詳細については licenses.txt をご参照ください。
+
+ボイスチャットのオーディオコーディング：Polycom(R) Siren14(TM) (ITU-T Rec.G.722.1 Annex C)
+			</text_editor>
+			<!-- /plus -->
+		</panel>
+	</tab_container>
+</floater>

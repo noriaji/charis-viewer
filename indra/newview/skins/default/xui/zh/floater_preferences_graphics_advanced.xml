@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="prefs_graphics_advanced" title="進階顯像偏好設定">
+	<!-- plus: gfx-tabs (research/238). The rows sit in the tabs of en, wrapped the same way
+	     (tab_container / panel / scroll_container / panel), or the translation does not apply. -->
+	<tab_container name="graphics_tabs">
+		<panel label="通用" name="General">
+			<scroll_container name="general_scroll">
+				<panel name="general_scroll_panel">
+					<text name="ShadersText">
+						著色器
+					</text>
+					<check_box initial_value="true" label="清澈透明的水" name="TransparentWater"/>
+					<check_box initial_value="true" label="環境光遮蔽" name="UseSSAO"/>
+					<text name="RenderShadowDetailText">
+						陰影：
+					</text>
+					<combo_box name="ShadowDetail">
+						<combo_box.item label="無" name="0"/>
+						<combo_box.item label="日 / 月" name="1"/>
+						<combo_box.item label="日 / 月 + 投影物" name="2"/>
+					</combo_box>
+					<slider label="描繪距離：" name="DrawDistance"/>
+					<text name="DrawDistanceMeterText2">
+						公尺
+					</text>
+					<slider label="最大粒子效果數量：" name="MaxParticleCount"/>
+					<text name="AvatarText">
+						化身
+					</text>
+					<slider label="最大複雜度：" name="IndirectMaxComplexity" tool_tip="控制在何時機下讓複雜化身呈像為「JellyDoll」"/>
+					<text name="IndirectMaxComplexityText">
+						0
+					</text>
+					<slider label="非假冒化身數目上限：" name="IndirectMaxNonImpostors"/>
+					<text name="IndirectMaxNonImpostorsText">
+						0
+					</text>
+					<slider label="身體物理：" name="AvatarPhysicsDetail"/>
+					<text name="AvatarPhysicsDetailText">
+						低
+					</text>
+					<text name="MeshText">
+						細節層次 (LOD) 距離細節
+					</text>
+					<slider label="物件：" name="ObjectMeshDetail"/>
+					<text name="ObjectMeshDetailText">
+						低
+					</text>
+					<slider label="彈性幾何元件：" name="FlexibleMeshDetail"/>
+					<text name="FlexibleMeshDetailText">
+						低
+					</text>
+					<slider label="樹木：" name="TreeMeshDetail"/>
+					<text name="TreeMeshDetailText">
+						低
+					</text>
+					<slider label="化身:" name="AvatarMeshDetail"/>
+					<text name="AvatarMeshDetailText">
+						低
+					</text>
+					<slider label="地形:" name="TerrainMeshDetail"/>
+					<text name="TerrainMeshDetailText">
+						低
+					</text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="硬體設定" name="Hardware Settings">
+			<scroll_container name="hardware_scroll">
+				<panel name="hardware_scroll_panel">
+					<check_box initial_value="true" label="啟用材質壓縮（須重新啟動）" name="texture compression" tool_tip="在影片記憶體中壓縮材質，讓高解析度材質可以載入，但色彩品質稍差。"/>
+					<text name="antialiasing label">
+						消除鋸齒：
+					</text>
+					<combo_box label="消除鋸齒" name="fsaa">
+						<combo_box.item label="已停用" name="FSAADisabled"/>
+					</combo_box>
+					<text name="antialiasing restart">
+						（須重新啟動）
+					</text>
+					<check_box initial_value="true" label="啟用HiDPI顯示支援（須重新啟動）" name="use HiDPI" tool_tip="啓用OpenGL高解析度繪圖。"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="彩現" name="Rendering">
+			<scroll_container name="rendering_scroll">
+				<panel name="rendering_scroll_panel">
+					<text name="Texture Rendering">
+						紋理彩現
+					</text>
+					<text name="Miscellaneous Rendering">
+						雜項彩現
+					</text>
+					<slider label="後處理品質：" name="RenderPostProcess"/>
+					<text name="PostProcessText">
+						低
+					</text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="景深" name="DOF panel">
+			<scroll_container name="dof_scroll">
+				<panel name="dof_scroll_panel">
+					<check_box initial_value="true" label="啟用景深 (除了相機的焦點外，使視圖模糊)" name="UseDoF"/>
+					<check_box name="RenderDepthOfFieldInEditMode" label="在編輯物件或地形時啟用"/>
+					<slider name="CameraFNum" label="光圈數：" tool_tip="相機光圈數用於景深效果"/>
+					<slider name="CameraFocal" label="焦距：" tool_tip="用於景深效果的相機焦距（以毫米為單位）"/>
+					<slider name="Camera FOV" label="視場角：" tool_tip="相機垂直視場角（以度為單位）"/>
+					<slider name="CameraFocusTrans" label="轉換動態性：" tool_tip="相機移動時修改景深效果所需的時間"/>
+					<slider name="CameraDoFResScale" label="模糊彩現品質：" tool_tip="定義模糊彩現的品質和彩現效能。（越高的值品質越好，效能越低）"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Charis" name="Charis panel">
+			<scroll_container name="charis_scroll">
+				<panel name="charis_scroll_panel">
+				</panel>
+			</scroll_container>
+		</panel>
+	</tab_container>
+	<!-- /plus -->
+	<button label="重設為我們建議的設定" name="Defaults"/>
+	<button label="確定" label_selected="確定" name="OK"/>
+	<button label="取消" label_selected="取消" name="Cancel"/>
+	<check_box label="RenderAvatarMaxComplexity" name="RenderAvatarMaxComplexity"/>
+	<check_box label="RenderAvatarMaxNonImpostors" name="RenderAvatarMaxNonImpostors"/>
+</floater>

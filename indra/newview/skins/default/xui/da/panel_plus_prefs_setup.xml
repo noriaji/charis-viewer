@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="Input panel" label="Opsætning">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="setup_scroll">
+			<panel name="setup_scroll_panel">
+				<plus_ps_text name="Network:">
+					Netværk:
+				</plus_ps_text>
+				<plus_ps_text name="Maximum bandwidth">
+					Maksimum båndbredde
+				</plus_ps_text>
+				<plus_ps_text name="text_box2">
+					kbps
+				</plus_ps_text>
+				<plus_ps_check_compat name="connection_port_enabled" label="Speciel port" />
+				<plus_ps_spinner name="connection_port" label="Port nummer:" />
+				<plus_ps_text name="Web:">
+					Web:
+				</plus_ps_text>
+				<plus_ps_radio name="preferred_browser_behavior">
+					<radio_item name="internal" label="Benyt den indbyggede browser" tool_tip="Brug den indbyggede web browser til hjælp, web links m.v. Denne browser åbner et nyt vindue i [APP_NAME]." />
+					<radio_item name="external" label="Benyt min browser(IE, Firefox, Safari)" tool_tip="Brug systemets standard web browser til hjælp, web links, m.v. Ikke anbefalet hvis du kører i fuld-skærm." />
+				</plus_ps_radio>
+				<plus_ps_check_compat name="browser_javascript_enabled" label="Aktivér Javascript" />
+				<plus_ps_text name="Software updates:">
+					Software opdateringer:
+				</plus_ps_text>
+				<plus_ps_combo name="updater_service_combobox">
+					<plus_ps_combo.item name="Install_automatically" label="Installér automatisk" />
+					<plus_ps_combo.item name="Install_manual" label="Hent og installér opdateringer manuelt" />
+				</plus_ps_combo>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

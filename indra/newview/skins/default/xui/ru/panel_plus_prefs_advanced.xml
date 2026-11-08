@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="advanced" label="Дополнительно">
+	<panel.string name="aspect_ratio_text">
+		[NUM]:[DEN]
+	</panel.string>
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="advanced_scroll">
+			<panel name="advanced_scroll_panel">
+				<plus_ps_spinner name="cachesizespinner" label="Размер кэша (256 - 9984 Мбайт)" />
+				<plus_ps_text name="text_box5">
+					МБ
+				</plus_ps_text>
+				<plus_ps_button_compat name="clear_cache" label="Очистить кэш" label_selected="Очистить кэш" />
+				<plus_ps_text name="Cache location">
+					Расположение кэша:
+				</plus_ps_text>
+				<plus_ps_button_compat name="set_cache" label="Обзор" label_selected="Обзор" />
+				<plus_ps_button_compat name="default_cache_location" label="Расположение по умолчанию" label_selected="Расположение по умолчанию" />
+				<plus_ps_text name="UI Size:">
+					Интерфейс:
+				</plus_ps_text>
+				<plus_ps_check_compat name="allow_multiple_viewer_check" label="Разрешить работу нескольких клиентов" />
+				<plus_ps_check_compat name="show_grid_selection_check" label="Выбор сетки при входе" />
+				<plus_ps_check_compat name="show_advanced_menu_check" label="Показывать расширенное меню" />
+				<plus_ps_check_compat name="show_develop_menu_check" label="Показать меню разработчика" />
+				<plus_ps_button_compat name="default_creation_permissions" label="Стандартные разрешения на создание" />
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

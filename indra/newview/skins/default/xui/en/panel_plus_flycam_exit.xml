@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!--
+  "Leave the flycam" at the bottom middle while the flycam is on (plus/flycammouse/flycamexit.cpp). The same
+  button as the official Stand / Stop Flying (panel_stand_stop_flying.xml: height 25, the button 19 high at
+  top 2), in the same container, to their right when one of them shows too. [KEY]: one key of the flycam's
+  toggle_flycam (leaveKey(): one with Alt or Ctrl first, as the photo screen's line names it; 200 wide for
+  "Alt+Shift+F"). The look_* strings are the how-to's first sentence (notification PlusFlycamHint), by
+  PlusFlycamMouseMode.
+-->
+<panel
+ height="25"
+ layout="topleft"
+ name="panel_plus_flycam_exit"
+ mouse_opaque="false"
+ visible="true"
+ width="220">
+    <string name="look_0">The arrow keys turn the camera.</string>
+    <string name="look_1">Hold the right mouse button and move the mouse to look around.</string>
+    <string name="look_2">Move the mouse to look around (hold Alt for the cursor).</string>
+    <button
+     follows="left|bottom"
+     height="19"
+     label="Leave Flycam ([KEY])"
+     layout="topleft"
+     left="10"
+     name="leave_btn"
+     tool_tip="Leave the flycam: the camera goes back to your avatar."
+     top="2"
+     visible="false"
+     width="200" />
+</panel>

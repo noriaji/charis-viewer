@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_sound.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="Preference Media panel" label="Sons">
+    <panel.string name="middle_mouse">
+        Bouton central de la souris
+    </panel.string>
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="sound_scroll">
+            <panel name="sound_scroll_panel">
+                <plus_ps_slider_compat name="System Volume" label="Volume principal" />
+                <plus_ps_slider_compat name="UI Volume" label="Boutons" />
+                <plus_ps_slider_compat name="Wind Volume" label="Ambiant" />
+                <plus_ps_slider_compat name="SFX Volume" label="Effets sonores" />
+                <plus_ps_slider_compat name="Music Volume" label="Flux musical" />
+                <plus_ps_check_compat name="enable_music" label="Activé" />
+                <plus_ps_slider_compat name="Media Volume" label="Média" />
+                <plus_ps_check_compat name="enable_media" label="Activé" />
+                <plus_ps_slider_compat name="Voice Volume" label="Chat vocal" />
+                <plus_ps_check_compat name="enable_voice_check" label="Activé" />
+                <plus_ps_combo name="media_auto_play_combo">
+                    <item name="autoplay_disabled" label="Non" />
+                    <item name="autoplay_enabled" label="Oui" />
+                    <item name="autoplay_ask" label="Demander" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="media_show_on_others_btn" label="Lire le média attaché aux autres avatars" tool_tip="Décocher pour masquer le média attaché aux autres avatars près de vous." />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

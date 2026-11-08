@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="panel_gltf_material">
+	<check_box name="double sided" label="両面"/>
+	<panel name="base_color_texture_pnl">
+		<text name="base_color_lbl">
+			ベースカラー：
+		</text>
+		<texture_picker name="base_color_texture" tool_tip="ベースカラーのマップ。アルファチャンネルは任意で、透明度に使います。"/>
+		<text name="base_color_upload_fee">
+			アップロード料金なし
+		</text>
+		<text name="base_color_tint_lbl">
+			色合い
+		</text>
+		<text name="base_color_transparency_lbl">
+			アルファ
+		</text>
+		<text name="alpha_mode_lbl">
+			アルファモード
+		</text>
+		<combo_box name="alpha mode">
+			<combo_box.item name="None" label="不透明"/>
+			<combo_box.item name="Alpha blending" label="ブレンド"/>
+			<combo_box.item name="Alpha masking" label="マスク"/>
+		</combo_box>
+		<text name="alpha_cutoff_lbl">
+			アルファのしきい値
+		</text>
+	</panel>
+	<panel name="metallic_texture_pnl">
+		<text name="metallic_roughness_lbl">
+			メタリック・ラフネス：
+		</text>
+		<texture_picker name="metallic_roughness_texture" tool_tip="GLTF のメタリック・ラフネスのマップ（オクルージョンは任意）。赤チャンネルがオクルージョン、緑がラフネス、青がメタリックです。"/>
+		<text name="metallic_upload_fee">
+			アップロード料金なし
+		</text>
+		<text name="metallic_factor_lbl">
+			メタリックの係数
+		</text>
+		<text name="roughness_factor_lbl">
+			ラフネスの係数
+		</text>
+	</panel>
+	<panel name="emissive_texture_pnl">
+		<text name="emissive_lbl">
+			発光：
+		</text>
+		<text name="emissive_upload_fee">
+			アップロード料金なし
+		</text>
+		<text name="emissive_tint_lbl">
+			色合い
+		</text>
+	</panel>
+	<panel name="normal_texture_pnl">
+		<text name="normal_lbl">
+			ノーマル：
+		</text>
+		<text name="normal_upload_fee">
+			アップロード料金なし
+		</text>
+	</panel>
+</panel>

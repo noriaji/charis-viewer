@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_voice.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="voice_panel">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="voice_scroll">
+            <panel name="voice_scroll_panel">
+                <plus_ps_slider_compat name="Voice Volume" label="Chat de voz" />
+                <plus_ps_check_compat name="enable_voice_check" label="Activado" />
+                <plus_ps_text name="Listen from">
+                    Oír desde:
+                </plus_ps_text>
+                <plus_ps_check_compat name="enable_lip_sync" label="Al hablar, mover los labios del avatar" />
+                <plus_ps_check_compat name="push_to_talk_toggle_check" label="Cambiar entre hablar on/off cuando pulse:" tool_tip="En el modo 'un toque', pulsa y suelta el botón UNA VEZ para activar o desactivar el micrófono. Si no estás en el modo 'un toque', el micrófono sólo recogerá tu voz mientras mantengas pulsado el botón." />
+                <plus_ps_check_compat name="gesture_audio_play_btn" label="Reproducir sonidos de los gestos" tool_tip="Selecciona esta opción para escuchar los sonidos de los gestos" />
+                <plus_ps_button_compat name="device_settings_btn" label="Dispositivos de entrada y salida" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

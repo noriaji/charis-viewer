@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_move.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="move_panel" label="Ruch">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="move_scroll">
+            <panel name="move_scroll_panel">
+                <plus_ps_slider_compat name="camera_fov" label="Kąt widzenia" />
+                <plus_ps_slider_compat name="camera_offset_scale" label="Dystans" />
+                <plus_ps_text name="heading2">
+                    Automatyczna pozycja dla:
+                </plus_ps_text>
+                <plus_ps_check_compat name="edit_camera_movement" label="Budowanie/Edycja" tool_tip="Używaj automatycznego pozycjonowania kamery podczas włączania i wyłączania trybu edycji" />
+                <plus_ps_check_compat name="appearance_camera_movement" label="Wygląd" tool_tip="Używaj automatycznego pozycjonowania kamery podczas trybu edycji wyglądu" />
+                <plus_ps_text name="keyboard_lbl">
+                    Klawiatura:
+                </plus_ps_text>
+                <plus_ps_check_compat name="arrow_keys_move_avatar_check" label="Przyciski ze strzałkami zawsze poruszają awatarem" />
+                <plus_ps_check_compat name="tap_tap_hold_to_run" label="Puk-puk-trzymaj, aby biec" />
+                <plus_ps_check_compat name="automatic_fly" label="Przytrzymaj klawisz skoku lub kucania, aby zacząć lub przestać latać" />
+                <plus_ps_text name="mouse_lbl">
+                    Myszka:
+                </plus_ps_text>
+                <plus_ps_check_compat name="first_person_avatar_visible" label="Awatar widoczny w trybie pierwszoosobowym" />
+                <plus_ps_text name=" Mouse Sensitivity">
+                    Czułość myszki w trybie pierwszoosobowym:
+                </plus_ps_text>
+                <plus_ps_check_compat name="invert_mouse" label="Zamień osie myszy" />
+                <plus_ps_text name="single_click_action_lbl">
+                    Pojedynczy klik na ziemi:
+                </plus_ps_text>
+                <plus_ps_combo name="single_click_action_combo">
+                    <plus_ps_combo.item name="0" label="Nie rób nic" />
+                    <plus_ps_combo.item name="1" label="Podejdź do klikniętego punktu" />
+                </plus_ps_combo>
+                <plus_ps_text name="double_click_action_lbl">
+                    Podwójny klik na ziemi:
+                </plus_ps_text>
+                <plus_ps_combo name="double_click_action_combo">
+                    <plus_ps_combo.item name="0" label="Nie rób nic" />
+                    <plus_ps_combo.item name="1" label="Podejdź do klikniętego punktu" />
+                    <plus_ps_combo.item name="2" label="Teleportuj do klikniętego punktu" />
+                </plus_ps_combo>
+                <plus_ps_button_compat name="joystick_setup_button" label="Konfiguruj joystick" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

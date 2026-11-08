@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_voice.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="voice_panel">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="voice_scroll">
+            <panel name="voice_scroll_panel">
+                <plus_ps_slider_compat name="Voice Volume" label="Bate-papo de voz" />
+                <plus_ps_check_compat name="enable_voice_check" label="Ativado" />
+                <plus_ps_text name="Listen from">
+                    Ouvir a partir de:
+                </plus_ps_text>
+                <plus_ps_check_compat name="enable_lip_sync" label="Mover os lábios do avatar quando estiver falando" />
+                <plus_ps_check_compat name="push_to_talk_toggle_check" label="Tecla liga/desliga da minha voz:" tool_tip="Quando em modo de alternância, pressione e solte o botão UMA vez para ligar e desligar o microfone. Fora do modo de alternância, o microfone só transmite sua voz enquanto o botão estiver pressionado." />
+                <plus_ps_check_compat name="gesture_audio_play_btn" label="Tocar áudio de gestos" tool_tip="Selecione para ouvir o áudio de gestos" />
+                <plus_ps_button_compat name="device_settings_btn" label="Controles de entrada/saída" />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

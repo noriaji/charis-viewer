@@ -1,0 +1,674 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Time converter (plus/timeconv, research/173). Control and string names are used by timeconvfloater.cpp.
+  Each row panel (row0 SL, row1 UTC, row2 and row3 a place of choice) has the same children:
+  y, mo, d, h, mi (the fields), u_* (the unit marks), label or zone, info and copy.
+  Generated once by a script; edit by hand from here on (the ja file has the same names).
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ reuse_instance="true"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true"
+ height="252"
+ width="568"
+ layout="topleft"
+ name="plus_time_conv"
+ title="TIME CONVERTER (SL / UTC / LOCAL)">
+    <floater.string name="zone_pc">This PC</floater.string>
+    <floater.string name="zone_jst">Japan (JST)</floater.string>
+    <floater.string name="zone_kst">Korea (KST)</floater.string>
+    <floater.string name="zone_china">China / Taiwan (CST)</floater.string>
+    <floater.string name="zone_india">India (IST)</floater.string>
+    <floater.string name="zone_uk">UK (GMT/BST)</floater.string>
+    <floater.string name="zone_cet">Central Europe (CET/CEST)</floater.string>
+    <floater.string name="zone_et">US Eastern (ET)</floater.string>
+    <floater.string name="zone_ct">US Central (CT)</floater.string>
+    <floater.string name="zone_mt">US Mountain (MT)</floater.string>
+    <floater.string name="zone_hst">Hawaii (HST)</floater.string>
+    <floater.string name="zone_aet">Australia East (AET)</floater.string>
+    <floater.string name="zone_nz">New Zealand (NZ)</floater.string>
+    <floater.string name="info_pc">this PC</floater.string>
+    <floater.string name="note_gap">* [WHERE] [TIME] is skipped when summer time starts; taken as [FIXED]</floater.string>
+    <floater.string name="note_overlap">* [WHERE] [TIME] comes twice when summer time ends; taken as the summer-time one</floater.string>
+    <floater.string name="note_range">* Out of range (year 1970-2100, a date that exists); the other rows are unchanged</floater.string>
+    <floater.string name="name_sl">SL</floater.string>
+    <panel
+     background_visible="false"
+     border="false"
+     follows="left|top"
+     height="28"
+     layout="topleft"
+     left="4"
+     top="26"
+     name="row0"
+     width="560">
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="8"
+         top="7"
+         name="label"
+         width="118">SL time</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="130"
+         top="3"
+         max_length_chars="4"
+         select_on_focus="true"
+         name="y"
+         tool_tip="Year (1970-2100). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="44" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="176"
+         top="7"
+         name="u_y"
+         width="14">/</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="192"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="mo"
+         tool_tip="Month (1-12). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="222"
+         top="7"
+         name="u_mo"
+         width="14">/</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="238"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="d"
+         tool_tip="Day. Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="268"
+         top="7"
+         name="u_d"
+         width="14"> </text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="286"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="h"
+         tool_tip="Hour (0-23). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="316"
+         top="7"
+         name="u_h"
+         width="14">:</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="332"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="mi"
+         tool_tip="Minute (0-59). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="362"
+         top="7"
+         name="u_mi"
+         width="14"> </text>
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="382"
+         top="7"
+         name="info"
+         width="100" />
+        <button
+         follows="left|top"
+         height="22"
+         label="Copy"
+         layout="topleft"
+         left="486"
+         top="3"
+         name="copy"
+         tool_tip="Copy this row as text (2026-10-24 23:00 JST)"
+         width="48" />
+    </panel>
+    <panel
+     background_visible="false"
+     border="false"
+     follows="left|top"
+     height="28"
+     layout="topleft"
+     left="4"
+     top="56"
+     name="row1"
+     width="560">
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="8"
+         top="7"
+         name="label"
+         width="118">UTC</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="130"
+         top="3"
+         max_length_chars="4"
+         select_on_focus="true"
+         name="y"
+         tool_tip="Year (1970-2100). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="44" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="176"
+         top="7"
+         name="u_y"
+         width="14">/</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="192"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="mo"
+         tool_tip="Month (1-12). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="222"
+         top="7"
+         name="u_mo"
+         width="14">/</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="238"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="d"
+         tool_tip="Day. Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="268"
+         top="7"
+         name="u_d"
+         width="14"> </text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="286"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="h"
+         tool_tip="Hour (0-23). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="316"
+         top="7"
+         name="u_h"
+         width="14">:</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="332"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="mi"
+         tool_tip="Minute (0-59). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="362"
+         top="7"
+         name="u_mi"
+         width="14"> </text>
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="382"
+         top="7"
+         name="info"
+         width="100" />
+        <button
+         follows="left|top"
+         height="22"
+         label="Copy"
+         layout="topleft"
+         left="486"
+         top="3"
+         name="copy"
+         tool_tip="Copy this row as text (2026-10-24 23:00 JST)"
+         width="48" />
+    </panel>
+    <panel
+     background_visible="false"
+     border="false"
+     follows="left|top"
+     height="28"
+     layout="topleft"
+     left="4"
+     top="86"
+     name="row2"
+     width="560">
+        <combo_box
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="8"
+         top="3"
+         name="zone"
+         tool_tip="Pick the place whose clock this row shows"
+         width="118" />
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="130"
+         top="3"
+         max_length_chars="4"
+         select_on_focus="true"
+         name="y"
+         tool_tip="Year (1970-2100). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="44" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="176"
+         top="7"
+         name="u_y"
+         width="14">/</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="192"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="mo"
+         tool_tip="Month (1-12). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="222"
+         top="7"
+         name="u_mo"
+         width="14">/</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="238"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="d"
+         tool_tip="Day. Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="268"
+         top="7"
+         name="u_d"
+         width="14"> </text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="286"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="h"
+         tool_tip="Hour (0-23). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="316"
+         top="7"
+         name="u_h"
+         width="14">:</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="332"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="mi"
+         tool_tip="Minute (0-59). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="362"
+         top="7"
+         name="u_mi"
+         width="14"> </text>
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="382"
+         top="7"
+         name="info"
+         width="100" />
+        <button
+         follows="left|top"
+         height="22"
+         label="Copy"
+         layout="topleft"
+         left="486"
+         top="3"
+         name="copy"
+         tool_tip="Copy this row as text (2026-10-24 23:00 JST)"
+         width="48" />
+    </panel>
+    <panel
+     background_visible="false"
+     border="false"
+     follows="left|top"
+     height="28"
+     layout="topleft"
+     left="4"
+     top="116"
+     name="row3"
+     width="560">
+        <combo_box
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="8"
+         top="3"
+         name="zone"
+         tool_tip="Pick the place whose clock this row shows"
+         width="118" />
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="130"
+         top="3"
+         max_length_chars="4"
+         select_on_focus="true"
+         name="y"
+         tool_tip="Year (1970-2100). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="44" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="176"
+         top="7"
+         name="u_y"
+         width="14">/</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="192"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="mo"
+         tool_tip="Month (1-12). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="222"
+         top="7"
+         name="u_mo"
+         width="14">/</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="238"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="d"
+         tool_tip="Day. Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="268"
+         top="7"
+         name="u_d"
+         width="14"> </text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="286"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="h"
+         tool_tip="Hour (0-23). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="316"
+         top="7"
+         name="u_h"
+         width="14">:</text>
+        <plus_tc_field
+         follows="left|top"
+         height="22"
+         layout="topleft"
+         left="332"
+         top="3"
+         max_length_chars="2"
+         select_on_focus="true"
+         name="mi"
+         tool_tip="Minute (0-59). Up/Down keys and the mouse wheel change it by one. Pasting a date and time (2026/10/24 19:30) fills the whole row."
+         width="28" />
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="362"
+         top="7"
+         name="u_mi"
+         width="14"> </text>
+        <text
+         follows="left|top"
+         height="16"
+         layout="topleft"
+         left="382"
+         top="7"
+         name="info"
+         width="100" />
+        <button
+         follows="left|top"
+         height="22"
+         label="Copy"
+         layout="topleft"
+         left="486"
+         top="3"
+         name="copy"
+         tool_tip="Copy this row as text (2026-10-24 23:00 JST)"
+         width="48" />
+        <button
+         follows="left|top"
+         height="22"
+         label="X"
+         layout="topleft"
+         left="536"
+         top="3"
+         name="remove"
+         tool_tip="Take this row away"
+         width="22" />
+    </panel>
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="12"
+     top="150"
+     name="note"
+     text_color="0.9 0.6 0.2 1"
+     width="544" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Set to now"
+     layout="topleft"
+     left="12"
+     top="172"
+     name="now"
+     tool_tip="Show the present time and keep up with the clock"
+     width="96" />
+    <check_box
+     follows="left|top"
+     height="16"
+     label="Follow the clock"
+     layout="topleft"
+     left="116"
+     top="175"
+     name="tick"
+     tool_tip="On: the rows keep up with the clock. Editing a field turns it off, so what you type is not moved"
+     width="140" />
+    <button
+     follows="left|top"
+     height="22"
+     label="+1 hour"
+     layout="topleft"
+     left="270"
+     top="172"
+     name="plus_hour"
+     width="64" />
+    <button
+     follows="left|top"
+     height="22"
+     label="+1 day"
+     layout="topleft"
+     left="338"
+     top="172"
+     name="plus_day"
+     width="64" />
+    <button
+     follows="left|top"
+     height="22"
+     label="-1 hour"
+     layout="topleft"
+     left="406"
+     top="172"
+     name="minus_hour"
+     width="64" />
+    <button
+     follows="left|top"
+     height="22"
+     label="-1 day"
+     layout="topleft"
+     left="474"
+     top="172"
+     name="minus_day"
+     width="64" />
+    <text
+     follows="left|top"
+     height="16"
+     layout="topleft"
+     left="12"
+     top="208"
+     name="summary"
+     width="448" />
+    <button
+     follows="left|top"
+     height="22"
+     label="Copy all"
+     layout="topleft"
+     left="466"
+     top="205"
+     name="copy_all"
+     tool_tip="Copy the line on the left, to paste into chat"
+     width="90" />
+    <button
+     follows="left|top"
+     height="22"
+     label="+ Add a place"
+     layout="topleft"
+     left="12"
+     top="118"
+     name="add_row"
+     tool_tip="Show a fourth row"
+     width="116" />
+</floater>

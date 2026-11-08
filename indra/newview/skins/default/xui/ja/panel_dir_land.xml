@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="panel_dir_land" label="土地の販売">
+	<string name="searching_text">
+		検索中…
+	</string>
+	<string name="not_found_text">
+		見つかりませんでした。
+	</string>
+	<text name="find">
+		検索する言葉を入力：
+	</text>
+	<combo_box name="type">
+		<combo_item name="AllTypes" label="すべての種類"/>
+		<combo_item name="Auction" label="オークション"/>
+		<combo_item name="MainlandSales" label="販売中 - メインランド"/>
+		<combo_item name="EstateSales" label="販売中 - 不動産"/>
+	</combo_box>
+	<check_box name="pricecheck" label="価格 ≤"/>
+	<check_box name="areacheck" label="面積 ≥"/>
+	<button name="Search" label="検索"/>
+	<scroll_list name="results">
+		<column name="name" label="名前"/>
+		<column name="landtype" label="タイプ"/>
+		<column name="price" label="価格（L$）"/>
+		<column name="area" label="面積"/>
+	</scroll_list>
+	<button name="prev_btn" tool_tip="前のページ"/>
+	<button name="next_btn" tool_tip="次のページ"/>
+</panel>

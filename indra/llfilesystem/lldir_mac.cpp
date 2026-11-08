@@ -1,0 +1,285 @@
+/**
+ * @file lldir_mac.cpp
+ * @brief Implementation of directory utilities for macOS
+ *
+ * $LicenseInfo:firstyear=2002&license=viewerlgpl$
+ * Second Life Viewer Source Code
+ * Copyright (C) 2026, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
+ * $/LicenseInfo$
+ */
+
+#if LL_DARWIN
+
+#include "linden_common.h"
+
+#include "lldir_mac.h"
+#include "llerror.h"
+#include "llrand.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <glob.h>
+#include <filesystem>
+#include "lldir_utils_objc.h"
+
+// --------------------------------------------------------------------------------
+
+static bool CreateDirectory(const std::string &parent,
+                            const std::string &child,
+                            std::string *fullname)
+{
+
+    std::filesystem::path p(parent);
+    p /= child;
+
+    if (fullname)
+        *fullname = std::string(p.string());
+
+    if (! std::filesystem::create_directory(p))
+    {
+        return (std::filesystem::is_directory(p));
+    }
+    return true;
+}
+
+// --------------------------------------------------------------------------------
+
+LLDir_Mac::LLDir_Mac()
+{
+    mDirDelimiter = "/";
+
+    const std::string     secondLifeString = "SecondLife";
+
+    std::string executablepathstr = getSystemExecutableFolder();
+
+    //NOTE:  LLINFOS/LLERRS will not output to log here.  The streams are not initialized.
+
+    if (!executablepathstr.empty())
+    {
+        // mExecutablePathAndName
+        mExecutablePathAndName = executablepathstr;
+
+        std::filesystem::path executablepath(executablepathstr);
+
+        mExecutableFilename = executablepath.filename().string();
+        mExecutableDir = executablepath.parent_path().string();
+
+        // mAppRODataDir
+        std::string resourcepath = getSystemResourceFolder();
+        mAppRODataDir = resourcepath;
+
+        // *NOTE: When running in a dev tree, use the copy of
+        // skins in indra/newview/ rather than in the application bundle.  This
+        // mirrors Windows dev environment behavior and allows direct checkin
+        // of edited skins/xui files. JC
+
+        // MBW -- This keeps the mac application from finding other things.
+        // If this is really for skins, it should JUST apply to skins.
+
+        std::string::size_type build_dir_pos = mExecutableDir.rfind("/build-darwin-");
+        if (build_dir_pos != std::string::npos)
+        {
+            // ...we're in a dev checkout
+            mSkinBaseDir = mExecutableDir.substr(0, build_dir_pos)
+                + "/indra/newview/skins";
+            LL_INFOS() << "Running in dev checkout with mSkinBaseDir "
+                << mSkinBaseDir << LL_ENDL;
+        }
+        else
+        {
+            // ...normal installation running
+            mSkinBaseDir = mAppRODataDir + mDirDelimiter + "skins";
+        }
+
+        // mOSUserDir
+        std::string appdir = getSystemApplicationSupportFolder();
+        std::string rootdir;
+
+        //Create root directory
+        if (CreateDirectory(appdir, secondLifeString, &rootdir))
+        {
+
+            // Save the full path to the folder
+            mOSUserDir = rootdir;
+
+            // Create our sub-dirs
+            CreateDirectory(rootdir, std::string("data"), NULL);
+            CreateDirectory(rootdir, std::string("logs"), NULL);
+            CreateDirectory(rootdir, std::string("user_settings"), NULL);
+            CreateDirectory(rootdir, std::string("browser_profile"), NULL);
+        }
+
+        //mOSCacheDir
+        std::string cachedir =  getSystemCacheFolder();
+        if (!cachedir.empty())
+        {
+            mOSCacheDir = cachedir;
+            //TODO:  This changes from ~/Library/Cache/Secondlife to ~/Library/Cache/com.app.secondlife/Secondlife.  Last dir level could go away.
+            CreateDirectory(mOSCacheDir, secondLifeString, NULL);
+        }
+
+        // mOSUserAppDir
+        mOSUserAppDir = mOSUserDir;
+
+        // mExecutableDir == .../MyApp.app/Contents/MacOS
+        std::string bundle_root; // .../MyApp.app
+        if (!mExecutableDir.empty())
+        {
+            std::string contents_dir = getDirName(mExecutableDir);   // .../MyApp.app/Contents
+            if (!contents_dir.empty())
+            {
+                bundle_root = getDirName(contents_dir);              // .../MyApp.app
+            }
+        }
+        std::string install_root = bundle_root.empty() ? std::string() : getDirName(bundle_root);
+        bool is_applications_install = (install_root.rfind("/Applications", 0) == 0);
+        bool is_dmg = (mExecutablePathAndName.rfind("/Volumes/", 0) == 0);
+        bool is_translocated = (mExecutablePathAndName.find("/AppTranslocation/") != std::string::npos);
+
+#if LL_VELOPACK
+        // Detect a portable (Velopack) install: the executable lives at
+        // ".../MyApp.app/Contents/MacOS/<exe>". If the portable package
+        // dropped a ".portable" marker next to "MyApp.app" (i.e. one level
+        // above the bundle itself), keep user data (settings, logs, etc.)
+        // beside the bundle instead of ~/Library/Application Support. This
+        // only applies to Velopack-portable builds; a DMG/NSIS-style
+        // install never produces this marker, so a normally-installed
+        // viewer is unaffected.if (!is_dmg && !is_translocated && !is_applications_install && !install_root.empty())
+
+        // macos doesn't have the .portable marker , but check it just in case.
+        // Todo: fix this, portable installs should have a marker file.
+        bool is_portable = isPortableInstall(install_root);
+
+        if (is_portable)
+        {
+            std::string portable_dir;
+            if (CreateDirectory(install_root, PORTABLE_USER_DATA_DIRNAME, &portable_dir))
+            {
+                mOSUserAppDir = portable_dir;
+
+                // Replicate the sub-dirs already created above under the
+                // default mOSUserDir, but under the portable folder instead.
+                CreateDirectory(portable_dir, std::string("data"), NULL);
+                CreateDirectory(portable_dir, std::string("logs"), NULL);
+                CreateDirectory(portable_dir, std::string("user_settings"), NULL);
+                CreateDirectory(portable_dir, std::string("browser_profile"), NULL);
+            }
+        }
+#endif // LL_VELOPACK
+
+        if (is_dmg)
+        {
+            // Running directly off a still-mounted DMG; the user never
+            // dragged the app out to install it.
+            mRunContextDescription = "Mounted disk image (DMG)";
+        }
+        else if (is_translocated)
+        {
+            // Gatekeeper's App Translocation makes an unregistered, quarantined
+            // app (e.g. one simply unzipped in Downloads/ and double-clicked
+            // without ever being moved) appear to run from a randomized
+            // read-only path under
+            // "/private/var/folders/.../AppTranslocation/.../d/MyApp.app",
+            // even though the on-disk bundle still lives wherever it was
+            // extracted.
+            mRunContextDescription = "App Translocation (unregistered/quarantined copy)";
+        }
+        else if (is_applications_install)
+        {
+            // Bundle lives directly under /Applications: a normal, properly
+            // installed copy.
+            mRunContextDescription = "Standard install (/Applications)";
+        }
+#if LL_VELOPACK
+        else if (is_portable)
+        {
+            mRunContextDescription = "Portable (extracted archive, " + install_root + ")";
+        }
+#endif // LL_VELOPACK
+        else if (!is_dmg && !is_translocated && !is_applications_install && !install_root.empty())
+        {
+            mRunContextDescription = "Running from a non-standard folder (" + install_root + ")";
+        }
+        else if (!install_root.empty())
+        {
+            // Bundle is present on local disk, intact, and not translocated
+            // or mounted from a DMG, but it is NOT under /Applications. This
+            // is the classic "downloaded a zip/tar, extracted it somewhere,
+            // and ran the .app directly from that folder" case - i.e. what
+            // users may call a "portable" install even though no formal
+            // portable packaging was used.
+            mRunContextDescription = "Running from extracted archive or non-standard folder (" + install_root + ")";
+        }
+        else
+        {
+            mRunContextDescription = "Unknown install location";
+        }
+
+        // mTempDir
+        //Aura 120920 std::filesystem::temp_directory_path() not yet implemented on mac. :(
+        std::string tmpdir = getSystemTempFolder();
+        if (!tmpdir.empty())
+        {
+            CreateDirectory(tmpdir, secondLifeString, &mTempDir);
+        }
+
+        mWorkingDir = getCurPath();
+
+        mLLPluginDir = mAppRODataDir + mDirDelimiter + "SLPlugin.app" + mDirDelimiter + "Contents" + mDirDelimiter + "Frameworks";
+    }
+}
+
+LLDir_Mac::~LLDir_Mac()
+{
+}
+
+// Implementation
+
+
+void LLDir_Mac::initAppDirs(const std::string &app_name,
+                            const std::string& app_read_only_data_dir)
+{
+    // Allow override so test apps can read newview directory
+    if (!app_read_only_data_dir.empty())
+    {
+        mAppRODataDir = app_read_only_data_dir;
+        mSkinBaseDir = add(mAppRODataDir, "skins");
+    }
+    mCAFile = add(mAppRODataDir, "ca-bundle.crt");
+}
+
+std::string LLDir_Mac::getCurPath()
+{
+    return std::filesystem::path( std::filesystem::current_path() ).string();
+}
+
+/*virtual*/ std::string LLDir_Mac::getLLPluginLauncher()
+{
+    return gDirUtilp->getAppRODataDir() + gDirUtilp->getDirDelimiter() +
+        "SLPlugin.app/Contents/MacOS/SLPlugin";
+}
+
+/*virtual*/ std::string LLDir_Mac::getLLPluginFilename(std::string base_name)
+{
+    return gDirUtilp->getLLPluginDir() + gDirUtilp->getDirDelimiter() +
+        base_name + ".dylib";
+}
+
+
+#endif // LL_DARWIN

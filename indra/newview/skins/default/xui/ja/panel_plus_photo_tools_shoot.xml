@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="page_shoot">
+	<scroll_container name="scroll_shoot">
+		<panel name="content_shoot">
+			<panel name="sec_shoot">
+				<text name="title_shot">撮影</text>
+				<combo_box name="shot_size" tool_tip="撮影する大きさ（長辺）" />
+				<combo_box name="shot_aspect" tool_tip="撮影する縦横の形" />
+				<button name="btn_shoot" label="撮影" tool_tip="上の大きさと形で今すぐ撮影して保存します。このウィンドウは開いたままです。" />
+				<button name="btn_shot_open" label="開く" tool_tip="最後の写真を開きます" />
+				<button name="btn_shot_folder" label="フォルダを開く" tool_tip="写真の保存先のフォルダを開きます" />
+				<text name="shot_dir">-</text>
+				<button name="btn_shot_dir" label="保存先を変更…" tool_tip="写真の保存先のフォルダを選びます（スナップショットウィンドウも同じフォルダを使います）" />
+				<button name="btn_shot_window" label="スナップショットウィンドウ…" tool_tip="通常のスナップショットウィンドウ（共有・保存先の設定・アップロード用）" />
+			</panel>
+		</panel>
+	</scroll_container>
+</panel>

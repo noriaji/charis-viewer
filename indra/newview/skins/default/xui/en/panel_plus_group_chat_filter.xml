@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The group chat choice in the group window's General tab (plus/groupwhitelist).
+     Included from panel_group_general.xml; the panel finds its group itself.
+     The label and the combo share the first row: the combo starts after the label
+     (left 85 here; ja/ has a wider label and moves the combo, both set per language). -->
+<panel
+ background_visible="false"
+ border="false"
+ follows="left|top|right"
+ height="60"
+ layout="topleft"
+ name="plus_group_chat_filter"
+ width="304">
+    <text
+     follows="left|top|right"
+     type="string"
+     height="16"
+     layout="topleft"
+     left="10"
+     name="plus_group_chat_mode_label"
+     top="4"
+     width="75">
+        Group chat:
+    </text>
+    <combo_box
+     follows="left|top|right"
+     height="23"
+     layout="topleft"
+     left="85"
+     name="plus_group_chat_mode"
+     right="-5"
+     tool_tip="Whether you receive this group's chat. Refused chat is not shown and not kept in your chat history."
+     top="0">
+        <combo_box.item
+         label="Normal"
+         name="normal"
+         value="normal" />
+        <combo_box.item
+         label="Never receive (blocklist)"
+         name="blacklist"
+         value="blacklist" />
+        <combo_box.item
+         label="Always receive (allowlist)"
+         name="whitelist"
+         value="whitelist" />
+    </combo_box>
+    <check_box
+     follows="left|top"
+     height="16"
+     label="Receive chat only from allowlisted groups"
+     layout="topleft"
+     left="10"
+     name="plus_group_chat_whitelist_only"
+     tool_tip="The chat of every group not set to Always receive is refused. For all your groups, on this account."
+     top_pad="5"
+     width="290" />
+    <text
+     follows="left|top|right"
+     type="string"
+     font="SansSerifSmall"
+     text_color="White_50"
+     height="14"
+     layout="topleft"
+     left="28"
+     name="plus_group_chat_whitelist_only_note"
+     top_pad="2"
+     width="270">
+        (for all groups; applied at once)
+    </text>
+</panel>

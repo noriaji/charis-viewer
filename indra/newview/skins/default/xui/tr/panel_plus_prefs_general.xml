@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_prefs_general.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="general_panel" label="Genel">
+    <plus_ps_box name="ps_ground">
+        <scroll_container name="general_scroll">
+            <panel name="general_scroll_panel">
+                <plus_ps_text name="language_textbox">
+                    Dil:
+                </plus_ps_text>
+                <plus_ps_combo name="language_combobox">
+                    <plus_ps_combo.item name="English" label="English (İngilizce)" />
+                    <plus_ps_combo.item name="Danish" label="Dansk (Danca) - Beta" />
+                    <plus_ps_combo.item name="Deutsch(German)" label="Deutsch (Almanca) - Beta" />
+                    <plus_ps_combo.item name="Spanish" label="Español (İspanyolca) - Beta" />
+                    <plus_ps_combo.item name="French" label="Français (Fransızca) - Beta" />
+                    <plus_ps_combo.item name="Italian" label="Italiano (İtalyanca) - Beta" />
+                    <plus_ps_combo.item name="Polish" label="Polski (Lehçe) - Beta" />
+                    <plus_ps_combo.item name="Portugese" label="Português (Portekizce) - Beta" />
+                    <plus_ps_combo.item name="Russian" label="Русский (Rusça) - Beta" />
+                    <plus_ps_combo.item name="Turkish" label="Türkçe - Beta" />
+                    <plus_ps_combo.item name="(Japanese)" label="日本語 (Japonca) - Beta" />
+                    <plus_ps_combo.item name="Traditional Chinese" label="正體中文 (Geleneksel Çince) - Beta" />
+                </plus_ps_combo>
+                <plus_ps_text name="language_textbox2">
+                    (Yeniden başlatma gerekir)
+                </plus_ps_text>
+                <plus_ps_text name="maturity_desired_prompt">
+                    Seviyelndrl. içeriğe erişim istiyorum::
+                </plus_ps_text>
+                <plus_ps_combo name="maturity_desired_combobox">
+                    <plus_ps_combo.item name="Desired_Adult" label="Genel, Orta, Yetişkin" />
+                    <plus_ps_combo.item name="Desired_Mature" label="Genel ve Orta" />
+                    <plus_ps_combo.item name="Desired_PG" label="Genel" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="favorites_on_login_check" label="Sık kullanılan yerleri oturum açma ekranında göster" />
+                <plus_ps_text name="favorites_check_extra_text">
+                    (Bu bilgisayarı kullanan diğer kişiler de bunları görecek)
+                </plus_ps_text>
+                <plus_ps_text name="name_tags_textbox">
+                    Ad etiketleri:
+                </plus_ps_text>
+                <plus_ps_radio name="Name_Tag_Preference">
+                    <radio_item name="radio" label="Kapalı" />
+                    <radio_item name="radio2" label="Açık" />
+                    <radio_item name="radio3" label="Kısaca göster" />
+                </plus_ps_radio>
+                <plus_ps_check_compat name="show_my_name_checkbox1" label="Adım" />
+                <plus_ps_check_compat name="show_slids" label="Kullanıcı adları" tool_tip="Kullanıcı adını göster, bobsmith123 gibi" />
+                <plus_ps_check_compat name="display_names_check" label="Ekran Adlarını Görüntüle" tool_tip="Sohbet, Aİ, ad etiketleri, vb.de ekran adlarını kullanmak için işaretle" />
+                <plus_ps_check_compat name="show_friends" label="Arkadaşları vurgula" tool_tip="Arkadaşlarının ad etiketlerini vurgula" />
+                <plus_ps_text name="inworld_typing_rg_label">
+                    Basılacak harf tuşları:
+                </plus_ps_text>
+                <plus_ps_radio name="inworld_typing_preference">
+                    <radio_item name="radio_start_chat" label="Yerel sohbet başlat" />
+                    <radio_item name="radio_move" label="Hareketi etkiler (yani WASD)" />
+                </plus_ps_radio>
+                <plus_ps_text name="title_afk_text">
+                    Uzakta süre sonu:
+                </plus_ps_text>
+                <plus_ps_combo name="afk" label="Uzakta süre sonu:">
+                    <plus_ps_combo.item name="item0" label="2 dakika" />
+                    <plus_ps_combo.item name="item1" label="5 dakika" />
+                    <plus_ps_combo.item name="item2" label="10 dakika" />
+                    <plus_ps_combo.item name="item3" label="30 dakika" />
+                    <plus_ps_combo.item name="item4" label="asla" />
+                </plus_ps_combo>
+                <plus_ps_text name="text_box3">
+                    Rahatsız Etme yanıtı:
+                </plus_ps_text>
+                <plus_ps_box name="dnd_response_glass">
+                    <text_editor name="do_not_disturb_response">
+                        log_in_to_change
+                    </text_editor>
+                </plus_ps_box>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

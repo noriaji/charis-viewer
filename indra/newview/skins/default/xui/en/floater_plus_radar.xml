@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Radar (plus/radar, from Firestorm's floater_fs_radar.xml and panel_fs_radar.xml). Control names
+  and string names are used by radarfloater.cpp: col_<column> and tip_<column> are the titles and
+  tool tips of the list's columns (the columns are made there, from PlusRadarColumns).
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ min_width="330"
+ min_height="260"
+ height="420"
+ width="420"
+ layout="topleft"
+ name="plus_radar"
+ title="RADAR">
+    <floater.string name="counter">[TOTAL] around | [REGION] in this region | [CHAT] within chat range</floater.string>
+    <floater.string name="mark_parcel">&#9670;</floater.string>
+    <floater.string name="mark_region">&#9671;</floater.string>
+    <floater.string name="mark_sitting">S</floater.string>
+    <floater.string name="age_hidden">n.a.</floater.string>
+    <floater.string name="age_unknown">?</floater.string>
+    <floater.string name="no_focus">The camera cannot focus on this resident because they are outside your draw distance.</floater.string>
+    <floater.string name="no_position">The position of this resident is not known (too high above the ground).</floater.string>
+    <floater.string name="col_name">Name</floater.string>
+    <floater.string name="col_region">Here</floater.string>
+    <floater.string name="col_sitting">Sit</floater.string>
+    <floater.string name="col_age">Age</floater.string>
+    <floater.string name="col_payment">Pay</floater.string>
+    <floater.string name="col_seen">Seen</floater.string>
+    <floater.string name="col_range">Range</floater.string>
+    <floater.string name="tip_region">&#9670; on the same parcel as you, &#9671; in the same region</floater.string>
+    <floater.string name="tip_sitting">Is sitting</floater.string>
+    <floater.string name="tip_age">Days since the account was made</floater.string>
+    <floater.string name="tip_payment">Payment info: $ on file, $$ used</floater.string>
+    <floater.string name="tip_seen">How long they have been around (since the radar saw them)</floater.string>
+    <floater.string name="tip_range">Distance in meters. Red: within chat range, yellow: within shout range, bold: drawn</floater.string>
+    <tab_container
+     follows="all"
+     layout="topleft"
+     left="2"
+     right="-2"
+     top="20"
+     bottom="-2"
+     tab_position="top"
+     tab_height="20"
+     tab_min_width="80"
+     name="radar_tabs">
+        <panel
+         follows="all"
+         label="List"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="416"
+         height="398"
+         name="list_panel">
+            <search_editor
+             follows="left|top|right"
+             height="22"
+             label="Narrow the list by name"
+             layout="topleft"
+             left="4"
+             right="-4"
+             top="4"
+             search_button_visible="false"
+             select_on_focus="true"
+             max_length_chars="256"
+             name="quick_filter"
+             tool_tip="Only the names with these letters stay (upper or lower case alike)" />
+            <plus_radar_list
+             follows="all"
+             layout="topleft"
+             left="4"
+             right="-4"
+             top="30"
+             bottom="-28"
+             column_padding="0"
+             draw_heading="true"
+             multi_select="true"
+             search_column="1"
+             name="radar_list" />
+            <text
+             follows="left|right|bottom"
+             height="16"
+             layout="topleft"
+             left="8"
+             right="-8"
+             bottom="-8"
+             name="counter">
+                0 around | 0 in this region | 0 within chat range
+            </text>
+        </panel>
+        <panel
+         follows="all"
+         label="Settings"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="416"
+         height="398"
+         name="settings_panel">
+            <text follows="left|top" height="16" layout="topleft" left="12" top="12" width="70" name="name_label">Names:</text>
+            <combo_box follows="left|top" height="22" layout="topleft" left="86" top="8" width="220" name="name_format" tool_tip="How a name is written in the list (the display name needs display names on)">
+                <combo_box.item label="Display name" name="fmt_display" value="0" />
+                <combo_box.item label="User name" name="fmt_user" value="1" />
+                <combo_box.item label="Display name (user name)" name="fmt_display_user" value="2" />
+                <combo_box.item label="User name (display name)" name="fmt_user_display" value="3" />
+            </combo_box>
+            <check_box control_name="PlusRadarLimitRange" follows="left|top" height="16" label="Only within (m):" layout="topleft" left="12" top="40" width="140" name="limit_range" tool_tip="List only the residents this near" />
+            <spinner control_name="PlusRadarRange" decimal_digits="0" follows="left|top" height="20" increment="10" layout="topleft" left="160" top="38" max_val="4096" min_val="10" width="80" name="limit_range_value" />
+            <check_box control_name="PlusRadarShowMuted" follows="left|top" height="16" label="List blocked residents too" layout="topleft" left="12" top="66" width="300" name="show_muted" />
+            <text follows="left|top" height="16" layout="topleft" left="12" top="96" width="390" name="report_label">Show a note in nearby chat (only you see it) when someone:</text>
+            <check_box control_name="PlusRadarReportChatEnter" follows="left|top" height="16" label="comes within chat range (20 m)" layout="topleft" left="24" top="118" width="340" name="report_chat_enter" />
+            <check_box control_name="PlusRadarReportChatLeave" follows="left|top" height="16" label="goes out of chat range" layout="topleft" left="24" top="140" width="340" name="report_chat_leave" />
+            <check_box control_name="PlusRadarReportDrawEnter" follows="left|top" height="16" label="comes within your draw distance" layout="topleft" left="24" top="162" width="340" name="report_draw_enter" />
+            <check_box control_name="PlusRadarReportDrawLeave" follows="left|top" height="16" label="goes out of your draw distance" layout="topleft" left="24" top="184" width="340" name="report_draw_leave" />
+            <check_box control_name="PlusRadarReportRegionEnter" follows="left|top" height="16" label="comes into your region" layout="topleft" left="24" top="206" width="340" name="report_region_enter" />
+            <check_box control_name="PlusRadarReportRegionLeave" follows="left|top" height="16" label="leaves your region" layout="topleft" left="24" top="228" width="340" name="report_region_leave" />
+            <text follows="left|top" height="16" layout="topleft" left="12" top="258" width="390" name="columns_label">Columns of the list:</text>
+            <check_box follows="left|top" height="16" label="Here (parcel / region)" layout="topleft" left="24" top="280" width="180" name="col_region" />
+            <check_box follows="left|top" height="16" label="Sitting" layout="topleft" left="214" top="280" width="180" name="col_sitting" />
+            <check_box follows="left|top" height="16" label="Age" layout="topleft" left="24" top="302" width="180" name="col_age" />
+            <check_box follows="left|top" height="16" label="Payment info" layout="topleft" left="214" top="302" width="180" name="col_payment" />
+            <check_box follows="left|top" height="16" label="Time seen" layout="topleft" left="24" top="324" width="180" name="col_seen" />
+            <check_box follows="left|top" height="16" label="Range" layout="topleft" left="214" top="324" width="180" name="col_range" />
+        </panel>
+    </tab_container>
+</floater>

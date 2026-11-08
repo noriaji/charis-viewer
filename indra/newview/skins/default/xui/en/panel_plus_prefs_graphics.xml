@@ -1,0 +1,520 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Preferences > Graphics in the Charis look (research/266 4. prefs-w-view). The Charis page of the tab "display"
+     (floater_preferences.xml: only its filename= points here). Charis's page (from: official
+     Second_Life_Release#d567465e-26.5 panel_preferences_graphics1.xml, left as it is; its functions are all here:
+     tools/ui-parity-diff.py). The class is the floater's panel_preference_graphics (LLPanelPreferenceGraphics): the
+     preset in use (preset_text, an LLTextBox) is cleared when a control with a control_name is edited
+     (hasDirtyChilds), so the sliders are the compat sliders (an LLSliderCtrl: dirty as official); the buttons the
+     floater looks up (PrefSaveButton, PrefLoadButton, PrefDeleteButton, RenderExceptionsButton,
+     AutoAdjustmentsButton: LLButton) are the compat buttons, IndirectMaxComplexity / IndirectMaxNonImpostors
+     (LLSliderCtrl) and their value texts (LLTextBox) keep their names. (The shadow and brightness rows are in the detailed graphics
+     settings only.)
+     Every row is at a fixed place from the top of the scroll panel (follows left|top; a row as wide as the panel
+     also right, which a panel of a fixed width never moves): resizing the window only changes how much of the
+     page is shown (the official page moved its drop-downs and buttons).
+     Size (1080 base; plus/prefscharis/prefs_tab_template.xml): 574 x 515; a scroll_container (574) with a panel
+     557 wide. Rows at left 14, 529 wide. From the top:
+       10 + the preset in use 30 + 10 + the level names 20 + the quality slider 31 (its seven marks under the
+       track) + faster / better 20 + 6 + draw distance 31 + 6 + buttons 40
+       + 10 + heading 40 + avatar display 33 + complexity 31 + animated avatars 31 + 6 + button 40
+       + 10 + heading 40 + 6 + buttons 40 + 6 + buttons 40 + 14 = 571 (it scrolls).
+     Across: the sliders' labels 256 (the longest, ja "動くアバターの最大数：" 143, en "Maximum number of animated
+     avatars:" 245), their tracks at 270..445 and the value boxes (or the value texts) at 457..519, "m" after it;
+     the quality slider at 147..527 (no label: QualitySpeed is at its left), its marks at the bar's steps: the
+     thumb's half width (7, SliderThumb_Off) in from either end, 61 apart (380 - 14 = 366 = 6 x 61); the level
+     names (70 wide) centred over the steps 0, 2, 4 and 6. A drop-down row: the label 317, the drop-down 200 at
+     343. Buttons 260 / 261 at 14 / 282. ja: at most 24 characters in a drop-down row's label (317 / 13). -->
+<panel
+ border="true"
+ follows="all"
+ height="515"
+ label="Graphics"
+ layout="topleft"
+ left="0"
+ name="Display panel"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="graphics_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="graphics_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="571"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <!-- The preset in use (LLPanelPreferenceGraphics::setPresetText writes preset_text) -->
+                <plus_ps_text
+                 name="preset_in_use_label"
+                 follows="left|top"
+                 height="30"
+                 layout="topleft"
+                 left="14"
+                 top="10"
+                 width="150">
+                    Preset in use:
+                </plus_ps_text>
+                <plus_ps_text
+                 name="preset_text"
+                 follows="left|top|right"
+                 height="30"
+                 kind="white"
+                 layout="topleft"
+                 left="164"
+                 top="10"
+                 use_ellipses="true"
+                 width="379">
+                    (None)
+                </plus_ps_text>
+                <!-- Quality & speed: the seven levels (RenderQualityPerformance 0..6) -->
+                <plus_ps_text
+                 name="ShadersPrefText"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="center"
+                 height="20"
+                 kind="dim"
+                 layout="topleft"
+                 left="119"
+                 top="50"
+                 width="70">
+                    Low
+                </plus_ps_text>
+                <plus_ps_text
+                 name="ShadersPrefText2"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="center"
+                 height="20"
+                 kind="dim"
+                 layout="topleft"
+                 left="241"
+                 top="50"
+                 width="70">
+                    Mid
+                </plus_ps_text>
+                <plus_ps_text
+                 name="ShadersPrefText3"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="center"
+                 height="20"
+                 kind="dim"
+                 layout="topleft"
+                 left="363"
+                 top="50"
+                 width="70">
+                    High
+                </plus_ps_text>
+                <plus_ps_text
+                 name="ShadersPrefText4"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="center"
+                 height="20"
+                 kind="dim"
+                 layout="topleft"
+                 left="485"
+                 top="50"
+                 width="70">
+                    Ultra
+                </plus_ps_text>
+                <plus_ps_text
+                 name="QualitySpeed"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 height="31"
+                 layout="topleft"
+                 left="14"
+                 top="70"
+                 use_ellipses="true"
+                 width="124">
+                    Quality &amp; speed:
+                </plus_ps_text>
+                <!-- The marks of the seven levels, under the track (drawn before the slider, which takes the clicks) -->
+                <icon
+                 name="LowGraphicsDivet"
+                 color="PsSliderTick"
+                 height="6"
+                 image_name="Rounded_Square"
+                 layout="topleft"
+                 left="153"
+                 mouse_opaque="false"
+                 top="94"
+                 width="2" />
+                <icon
+                 name="LowMidGraphicsDivet"
+                 color="PsSliderTick"
+                 height="6"
+                 image_name="Rounded_Square"
+                 layout="topleft"
+                 left="214"
+                 mouse_opaque="false"
+                 top="94"
+                 width="2" />
+                <icon
+                 name="MidGraphicsDivet"
+                 color="PsSliderTick"
+                 height="6"
+                 image_name="Rounded_Square"
+                 layout="topleft"
+                 left="275"
+                 mouse_opaque="false"
+                 top="94"
+                 width="2" />
+                <icon
+                 name="MidHighGraphicsDivet"
+                 color="PsSliderTick"
+                 height="6"
+                 image_name="Rounded_Square"
+                 layout="topleft"
+                 left="336"
+                 mouse_opaque="false"
+                 top="94"
+                 width="2" />
+                <icon
+                 name="HighGraphicsDivet"
+                 color="PsSliderTick"
+                 height="6"
+                 image_name="Rounded_Square"
+                 layout="topleft"
+                 left="397"
+                 mouse_opaque="false"
+                 top="94"
+                 width="2" />
+                <icon
+                 name="HighUltraGraphicsDivet"
+                 color="PsSliderTick"
+                 height="6"
+                 image_name="Rounded_Square"
+                 layout="topleft"
+                 left="458"
+                 mouse_opaque="false"
+                 top="94"
+                 width="2" />
+                <icon
+                 name="UltraGraphicsDivet"
+                 color="PsSliderTick"
+                 height="6"
+                 image_name="Rounded_Square"
+                 layout="topleft"
+                 left="519"
+                 mouse_opaque="false"
+                 top="94"
+                 width="2" />
+                <plus_ps_slider_compat
+                 name="QualityPerformanceSelection"
+                 control_name="RenderQualityPerformance"
+                 decimal_digits="0"
+                 follows="left|top"
+                 height="31"
+                 increment="1"
+                 initial_value="0"
+                 layout="topleft"
+                 left="147"
+                 max_val="6"
+                 show_text="false"
+                 top="70"
+                 width="380">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.QualityPerformance" />
+                </plus_ps_slider_compat>
+                <plus_ps_text
+                 name="FasterText"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 height="20"
+                 kind="dim"
+                 layout="topleft"
+                 left="147"
+                 top="101"
+                 width="120">
+                    Faster
+                </plus_ps_text>
+                <plus_ps_text
+                 name="BetterText"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="right"
+                 height="20"
+                 kind="dim"
+                 layout="topleft"
+                 left="407"
+                 top="101"
+                 width="120">
+                    Better
+                </plus_ps_text>
+                <plus_ps_slider_compat
+                 name="DrawDistance"
+                 control_name="RenderFarClip"
+                 decimal_digits="0"
+                 follows="left|top"
+                 height="31"
+                 increment="8"
+                 initial_value="160"
+                 label="Draw distance:"
+                 label_width="256"
+                 layout="topleft"
+                 left="14"
+                 min_val="64"
+                 max_val="512"
+                 top="127"
+                 width="505" />
+                <plus_ps_text
+                 name="DrawDistanceMeterText2"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 height="31"
+                 layout="topleft"
+                 left="523"
+                 top="127"
+                 width="20">
+                    m
+                </plus_ps_text>
+                <plus_ps_button_compat
+                 name="AutoAdjustmentsButton"
+                 follows="left|top"
+                 height="40"
+                 label="Automatic adjustments settings"
+                 layout="topleft"
+                 left="14"
+                 top="164"
+                 visible="false"
+                 width="260">
+                </plus_ps_button_compat>
+                <plus_ps_button_compat
+                 name="AdvancedSettings"
+                 follows="left|top"
+                 height="40"
+                 label="Advanced Settings..."
+                 layout="topleft"
+                 left="14"
+                 top="164"
+                 width="529">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.Advanced"
+                     parameter="advanced" />
+                </plus_ps_button_compat>
+                <!-- Avatars -->
+                <plus_ps_header
+                 name="h_avatars"
+                 divider="top"
+                 follows="left|top|right"
+                 height="40"
+                 label="Avatars"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="214"
+                 width="529" />
+                <plus_ps_text
+                 name="AvatarComplexityModeLabel"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 top="254"
+                 width="317">
+                    Avatar display:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="AvatarComplexityMode"
+                 control_name="RenderAvatarComplexityMode"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="343"
+                 top="254"
+                 width="200">
+                    <plus_ps_combo.item
+                     label="Limit by complexity"
+                     name="0"
+                     value="0" />
+                    <plus_ps_combo.item
+                     label="Always show friends"
+                     name="1"
+                     value="1" />
+                    <plus_ps_combo.item
+                     label="Only show friends"
+                     name="2"
+                     value="2" />
+                </plus_ps_combo>
+                <plus_ps_slider_compat
+                 name="IndirectMaxComplexity"
+                 control_name="IndirectMaxComplexity"
+                 follows="left|top"
+                 height="31"
+                 increment="1"
+                 initial_value="101"
+                 label="Avatar maximum complexity:"
+                 label_width="256"
+                 layout="topleft"
+                 left="14"
+                 min_val="1"
+                 max_val="101"
+                 show_text="false"
+                 tool_tip="Controls at what point a visually complex avatar is drawn as a JellyDoll"
+                 top="287"
+                 width="431">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.UpdateIndirectMaxComplexity"
+                     parameter="IndirectMaxComlexityText" />
+                </plus_ps_slider_compat>
+                <plus_ps_text
+                 name="IndirectMaxComplexityText"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="right"
+                 height="31"
+                 kind="white"
+                 layout="topleft"
+                 left="457"
+                 top="287"
+                 width="62">
+                    0
+                </plus_ps_text>
+                <plus_ps_slider_compat
+                 name="IndirectMaxNonImpostors"
+                 control_name="IndirectMaxNonImpostors"
+                 decimal_digits="0"
+                 follows="left|top"
+                 height="31"
+                 increment="1"
+                 initial_value="12"
+                 label="Maximum number of animated avatars:"
+                 label_width="256"
+                 layout="topleft"
+                 left="14"
+                 min_val="1"
+                 max_val="66"
+                 show_text="false"
+                 top="318"
+                 width="431">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.UpdateIndirectMaxNonImpostors"
+                     parameter="IndirectNonImpostorsText" />
+                </plus_ps_slider_compat>
+                <plus_ps_text
+                 name="IndirectMaxNonImpostorsText"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="right"
+                 height="31"
+                 kind="white"
+                 layout="topleft"
+                 left="457"
+                 top="318"
+                 width="62">
+                    0
+                </plus_ps_text>
+                <plus_ps_button_compat
+                 name="RenderExceptionsButton"
+                 follows="left|top"
+                 height="40"
+                 label="Exceptions..."
+                 layout="topleft"
+                 left="14"
+                 top="355"
+                 width="260">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.RenderExceptions" />
+                </plus_ps_button_compat>
+                <!-- Presets -->
+                <plus_ps_header
+                 name="h_presets"
+                 divider="top"
+                 follows="left|top|right"
+                 height="40"
+                 label="Presets"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="405"
+                 width="529" />
+                <plus_ps_button_compat
+                 name="PrefSaveButton"
+                 follows="left|top"
+                 height="40"
+                 label="Save settings as a preset..."
+                 layout="topleft"
+                 left="14"
+                 top="451"
+                 width="260">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.PrefSave"
+                     parameter="graphic" />
+                </plus_ps_button_compat>
+                <plus_ps_button_compat
+                 name="PrefLoadButton"
+                 follows="left|top"
+                 height="40"
+                 label="Load preset..."
+                 layout="topleft"
+                 left="282"
+                 top="451"
+                 width="261">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.PrefLoad"
+                     parameter="graphic" />
+                </plus_ps_button_compat>
+                <plus_ps_button_compat
+                 name="PrefDeleteButton"
+                 follows="left|top"
+                 height="40"
+                 label="Delete preset..."
+                 layout="topleft"
+                 left="14"
+                 top="497"
+                 width="260">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.PrefDelete"
+                     parameter="graphic" />
+                </plus_ps_button_compat>
+                <plus_ps_button_compat
+                 name="Defaults"
+                 follows="left|top"
+                 height="40"
+                 label="Reset to recommended settings"
+                 layout="topleft"
+                 left="282"
+                 top="497"
+                 width="261">
+                    <plus_ps_button_compat.commit_callback
+                     function="Pref.HardwareDefaults" />
+                </plus_ps_button_compat>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- 詳細設定（Charis の窓、research/267 gfxadv-ui）の ja。en と同じ名前の鎖で文言だけ（色見本は glass_<名前> の中）。
+     訳は floater_preferences_graphics_advanced.xml（ja）から。 -->
+<floater name="prefs_graphics_advanced" title="グラフィック詳細設定">
+	<plus_ps_tabs name="graphics_tabs">
+		<panel label="全般" name="General">
+			<scroll_container name="general_scroll">
+				<panel name="general_scroll_panel">
+					<plus_ps_text name="ShadersText">
+						シェーダー
+					</plus_ps_text>
+					<plus_ps_check_compat label="透明な水" name="TransparentWater"/>
+					<plus_ps_check_compat label="アンビエントオクルージョン" name="UseSSAO"/>
+					<plus_ps_check_compat label="スクリーンスペース反射" name="ScreenSpaceReflections"/>
+					<plus_ps_check_compat label="鏡" name="Mirrors"/>
+					<plus_ps_header label="影" name="h_shadows"/>
+					<plus_ps_text name="RenderShadowDetailText">
+						影：
+					</plus_ps_text>
+					<plus_ps_combo name="ShadowDetail">
+						<plus_ps_combo.item label="なし" name="0"/>
+						<plus_ps_combo.item label="太陽／月" name="1"/>
+						<plus_ps_combo.item label="太陽／月＋プロジェクタ" name="2"/>
+					</plus_ps_combo>
+					<plus_ps_text name="PlusShadowDistanceText">
+						影の距離：
+					</plus_ps_text>
+					<plus_ps_combo name="PlusShadowDistance" tool_tip="太陽の影がどこまで届くか、遠くでもどれだけくっきり出るかを選びます。「遠い」「とても遠い」は影を細かく描くので、ビデオメモリを多く使います。">
+						<plus_ps_combo.item label="近い（96 m）" name="0"/>
+						<plus_ps_combo.item label="ふつう（192 m）" name="1"/>
+						<plus_ps_combo.item label="遠い（384 m）" name="2"/>
+						<plus_ps_combo.item label="とても遠い（512 m）" name="3"/>
+						<plus_ps_combo.item label="標準" name="official"/>
+					</plus_ps_combo>
+					<plus_ps_text name="PlusShadowPrecisionText">
+						影の細かさ：
+					</plus_ps_text>
+					<plus_ps_combo name="PlusShadowPrecision" tool_tip="細い影（脚・手すり・髪）が、遠くでもどれだけ残るかを選びます。「細かい」「とても細かい」は影を細かく描くので、ビデオメモリを多く使います。">
+						<plus_ps_combo.item label="ふつう" name="0"/>
+						<plus_ps_combo.item label="細かい" name="1"/>
+						<plus_ps_combo.item label="とても細かい" name="2"/>
+						<plus_ps_combo.item label="標準" name="official"/>
+					</plus_ps_combo>
+					<plus_ps_text name="PlusShadowFocusText">
+						影の焦点：
+					</plus_ps_text>
+					<plus_ps_combo name="PlusShadowFocus" tool_tip="いちばん細かい影をどこに使うかを選びます。「被写体に合わせる」は、自分のアバター（またはカメラを向けた物）とその影に、画面が許すいちばん細かい影マップを使います。どこに立っていても同じです。被写体よりずっと手前や奥の物の影は粗くなります。写真はいつも被写体に合わせます。">
+						<plus_ps_combo.item label="被写体に合わせる" name="1"/>
+						<plus_ps_combo.item label="カメラから均等に" name="0"/>
+					</plus_ps_combo>
+					<plus_ps_text name="PlusShadowSoftnessText">
+						影の硬さ：
+					</plus_ps_text>
+					<plus_ps_combo name="PlusShadowSoftness" tool_tip="太陽の影のふちを、くっきりさせるかやわらかくするかを選びます。写真でもこの選択のまま撮ります。変えても、使用中のプリセットは変わりません。">
+						<plus_ps_combo.item label="シャープ" name="0"/>
+						<plus_ps_combo.item label="ややシャープ" name="1"/>
+						<plus_ps_combo.item label="ふつう" name="2"/>
+						<plus_ps_combo.item label="ややソフト" name="3"/>
+						<plus_ps_combo.item label="ソフト" name="4"/>
+						<plus_ps_combo.item label="標準" name="official"/>
+					</plus_ps_combo>
+					<plus_ps_check_compat name="PlusShadowWorldLock" label="細いすき間の光を安定させる" tool_tip="細いすき間（柵や竹垣のすき間など）から差す光が、カメラを動かすと出たり消えたりするのを抑えます。影の向きをカメラに合わせて回さないので、影が少し粗くなります。画質の段によっては使えません。"/>
+					<plus_ps_header label="反射と鏡" name="h_reflections"/>
+					<plus_ps_text name="ReflectionDetailText">
+						反射の精度：
+					</plus_ps_text>
+					<plus_ps_combo name="ReflectionDetail">
+						<plus_ps_combo.item label="静的のみ" name="0"/>
+						<plus_ps_combo.item label="静的＋動的" name="1"/>
+						<plus_ps_combo.item label="リアルタイム" name="2"/>
+					</plus_ps_combo>
+					<plus_ps_text name="ReflectionProbeText">
+						反射の範囲：
+					</plus_ps_text>
+					<plus_ps_combo name="ReflectionLevel">
+						<plus_ps_combo.item label="なし" name="0"/>
+						<plus_ps_combo.item label="手動のみ" name="1"/>
+						<plus_ps_combo.item label="手動＋地形" name="2"/>
+						<plus_ps_combo.item label="シーン全体" name="3"/>
+					</plus_ps_combo>
+					<plus_ps_text name="MirrorResolutionText">
+						鏡の解像度：
+					</plus_ps_text>
+					<plus_ps_combo name="MirrorResolution">
+						<plus_ps_combo.item label="256" name="0"/>
+						<plus_ps_combo.item label="512" name="1"/>
+						<plus_ps_combo.item label="1024" name="2"/>
+						<plus_ps_combo.item label="2048" name="3"/>
+					</plus_ps_combo>
+					<plus_ps_text name="HeroProbeUpdateText">
+						鏡の更新頻度：
+					</plus_ps_text>
+					<plus_ps_combo name="HeroProbeUpdateRate">
+						<plus_ps_combo.item label="低" name="6"/>
+						<plus_ps_combo.item label="中" name="3"/>
+						<plus_ps_combo.item label="高" name="1"/>
+						<plus_ps_combo.item label="最高" name="0"/>
+					</plus_ps_combo>
+					<plus_ps_text name="GeneralText">
+						表示
+					</plus_ps_text>
+					<plus_ps_slider_compat label="描画距離：" name="DrawDistance"/>
+					<plus_ps_text name="DrawDistanceMeterText2">
+						m
+					</plus_ps_text>
+					<plus_ps_slider_compat label="最大パーティクル数：" name="MaxParticleCount"/>
+					<plus_ps_slider_compat label="グロー品質：" name="GlowResolution"/>
+					<plus_ps_text name="GlowResolutionText">
+						低
+					</plus_ps_text>
+					<plus_ps_slider_compat label="近くの光源の最大数：" name="MaxLights"/>
+					<plus_ps_slider_compat label="露出：" name="RenderExposure"/>
+					<plus_ps_text name="AvatarText">
+						アバター
+					</plus_ps_text>
+					<plus_ps_text name="AvatarComplexityModeLabel">
+						アバター表示：
+					</plus_ps_text>
+					<plus_ps_combo name="AvatarComplexityMode">
+						<plus_ps_combo.item label="複雑度で制限" name="0"/>
+						<plus_ps_combo.item label="フレンドは常に表示" name="1"/>
+						<plus_ps_combo.item label="フレンドのみ表示" name="2"/>
+					</plus_ps_combo>
+					<plus_ps_slider_compat tool_tip="見た目の複雑なアバターを、どの複雑度から JellyDoll（単色の人形）で描くかを決めます。" label="最大複雑度：" name="IndirectMaxComplexity"/>
+					<plus_ps_text name="IndirectMaxComplexityText">
+						0
+					</plus_ps_text>
+					<plus_ps_slider_compat label="動くアバターの最大数：" name="IndirectMaxNonImpostors"/>
+					<plus_ps_text name="IndirectMaxNonImpostorsText">
+						0
+					</plus_ps_text>
+					<plus_ps_slider_compat label="物理演算：" name="AvatarPhysicsDetail"/>
+					<plus_ps_text name="AvatarPhysicsDetailText">
+						低
+					</plus_ps_text>
+					<plus_ps_text name="MeshText">
+						詳細度（LOD）
+					</plus_ps_text>
+					<plus_ps_slider_compat label="オブジェクト：" name="ObjectMeshDetail"/>
+					<plus_ps_text name="ObjectMeshDetailText">
+						低
+					</plus_ps_text>
+					<plus_ps_slider_compat label="フレキシプリム：" name="FlexibleMeshDetail"/>
+					<plus_ps_text name="FlexibleMeshDetailText">
+						低
+					</plus_ps_text>
+					<plus_ps_slider_compat label="木：" name="TreeMeshDetail"/>
+					<plus_ps_text name="TreeMeshDetailText">
+						低
+					</plus_ps_text>
+					<plus_ps_slider_compat label="アバター：" name="AvatarMeshDetail"/>
+					<plus_ps_text name="AvatarMeshDetailText">
+						低
+					</plus_ps_text>
+					<plus_ps_slider_compat label="地形：" name="TerrainMeshDetail"/>
+					<plus_ps_text name="TerrainMeshDetailText">
+						低
+					</plus_ps_text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="ハードウェア" name="Hardware Settings">
+			<scroll_container name="hardware_scroll">
+				<panel name="hardware_scroll_panel">
+					<plus_ps_text name="af strength label">
+						異方性フィルタリング：
+					</plus_ps_text>
+					<plus_ps_combo label="異方性フィルタリング" name="anisotropic_filter">
+						<plus_ps_combo.item label="無効" name="disabled" value="0"/>
+						<plus_ps_combo.item label="2x" name="2x" value="2"/>
+						<plus_ps_combo.item label="4x" name="4x" value="4"/>
+						<plus_ps_combo.item label="8x" name="8x" value="8"/>
+						<plus_ps_combo.item label="16x" name="16x" value="16"/>
+					</plus_ps_combo>
+					<plus_ps_check_compat control_name="RenderCompressTextures" label="テクスチャを圧縮する（再起動後に反映）" name="texture compression" tool_tip="ビデオメモリの中のテクスチャを圧縮し、色の質を少し落とす代わりに、より高い解像度のテクスチャを読み込めるようにします。"/>
+					<plus_ps_text name="antialiasing label">
+						アンチエイリアス：
+					</plus_ps_text>
+					<plus_ps_combo label="アンチエイリアス" name="fsaa">
+						<plus_ps_combo.item label="無効" name="FSAADisabled" value="0"/>
+						<plus_ps_combo.item label="FXAA" name="FXAA" value="1"/>
+						<plus_ps_combo.item label="SMAA" name="SMAA" value="2"/>
+					</plus_ps_combo>
+					<plus_ps_text name="antialiasing restart">
+						（再起動後に反映）
+					</plus_ps_text>
+					<plus_ps_text name="antialiasing quality label">
+						アンチエイリアス品質：
+					</plus_ps_text>
+					<plus_ps_combo label="アンチエイリアス" name="fsaa quality">
+						<plus_ps_combo.item label="低" name="Low" value="0"/>
+						<plus_ps_combo.item label="中" name="Medium" value="1"/>
+						<plus_ps_combo.item label="高" name="High" value="2"/>
+						<plus_ps_combo.item label="最高" name="Ultra" value="3"/>
+					</plus_ps_combo>
+					<plus_ps_check_compat label="テンポラル AA（TAA：細い線をなめらかに）" name="taa" tool_tip="テンポラル アンチエイリアス：直前の数フレームを重ねて、止まった景色の細い線や輪郭のギザギザ・ちらつきをならします。上のアンチエイリアスの後に掛かり、FXAA や SMAA もそのまま効きます（両方とも使います）。動く物の後ろにかすかな尾が出ることがあります。保存する写真には掛かりません。負荷は軽めで、再起動せずにすぐ切り替わります。"/>
+					<plus_ps_check_compat label="HiDPI ディスプレイに対応（再起動後に反映）" name="use HiDPI" tool_tip="高解像度描画で OpenGL を有効にします。"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="描画" name="Rendering">
+			<scroll_container name="rendering_scroll">
+				<panel name="rendering_scroll_panel">
+					<plus_ps_text name="FrameRateText">
+						フレームレート
+					</plus_ps_text>
+					<plus_ps_spinner label="フレームレート上限（0＝なし）：" name="fpslimit" tool_tip="1秒に描く枚数の上限です。0で制限なし。VSyncがオフの時に、グラフィックカードの負荷と発熱を抑えます。VSyncがオンの時は、モニターのリフレッシュレートより大きい値にしても効果はありません。"/>
+					<plus_ps_button_compat label="合わせる" name="fpslimit_match" tool_tip="モニターのリフレッシュレートに合わせる：このウィンドウがあるモニターのリフレッシュレートを、上限に設定します。VSyncがオンの時、59.94Hzのような端数のあるレート（Windowsの表示で59・119・143・239）は1つ上（60・120・144・240）にします。VSyncに速さを任せ、カクつきを防ぐためです。"/>
+					<plus_ps_check_compat label="垂直同期（VSync）" name="vsync" tool_tip="フレームレートをモニターのリフレッシュレートにそろえ、画面のずれやカクつきを抑えます。"/>
+					<plus_ps_text name="Texture Rendering">
+						テクスチャ
+					</plus_ps_text>
+					<plus_ps_text name="MaxTextureResolutionLabel">
+						LOD の最大解像度：
+					</plus_ps_text>
+					<plus_ps_combo name="MaxTextureResolution" tool_tip="「詳細度（LOD）」テクスチャの最大解像度"/>
+					<plus_ps_text name="Miscellaneous Rendering">
+						その他
+					</plus_ps_text>
+					<plus_ps_check_compat label="HDR と発光" name="VintageMode"/>
+					<plus_ps_slider_compat label="ポストプロセス品質：" name="RenderPostProcess"/>
+					<plus_ps_text name="PostProcessText">
+						低
+					</plus_ps_text>
+					<plus_ps_slider_compat label="シャープ化：" name="RenderSharpness"/>
+					<plus_ps_text name="ReflectionProbeCount">
+						反射プローブの上限：
+					</plus_ps_text>
+					<plus_ps_combo label="反射プローブの上限：" name="ProbeCount">
+						<plus_ps_combo.item label="なし" name="1"/>
+						<plus_ps_combo.item label="低" name="32"/>
+						<plus_ps_combo.item label="中" name="64"/>
+						<plus_ps_combo.item label="高" name="128"/>
+						<plus_ps_combo.item label="最高" name="256"/>
+					</plus_ps_combo>
+					<plus_ps_text name="TonemapTypeText">
+						トーンマッパー：
+					</plus_ps_text>
+					<plus_ps_combo name="TonemapType">
+						<plus_ps_combo.item label="Khronos Neutral" name="0"/>
+						<plus_ps_combo.item label="ACES" name="1"/>
+						<plus_ps_combo.item label="Reinhard（色相を保つ）" name="2"/>
+						<plus_ps_combo.item label="Hable（映画調）" name="3"/>
+						<plus_ps_combo.item label="Hejl（フィルム調・やわらかめ）" name="4"/>
+					</plus_ps_combo>
+					<plus_ps_slider_compat label="トーンマップの混ぜ具合：" name="TonemapMix" tool_tip="リニア色とトーンマップ後の色の混ぜ具合"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="被写界深度" name="DOF panel">
+			<scroll_container name="dof_scroll">
+				<panel name="dof_scroll_panel">
+					<plus_ps_check_compat label="被写界深度を有効にする（ピントが合った所以外をぼかす）" name="UseDoF"/>
+					<plus_ps_check_compat name="RenderDepthOfFieldInEditMode" label="編集中も有効にする" tool_tip="オブジェクトを作ったり編集したりしている間も、被写界深度を効かせます。"/>
+					<plus_ps_slider_compat name="CameraFNum" label="F 値（絞り）：" tool_tip="被写界深度に使うカメラの F 値です。小さいほど、ピントの外が大きくぼけます。"/>
+					<plus_ps_slider_compat name="CameraFocal" label="焦点距離（mm）：" tool_tip="被写界深度に使うカメラの焦点距離（ミリ）です。"/>
+					<plus_ps_slider_compat name="Camera FOV" label="画角（度）：" tool_tip="被写界深度に使うカメラの縦の画角（度）です。"/>
+					<plus_ps_slider_compat name="CameraFocusTrans" label="ピントの移動時間：" tool_tip="ピントがある所から次の所へ移るのにかかる時間（秒）です。"/>
+					<plus_ps_slider_compat name="CameraDoFResScale" label="被写界深度の品質：" tool_tip="ぼかしの品質です。高いほどきれいで、低いほど速くなります。"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Charis" name="Charis panel">
+			<scroll_container name="charis_scroll">
+				<panel name="charis_scroll_panel">
+					<plus_ps_text name="UpscaleText">
+						アップスケール
+					</plus_ps_text>
+					<plus_ps_text name="PlusUpscaleText">
+						アップスケール：
+					</plus_ps_text>
+					<plus_ps_combo name="PlusUpscale" tool_tip="世界をウィンドウより小さく描き、ウィンドウの大きさに引き伸ばします。グラフィックカードが重い時にフレームレートが上がります。HUD・名前・UI はくっきりのままで、写真は元の大きさで撮ります。撮影画面や撮影ツール（最小化していない時）を開いている間も元の大きさで描くので、その間はフレームレートが下がります。">
+						<plus_ps_combo.item label="オフ" name="0"/>
+						<plus_ps_combo.item label="AMD FSR 1" name="1"/>
+						<plus_ps_combo.item label="単純な拡大（比較用）" name="2"/>
+					</plus_ps_combo>
+					<plus_ps_slider_compat name="PlusUpscaleScale" label="描画の大きさ：" tool_tip="世界を描く大きさ（ウィンドウの幅・高さに対する割合）です。0.77 画質、0.67 バランス、0.59 速め、0.5 最速。"/>
+					<plus_ps_slider_compat name="PlusUpscaleSharpness" label="シャープ化：" tool_tip="引き伸ばした絵をどれだけくっきりさせるか（0：しない、1：いちばん強く）。好みで選びます。"/>
+					<plus_ps_text name="AOText">
+						環境遮蔽と間接光
+					</plus_ps_text>
+					<plus_ps_check_compat name="PlusGtao" label="GTAO（すみの陰を細かく）" tool_tip="標準の環境遮蔽の代わりに GTAO を使い、すみ・家具の下・面の合わせ目の陰を細かく描きます。「全般」の「アンビエントオクルージョン」がオンの時に使え、それと置き換わります。グラフィックカードの負荷が増えます（品質で加減できます）。"/>
+					<plus_ps_text name="PlusGtaoQualityText">
+						GTAO の品質：
+					</plus_ps_text>
+					<plus_ps_combo name="PlusGtaoQuality" tool_tip="「低」「中」は 4 分の 1 の画素で計算します（8・24 サンプル）。「高」はすべての画素です。高いほど細かく、重くなります。">
+						<plus_ps_combo.item label="低" name="1"/>
+						<plus_ps_combo.item label="中" name="2"/>
+						<plus_ps_combo.item label="高" name="3"/>
+					</plus_ps_combo>
+					<plus_ps_slider_compat name="PlusGtaoStrength" label="GTAO の強さ：" tool_tip="陰の濃さです。1 で測ったまま、2 で濃く、0 でなし。"/>
+					<plus_ps_slider_compat name="PlusGtaoRadius" label="GTAO の届く距離（m）：" tool_tip="面が別の面に陰を落とす距離（メートル）です。大きいほど広く、やわらかい陰になります。"/>
+					<plus_ps_check_compat name="PlusSsgi" label="間接光（SSGI）" tool_tip="近くの照らされた面（日なたの地面、赤い壁）の色を、そばの陰に返します。GTAO・アンビエントオクルージョン・HDR・反射プローブが必要です。"/>
+					<plus_ps_slider_compat name="PlusSsgiStrength" label="間接光の強さ：" tool_tip="近くの面が返す光をどれだけ足すか（1：集めた分すべて）です。"/>
+					<plus_ps_text name="CharisReflectionText">
+						反射と半透明
+					</plus_ps_text>
+					<plus_ps_check_compat name="PlusSSR" label="画面内の反射: 新方式" tool_tip="映り込みが遠くまで届き、少し粗い床にもぼけた反射が付きます。「全般」の「スクリーンスペース反射」がオンの時だけ効きます。少し重くなります。ガラス・半透明・水は標準の反射のままです。"/>
+					<plus_ps_text name="OITModeText">
+						半透明の前後関係を正確に（OIT）：
+					</plus_ps_text>
+					<plus_ps_combo name="OITMode" tool_tip="髪・まつ毛・ガラス・煙などの重なった半透明を、本当の前後関係どおりに描きます。髪のふちで奥の物が消えたり、まつ毛が髪の上に乗ったりしなくなります。OIT に必要な機能がないグラフィックカードでは選べません。">
+						<plus_ps_combo.item label="オフ" name="0"/>
+						<plus_ps_combo.item label="アバターの周りだけ" name="1"/>
+						<plus_ps_combo.item label="すべて" name="2"/>
+					</plus_ps_combo>
+					<plus_ps_check_compat label="スナップショットは全 OIT で撮る" name="OITSnapshotFull" tool_tip="上の設定にかかわらず、スナップショットではすべての半透明を OIT で描きます。撮るのに少し時間がかかります。"/>
+					<plus_ps_text name="ObjectFxText">
+						物の出現・消滅の演出
+					</plus_ps_text>
+					<plus_ps_check_compat label="読み込み中の物を光の帯で実体化する" name="PlusMaterialize" tool_tip="テクスチャを読み込んでいる間、物を光る線で描きます。届いたら光の帯が下から上へ走り、通った所から本来の見た目に変わります。キャッシュなどですぐ出せる物は、線も帯も出さずにそのまま表示します。読み込み中のワイヤーフレーム表示（デバッグ設定 RenderGrayTextureWireframe、既定でオン）が必要です。"/>
+					<plus_ps_slider_compat label="実体化の時間（秒）：" name="PlusMaterializeSeconds" tool_tip="光の帯が物の下から上まで走り切る秒数です。"/>
+					<plus_ps_text name="PlusMaterializePaletteText">
+						光の色：
+					</plus_ps_text>
+					<plus_ps_combo name="PlusMaterializePalette" tool_tip="線と光の帯の色です。「カスタム」では右の色見本の色を使います。">
+						<plus_ps_combo.item label="シアン" name="0"/>
+						<plus_ps_combo.item label="オレンジ" name="1"/>
+						<plus_ps_combo.item label="マゼンタ" name="2"/>
+						<plus_ps_combo.item label="グリーン" name="3"/>
+						<plus_ps_combo.item label="カスタム" name="4"/>
+					</plus_ps_combo>
+					<plus_ps_box name="glass_PlusMaterializeColor">
+						<color_swatch name="PlusMaterializeColor" tool_tip="線と光の帯を好きな色にします。色を選ぶと、光の色が「カスタム」に切り替わります。明るさは選んだ色のまま使います。黒に近い色はシアンになります。"/>
+					</plus_ps_box>
+					<plus_ps_check_compat label="アバターも光の帯で実体化する" name="PlusMaterializeAvatar" tool_tip="読み込み中に光る線で描いたアバター（ログイン直後の自分、服や体のテクスチャがまだ届いていない人）が、全部そろった時に光の帯が足元から頭へ 1 回走り、本来の体・服・装着物に変わります。同時に走らせるのは 8 人まで。すぐ表示できたアバターは帯を出しません。"/>
+					<plus_ps_check_compat label="物が消える時の演出" name="PlusDerez" tool_tip="近くの物が削除・返却された時（自分の物も他人の物も）、すぐには消さず、光る小さな立方体に崩れて上へ舞いながら消えます。装着物・アバター・物理で動く物・テレポートでは出ません。"/>
+					<plus_ps_slider_compat label="崩れる時間（秒）：" name="PlusDerezSeconds" tool_tip="消える物が崩れ切るまでの秒数です。"/>
+					<plus_ps_text name="PlusDerezPaletteText">
+						光の色：
+					</plus_ps_text>
+					<plus_ps_combo name="PlusDerezPalette" tool_tip="崩れていく境目の光の色です。「カスタム」では右の色見本の色を使います。">
+						<plus_ps_combo.item label="シアン" name="0"/>
+						<plus_ps_combo.item label="オレンジ" name="1"/>
+						<plus_ps_combo.item label="マゼンタ" name="2"/>
+						<plus_ps_combo.item label="グリーン" name="3"/>
+						<plus_ps_combo.item label="カスタム" name="4"/>
+					</plus_ps_combo>
+					<plus_ps_box name="glass_PlusDerezColor">
+						<color_swatch name="PlusDerezColor" tool_tip="崩れて消える物の光を好きな色にします。色を選ぶと、光の色が「カスタム」に切り替わります。"/>
+					</plus_ps_box>
+				</panel>
+			</scroll_container>
+		</panel>
+	</plus_ps_tabs>
+	<plus_ps_button_compat label="推奨設定にリセット" name="Defaults"/>
+	<plus_ps_button_compat label="ＯＫ" label_selected="ＯＫ" name="OK"/>
+	<plus_ps_button_compat label="キャンセル" label_selected="キャンセル" name="Cancel"/>
+	<check_box label="RenderAvatarMaxComplexity" name="RenderAvatarMaxComplexity"/>
+	<check_box label="RenderAvatarMaxNonImpostors" name="RenderAvatarMaxNonImpostors"/>
+</floater>

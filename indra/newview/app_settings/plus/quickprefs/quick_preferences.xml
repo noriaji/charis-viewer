@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The standard list of the Quick Preferences window (plus/quickprefs, from
+  Firestorm's app_settings/quick_preferences.xml). Used until the user changes the
+  list; the user's own list is plus_quick_preferences.xml in the user settings folder.
+  control_type: 0 checkbox, 1 text, 2 spinner, 3 slider, 4 radio, 5 color3, 6 color4.
+  translation_id names a floater string of floater_plus_quickprefs.xml.
+-->
+<quickprefs>
+    <entries
+     control_name="RenderFarClip"
+     control_type="3"
+     increment="8"
+     integer="true"
+     label="Draw Distance"
+     max="1024"
+     min="32"
+     translation_id="qp_draw_distance" />
+    <entries
+     control_name="RenderMaxPartCount"
+     control_type="3"
+     increment="256"
+     integer="true"
+     label="Max Particles"
+     max="8192"
+     min="0"
+     translation_id="qp_max_particles" />
+    <entries
+     control_name="RenderAvatarPhysicsLODFactor"
+     control_type="3"
+     increment="0.05"
+     integer="false"
+     label="Avatar Physics LOD"
+     max="1"
+     min="0"
+     translation_id="qp_avatar_physics_lod" />
+    <entries
+     control_name="RenderVolumeLODFactor"
+     control_type="3"
+     increment="0.125"
+     integer="false"
+     label="LOD Factor"
+     max="4"
+     min="0"
+     translation_id="qp_lod_factor" />
+    <entries
+     control_name="IndirectMaxNonImpostors"
+     control_type="3"
+     increment="1"
+     integer="true"
+     label="Max Avatars"
+     max="66"
+     min="1"
+     translation_id="qp_max_avatars" />
+    <entries
+     control_name="AvatarNameTagMode"
+     control_type="3"
+     increment="1"
+     integer="true"
+     label="Name Tags"
+     max="2"
+     min="0"
+     translation_id="qp_name_tags" />
+</quickprefs>

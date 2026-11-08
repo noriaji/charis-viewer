@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_time_conv" title="時刻変換（SL・世界標準時・各地）">
+	<floater.string name="zone_pc">この PC の時刻</floater.string>
+	<floater.string name="zone_jst">日本 (JST)</floater.string>
+	<floater.string name="zone_kst">韓国 (KST)</floater.string>
+	<floater.string name="zone_china">中国・台湾 (CST)</floater.string>
+	<floater.string name="zone_india">インド (IST)</floater.string>
+	<floater.string name="zone_uk">英国 (GMT/BST)</floater.string>
+	<floater.string name="zone_cet">中欧 (CET/CEST)</floater.string>
+	<floater.string name="zone_et">米国東部 (ET)</floater.string>
+	<floater.string name="zone_ct">米国中部 (CT)</floater.string>
+	<floater.string name="zone_mt">米国山岳部 (MT)</floater.string>
+	<floater.string name="zone_hst">ハワイ (HST)</floater.string>
+	<floater.string name="zone_aet">豪州東部 (AET)</floater.string>
+	<floater.string name="zone_nz">ニュージーランド (NZ)</floater.string>
+	<floater.string name="info_pc">この PC</floater.string>
+	<floater.string name="note_gap">※ [WHERE] [TIME] は夏時間の開始でとばされる時刻です。[FIXED] として計算しました</floater.string>
+	<floater.string name="note_overlap">※ [WHERE] [TIME] は夏時間の終わりで 2 回あります。夏時間の側で計算しました</floater.string>
+	<floater.string name="note_range">※ 範囲外です（年は 1970〜2100、日付は実在するもの）。ほかの行は変えていません</floater.string>
+	<floater.string name="name_sl">SL</floater.string>
+	<panel name="row0">
+		<text name="label">SL 時間</text>
+		<plus_tc_field name="y" tool_tip="年（1970〜2100）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_y">年</text>
+		<plus_tc_field name="mo" tool_tip="月（1〜12）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_mo">月</text>
+		<plus_tc_field name="d" tool_tip="日。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_d">日</text>
+		<plus_tc_field name="h" tool_tip="時（0〜23）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_h">時</text>
+		<plus_tc_field name="mi" tool_tip="分（0〜59）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_mi">分</text>
+		<button name="copy" label="コピー" tool_tip="この行を文字でコピーします（2026-10-24 23:00 JST）"/>
+	</panel>
+	<panel name="row1">
+		<text name="label">世界標準時 (UTC)</text>
+		<plus_tc_field name="y" tool_tip="年（1970〜2100）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_y">年</text>
+		<plus_tc_field name="mo" tool_tip="月（1〜12）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_mo">月</text>
+		<plus_tc_field name="d" tool_tip="日。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_d">日</text>
+		<plus_tc_field name="h" tool_tip="時（0〜23）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_h">時</text>
+		<plus_tc_field name="mi" tool_tip="分（0〜59）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_mi">分</text>
+		<button name="copy" label="コピー" tool_tip="この行を文字でコピーします（2026-10-24 23:00 JST）"/>
+	</panel>
+	<panel name="row2">
+		<combo_box name="zone" tool_tip="この行に出す地域を選びます"/>
+		<plus_tc_field name="y" tool_tip="年（1970〜2100）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_y">年</text>
+		<plus_tc_field name="mo" tool_tip="月（1〜12）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_mo">月</text>
+		<plus_tc_field name="d" tool_tip="日。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_d">日</text>
+		<plus_tc_field name="h" tool_tip="時（0〜23）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_h">時</text>
+		<plus_tc_field name="mi" tool_tip="分（0〜59）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_mi">分</text>
+		<button name="copy" label="コピー" tool_tip="この行を文字でコピーします（2026-10-24 23:00 JST）"/>
+	</panel>
+	<panel name="row3">
+		<combo_box name="zone" tool_tip="この行に出す地域を選びます"/>
+		<plus_tc_field name="y" tool_tip="年（1970〜2100）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_y">年</text>
+		<plus_tc_field name="mo" tool_tip="月（1〜12）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_mo">月</text>
+		<plus_tc_field name="d" tool_tip="日。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_d">日</text>
+		<plus_tc_field name="h" tool_tip="時（0〜23）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_h">時</text>
+		<plus_tc_field name="mi" tool_tip="分（0〜59）。↑↓キーとマウスホイールで 1 ずつ増減します。「2026/10/24 19:30」のような日時を貼り付けると、この行をまとめて入れます。"/>
+		<text name="u_mi">分</text>
+		<button name="copy" label="コピー" tool_tip="この行を文字でコピーします（2026-10-24 23:00 JST）"/>
+		<button name="remove" tool_tip="この行を消します"/>
+	</panel>
+	<button name="now" label="今に合わせる" tool_tip="今の時刻にして、時計に合わせて進めます"/>
+	<check_box name="tick" label="時計を進める" tool_tip="オン: 時計に合わせて各行が進みます。欄を書き換えるとオフになり、入力中の値は動きません"/>
+	<button name="plus_hour" label="+1時間"/>
+	<button name="plus_day" label="+1日"/>
+	<button name="minus_hour" label="-1時間"/>
+	<button name="minus_day" label="-1日"/>
+	<button name="copy_all" label="全部コピー" tool_tip="左の 1 行をコピーします（チャットに貼る用）"/>
+	<button name="add_row" label="＋地域を追加" tool_tip="4 行目を出します"/>
+</floater>

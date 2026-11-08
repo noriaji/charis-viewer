@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The list's menu of the radar (plus/radar, radarfloater.cpp: Plus.Radar.Action / .Enable). -->
+<context_menu
+ layout="topleft"
+ name="plus_radar_menu">
+    <menu_item_call label="View Profile" layout="topleft" name="profile">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="profile" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="one" />
+    </menu_item_call>
+    <menu_item_call label="Add Friend" layout="topleft" name="add_friend">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="add_friend" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="add_friend" />
+    </menu_item_call>
+    <menu_item_call label="Remove Friend" layout="topleft" name="remove_friend">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="remove_friend" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="remove_friend" />
+    </menu_item_call>
+    <menu_item_call label="IM" layout="topleft" name="im">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="im" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="any" />
+    </menu_item_call>
+    <menu_item_call label="Call" layout="topleft" name="call">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="call" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="call" />
+    </menu_item_call>
+    <menu_item_separator layout="topleft" />
+    <menu_item_call label="Show on Map" layout="topleft" name="map">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="map" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="map" />
+    </menu_item_call>
+    <menu_item_call label="Track" layout="topleft" name="track">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="track" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="position" />
+    </menu_item_call>
+    <menu_item_call label="Teleport To" layout="topleft" name="teleport_to">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="teleport_to" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="position" />
+    </menu_item_call>
+    <menu_item_call label="Zoom In" layout="topleft" name="zoom">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="zoom" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="zoom" />
+    </menu_item_call>
+    <menu_item_separator layout="topleft" />
+    <menu_item_call label="Offer Teleport" layout="topleft" name="offer_teleport">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="offer_teleport" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="offer_teleport" />
+    </menu_item_call>
+    <menu_item_call label="Request Teleport" layout="topleft" name="request_teleport">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="request_teleport" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="one" />
+    </menu_item_call>
+    <menu_item_call label="Share" layout="topleft" name="share">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="share" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="one" />
+    </menu_item_call>
+    <menu_item_call label="Pay" layout="topleft" name="pay">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="pay" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="one" />
+    </menu_item_call>
+    <menu_item_call label="Invite to Group" layout="topleft" name="invite_group">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="invite_group" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="one" />
+    </menu_item_call>
+    <menu_item_separator layout="topleft" />
+    <menu_item_call label="Block / Unblock" layout="topleft" name="block">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="block" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="block" />
+    </menu_item_call>
+    <menu_item_separator layout="topleft" />
+    <menu_item_call label="Copy Name" layout="topleft" name="copy_name">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="copy_name" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="any" />
+    </menu_item_call>
+    <menu_item_call label="Copy ID" layout="topleft" name="copy_id">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="copy_id" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="any" />
+    </menu_item_call>
+    <menu_item_call label="Select All" layout="topleft" name="select_all">
+        <menu_item_call.on_click function="Plus.Radar.Action" parameter="select_all" />
+        <menu_item_call.on_enable function="Plus.Radar.Enable" parameter="any" />
+    </menu_item_call>
+</context_menu>

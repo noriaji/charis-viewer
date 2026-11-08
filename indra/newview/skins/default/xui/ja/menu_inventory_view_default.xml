@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<toggleable_menu name="menu_view_default">
+	<menu_item_check name="sort_by_name" label="名前で並べ替え"/>
+	<menu_item_check name="sort_by_recent" label="新しい順で並べ替え"/>
+	<menu_item_check name="sort_folders_by_name" label="フォルダは常に名前順"/>
+	<menu_item_check name="sort_system_folders_to_top" label="システムフォルダを上に"/>
+	<menu_item_check name="list_view" label="リスト表示"/>
+	<menu_item_check name="gallery_view" label="ギャラリー表示"/>
+	<menu_item_check name="combination_view" label="組み合わせ表示"/>
+	<menu_item_check name="recent_tab" label="「最新」タブ"/>
+	<menu_item_check name="worn_tab" label="「着用中」タブ"/>
+	<menu_item_check name="favorites_tab" label="「お気に入り」タブ"/>
+</toggleable_menu>

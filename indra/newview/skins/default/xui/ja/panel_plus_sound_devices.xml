@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis window: the words of panel_plus_sound_devices.xml (en), by the same names (from the official
+     panel's translation). -->
+<panel name="device_settings_panel" label="機器の設定">
+    <panel.string name="default_text">
+        デフォルト
+    </panel.string>
+    <string name="name_no_device">
+        機器が設定されていません。
+    </string>
+    <string name="name_default_system_device">
+        デフォルトのシステム機器
+    </string>
+    <string name="device_not_loaded">
+        機器を読み込んでいません
+    </string>
+    <plus_ps_text name="Input">
+        入力
+    </plus_ps_text>
+    <plus_ps_text name="Output">
+        出力
+    </plus_ps_text>
+    <plus_ps_text name="My volume label">
+        マイク音量：
+    </plus_ps_text>
+    <slider_bar name="mic_volume_slider" tool_tip="スライダーを使ってマイクレベルを調節します。" />
+    <plus_ps_text name="wait_text">
+        しばらくお待ちください。
+    </plus_ps_text>
+    <plus_ps_text name="disabled_text">
+        無効
+    </plus_ps_text>
+    <plus_ps_button_compat name="unmute_btn" label="ミュート解除" />
+</panel>

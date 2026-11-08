@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis の窓（元: 公式 Second_Life_Release#d567465e-26.5 の panel_preferences_uploads.xml。research/266 prefs-w-chat）.
+     Charis window: Preferences > Uploads in the psui look. The official file stays as it is (the ledger's source:
+     research/ui-ledger/map.json). The C++ (LLFloaterPreference::onChange*Folder) writes the folders into
+     upload_textures / upload_sounds / upload_animation / upload_models / upload_pbr (LLTextBox: compat texts).
+     Size (1080 base; a preferences page, plus/prefscharis/prefs_tab_template.xml): 574 x 515, a scroll_container
+     with a panel 557 wide. Rows at left 14, 529 wide. From the top:
+       10 + the heading (title) 40 + 5 rows 180 (36: a folder of two lines fits) + 10 + the note 36 (two lines) + 14
+     = 290 (no scroll). A row: the kind 14..164 (ja "PBR マテリアル" about 90), the folder 170..543 (one or two lines,
+     then the ellipsis). -->
+<panel
+ border="true"
+ follows="all"
+ height="515"
+ label="Uploads"
+ layout="topleft"
+ left="0"
+ name="uploads"
+ top="0"
+ width="574">
+    <plus_ps_box
+     name="ps_ground"
+     follows="all"
+     height="515"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="574">
+        <scroll_container
+         name="uploads_scroll"
+         follows="all"
+         height="515"
+         layout="topleft"
+         left="0"
+         opaque="false"
+         reserve_scroll_corner="false"
+         top="0"
+         width="574">
+            <panel
+             name="uploads_scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             height="290"
+             layout="topleft"
+             left="0"
+             mouse_opaque="false"
+             top="0"
+             width="557">
+                <plus_ps_text
+                 name="title"
+                 follows="left|top"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="10"
+                 type="string"
+                 width="529">
+                    Current destination folders for uploads
+                </plus_ps_text>
+
+                <plus_ps_text
+                 name="title_models"
+                 follows="left|top"
+                 height="36"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="50"
+                 type="string"
+                 width="150">
+                    Images
+                </plus_ps_text>
+                <plus_ps_text
+                 name="upload_textures"
+                 follows="left|top|right"
+                 height="36"
+                 kind="white"
+                 layout="topleft"
+                 left="170"
+                 top="50"
+                 type="string"
+                 use_ellipses="true"
+                 width="373"
+                 word_wrap="true" />
+
+                <plus_ps_text
+                 name="title_sounds"
+                 follows="left|top"
+                 height="36"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="86"
+                 type="string"
+                 width="150">
+                    Sounds
+                </plus_ps_text>
+                <plus_ps_text
+                 name="upload_sounds"
+                 follows="left|top|right"
+                 height="36"
+                 kind="white"
+                 layout="topleft"
+                 left="170"
+                 top="86"
+                 type="string"
+                 use_ellipses="true"
+                 width="373"
+                 word_wrap="true" />
+
+                <plus_ps_text
+                 name="title_animation"
+                 follows="left|top"
+                 height="36"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="122"
+                 type="string"
+                 width="150">
+                    Animations
+                </plus_ps_text>
+                <plus_ps_text
+                 name="upload_animation"
+                 follows="left|top|right"
+                 height="36"
+                 kind="white"
+                 layout="topleft"
+                 left="170"
+                 top="122"
+                 type="string"
+                 use_ellipses="true"
+                 width="373"
+                 word_wrap="true" />
+
+                <plus_ps_text
+                 name="title_model"
+                 follows="left|top"
+                 height="36"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="158"
+                 type="string"
+                 width="150">
+                    Models
+                </plus_ps_text>
+                <plus_ps_text
+                 name="upload_models"
+                 follows="left|top|right"
+                 height="36"
+                 kind="white"
+                 layout="topleft"
+                 left="170"
+                 top="158"
+                 type="string"
+                 use_ellipses="true"
+                 width="373"
+                 word_wrap="true" />
+
+                <plus_ps_text
+                 name="title_pbr"
+                 follows="left|top"
+                 height="36"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="194"
+                 type="string"
+                 width="150">
+                    PBR Materials
+                </plus_ps_text>
+                <plus_ps_text
+                 name="upload_pbr"
+                 follows="left|top|right"
+                 height="36"
+                 kind="white"
+                 layout="topleft"
+                 left="170"
+                 top="194"
+                 type="string"
+                 use_ellipses="true"
+                 width="373"
+                 word_wrap="true" />
+
+                <plus_ps_text
+                 name="upload_help"
+                 follows="left|top|right"
+                 height="36"
+                 kind="hint"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="240"
+                 type="string"
+                 width="529"
+                 wrap="true">
+                    To change a destination folder, right click on it in inventory and choose "Use as default for"
+                </plus_ps_text>
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</panel>

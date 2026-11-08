@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The right click on the shortcut bar (plus/shortcutbar: Plus.Shortcut.Bar / .Enable). -->
+<context_menu
+ layout="topleft"
+ name="plus_shortcut_bar_menu">
+    <menu_item_call label="Rename..." layout="topleft" name="rename">
+        <menu_item_call.on_click function="Plus.Shortcut.Bar" parameter="rename" />
+        <menu_item_call.on_enable function="Plus.Shortcut.Bar.Enable" parameter="slot" />
+    </menu_item_call>
+    <menu_item_call label="Move Left" layout="topleft" name="left">
+        <menu_item_call.on_click function="Plus.Shortcut.Bar" parameter="left" />
+        <menu_item_call.on_enable function="Plus.Shortcut.Bar.Enable" parameter="left" />
+    </menu_item_call>
+    <menu_item_call label="Move Right" layout="topleft" name="right">
+        <menu_item_call.on_click function="Plus.Shortcut.Bar" parameter="right" />
+        <menu_item_call.on_enable function="Plus.Shortcut.Bar.Enable" parameter="right" />
+    </menu_item_call>
+    <menu_item_call label="Separator Before / Not" layout="topleft" name="separator">
+        <menu_item_call.on_click function="Plus.Shortcut.Bar" parameter="separator" />
+        <menu_item_call.on_enable function="Plus.Shortcut.Bar.Enable" parameter="slot" />
+    </menu_item_call>
+    <menu_item_call label="Remove" layout="topleft" name="remove">
+        <menu_item_call.on_click function="Plus.Shortcut.Bar" parameter="remove" />
+        <menu_item_call.on_enable function="Plus.Shortcut.Bar.Enable" parameter="slot" />
+    </menu_item_call>
+    <menu_item_separator layout="topleft" />
+    <menu_item_call label="Clear All" layout="topleft" name="clear">
+        <menu_item_call.on_click function="Plus.Shortcut.Bar" parameter="clear" />
+        <menu_item_call.on_enable function="Plus.Shortcut.Bar.Enable" parameter="any" />
+    </menu_item_call>
+    <menu_item_call label="Hide the Shortcut Bar" layout="topleft" name="hide">
+        <menu_item_call.on_click function="Plus.Shortcut.Bar" parameter="hide" />
+        <menu_item_call.on_enable function="Plus.Shortcut.Bar.Enable" parameter="always" />
+    </menu_item_call>
+</context_menu>

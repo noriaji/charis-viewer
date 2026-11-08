@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="panel_login" focus_root="true">
+	<panel.string name="forgot_password_url">
+		https://secondlife.com/my/account/request.php?lang=ja-JP
+	</panel.string>
+	<panel.string name="sign_up_url">
+		https://join.secondlife.com/?lang=ja
+	</panel.string>
+	<layout_stack name="main_stack">
+		<layout_panel name="center_stage">
+			<layout_stack name="ui_stack">
+				<layout_panel name="ui_container">
+					<combo_box name="username_combo" label="ユーザ名" tool_tip="登録したときのユーザ名です（例：bobsmith12、Steller Sunshine）"/>
+					<check_box name="remember_name" label="ユーザ名を記憶" tool_tip="記憶したユーザ名は「私 ＞ 環境設定 ＞ アドバンス ＞ 記録済みのユーザ名」で消せます。"/>
+					<line_editor name="password_edit" label="パスワード"/>
+					<check_box name="remember_password" label="パスワードを記憶"/>
+					<text name="location_text">
+						開始地点
+					</text>
+					<combo_box name="start_location_combo" label="お気に入りの場所">
+						<combo_box.item name="MyLastLocation" label="最後にいた場所"/>
+						<combo_box.item name="MyHome" label="自宅"/>
+					</combo_box>
+					<layout_stack name="login_stack">
+						<layout_panel name="grid_panel">
+							<text name="grid_text">
+								グリッド
+							</text>
+							<combo_box name="server_combo" label="グリッドを選択"/>
+						</layout_panel>
+						<layout_panel name="login_panel">
+							<button name="connect_btn" label="ログイン"/>
+							<text name="forgot_password_text">
+								ログインでお困りですか？
+							</text>
+							<button name="sign_btn" label="アカウントを作成"/>
+						</layout_panel>
+					</layout_stack>
+					<!-- plus tpv-fix1: version_text（文字はコードが入れる英字表記。research/227 F2） -->
+					<text name="version_text" tool_tip="Charis Viewer について"/>
+					<!-- /plus -->
+				</layout_panel>
+			</layout_stack>
+		</layout_panel>
+	</layout_stack>
+	<layout_stack name="ui_stack">
+		<layout_panel name="ui_elastic_pad_left"/>
+		<layout_panel name="ui_container">
+			<icon name="sl_logo_small"/>
+			<combo_box label="Username" tool_tip="登録時に自分で選んだユーザー名（例：bobsmith12、Steller Sunshineなど）" name="username_combo">
+				<combo_box.combo_editor/>
+			</combo_box>
+			<line_editor name="password_edit" label="パスワード"/>
+			<combo_box label="お気に入りの場所" name="start_location_combo">
+				<combo_box.combo_editor/>
+				<combo_box.item label="最後にいた場所" name="MyLastLocation" value="last"/>
+				<combo_box.item label="ホーム" name="MyHome" value="home"/>
+			</combo_box>
+			<button label="ログイン" name="connect_btn"/>
+			<text name="sign_up_text">
+				サインアップ
+			</text>
+			<!-- plus: fix-round111 Preferences は「環境設定」（公式の ja は「初期設定」） -->
+			<check_box label="名前を記録" name="remember_name" tool_tip="すでに記憶されているユーザーは、「私」＞「環境設定」＞「アドバンス」＞「記録済みのユーザ名」から削除できます。"/>
+			<!-- /plus -->
+			<check_box label="パスワードを記録" name="remember_password"/>
+			<combo_box label="Select grid" name="server_combo"/>
+			<text name="forgot_password_text">
+				パスワードに関するヘルプ
+			</text>
+		</layout_panel>
+		<layout_panel name="ui_elastic_pad_right"/>
+	</layout_stack>
+	<web_browser name="login_html"/>
+</panel>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_graphics1.xml, by name. -->
+<panel label="Graphiques" name="Display panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="graphics_scroll">
+			<panel name="graphics_scroll_panel">
+				<plus_ps_text name="preset_text">
+					(Aucun/Aucune)
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText">
+					Faible
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText2">
+					Moyenne
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText3">
+					Élevée
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText4">
+					Ultra
+				</plus_ps_text>
+				<plus_ps_text name="QualitySpeed">
+					Qualité et vitesse :
+				</plus_ps_text>
+				<plus_ps_text name="FasterText">
+					Plus rapide
+				</plus_ps_text>
+				<plus_ps_text name="BetterText">
+					Meilleure
+				</plus_ps_text>
+				<plus_ps_button_compat label="Paramètres avancés" name="AdvancedSettings"/>
+				<plus_ps_slider_compat label="Complexité max. de l'avatar :" tool_tip="Contrôle à quel moment un avatar complexe est représenté comme un « JellyDoll »" name="IndirectMaxComplexity"/>
+				<plus_ps_text name="IndirectMaxComplexityText">
+					0
+				</plus_ps_text>
+				<plus_ps_button_compat label="Exceptions..." name="RenderExceptionsButton"/>
+				<plus_ps_button_compat label="Enregistrer les paramètres comme préréglage" name="PrefSaveButton"/>
+				<plus_ps_button_compat label="Charger un préréglage" name="PrefLoadButton"/>
+				<plus_ps_button_compat label="Supprimer un préréglage" name="PrefDeleteButton"/>
+				<plus_ps_button_compat label="Réinitialiser les paramètres recommandés" name="Defaults"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

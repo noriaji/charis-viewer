@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The detail pane of the inventory window (plus/invexplorer, research/220): what the selected item is.
+     Shown on the right of the inventory while the window is wide enough. -->
+<panel
+ background_visible="true"
+ bg_alpha_color="DkGray2"
+ border="false"
+ follows="all"
+ height="560"
+ layout="topleft"
+ left="0"
+ name="plus_inv_detail"
+ top="0"
+ width="260">
+    <panel.string name="acquired_24h">[wkday,datetime,slt] [mth,datetime,slt] [day,datetime,slt] [hour,datetime,slt]:[min,datetime,slt] [year,datetime,slt]</panel.string>
+    <panel.string name="acquired_12h">[wkday,datetime,slt] [mth,datetime,slt] [day,datetime,slt] [hour12,datetime,slt]:[min,datetime,slt] [ampm,datetime,slt] [year,datetime,slt]</panel.string>
+    <panel.string name="l_type">Type</panel.string>
+    <panel.string name="l_creator">Creator</panel.string>
+    <panel.string name="l_owner">Owner</panel.string>
+    <panel.string name="l_acquired">Acquired</panel.string>
+    <panel.string name="l_perm_you">You can</panel.string>
+    <panel.string name="l_perm_next">Next owner</panel.string>
+    <panel.string name="l_description">Description</panel.string>
+    <panel.string name="l_contents">Items inside</panel.string>
+    <panel.string name="l_uuid">UUID</panel.string>
+    <panel.string name="perm_modify">Modify</panel.string>
+    <panel.string name="perm_copy">Copy</panel.string>
+    <panel.string name="perm_transfer">Transfer</panel.string>
+    <panel.string name="yes">Yes</panel.string>
+    <panel.string name="no">No</panel.string>
+    <panel.string name="you">You</panel.string>
+    <panel.string name="group">A group</panel.string>
+    <panel.string name="folder">Folder</panel.string>
+    <panel.string name="none">None</panel.string>
+    <panel.string name="unknown">Unknown</panel.string>
+    <panel.string name="loading">Loading...</panel.string>
+    <panel.string name="nothing">Select an item to see its details here.</panel.string>
+    <panel.string name="more_selected">... and [N] more selected</panel.string>
+    <text
+     type="string"
+     length="1"
+     follows="left|top|right"
+     font="SansSerifBold"
+     height="20"
+     layout="topleft"
+     left="8"
+     mouse_opaque="false"
+     name="detail_title"
+     top="6"
+     use_ellipses="true"
+     width="244" />
+    <text_editor
+     follows="all"
+     height="486"
+     layout="topleft"
+     left="4"
+     max_length="2048"
+     name="detail_text"
+     read_only="true"
+     top_pad="4"
+     width="252"
+     word_wrap="true" />
+    <plus_ps_picture
+     follows="left|top"
+     height="150"
+     layout="topleft"
+     left="8"
+     icon="camera"
+     name="detail_preview"
+     top="30"
+     visible="false"
+     width="244" />
+    <button
+     follows="left|bottom"
+     height="22"
+     label="Properties"
+     layout="topleft"
+     left="4"
+     name="detail_properties_btn"
+     tool_tip="Open the properties of the selected item"
+     top="534"
+     width="80" />
+    <button
+     follows="left|bottom"
+     height="22"
+     label="New window"
+     layout="topleft"
+     left_pad="4"
+     name="detail_open_btn"
+     tool_tip="Open the selected folder in a new inventory window"
+     top_delta="0"
+     width="84" />
+    <button
+     follows="left|bottom"
+     height="22"
+     label="Copy UUID"
+     layout="topleft"
+     left_pad="4"
+     name="detail_copy_uuid_btn"
+     tool_tip="Copy the ID of the selected item to the clipboard"
+     top_delta="0"
+     width="80" />
+</panel>

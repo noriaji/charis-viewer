@@ -1,0 +1,2520 @@
+/**
+ * @file llviewerinput.cpp
+ * @brief LLViewerInput class implementation
+ *
+ * $LicenseInfo:firstyear=2005&license=viewerlgpl$
+ * Second Life Viewer Source Code
+ * Copyright (C) 2010, Linden Research, Inc.
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation;
+ * version 2.1 of the License only.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * Linden Research, Inc., 945 Battery Street, San Francisco, CA  94111  USA
+ * $/LicenseInfo$
+ */
+
+#include "llviewerprecompiledheaders.h"
+
+#include "llviewerinput.h"
+
+#include "llappviewer.h"
+#include "llfloaterreg.h"
+#include "llmath.h"
+#include "llagent.h"
+#include "llagentcamera.h"
+#include "llfloaterimnearbychat.h"
+#include "llfocusmgr.h"
+#include "llgamecontrol.h"
+#include "llkeybind.h" // LLKeyData
+#include "llmorphview.h"
+#include "llmoveview.h"
+#include "llsetkeybinddialog.h"
+#include "lltoolfocus.h"
+#include "lltoolpie.h"
+#include "llviewercontrol.h"
+#include "llviewerwindow.h"
+#include "llvoavatarself.h"
+#include "llfloatercamera.h"
+#include "llinitparam.h"
+#include "llselectmgr.h"
+// <plus> fine adjustment keys (plus/nudge) and the photo tools' keys (plus/photomode/photokeys)
+#include "plus/nudge/nudge.h"
+#include "plus/photomode/photokeys.h"
+#include "plus/camerapath/camerapath.h"
+#include "plus/flycamsens/flycamsens.h"
+#include "plus/flycammouse/flycammouse.h"
+// </plus>
+#include "llviewercamera.h"
+
+//
+// Constants
+//
+
+const F32 FLY_TIME = 0.5f;
+const F32 FLY_FRAMES = 4;
+
+const F32 NUDGE_TIME = 0.25f;  // in seconds
+const S32 NUDGE_FRAMES = 2;
+const F32 ORBIT_NUDGE_RATE = 0.05f;  // fraction of normal speed
+
+const LLKeyData agent_control_lbutton(CLICK_LEFT, KEY_NONE, MASK_NONE, true);
+
+static U64 g_lastUpdateTime { 0 };
+static F32 g_deltaTime { 0.0f };
+
+struct LLKeybindFunctionData
+{
+    LLKeybindFunctionData(LLKeyFunc function, bool global)
+        :
+        mFunction(function),
+        mIsGlobal(global)
+    {
+    }
+    LLKeyFunc mFunction;
+    // todo: might be good idea to make this into enum, like: global/inworld/menu
+    bool mIsGlobal;
+};
+
+struct LLKeyboardActionRegistry
+:   public LLRegistrySingleton<const std::string, LLKeybindFunctionData, LLKeyboardActionRegistry>
+{
+    LLSINGLETON_EMPTY_CTOR(LLKeyboardActionRegistry);
+};
+
+LLViewerInput gViewerInput;
+
+bool agent_jump( const LLKeyPressState& s )
+{
+    static bool first_fly_attempt(true);
+    if (KEYSTATE_UP == s.mState)
+    {
+        first_fly_attempt = true;
+        return true;
+    }
+    F32 time = s.mElapsedTime;
+    S32 frame_count = s.mElapsedFrames;
+
+    if( time < FLY_TIME
+        || frame_count <= FLY_FRAMES
+        || gAgent.upGrabbed()
+        || !gSavedSettings.getBOOL("AutomaticFly"))
+    {
+        gAgent.moveUp(1);
+    }
+    else
+    {
+        gAgent.setFlying(true, first_fly_attempt);
+        first_fly_attempt = false;
+        gAgent.moveUp(1);
+    }
+    return true;
+}
+
+bool agent_push_down( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    gAgent.moveUp(-1);
+    return true;
+}
+
+bool agent_toggle_down( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+
+    if (KEYSTATE_DOWN == s.mState
+        && !gAgent.getFlying())
+    {
+        gAgent.toggleCrouch();
+    }
+    gAgent.moveUp(-1);
+    return true;
+}
+
+static void agent_check_temporary_run(LLAgent::EDoubleTapRunMode mode)
+{
+    if (gAgent.mDoubleTapRunMode == mode &&
+        gAgent.getRunning() &&
+        !gAgent.getAlwaysRun())
+    {
+        // Turn off temporary running.
+        gAgent.clearRunning();
+        gAgent.sendWalkRun(gAgent.getRunning());
+    }
+}
+
+static void agent_handle_doubletap_run(const LLKeyPressState& s, LLAgent::EDoubleTapRunMode mode)
+{
+    if (KEYSTATE_UP == s.mState)
+    {
+        // Note: in case shift is already released, slide left/right run
+        // will be released in agent_turn_left()/agent_turn_right()
+        agent_check_temporary_run(mode);
+    }
+    else if (gSavedSettings.getBOOL("AllowTapTapHoldRun") &&
+         KEYSTATE_DOWN == s.mState &&
+         !gAgent.getRunning())
+    {
+        if (gAgent.mDoubleTapRunMode == mode &&
+            gAgent.mDoubleTapRunTimer.getElapsedTimeF32() < NUDGE_TIME)
+        {
+            // Same walk-key was pushed again quickly; this is a
+            // double-tap so engage temporary running.
+            gAgent.setRunning();
+            gAgent.sendWalkRun(gAgent.getRunning());
+        }
+
+        // Pressing any walk-key resets the double-tap timer
+        gAgent.mDoubleTapRunTimer.reset();
+        gAgent.mDoubleTapRunMode = mode;
+    }
+}
+
+static void agent_push_forwardbackward( const LLKeyPressState& s, S32 direction, LLAgent::EDoubleTapRunMode mode )
+{
+    agent_handle_doubletap_run(s, mode);
+    if (KEYSTATE_UP == s.mState) return;
+
+    F32 time = s.mElapsedTime;
+    S32 frame_count = s.mElapsedFrames;
+
+    if( time < NUDGE_TIME || frame_count <= NUDGE_FRAMES)
+    {
+        gAgent.moveAtNudge(direction);
+    }
+    else
+    {
+        gAgent.moveAt(direction);
+    }
+}
+
+bool camera_move_forward( const LLKeyPressState& s );
+
+bool agent_push_forward( const LLKeyPressState& s )
+{
+    if(gAgent.isMovementLocked()) return true;
+
+    //in free camera control mode we need to intercept keyboard events for avatar movements
+    if (LLFloaterCamera::inFreeCameraMode())
+    {
+        camera_move_forward(s);
+    }
+    else
+    {
+        agent_push_forwardbackward(s, 1, LLAgent::DOUBLETAP_FORWARD);
+    }
+    return true;
+}
+
+bool camera_move_backward( const LLKeyPressState& s );
+
+bool agent_push_backward( const LLKeyPressState& s )
+{
+    if(gAgent.isMovementLocked()) return true;
+
+    //in free camera control mode we need to intercept keyboard events for avatar movements
+    if (LLFloaterCamera::inFreeCameraMode())
+    {
+        camera_move_backward(s);
+    }
+    else if (!gAgent.backwardGrabbed() && gAgentAvatarp->isSitting() && gSavedSettings.getBOOL("LeaveMouselook"))
+    {
+        gAgentCamera.changeCameraToThirdPerson();
+    }
+    else
+    {
+        agent_push_forwardbackward(s, -1, LLAgent::DOUBLETAP_BACKWARD);
+    }
+    return true;
+}
+
+static void agent_slide_leftright( const LLKeyPressState& s, S32 direction, LLAgent::EDoubleTapRunMode mode )
+{
+    agent_handle_doubletap_run(s, mode);
+    if( KEYSTATE_UP == s.mState ) return;
+    F32 time = s.mElapsedTime;
+    S32 frame_count = s.mElapsedFrames;
+
+    if( time < NUDGE_TIME || frame_count <= NUDGE_FRAMES)
+    {
+        gAgent.moveLeftNudge(direction);
+    }
+    else
+    {
+        gAgent.moveLeft(direction);
+    }
+}
+
+
+bool agent_slide_left( const LLKeyPressState& s )
+{
+    if(gAgent.isMovementLocked()) return true;
+    agent_slide_leftright(s, 1, LLAgent::DOUBLETAP_SLIDELEFT);
+    return true;
+}
+
+
+bool agent_slide_right( const LLKeyPressState& s )
+{
+    if(gAgent.isMovementLocked()) return true;
+    agent_slide_leftright(s, -1, LLAgent::DOUBLETAP_SLIDERIGHT);
+    return true;
+}
+
+bool camera_spin_around_cw( const LLKeyPressState& s );
+
+bool agent_turn_left(const LLKeyPressState& s)
+{
+    //in free camera control mode we need to intercept keyboard events for avatar movements
+    if (LLFloaterCamera::inFreeCameraMode())
+    {
+        camera_spin_around_cw(s);
+        return true;
+    }
+
+    if(gAgent.isMovementLocked()) return false;
+
+    if (LLToolCamera::getInstance()->mouseSteerMode())
+    {
+        agent_slide_left(s);
+    }
+    else
+    {
+        if (KEYSTATE_UP == s.mState)
+        {
+            // Check temporary running. In case user released 'left' key with shift already released.
+            agent_check_temporary_run(LLAgent::DOUBLETAP_SLIDELEFT);
+            return true;
+        }
+        F32 time = s.mElapsedTime;
+        gAgent.moveYaw( LLFloaterMove::getYawRate( time ) * s.mValue );
+    }
+    return true;
+}
+
+bool camera_spin_around_ccw( const LLKeyPressState& s );
+
+bool agent_turn_right( const LLKeyPressState& s )
+{
+    //in free camera control mode we need to intercept keyboard events for avatar movements
+    if (LLFloaterCamera::inFreeCameraMode())
+    {
+        camera_spin_around_ccw(s);
+        return true;
+    }
+
+    if(gAgent.isMovementLocked()) return false;
+
+    if (LLToolCamera::getInstance()->mouseSteerMode())
+    {
+        agent_slide_right(s);
+    }
+    else
+    {
+        if (KEYSTATE_UP == s.mState)
+        {
+            // Check temporary running. In case user released 'right' key with shift already released.
+            agent_check_temporary_run(LLAgent::DOUBLETAP_SLIDERIGHT);
+            return true;
+        }
+        F32 time = s.mElapsedTime;
+        gAgent.moveYaw( -LLFloaterMove::getYawRate( time ) * s.mValue );
+    }
+    return true;
+}
+
+bool agent_look_up( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    gAgent.movePitch(-1);
+    //gAgent.rotate(-2.f * DEG_TO_RAD, gAgent.getFrame().getLeftAxis() );
+    return true;
+}
+
+
+bool agent_look_down( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    gAgent.movePitch(1);
+    //gAgent.rotate(2.f * DEG_TO_RAD, gAgent.getFrame().getLeftAxis() );
+    return true;
+}
+
+bool agent_toggle_fly( const LLKeyPressState& s )
+{
+    // Only catch the edge
+    if (KEYSTATE_DOWN == s.mState )
+    {
+        LLAgent::toggleFlying();
+    }
+    return true;
+}
+
+bool agent_toggle_flycam( const LLKeyPressState& s )
+{
+    // Only catch the edge
+    if (KEYSTATE_DOWN == s.mState )
+    {
+        // <plus> plus/flycammouse: also in the other modes (Alt+Shift+F), not while typing; a 3D mouse starts again
+        // from the flycam's view and the camera is the agent's again at once
+        plus::flycammouse::toggleFromKey();
+        // </plus>
+    }
+    return true;
+}
+
+F32 get_orbit_rate( const LLKeyPressState& s )
+{
+    F32 time = s.mElapsedTime;
+    if( time < NUDGE_TIME )
+    {
+        F32 rate = ORBIT_NUDGE_RATE + time * (1 - ORBIT_NUDGE_RATE)/ NUDGE_TIME;
+        //LL_INFOS() << rate << LL_ENDL;
+        return rate;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+// Keyboard-driven flycam translate/rotate: sets a per-channel rate that
+// LLAgent::updateFlycam() blends in and clears every frame (same
+// "set while held, cleared once consumed" idiom as mOrbitInKey/mPanUpKey).
+template <U8 CHANNEL, S32 SIGN>
+bool flycam_axis_key(const LLKeyPressState& s)
+{
+    if (KEYSTATE_UP == s.mState) return true;
+    gAgent.setFlycamKeyInput(CHANNEL, SIGN * get_orbit_rate(s));
+    return true;
+}
+
+bool flycam_unroll_key(const LLKeyPressState& s)
+{
+    if (KEYSTATE_DOWN == s.mState)
+    {
+        gAgent.setFlycamKeyUnroll(true);
+        // <plus> plus/flycammouse (flycam-keys): the tilt of Q / E (plus/camroll) is level again too
+        plus::flycammouse::keyUnroll();
+        // </plus>
+    }
+    return true;
+}
+
+bool camera_spin_around_ccw( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setOrbitLeftKey( get_orbit_rate(s) );
+    return true;
+}
+
+
+bool camera_spin_around_cw( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setOrbitRightKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_spin_around_ccw_sitting( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState && gAgent.mDoubleTapRunMode != LLAgent::DOUBLETAP_SLIDERIGHT ) return true;
+    if (gAgent.rotateGrabbed() || gAgentCamera.sitCameraEnabled() || gAgent.getRunning())
+    {
+        //send keystrokes, but do not change camera
+        agent_turn_right(s);
+    }
+    else
+    {
+        //change camera but do not send keystrokes
+        gAgentCamera.unlockView();
+        gAgentCamera.setOrbitLeftKey( get_orbit_rate(s) );
+    }
+    return true;
+}
+
+
+bool camera_spin_around_cw_sitting( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState && gAgent.mDoubleTapRunMode != LLAgent::DOUBLETAP_SLIDELEFT ) return true;
+    if (gAgent.rotateGrabbed() || gAgentCamera.sitCameraEnabled() || gAgent.getRunning())
+    {
+        //send keystrokes, but do not change camera
+        agent_turn_left(s);
+    }
+    else
+    {
+        //change camera but do not send keystrokes
+        gAgentCamera.unlockView();
+        gAgentCamera.setOrbitRightKey( get_orbit_rate(s) );
+    }
+    return true;
+}
+
+
+bool camera_spin_over( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setOrbitUpKey( get_orbit_rate(s) );
+    return true;
+}
+
+
+bool camera_spin_under( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setOrbitDownKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_spin_over_sitting( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    if (gAgent.upGrabbed() || gAgentCamera.sitCameraEnabled())
+    {
+        //send keystrokes, but do not change camera
+        agent_jump(s);
+    }
+    else
+    {
+        //change camera but do not send keystrokes
+        gAgentCamera.setOrbitUpKey( get_orbit_rate(s) );
+    }
+    return true;
+}
+
+
+bool camera_spin_under_sitting( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    if (gAgent.downGrabbed() || gAgentCamera.sitCameraEnabled())
+    {
+        //send keystrokes, but do not change camera
+        agent_push_down(s);
+    }
+    else
+    {
+        //change camera but do not send keystrokes
+        gAgentCamera.setOrbitDownKey( get_orbit_rate(s) );
+    }
+    return true;
+}
+
+bool camera_roll_left(const LLKeyPressState& s)
+{
+    if (KEYSTATE_UP == s.mState) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setRollLeftKey(get_orbit_rate(s));
+    return true;
+}
+
+bool camera_roll_right(const LLKeyPressState& s)
+{
+    if (KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setRollRightKey(get_orbit_rate(s));
+    return true;
+}
+
+bool camera_roll_reset(const LLKeyPressState& s)
+{
+    if (KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.resetCameraRoll();
+    return true;
+}
+
+bool camera_move_forward( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setOrbitInKey( get_orbit_rate(s) );
+    return true;
+}
+
+
+bool camera_move_backward( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setOrbitOutKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_move_forward_sitting( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState && gAgent.mDoubleTapRunMode != LLAgent::DOUBLETAP_FORWARD ) return true;
+    if (gAgent.forwardGrabbed() || gAgentCamera.sitCameraEnabled() || (gAgent.getRunning() && !gAgent.getAlwaysRun()))
+    {
+        agent_push_forward(s);
+    }
+    else
+    {
+        gAgentCamera.setOrbitInKey( get_orbit_rate(s) );
+    }
+    return true;
+}
+
+bool camera_move_backward_sitting( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState && gAgent.mDoubleTapRunMode != LLAgent::DOUBLETAP_BACKWARD ) return true;
+
+    if (gAgent.backwardGrabbed() || gAgentCamera.sitCameraEnabled() || (gAgent.getRunning() && !gAgent.getAlwaysRun()))
+    {
+        agent_push_backward(s);
+    }
+    else
+    {
+        gAgentCamera.setOrbitOutKey( get_orbit_rate(s) );
+    }
+    return true;
+}
+
+bool camera_pan_up( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setPanUpKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_pan_down( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setPanDownKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_pan_left( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setPanLeftKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_pan_right( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setPanRightKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_pan_in( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setPanInKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_pan_out( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setPanOutKey( get_orbit_rate(s) );
+    return true;
+}
+
+bool camera_move_forward_fast( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setOrbitInKey(2.5f);
+    return true;
+}
+
+bool camera_move_backward_fast( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gAgentCamera.unlockView();
+    gAgentCamera.setOrbitOutKey(2.5f);
+    return true;
+}
+
+
+bool edit_avatar_spin_ccw( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gMorphView->setCameraDrivenByKeys( true );
+    gAgentCamera.setOrbitLeftKey( get_orbit_rate(s) );
+    //gMorphView->orbitLeft( get_orbit_rate(s) );
+    return true;
+}
+
+
+bool edit_avatar_spin_cw( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gMorphView->setCameraDrivenByKeys( true );
+    gAgentCamera.setOrbitRightKey( get_orbit_rate(s) );
+    //gMorphView->orbitRight( get_orbit_rate(s) );
+    return true;
+}
+
+bool edit_avatar_spin_over( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gMorphView->setCameraDrivenByKeys( true );
+    gAgentCamera.setOrbitUpKey( get_orbit_rate(s) );
+    //gMorphView->orbitUp( get_orbit_rate(s) );
+    return true;
+}
+
+
+bool edit_avatar_spin_under( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gMorphView->setCameraDrivenByKeys( true );
+    gAgentCamera.setOrbitDownKey( get_orbit_rate(s) );
+    //gMorphView->orbitDown( get_orbit_rate(s) );
+    return true;
+}
+
+bool edit_avatar_move_forward( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gMorphView->setCameraDrivenByKeys( true );
+    gAgentCamera.setOrbitInKey( get_orbit_rate(s) );
+    //gMorphView->orbitIn();
+    return true;
+}
+
+
+bool edit_avatar_move_backward( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState ) return true;
+    gMorphView->setCameraDrivenByKeys( true );
+    gAgentCamera.setOrbitOutKey( get_orbit_rate(s) );
+    //gMorphView->orbitOut();
+    return true;
+}
+
+bool stop_moving( const LLKeyPressState& s )
+{
+    //it's supposed that 'stop moving' key will be held down for some time
+    if( KEYSTATE_UP == s.mState ) return true;
+    // stop agent
+    gAgent.setControlFlags(AGENT_CONTROL_STOP);
+
+    // cancel autopilot
+    gAgent.stopAutoPilot();
+    return true;
+}
+
+bool start_chat( const LLKeyPressState& s )
+{
+    if (LLAppViewer::instance()->quitRequested())
+    {
+        return true; // can't talk, gotta go, kthxbye!
+    }
+    if (KEYSTATE_DOWN != s.mState) return true;
+
+    // start chat
+    LLFloaterIMNearbyChat::startChat(NULL);
+    return true;
+}
+
+bool start_gesture( const LLKeyPressState& s )
+{
+    LLUICtrl* focus_ctrlp = dynamic_cast<LLUICtrl*>(gFocusMgr.getKeyboardFocus());
+    if (KEYSTATE_UP == s.mState &&
+        ! (focus_ctrlp && focus_ctrlp->acceptsTextInput()))
+    {
+        if ((LLFloaterReg::getTypedInstance<LLFloaterIMNearbyChat>("nearby_chat"))->getCurrentChat().empty())
+        {
+            // No existing chat in chat editor, insert '/'
+            LLFloaterIMNearbyChat::startChat("/");
+        }
+        else
+        {
+            // Don't overwrite existing text in chat editor
+            LLFloaterIMNearbyChat::startChat(NULL);
+        }
+    }
+    return true;
+}
+
+bool run_forward(const LLKeyPressState& s)
+{
+    if (KEYSTATE_UP != s.mState)
+    {
+        if (gAgent.mDoubleTapRunMode != LLAgent::DOUBLETAP_FORWARD)
+        {
+            gAgent.mDoubleTapRunMode = LLAgent::DOUBLETAP_FORWARD;
+        }
+        if (!gAgent.getRunning())
+        {
+            gAgent.setRunning();
+            gAgent.sendWalkRun(true);
+        }
+    }
+    else if(KEYSTATE_UP == s.mState)
+    {
+        if (gAgent.mDoubleTapRunMode == LLAgent::DOUBLETAP_FORWARD)
+            gAgent.mDoubleTapRunMode = LLAgent::DOUBLETAP_NONE;
+        gAgent.clearRunning();
+        gAgent.sendWalkRun(false);
+    }
+    agent_push_forward(s);
+    return true;
+}
+
+bool run_backward(const LLKeyPressState& s)
+{
+    if (KEYSTATE_UP != s.mState)
+    {
+        if (gAgent.mDoubleTapRunMode != LLAgent::DOUBLETAP_BACKWARD)
+        {
+            gAgent.mDoubleTapRunMode = LLAgent::DOUBLETAP_BACKWARD;
+        }
+        if (!gAgent.getRunning())
+        {
+            gAgent.setRunning();
+            gAgent.sendWalkRun(true);
+        }
+    }
+    else if (KEYSTATE_UP == s.mState)
+    {
+        if (gAgent.mDoubleTapRunMode == LLAgent::DOUBLETAP_BACKWARD)
+            gAgent.mDoubleTapRunMode = LLAgent::DOUBLETAP_NONE;
+        gAgent.clearRunning();
+        gAgent.sendWalkRun(false);
+    }
+    agent_push_backward(s);
+    return true;
+}
+
+bool run_left(const LLKeyPressState& s)
+{
+    if (KEYSTATE_UP != s.mState)
+    {
+        if (gAgent.mDoubleTapRunMode != LLAgent::DOUBLETAP_SLIDELEFT)
+        {
+            gAgent.mDoubleTapRunMode = LLAgent::DOUBLETAP_SLIDELEFT;
+        }
+        if (!gAgent.getRunning())
+        {
+            gAgent.setRunning();
+            gAgent.sendWalkRun(true);
+        }
+    }
+    else if (KEYSTATE_UP == s.mState)
+    {
+        if (gAgent.mDoubleTapRunMode == LLAgent::DOUBLETAP_SLIDELEFT)
+            gAgent.mDoubleTapRunMode = LLAgent::DOUBLETAP_NONE;
+        gAgent.clearRunning();
+        gAgent.sendWalkRun(false);
+    }
+    agent_slide_left(s);
+    return true;
+}
+
+bool run_right(const LLKeyPressState& s)
+{
+    if (KEYSTATE_UP != s.mState)
+    {
+        if (gAgent.mDoubleTapRunMode != LLAgent::DOUBLETAP_SLIDERIGHT)
+        {
+            gAgent.mDoubleTapRunMode = LLAgent::DOUBLETAP_SLIDERIGHT;
+        }
+        if (!gAgent.getRunning())
+        {
+            gAgent.setRunning();
+            gAgent.sendWalkRun(true);
+        }
+    }
+    else if (KEYSTATE_UP == s.mState)
+    {
+        if (gAgent.mDoubleTapRunMode == LLAgent::DOUBLETAP_SLIDERIGHT)
+            gAgent.mDoubleTapRunMode = LLAgent::DOUBLETAP_NONE;
+        gAgent.clearRunning();
+        gAgent.sendWalkRun(false);
+    }
+    agent_slide_right(s);
+    return true;
+}
+
+bool toggle_run(const LLKeyPressState& s)
+{
+    if (KEYSTATE_DOWN != s.mState) return true;
+    bool run = gAgent.getAlwaysRun();
+    if (run)
+    {
+        gAgent.clearAlwaysRun();
+        gAgent.clearRunning();
+    }
+    else
+    {
+        gAgent.setAlwaysRun();
+        gAgent.setRunning();
+    }
+    gAgent.sendWalkRun(!run);
+    return true;
+}
+
+bool toggle_sit(const LLKeyPressState& s)
+{
+    if (KEYSTATE_DOWN != s.mState) return true;
+    if (gAgent.isSitting())
+    {
+        gAgent.standUp();
+    }
+    else
+    {
+        gAgent.sitDown();
+    }
+    return true;
+}
+
+bool toggle_pause_media(const LLKeyPressState& s) // analogue of play/pause button in top bar
+{
+    if (KEYSTATE_DOWN != s.mState) return true;
+    bool pause = LLViewerMedia::getInstance()->isAnyMediaPlaying();
+    LLViewerMedia::getInstance()->setAllMediaPaused(pause);
+    return true;
+}
+
+bool toggle_enable_media(const LLKeyPressState& s)
+{
+    if (KEYSTATE_DOWN != s.mState) return true;
+    bool pause = LLViewerMedia::getInstance()->isAnyMediaPlaying() || LLViewerMedia::getInstance()->isAnyMediaShowing();
+    LLViewerMedia::getInstance()->setAllMediaEnabled(!pause);
+    return true;
+}
+
+bool walk_to(const LLKeyPressState& s)
+{
+    if (KEYSTATE_DOWN != s.mState)
+    {
+        // teleport/walk is usually on mouseclick, mouseclick needs
+        // to let AGENT_CONTROL_LBUTTON_UP happen if teleport didn't,
+        // so return false, but if it causes issues, do some kind of
+        // "return !has_teleported"
+        return false;
+    }
+    return LLToolPie::getInstance()->walkToClickedLocation();
+}
+
+bool teleport_to(const LLKeyPressState& s)
+{
+    if (KEYSTATE_DOWN != s.mState) return false;
+    return LLToolPie::getInstance()->teleportToClickedLocation();
+}
+
+bool toggle_voice(const LLKeyPressState& s)
+{
+    if (KEYSTATE_DOWN != s.mState) return true;
+    if (!LLAgent::isActionAllowed("speak")) return false;
+    LLVoiceClient::getInstance()->toggleUserPTTState();
+    return true;
+}
+
+bool voice_follow_key(const LLKeyPressState& s)
+{
+    if (KEYSTATE_DOWN == s.mState)
+    {
+        if (!LLAgent::isActionAllowed("speak")) return false;
+        LLVoiceClient::getInstance()->setUserPTTState(true);
+        return true;
+    }
+    else if (KEYSTATE_UP == s.mState && LLVoiceClient::getInstance()->getUserPTTState())
+    {
+        LLVoiceClient::getInstance()->setUserPTTState(false);
+        return true;
+    }
+    return false;
+}
+
+bool script_trigger_lbutton(const LLKeyPressState& s)
+{
+    // Check for script overriding/expecting left mouse button.
+    // Note that this does not pass event further and depends onto mouselook.
+    // Checks CONTROL_ML_LBUTTON_DOWN_INDEX for mouselook,
+    // CONTROL_LBUTTON_DOWN_INDEX for normal camera
+    if (gAgent.leftButtonGrabbed())
+    {
+        bool mouselook = gAgentCamera.cameraMouselook();
+        switch (s.mState)
+        {
+        case KEYSTATE_DOWN:
+            if (mouselook)
+            {
+                gAgent.setControlFlags(AGENT_CONTROL_ML_LBUTTON_DOWN);
+            }
+            else
+            {
+                gAgent.setControlFlags(AGENT_CONTROL_LBUTTON_DOWN);
+            }
+            return true;
+        case KEYSTATE_UP:
+            if (mouselook)
+            {
+                gAgent.setControlFlags(AGENT_CONTROL_ML_LBUTTON_UP);
+            }
+            else
+            {
+                gAgent.setControlFlags(AGENT_CONTROL_LBUTTON_UP);
+            }
+            return true;
+        default:
+            break;
+        }
+    }
+    return false;
+}
+
+bool agent_pitch(const LLKeyPressState& s, F32 direction)
+{
+    if(!gAgentCamera.cameraMouselook() || KEYSTATE_UP == s.mState)
+    {
+        return false;
+    }
+    // const F32 NOMINAL_MOUSE_SENSITIVITY = 0.0025f;
+
+    // static LLCachedControl<F32> mouse_sensitivity_setting(gSavedSettings, "MouseSensitivity");
+    // F32 mouse_sensitivity = clamp_rescale(mouse_sensitivity_setting, 0.f, 15.f, 0.5f, 2.75f) * NOMINAL_MOUSE_SENSITIVITY;
+
+    const F32 fov = LLViewerCamera::getInstance()->getView() / DEFAULT_FIELD_OF_VIEW;
+    // pitch (vertical)
+    gAgent.pitch(s.mValue * fov * direction * g_deltaTime);  // or -dy if InvertMouse
+    return true;
+}
+
+bool agent_pitch_forward(const LLKeyPressState& s)
+{
+    return agent_pitch(s,1);
+}
+
+bool agent_pitch_backward(const LLKeyPressState& s)
+{
+    return agent_pitch(s,-1);
+}
+
+bool agent_spin_over( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    //change camera but do not send keystrokes
+    gAgentCamera.setOrbitUpKey( get_orbit_rate(s) );
+    return true;
+}
+
+
+bool agent_spin_under( const LLKeyPressState& s )
+{
+    if( KEYSTATE_UP == s.mState  ) return true;
+    //change camera but do not send keystrokes
+    gAgentCamera.setOrbitDownKey( get_orbit_rate(s) );
+    return true;
+}
+
+
+// Used by scripts, for overriding/handling left mouse button
+// see mControlsTakenCount
+bool agent_control_lbutton_handle(const LLKeyPressState& s)
+{
+    switch (s.mState)
+    {
+    case KEYSTATE_DOWN:
+        gAgent.setControlFlags(AGENT_CONTROL_LBUTTON_DOWN);
+        break;
+    case KEYSTATE_UP:
+        gAgent.setControlFlags(AGENT_CONTROL_LBUTTON_UP);
+        break;
+    default:
+        break;
+    }
+    return true;
+}
+
+template <U8 N>
+bool game_control_button(const LLKeyPressState& s)
+{
+    if ( KEYSTATE_DOWN == s.mState )
+    {
+        gAgent.pressGameControlButton(N);
+    }
+    else if ( KEYSTATE_UP == s.mState )
+    {
+        gAgent.releaseGameControlButton(N);
+    }
+    return true;
+}
+
+// In-world keybindings, like walking or camera
+#define REGISTER_KEYBOARD_ACTION(KEY, ACTION) LLREGISTER_STATIC(LLKeyboardActionRegistry, KEY, LLKeybindFunctionData(ACTION, false));
+// Global keybindings that should work even with floaters focused, like voice
+#define REGISTER_KEYBOARD_GLOBAL_ACTION(KEY, ACTION) LLREGISTER_STATIC(LLKeyboardActionRegistry, KEY, LLKeybindFunctionData(ACTION, true));
+REGISTER_KEYBOARD_ACTION("jump", agent_jump);
+REGISTER_KEYBOARD_ACTION("push_down", agent_push_down);
+REGISTER_KEYBOARD_ACTION("push_forward", agent_push_forward);
+REGISTER_KEYBOARD_ACTION("push_backward", agent_push_backward);
+REGISTER_KEYBOARD_ACTION("look_up", agent_look_up);
+REGISTER_KEYBOARD_ACTION("look_down", agent_look_down);
+REGISTER_KEYBOARD_ACTION("toggle_fly", agent_toggle_fly);
+REGISTER_KEYBOARD_ACTION("turn_left", agent_turn_left);
+REGISTER_KEYBOARD_ACTION("turn_right", agent_turn_right);
+REGISTER_KEYBOARD_ACTION("slide_left", agent_slide_left);
+REGISTER_KEYBOARD_ACTION("slide_right", agent_slide_right);
+REGISTER_KEYBOARD_ACTION("spin_around_ccw", camera_spin_around_ccw);
+REGISTER_KEYBOARD_ACTION("spin_around_cw", camera_spin_around_cw);
+REGISTER_KEYBOARD_ACTION("spin_around_ccw_sitting", camera_spin_around_ccw_sitting);
+REGISTER_KEYBOARD_ACTION("spin_around_cw_sitting", camera_spin_around_cw_sitting);
+REGISTER_KEYBOARD_ACTION("spin_over", camera_spin_over);
+REGISTER_KEYBOARD_ACTION("spin_under", camera_spin_under);
+REGISTER_KEYBOARD_ACTION("spin_over_sitting", camera_spin_over_sitting);
+REGISTER_KEYBOARD_ACTION("spin_under_sitting", camera_spin_under_sitting);
+REGISTER_KEYBOARD_ACTION("pitch_forward", agent_pitch_forward);
+REGISTER_KEYBOARD_ACTION("pitch_backward", agent_pitch_backward);
+REGISTER_KEYBOARD_ACTION("spin_over_agent", agent_spin_over);
+REGISTER_KEYBOARD_ACTION("spin_under_agent", agent_spin_under);
+REGISTER_KEYBOARD_ACTION("move_forward", camera_move_forward);
+REGISTER_KEYBOARD_ACTION("move_backward", camera_move_backward);
+REGISTER_KEYBOARD_ACTION("move_forward_sitting", camera_move_forward_sitting);
+REGISTER_KEYBOARD_ACTION("move_backward_sitting", camera_move_backward_sitting);
+REGISTER_KEYBOARD_ACTION("pan_up", camera_pan_up);
+REGISTER_KEYBOARD_ACTION("pan_down", camera_pan_down);
+REGISTER_KEYBOARD_ACTION("pan_left", camera_pan_left);
+REGISTER_KEYBOARD_ACTION("pan_right", camera_pan_right);
+REGISTER_KEYBOARD_ACTION("pan_in", camera_pan_in);
+REGISTER_KEYBOARD_ACTION("pan_out", camera_pan_out);
+REGISTER_KEYBOARD_ACTION("move_forward_fast", camera_move_forward_fast);
+REGISTER_KEYBOARD_ACTION("move_backward_fast", camera_move_backward_fast);
+REGISTER_KEYBOARD_ACTION("edit_avatar_spin_ccw", edit_avatar_spin_ccw);
+REGISTER_KEYBOARD_ACTION("edit_avatar_spin_cw", edit_avatar_spin_cw);
+REGISTER_KEYBOARD_ACTION("edit_avatar_spin_over", edit_avatar_spin_over);
+REGISTER_KEYBOARD_ACTION("edit_avatar_spin_under", edit_avatar_spin_under);
+REGISTER_KEYBOARD_ACTION("edit_avatar_move_forward", edit_avatar_move_forward);
+REGISTER_KEYBOARD_ACTION("edit_avatar_move_backward", edit_avatar_move_backward);
+REGISTER_KEYBOARD_ACTION("stop_moving", stop_moving);
+// <plus> fine adjustment of facing and position (plus/nudge)
+REGISTER_KEYBOARD_ACTION("nudge_turn_left", [](const LLKeyPressState& s) { return plus::nudge::keyTurn(s.mState, 1); });
+REGISTER_KEYBOARD_ACTION("nudge_turn_right", [](const LLKeyPressState& s) { return plus::nudge::keyTurn(s.mState, -1); });
+REGISTER_KEYBOARD_ACTION("nudge_step_forward", [](const LLKeyPressState& s) { return plus::nudge::keyStepAt(s.mState, 1); });
+REGISTER_KEYBOARD_ACTION("nudge_step_back", [](const LLKeyPressState& s) { return plus::nudge::keyStepAt(s.mState, -1); });
+REGISTER_KEYBOARD_ACTION("nudge_step_left", [](const LLKeyPressState& s) { return plus::nudge::keyStepLeft(s.mState, 1); });
+REGISTER_KEYBOARD_ACTION("nudge_step_right", [](const LLKeyPressState& s) { return plus::nudge::keyStepLeft(s.mState, -1); });
+// </plus>
+// <plus> photo tools: the camera's tilt, the composition guide and the photo screen (F12, global) (plus/photomode/photokeys); default keys in key_bindings.xml
+REGISTER_KEYBOARD_ACTION("roll_left", [](const LLKeyPressState& s) { return plus::photomode::keyRollLeft(s.mState); });
+REGISTER_KEYBOARD_ACTION("roll_right", [](const LLKeyPressState& s) { return plus::photomode::keyRollRight(s.mState); });
+REGISTER_KEYBOARD_ACTION("roll_reset", [](const LLKeyPressState& s) { return plus::photomode::keyRollReset(s.mState); });
+REGISTER_KEYBOARD_ACTION("photo_guide_toggle", [](const LLKeyPressState& s) { return plus::photomode::keyGuideToggle(s.mState); });
+REGISTER_KEYBOARD_ACTION("photo_guide_next", [](const LLKeyPressState& s) { return plus::photomode::keyGuideNext(s.mState); });
+REGISTER_KEYBOARD_GLOBAL_ACTION("photo_screen_toggle", [](const LLKeyPressState& s) { return plus::photomode::keyPhotoScreenToggle(s.mState); });
+// </plus>
+// <plus> camera path: add a point at the camera, play / stop (plus/camerapath); default keys in key_bindings.xml
+REGISTER_KEYBOARD_ACTION("camera_path_add", [](const LLKeyPressState& s) { return plus::camerapath::keyAddPoint(s.mState); });
+REGISTER_KEYBOARD_ACTION("camera_path_play", [](const LLKeyPressState& s) { return plus::camerapath::keyTogglePlay(s.mState); });
+// </plus>
+// <plus> 3D mouse sensitivity on the number keys while the flycam is on (plus/flycamsens)
+REGISTER_KEYBOARD_ACTION("flycam_sens_reset", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 0); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_1", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 1); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_2", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 2); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_3", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 3); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_4", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 4); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_5", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 5); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_6", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 6); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_7", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 7); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_8", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 8); });
+REGISTER_KEYBOARD_ACTION("flycam_sens_9", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 9); });
+// </plus>
+REGISTER_KEYBOARD_ACTION("start_chat", start_chat);
+REGISTER_KEYBOARD_ACTION("start_gesture", start_gesture);
+REGISTER_KEYBOARD_ACTION("run_forward", run_forward);
+REGISTER_KEYBOARD_ACTION("run_backward", run_backward);
+REGISTER_KEYBOARD_ACTION("run_left", run_left);
+REGISTER_KEYBOARD_ACTION("run_right", run_right);
+REGISTER_KEYBOARD_ACTION("toggle_run", toggle_run);
+REGISTER_KEYBOARD_ACTION("toggle_down", agent_toggle_down);
+REGISTER_KEYBOARD_ACTION("toggle_sit", toggle_sit);
+REGISTER_KEYBOARD_ACTION("toggle_pause_media", toggle_pause_media);
+REGISTER_KEYBOARD_ACTION("toggle_enable_media", toggle_enable_media);
+REGISTER_KEYBOARD_ACTION("teleport_to", teleport_to);
+REGISTER_KEYBOARD_ACTION("walk_to", walk_to);
+REGISTER_KEYBOARD_GLOBAL_ACTION("toggle_voice", toggle_voice);
+REGISTER_KEYBOARD_GLOBAL_ACTION("voice_follow_key", voice_follow_key);
+REGISTER_KEYBOARD_ACTION(script_mouse_handler_name, script_trigger_lbutton);
+// <plus> the photo tools register these three names above (plus/photomode/photokeys: the tilt is PlusCameraRoll,
+// plus/camroll); a second registration of a name is refused with a warning, so the official ones are left out
+// and LLAgentCamera's own roll (mRollAngle) stays at 0
+//REGISTER_KEYBOARD_ACTION("roll_left", camera_roll_left);
+//REGISTER_KEYBOARD_ACTION("roll_right", camera_roll_right);
+//REGISTER_KEYBOARD_ACTION("roll_reset", camera_roll_reset);
+// </plus>
+REGISTER_KEYBOARD_ACTION("toggle_flycam", agent_toggle_flycam);
+REGISTER_KEYBOARD_ACTION("flycam_move_forward", (flycam_axis_key<LLGameControl::FLYCAM_DOLLY, 1>));
+REGISTER_KEYBOARD_ACTION("flycam_move_backward", (flycam_axis_key<LLGameControl::FLYCAM_DOLLY, -1>));
+REGISTER_KEYBOARD_ACTION("flycam_truck_left", (flycam_axis_key<LLGameControl::FLYCAM_TRUCK, 1>));
+REGISTER_KEYBOARD_ACTION("flycam_truck_right", (flycam_axis_key<LLGameControl::FLYCAM_TRUCK, -1>));
+REGISTER_KEYBOARD_ACTION("flycam_move_up", (flycam_axis_key<LLGameControl::FLYCAM_BOOM, 1>));
+REGISTER_KEYBOARD_ACTION("flycam_move_down", (flycam_axis_key<LLGameControl::FLYCAM_BOOM, -1>));
+REGISTER_KEYBOARD_ACTION("flycam_yaw_left", (flycam_axis_key<LLGameControl::FLYCAM_PAN, 1>));
+REGISTER_KEYBOARD_ACTION("flycam_yaw_right", (flycam_axis_key<LLGameControl::FLYCAM_PAN, -1>));
+REGISTER_KEYBOARD_ACTION("flycam_pitch_up", (flycam_axis_key<LLGameControl::FLYCAM_TILT, 1>));
+REGISTER_KEYBOARD_ACTION("flycam_pitch_down", (flycam_axis_key<LLGameControl::FLYCAM_TILT, -1>));
+// <plus> plus/flycammouse (flycam-keys): Q / E tilt the camera as the photo tools' tilt does (plus/camroll, on top of
+// the flycam), with no "Allow Roll" needed; the official roll channel stays the game pad's
+//REGISTER_KEYBOARD_ACTION("flycam_roll_left", (flycam_axis_key<LLGameControl::FLYCAM_ROLL, -1>));
+//REGISTER_KEYBOARD_ACTION("flycam_roll_right", (flycam_axis_key<LLGameControl::FLYCAM_ROLL, 1>));
+REGISTER_KEYBOARD_ACTION("flycam_roll_left", [](const LLKeyPressState& s) { return plus::flycammouse::keyRoll(s.mState, -1.f); });
+REGISTER_KEYBOARD_ACTION("flycam_roll_right", [](const LLKeyPressState& s) { return plus::flycammouse::keyRoll(s.mState, 1.f); });
+// </plus>
+REGISTER_KEYBOARD_ACTION("flycam_unroll", flycam_unroll_key);
+REGISTER_KEYBOARD_ACTION("game_control_button_0", game_control_button<0>);
+REGISTER_KEYBOARD_ACTION("game_control_button_1", game_control_button<1>);
+REGISTER_KEYBOARD_ACTION("game_control_button_2", game_control_button<2>);
+REGISTER_KEYBOARD_ACTION("game_control_button_3", game_control_button<3>);
+REGISTER_KEYBOARD_ACTION("game_control_button_4", game_control_button<4>);
+REGISTER_KEYBOARD_ACTION("game_control_button_5", game_control_button<5>);
+REGISTER_KEYBOARD_ACTION("game_control_button_6", game_control_button<6>);
+REGISTER_KEYBOARD_ACTION("game_control_button_7", game_control_button<7>);
+REGISTER_KEYBOARD_ACTION("game_control_button_8", game_control_button<8>);
+REGISTER_KEYBOARD_ACTION("game_control_button_9", game_control_button<9>);
+REGISTER_KEYBOARD_ACTION("game_control_button_10", game_control_button<10>);
+REGISTER_KEYBOARD_ACTION("game_control_button_11", game_control_button<11>);
+REGISTER_KEYBOARD_ACTION("game_control_button_12", game_control_button<12>);
+REGISTER_KEYBOARD_ACTION("game_control_button_13", game_control_button<13>);
+REGISTER_KEYBOARD_ACTION("game_control_button_14", game_control_button<14>);
+REGISTER_KEYBOARD_ACTION("game_control_button_15", game_control_button<15>);
+REGISTER_KEYBOARD_ACTION("game_control_button_16", game_control_button<16>);
+REGISTER_KEYBOARD_ACTION("game_control_button_17", game_control_button<17>);
+REGISTER_KEYBOARD_ACTION("game_control_button_18", game_control_button<18>);
+REGISTER_KEYBOARD_ACTION("game_control_button_19", game_control_button<19>);
+REGISTER_KEYBOARD_ACTION("game_control_button_20", game_control_button<20>);
+REGISTER_KEYBOARD_ACTION("game_control_button_21", game_control_button<21>);
+REGISTER_KEYBOARD_ACTION("game_control_button_22", game_control_button<22>);
+REGISTER_KEYBOARD_ACTION("game_control_button_23", game_control_button<23>);
+REGISTER_KEYBOARD_ACTION("game_control_button_24", game_control_button<24>);
+REGISTER_KEYBOARD_ACTION("game_control_button_25", game_control_button<25>);
+REGISTER_KEYBOARD_ACTION("game_control_button_26", game_control_button<26>);
+REGISTER_KEYBOARD_ACTION("game_control_button_27", game_control_button<27>);
+REGISTER_KEYBOARD_ACTION("game_control_button_28", game_control_button<28>);
+REGISTER_KEYBOARD_ACTION("game_control_button_29", game_control_button<29>);
+REGISTER_KEYBOARD_ACTION("game_control_button_30", game_control_button<30>);
+REGISTER_KEYBOARD_ACTION("game_control_button_31", game_control_button<31>);
+#undef REGISTER_KEYBOARD_ACTION
+
+LLViewerInput::LLViewerInput()
+{
+    resetBindings();
+
+    for (S32 i = 0; i < KEY_COUNT; i++)
+    {
+        mKeyHandledByUI[i] = false;
+    }
+    for (S32 i = 0; i < CLICK_COUNT; i++)
+    {
+        mMouseLevel[i] = MOUSE_STATE_SILENT;
+    }
+    // we want the UI to never see these keys so that they can always control the avatar/camera
+    for(KEY k = KEY_PAD_UP; k <= KEY_PAD_DIVIDE; k++)
+    {
+        mKeysSkippedByUI.insert(k);
+    }
+}
+
+LLViewerInput::~LLViewerInput()
+{
+
+}
+
+// static
+bool LLViewerInput::modeFromString(const std::string& string, S32 *mode)
+{
+    if (string.empty())
+    {
+        return false;
+    }
+
+    std::string cmp_string = string;
+    LLStringUtil::toLower(cmp_string);
+    if (cmp_string == "first_person")
+    {
+        *mode = MODE_FIRST_PERSON;
+        return true;
+    }
+    else if (cmp_string == "third_person")
+    {
+        *mode = MODE_THIRD_PERSON;
+        return true;
+    }
+    else if (cmp_string == "edit_avatar")
+    {
+        *mode = MODE_EDIT_AVATAR;
+        return true;
+    }
+    else if (cmp_string == "sitting")
+    {
+        *mode = MODE_SITTING;
+        return true;
+    }
+    else if (cmp_string == "flycam")
+    {
+        *mode = MODE_FLYCAM;
+        return true;
+    }
+
+    S32 val = atoi(string.c_str());
+    if (val >= 0 && val < MODE_COUNT)
+    {
+        *mode = val;
+        return true;
+    }
+
+    return false;
+}
+
+// static
+bool LLViewerInput::mouseFromString(const std::string& string, EMouseClickType *mode)
+{
+    if (string == "LMB")
+    {
+        *mode = CLICK_LEFT;
+        return true;
+    }
+    else if (string == "Double LMB")
+    {
+        *mode = CLICK_DOUBLELEFT;
+        return true;
+    }
+    else if (string == "Double RMB")
+    {
+        *mode = CLICK_DOUBLERIGHT;
+        return true;
+    }
+    else if (string == "Double MMB")
+    {
+        *mode = CLICK_DOUBLEMIDDLE;
+        return true;
+    }
+    else if (string == "MMB")
+    {
+        *mode = CLICK_MIDDLE;
+        return true;
+    }
+    else if (string == "MB4")
+    {
+        *mode = CLICK_BUTTON4;
+        return true;
+    }
+    else if (string == "MB5")
+    {
+        *mode = CLICK_BUTTON5;
+        return true;
+    }
+    else
+    {
+        *mode = CLICK_NONE;
+        return false;
+    }
+}
+
+bool LLViewerInput::handleKey(KEY translated_key, MASK translated_mask, bool repeated)
+{
+    // check for re-map
+    EKeyboardMode mode = gViewerInput.getMode();
+    U32 keyidx = (translated_mask<<16) | translated_key;
+    key_remap_t::iterator iter = mRemapKeys[mode].find(keyidx);
+    if (iter != mRemapKeys[mode].end())
+    {
+        translated_key = (iter->second) & 0xff;
+        translated_mask = (iter->second)>>16;
+    }
+
+    // No repeats of F-keys
+    bool repeatable_key = (translated_key < KEY_F1 || translated_key > KEY_F12);
+    if (!repeatable_key && repeated)
+    {
+        return false;
+    }
+
+    LL_DEBUGS("UserInput") << "keydown -" << translated_key << "-" << LL_ENDL;
+    // skip skipped keys
+    if(mKeysSkippedByUI.find(translated_key) != mKeysSkippedByUI.end())
+    {
+        mKeyHandledByUI[translated_key] = false;
+        LL_INFOS("KeyboardHandling") << "Key wasn't handled by UI!" << LL_ENDL;
+    }
+    else
+    {
+        // it is sufficient to set this value once per call to handlekey
+        // without clearing it, as it is only used in the subsequent call to scanKey
+        mKeyHandledByUI[translated_key] = gViewerWindow->handleKey(translated_key, translated_mask);
+        // mKeyHandledByUI is not what you think ... this indicates whether the UI has handled this keypress yet (any keypress)
+        // NOT whether some UI shortcut wishes to handle the keypress
+
+    }
+    return mKeyHandledByUI[translated_key];
+}
+
+bool LLViewerInput::handleKeyUp(KEY translated_key, MASK translated_mask)
+{
+    return gViewerWindow->handleKeyUp(translated_key, translated_mask);
+}
+
+bool LLViewerInput::handleGlobalBindsKeyDown(KEY key, MASK mask)
+{
+    if (LLSetKeyBindDialog::isRecording())
+    {
+        // handleGlobalBindsKeyDown happens before view handling, so can't
+        // be interupted by LLSetKeyBindDialog, check manually
+        return false;
+    }
+    S32 mode = getMode();
+    return scanKey(mGlobalKeyBindings[mode], static_cast<S32>(mGlobalKeyBindings[mode].size()), key, mask, true, false, false, false);
+}
+
+bool LLViewerInput::handleGlobalBindsKeyUp(KEY key, MASK mask)
+{
+    if (LLSetKeyBindDialog::isRecording())
+    {
+        // handleGlobalBindsKeyUp happens before view handling, so can't
+        // be interupted by LLSetKeyBindDialog, check manually
+        return false;
+    }
+
+    S32 mode = getMode();
+    return scanKey(mGlobalKeyBindings[mode], static_cast<S32>(mGlobalKeyBindings[mode].size()), key, mask, false, true, false, false);
+}
+
+bool LLViewerInput::handleGlobalBindsMouse(EMouseClickType clicktype, MASK mask, bool down)
+{
+    if (LLSetKeyBindDialog::isRecording())
+    {
+        // handleGlobalBindsMouse happens before view handling, so can't
+        // be interupted by LLSetKeyBindDialog, check manually
+        return false;
+    }
+
+    bool res = false;
+    S32 mode = getMode();
+    if (down)
+    {
+        res = scanMouse(mGlobalMouseBindings[mode], static_cast<S32>(mGlobalMouseBindings[mode].size()), clicktype, mask, MOUSE_STATE_DOWN, true);
+    }
+    else
+    {
+        res = scanMouse(mGlobalMouseBindings[mode], static_cast<S32>(mGlobalMouseBindings[mode].size()), clicktype, mask, MOUSE_STATE_UP, true);
+    }
+    return res;
+}
+
+bool LLViewerInput::bindKey(const S32 mode, const KEY key, const MASK mask, const std::string& function_name)
+{
+    size_t index;
+    LLKeyFunc function = nullptr;
+    std::string name;
+
+    // Allow remapping of F2-F12
+    if (function_name[0] == 'F')
+    {
+        int c1 = function_name[1] - '0';
+        int c2 = function_name[2] ? function_name[2] - '0' : -1;
+        if (c1 >= 0 && c1 <= 9 && c2 >= -1 && c2 <= 9)
+        {
+            int idx = c1;
+            if (c2 >= 0)
+                idx = idx*10 + c2;
+            if (idx >=2 && idx <= 12)
+            {
+                U32 keyidx = ((mask<<16)|key);
+                (mRemapKeys[mode])[keyidx] = ((0<<16)|(KEY_F1+(idx-1)));
+                return true;
+            }
+        }
+    }
+
+    // Not remapped, look for a function
+
+    LLKeybindFunctionData* result = LLKeyboardActionRegistry::getValue(function_name);
+    if (result)
+    {
+        function = result->mFunction;
+    }
+
+    if (!function)
+    {
+        LL_WARNS_ONCE() << "Can't bind key to function " << function_name << ", no function with this name found" << LL_ENDL;
+        return false;
+    }
+
+    if (mode >= MODE_COUNT)
+    {
+        LL_ERRS() << "LLKeyboard::bindKey() - unknown mode passed" << mode << LL_ENDL;
+        return false;
+    }
+
+    // check for duplicate first and overwrite
+    if (result->mIsGlobal)
+    {
+        auto size = mGlobalKeyBindings[mode].size();
+        for (index = 0; index < size; index++)
+        {
+            if (key == mGlobalKeyBindings[mode][index].mKey && mask == mGlobalKeyBindings[mode][index].mMask)
+            {
+                mGlobalKeyBindings[mode][index].mFunction = function;
+                return true;
+            }
+        }
+    }
+    else
+    {
+        auto size = mKeyBindings[mode].size();
+        for (index = 0; index < size; index++)
+        {
+            if (key == mKeyBindings[mode][index].mKey && mask == mKeyBindings[mode][index].mMask)
+            {
+                mKeyBindings[mode][index].mFunction = function;
+                return true;
+            }
+        }
+    }
+
+    LLKeyboardBinding bind;
+    bind.mKey = key;
+    bind.mMask = mask;
+    bind.mFunction = function;
+    bind.mFunctionName = function_name;
+
+    if (result->mIsGlobal)
+    {
+        mGlobalKeyBindings[mode].push_back(bind);
+    }
+    else
+    {
+        mKeyBindings[mode].push_back(bind);
+    }
+
+    return true;
+}
+
+bool LLViewerInput::bindMouse(const S32 mode, const EMouseClickType mouse, const MASK mask, const std::string& function_name)
+{
+    size_t index;
+    LLKeyFunc function = nullptr;
+
+    if (mouse == CLICK_LEFT
+        && mask == MASK_NONE
+        && function_name == script_mouse_handler_name)
+    {
+        // Special case
+        // Left click has script overrides and by default
+        // is handled via agent_control_lbutton as last option
+        // In case of mouselook and present overrides it has highest
+        // priority even over UI and is handled in LLToolCompGun::handleMouseDown
+        // so just mark it as having default handler
+        mLMouseDefaultHandling[mode] = true;
+        return true;
+    }
+
+    LLKeybindFunctionData* result = LLKeyboardActionRegistry::getValue(function_name);
+    if (result)
+    {
+        function = result->mFunction;
+    }
+
+    if (!function)
+    {
+        LL_WARNS_ONCE() << "Can't bind mouse key to function " << function_name << ", no function with this name found" << LL_ENDL;
+        return false;
+    }
+
+    if (mode >= MODE_COUNT)
+    {
+        LL_ERRS() << "LLKeyboard::bindKey() - unknown mode passed" << mode << LL_ENDL;
+        return false;
+    }
+
+    // check for duplicate first and overwrite
+    if (result->mIsGlobal)
+    {
+        auto size = mGlobalMouseBindings[mode].size();
+        for (index = 0; index < size; index++)
+        {
+            if (mouse == mGlobalMouseBindings[mode][index].mMouse && mask == mGlobalMouseBindings[mode][index].mMask)
+            {
+                mGlobalMouseBindings[mode][index].mFunction = function;
+                return true;
+            }
+        }
+    }
+    else
+    {
+        auto size = mMouseBindings[mode].size();
+        for (index = 0; index < size; index++)
+        {
+            if (mouse == mMouseBindings[mode][index].mMouse && mask == mMouseBindings[mode][index].mMask)
+            {
+                mMouseBindings[mode][index].mFunction = function;
+                return true;
+            }
+        }
+    }
+
+    LLMouseBinding bind;
+    bind.mMouse = mouse;
+    bind.mMask = mask;
+    bind.mFunction = function;
+    bind.mFunctionName = function_name;
+
+    if (result->mIsGlobal)
+    {
+        mGlobalMouseBindings[mode].push_back(bind);
+    }
+    else
+    {
+        mMouseBindings[mode].push_back(bind);
+    }
+
+    return true;
+}
+
+bool LLViewerInput::bindController(const S32 mode, const LLGameControl::ActionType actionType, U8 action, const std::string& function_name)
+{
+    size_t index;
+    LLKeyFunc function = nullptr;
+
+    LLKeybindFunctionData* result = LLKeyboardActionRegistry::getValue(function_name);
+    if (result)
+    {
+        function = result->mFunction;
+    }
+
+    if (!function)
+    {
+        LL_WARNS_ONCE() << "Can't bind mouse key to function " << function_name << ", no function with this name found" << LL_ENDL;
+        return false;
+    }
+
+    if (mode >= MODE_COUNT)
+    {
+        LL_ERRS() << "LLKeyboard::bindKey() - unknown mode passed" << mode << LL_ENDL;
+        return false;
+    }
+
+    // check for duplicate first and overwrite
+    if (result->mIsGlobal)
+    {
+        auto size = mGlobalControllerBindings[mode].size();
+        for (index = 0; index < size; index++)
+        {
+            if (actionType == mGlobalControllerBindings[mode][index].mActionType && action == mGlobalControllerBindings[mode][index].mAction)
+            {
+                mGlobalControllerBindings[mode][index].mFunction = function;
+                return true;
+            }
+        }
+    }
+    else
+    {
+        auto size = mControllerBindings[mode].size();
+        for (index = 0; index < size; index++)
+        {
+            if (actionType == mControllerBindings[mode][index].mActionType && action == mControllerBindings[mode][index].mAction)
+            {
+                mControllerBindings[mode][index].mFunction = function;
+                return true;
+            }
+        }
+    }
+
+    LLControllerBinding bind;
+    bind.mActionType = actionType;
+    bind.mAction = action;
+    bind.mFunction = function;
+    bind.mFunctionName = function_name;
+
+    if (result->mIsGlobal)
+    {
+        mGlobalControllerBindings[mode].push_back(bind);
+    }
+    else
+    {
+        mControllerBindings[mode].push_back(bind);
+    }
+
+    return true;
+}
+
+LLViewerInput::KeyBinding::KeyBinding()
+:   key("key"),
+    mouse("mouse"),
+    mask("mask"),
+    command("command"),
+    controller("controller")
+{}
+
+LLViewerInput::KeyMode::KeyMode()
+:   bindings("binding")
+{}
+
+LLViewerInput::Keys::Keys()
+:   first_person("first_person"),
+    third_person("third_person"),
+    sitting("sitting"),
+    edit_avatar("edit_avatar"),
+    flycam("flycam"),
+    xml_version("xml_version", 0)
+{}
+
+void LLViewerInput::resetBindings()
+{
+    for (S32 i = 0; i < MODE_COUNT; i++)
+    {
+        mGlobalKeyBindings[i].clear();
+        mGlobalMouseBindings[i].clear();
+        mGlobalControllerBindings[i].clear();
+        mKeyBindings[i].clear();
+        mMouseBindings[i].clear();
+        mControllerBindings[i].clear();
+        mLMouseDefaultHandling[i] = false;
+    }
+}
+
+S32 LLViewerInput::loadBindingsXML(const std::string& filename)
+{
+    resetBindings();
+
+    S32 binding_count = 0;
+    Keys keys;
+    LLSimpleXUIParser parser;
+
+    if (parser.readXUI(filename, keys)
+        && keys.validateBlock())
+    {
+        // <plus> plus/flycammouse (flycam-keys): a saved <flycam> block from before the Space / Q / E keys has no roll
+        // keys and still lifts with E. Such a block is replaced by the shipped one (the keys are new, so a block
+        // without the roll keys has not been customised for them); a block with a roll key is left alone.
+        bool flycam_migrated = false;
+        // only once: a file of version 3 or later is left as the user saved it (a key let go of stays so)
+        if (keys.xml_version < 3 && keys.flycam.isProvided())
+        {
+            bool has_roll = false;
+            for (LLInitParam::ParamIterator<KeyBinding>::const_iterator it = keys.flycam.bindings.begin(),
+                    end_it = keys.flycam.bindings.end();
+                it != end_it; ++it)
+            {
+                if (it->command.getValue() == "flycam_roll_left")
+                {
+                    has_roll = true;
+                    break;
+                }
+            }
+            std::string default_filename = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "key_bindings.xml");
+            if (!has_roll && default_filename != filename)
+            {
+                Keys default_keys;
+                LLSimpleXUIParser default_parser;
+                if (default_parser.readXUI(default_filename, default_keys)
+                    && default_keys.validateBlock()
+                    && default_keys.flycam.isProvided())
+                {
+                    keys.flycam.set(default_keys.flycam.getValue(), true);
+                    flycam_migrated = true;
+                    LL_INFOS("ViewerInput") << "Flycam keys of " << filename << " replaced by the new defaults" << LL_ENDL;
+                }
+            }
+        }
+        // </plus>
+
+        binding_count += loadBindingMode(keys.first_person, MODE_FIRST_PERSON);
+        binding_count += loadBindingMode(keys.third_person, MODE_THIRD_PERSON);
+        binding_count += loadBindingMode(keys.sitting, MODE_SITTING);
+        binding_count += loadBindingMode(keys.edit_avatar, MODE_EDIT_AVATAR);
+        binding_count += loadBindingMode(keys.flycam, MODE_FLYCAM);
+
+        // verify version
+        bool needs_rewrite = flycam_migrated; // <plus> flycam key migration </plus>
+
+        if (keys.xml_version < 1)
+        {
+            // updating from a version that was not aware of LMouse bindings
+            for (S32 i = 0; i < MODE_COUNT; i++)
+            {
+                mLMouseDefaultHandling[i] = true;
+            }
+
+            // fix missing values
+            KeyBinding mouse_binding;
+            mouse_binding.key = "";
+            mouse_binding.mask = "NONE";
+            mouse_binding.mouse = "LMB";
+            mouse_binding.command = script_mouse_handler_name;
+
+            if (keys.third_person.isProvided())
+            {
+                keys.third_person.bindings.add(mouse_binding);
+            }
+
+            if (keys.first_person.isProvided())
+            {
+                keys.first_person.bindings.add(mouse_binding);
+            }
+
+            if (keys.sitting.isProvided())
+            {
+                keys.sitting.bindings.add(mouse_binding);
+            }
+
+            if (keys.edit_avatar.isProvided())
+            {
+                keys.edit_avatar.bindings.add(mouse_binding);
+            }
+
+            needs_rewrite = true;
+        }
+
+        if (keys.xml_version < 2 && !keys.flycam.isProvided())
+        {
+            // Updating from a version that predates the flycam mode: an old
+            // customized key_bindings.xml has no <flycam> block at all, so
+            // without this fixup the user would get zero flycam keybindings
+            // (no LLKeyConflictHandler-style fallback exists in this runtime
+            // loader). Pull the authoritative default flycam bindings from
+            // the shipped app_settings file and merge them in.
+            std::string default_filename = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, "key_bindings.xml");
+            if (default_filename != filename)
+            {
+                Keys default_keys;
+                LLSimpleXUIParser default_parser;
+                if (default_parser.readXUI(default_filename, default_keys)
+                    && default_keys.validateBlock()
+                    && default_keys.flycam.isProvided())
+                {
+                    keys.flycam.set(default_keys.flycam.getValue(), true);
+                    binding_count += loadBindingMode(keys.flycam, MODE_FLYCAM);
+                    needs_rewrite = true;
+                }
+            }
+        }
+
+        if (needs_rewrite)
+        {
+            // fix version
+            keys.xml_version.set(keybindings_xml_version, true);
+
+            // Write the resulting XML to file
+            LLXMLNodePtr output_node = new LLXMLNode("keys", false);
+            LLXUIParser write_parser;
+            write_parser.writeXUI(output_node, keys);
+
+            if (!output_node->isNull())
+            {
+                // file in app_settings is supposed to be up to date
+                // this is only for the file from user_settings
+                LL_INFOS("ViewerInput") << "Updating file " << filename << " to a newer version" << LL_ENDL;
+                LLFILE *fp = LLFile::fopen(filename, LLFILE_MODE("w"));
+                if (fp != NULL)
+                {
+                    LLXMLNode::writeHeaderToFile(fp);
+                    output_node->writeToFile(fp);
+                    fclose(fp);
+                }
+            }
+        }
+    }
+    // <plus> default keys of the fine adjustment (plus/nudge), also with a user's key_bindings.xml.
+    // fix-round7: bindKey() would put the command on a key and mask the file gives to something
+    // else (it overwrites the function and keeps the file's name). Such a key stays the file's: a
+    // nudge key gives way; a flycam digit goes in front of it and passes the key on to it whenever
+    // it does not take it (keySens: flycam off, a text field, a modifier). A command the file binds
+    // itself gets no default key in that mode. What was left to the file: one log line. (A global
+    // binding or an F-key remap on the same key is not looked at: neither is in mKeyBindings, the
+    // list scanKey reads, so both ran before and still do.)
+    if (binding_count > 0)
+    {
+        std::string kept;
+        auto bind_default = [this, &kept](S32 mode, KEY key, MASK mask, const char* command, bool in_front)
+        {
+            const LLKeybindFunctionData* action = LLKeyboardActionRegistry::getValue(command);
+            if (!action || !action->mFunction || mode < 0 || mode >= MODE_COUNT)
+            {
+                return bindKey(mode, key, mask, command);   // as before: it says why it does not bind
+            }
+            LLKeyboardBinding* user = nullptr;
+            for (LLKeyboardBinding& binding : mKeyBindings[mode])
+            {
+                if (binding.mFunctionName == command)
+                {
+                    return false;
+                }
+                if (binding.mKey == key && binding.mMask == mask)
+                {
+                    user = &binding;
+                }
+            }
+            if (!user)
+            {
+                return bindKey(mode, key, mask, command);
+            }
+            kept += llformat(" %s%s%s%s(%d)=%s", (mask & MASK_CONTROL) ? "Ctrl+" : "", (mask & MASK_ALT) ? "Alt+" : "",
+                             (mask & MASK_SHIFT) ? "Shift+" : "", LLKeyboard::stringFromKey(key, false).c_str(), mode,
+                             user->mFunctionName.c_str());
+            // a key the file gives to another of the same commands (flycam_sens_*) is the file's choice
+            if (!in_front || !user->mFunction || user->mFunctionName.compare(0, 12, "flycam_sens_") == 0)
+            {
+                return false;
+            }
+            // The key's press, held frames and release go to whichever took the press.
+            const LLKeyFunc ours = action->mFunction;
+            const LLKeyFunc theirs = user->mFunction;
+            auto ours_took = std::make_shared<bool>(false);
+            user->mFunction = [ours, theirs, ours_took](const LLKeyPressState& state)
+            {
+                if (state.mState == KEYSTATE_DOWN)
+                {
+                    *ours_took = ours(state);
+                    return *ours_took || theirs(state);
+                }
+                return *ours_took ? ours(state) : theirs(state);
+            };
+            return true;
+        };
+        plus::nudge::bindKeys([&bind_default](S32 mode, KEY key, MASK mask, const char* command)
+        {
+            return bind_default(mode, key, mask, command, false);
+        });
+        plus::flycamsens::bindKeys([&bind_default](S32 mode, KEY key, MASK mask, const char* command)
+        {
+            return bind_default(mode, key, mask, command, true);
+        });
+        // Shift + the flycam's move keys (plus/flycammouse): the boost; a key the file gives to something else stays that
+        plus::flycammouse::bindKeys([&bind_default](S32 mode, KEY key, MASK mask, const char* command)
+        {
+            return bind_default(mode, key, mask, command, false);
+        });
+        if (!kept.empty())
+        {
+            LL_INFOS("Plus") << "Default keys left to the key bindings' own (nudge: not bound; flycam digits: in front, passing the key on):"
+                             << kept << LL_ENDL;
+        }
+        // bindKey() appends; the lists are scanned in order, most masks first (see loadBindingMode())
+        bool compare_key_by_mask(LLKeyboardBinding i1, LLKeyboardBinding i2);
+        for (S32 mode : { (S32)MODE_FIRST_PERSON, (S32)MODE_THIRD_PERSON, (S32)MODE_FLYCAM })
+        {
+            std::sort(mKeyBindings[mode].begin(), mKeyBindings[mode].end(), compare_key_by_mask);
+        }
+    }
+    // </plus>
+    return binding_count;
+}
+
+S32 count_masks(const MASK &mask)
+{
+    S32 res = 0;
+    if (mask & MASK_CONTROL)
+    {
+        res++;
+    }
+    if (mask & MASK_SHIFT)
+    {
+        res++;
+    }
+    if (mask & MASK_ALT)
+    {
+        res++;
+    }
+    return res;
+}
+
+bool compare_key_by_mask(LLKeyboardBinding i1, LLKeyboardBinding i2)
+{
+    return (count_masks(i1.mMask) > count_masks(i2.mMask));
+}
+
+bool compare_mouse_by_mask(LLMouseBinding i1, LLMouseBinding i2)
+{
+    return (count_masks(i1.mMask) > count_masks(i2.mMask));
+}
+
+void LLViewerInput::storeDeltaTime()
+{
+    // measure delta time and frame
+    // Note: it is possible for the deltas to be very large
+    // and it is the duty of the code that uses them to clamp as necessary
+    U64 now = LLFrameTimer::getTotalTime();
+    g_deltaTime = F32(now - g_lastUpdateTime) / (F32)(USEC_PER_SEC);
+    g_lastUpdateTime = now;
+}
+
+S32 LLViewerInput::loadBindingMode(const LLViewerInput::KeyMode& keymode, S32 mode)
+{
+    S32 binding_count = 0;
+    for (LLInitParam::ParamIterator<KeyBinding>::const_iterator it = keymode.bindings.begin(),
+            end_it = keymode.bindings.end();
+        it != end_it;
+        ++it)
+    {
+        bool processed = false;
+        std::string key_str = it->key.getValue();
+        if (!key_str.empty() && key_str != "NONE")
+        {
+            KEY key;
+            LLKeyboard::keyFromString(key_str, &key);
+            if (key != KEY_NONE)
+            {
+                MASK mask;
+                LLKeyboard::maskFromString(it->mask, &mask);
+                bindKey(mode, key, mask, it->command);
+                processed = true;
+            }
+            else
+            {
+                LL_WARNS_ONCE() << "There might be issues in keybindings' file" << LL_ENDL;
+            }
+        }
+        if (!processed && it->mouse.isProvided() && !it->mouse.getValue().empty())
+        {
+            EMouseClickType mouse;
+            mouseFromString(it->mouse.getValue(), &mouse);
+            if (mouse != CLICK_NONE)
+            {
+                MASK mask;
+                LLKeyboard::maskFromString(it->mask, &mask);
+                bindMouse(mode, mouse, mask, it->command);
+                processed = true;
+            }
+            else
+            {
+                LL_WARNS_ONCE() << "There might be issues in keybindings' file" << LL_ENDL;
+            }
+        }
+        if(!processed && it->controller.isProvided() && !it->controller.getValue().empty())
+        {
+            LLGameControl::ActionType actionType;
+            U8 action;
+            if(LLGameControl::actionFromString(it->controller.getValue(), actionType, action))
+            {
+                bindController(mode, actionType, action, it->command);
+                processed = true;
+            }
+            else
+            {
+                LL_WARNS_ONCE() << "There might be issues in keybindings' file" << LL_ENDL;
+            }
+        }
+        if (processed)
+        {
+            // total
+            binding_count++;
+        }
+    }
+
+    // sort lists by mask (so that Shift+W is executed before W, if both are assigned, but if Shift+W is not assigned W should be executed)
+    std::sort(mKeyBindings[mode].begin(), mKeyBindings[mode].end(), compare_key_by_mask);
+    std::sort(mMouseBindings[mode].begin(), mMouseBindings[mode].end(), compare_mouse_by_mask);
+
+    return binding_count;
+}
+
+EKeyboardMode LLViewerInput::getMode() const
+{
+    if ( gAgent.isUsingFlycam() )
+    {
+        return MODE_FLYCAM;
+    }
+    else if ( gAgentCamera.cameraMouselook() )
+    {
+        return MODE_FIRST_PERSON;
+    }
+    else if ( gMorphView && gMorphView->getVisible())
+    {
+        return MODE_EDIT_AVATAR;
+    }
+    else if (isAgentAvatarValid() && gAgentAvatarp->isSitting())
+    {
+        return MODE_SITTING;
+    }
+    else
+    {
+        return MODE_THIRD_PERSON;
+    }
+}
+
+bool LLViewerInput::scanKey(const std::vector<LLKeyboardBinding> &binding,
+                               S32 binding_count,
+                               KEY key,
+                               MASK mask,
+                               bool key_down,
+                               bool key_up,
+                               bool key_level,
+                               bool repeat) const
+{
+    // TODO implement time
+    LLKeyPressState state = LLKeyPressState(key_up, key_down, key_level, 1.0);
+    state.mRepeat = repeat;
+
+    for (S32 i = 0; i < binding_count; i++)
+    {
+        if (binding[i].mKey == key)
+        {
+            if ((binding[i].mMask & mask) == binding[i].mMask)
+            {
+                state.mElapsedTime = gKeyboard->getCurKeyElapsedTime();
+                state.mElapsedFrames = gKeyboard->getCurKeyElapsedFrameCount();
+                bool res = false;
+                if (key_down && !repeat)
+                {
+                    // ...key went down this frame, call function
+                    state.mState = KEYSTATE_DOWN;
+                    res = binding[i].mFunction( state );
+                    return true;
+                }
+                else if (key_up)
+                {
+                    // ...key went down this frame, call function
+                    state.mState = KEYSTATE_UP;
+                    res = binding[i].mFunction( state );
+                }
+                else if (key_level)
+                {
+                    // ...key held down from previous frame
+                    // Not windows, just call the function.
+                    state.mState = KEYSTATE_LEVEL;
+                    res = binding[i].mFunction( state );
+                }//if
+                // Key+Mask combinations are supposed to be unique, so we won't find anything else
+                return res;
+            }//if
+        }//if
+    }//for
+    return false;
+}
+
+// Called from scanKeyboard.
+bool LLViewerInput::scanKey(KEY key, bool key_down, bool key_up, bool key_level) const
+{
+    if (LLApp::isExiting())
+    {
+        return false;
+    }
+
+    S32 mode = getMode();
+    // Consider keyboard scanning as NOT mouse event. JC
+    MASK mask = gKeyboard->currentMask(false);
+
+    if (mKeyHandledByUI[key])
+    {
+        return false;
+    }
+
+    // don't process key down on repeated keys
+    bool repeat = gKeyboard->getKeyRepeated(key);
+
+    bool res = scanKey(mKeyBindings[mode], static_cast<S32>(mKeyBindings[mode].size()), key, mask, key_down, key_up, key_level, repeat);
+
+    return res;
+}
+
+bool LLViewerInput::scanControllerInput(const LLGameControl::ActionType actionType, const U8 action, const LLKeyPressState& state) const
+{
+    S32 mode = getMode();
+
+    for(auto binding : mControllerBindings[mode])
+    {
+        if (binding.mActionType != actionType || binding.mAction != action)
+        {
+            continue;
+        }
+
+        LL_WARNS() << "Controller Val " << LLGameControl::stringFromAction(actionType, action) << state.mValue << LL_ENDL;
+
+        bool res = binding.mFunction(state);
+        if (state.mDown)
+        {
+            return true;
+        }
+        return res;
+    }
+    return false;
+}
+
+void LLViewerInput::scanController()
+{
+    LLGameControl::computeFinalState();
+    const LLGameControl::State& state = LLGameControl::getState();
+    // HACK: GameControl: supply hard-coded threshold for ON/OFF zones
+    constexpr U16 AXIS_THRESHOLD = 32768 / 8;
+
+    // TODO: GameControl: This is kind of inificient, it would be more efficient to
+    // loop the bindings and check if the keys/axes they want are active
+    // rather than looping all keys/axes then all bindings for each one
+    // But copying scanMouse pattern for now.
+
+    LLKeyPressState keyState = LLKeyPressState(true, false, false, 0.0);
+    keyState.mAnalog = true;
+
+    for(U8 i = 0;i < state.mAxes.size();i++)
+    {
+        U16 current = state.mAxes[i];
+        U16 prev = state.mPrevAxes[i];
+        keyState.mDown = prev < AXIS_THRESHOLD && current >= AXIS_THRESHOLD;
+        keyState.mLevel = prev >= AXIS_THRESHOLD && current >= AXIS_THRESHOLD;
+        keyState.mUp = prev >= AXIS_THRESHOLD && current < AXIS_THRESHOLD;
+
+        if(keyState.mDown || keyState.mLevel || keyState.mUp)
+        {
+            keyState.mElapsedTime = LLGameControl::getControllerHeldTime(LLGameControl::ActionType::DOF, i);
+            keyState.mElapsedFrames = LLGameControl::getControllerHeldFrames(LLGameControl::ActionType::DOF, i);
+            keyState.mValue = std::clamp(((F32)current) / 32767.0f, 0.0f, 1.0f);
+            keyState.mState = keyState.mDown ? KEYSTATE_DOWN : (keyState.mLevel ? KEYSTATE_LEVEL : KEYSTATE_UP);
+            scanControllerInput(LLGameControl::ActionType::DOF, i, keyState);
+        }
+    }
+
+    keyState.mAnalog = false;
+    for(U8 i = 0; i < LLGameControl::Button::NUM_BUTTONS; i++)
+    {
+        U32 flag = 1 << i;
+        bool current = (state.mButtons & flag) == flag;
+        bool prev = (state.mPrevButtons & flag) == flag;
+        if(current || prev)
+        {
+            keyState.mDown = current && !prev;
+            keyState.mLevel = current && prev;
+            keyState.mUp = !current && prev;
+            keyState.mElapsedTime = LLGameControl::getControllerHeldTime(LLGameControl::ActionType::BUTTON, i);
+            keyState.mElapsedFrames = LLGameControl::getControllerHeldFrames(LLGameControl::ActionType::BUTTON, i);
+            keyState.mValue = current ? 1.0f : 0.0f;
+            keyState.mState = keyState.mDown ? KEYSTATE_DOWN : (keyState.mLevel ? KEYSTATE_LEVEL : KEYSTATE_UP);
+            scanControllerInput(LLGameControl::ActionType::BUTTON, i, keyState);
+        }
+    }
+}
+
+bool LLViewerInput::handleMouse(LLWindow *window_impl, LLCoordGL pos, MASK mask, EMouseClickType clicktype, bool down)
+{
+    bool is_toolmgr_action = false;
+    bool handled = gViewerWindow->handleAnyMouseClick(window_impl, pos, mask, clicktype, down, is_toolmgr_action);
+
+    if (clicktype != CLICK_NONE)
+    {
+        // Special case
+        // If UI doesn't handle double click, LMB click is issued, so supres LMB 'down' when doubleclick is set
+        // handle !down as if we are handling doubleclick
+
+        bool double_click_sp = false;
+        EMouseClickType replace_clcktype = CLICK_NONE;
+        switch(clicktype)
+        {
+            case CLICK_LEFT:
+            {
+                double_click_sp = (mMouseLevel[CLICK_DOUBLELEFT] != MOUSE_STATE_SILENT)
+                    && mMouseLevel[CLICK_LEFT] == MOUSE_STATE_SILENT;
+                replace_clcktype = CLICK_DOUBLELEFT;
+                break;
+            }
+            case CLICK_RIGHT:
+            {
+                double_click_sp = (mMouseLevel[CLICK_DOUBLERIGHT] != MOUSE_STATE_SILENT)
+                    && mMouseLevel[CLICK_RIGHT] == MOUSE_STATE_SILENT;
+                replace_clcktype = CLICK_DOUBLERIGHT;
+                break;
+            }
+            case CLICK_MIDDLE:
+            {
+                double_click_sp = (mMouseLevel[CLICK_DOUBLEMIDDLE] != MOUSE_STATE_SILENT)
+                    && mMouseLevel[CLICK_MIDDLE] == MOUSE_STATE_SILENT;
+                replace_clcktype = CLICK_DOUBLEMIDDLE;
+                break;
+            }
+            default:
+                break;
+        }
+
+        if (double_click_sp && !down)
+        {
+            // Process doubleclick instead
+            clicktype = replace_clcktype;
+        }
+
+        // If the first LMB click is handled by the menu, skip the following double click
+        static bool skip_double_click = false;
+        if ((clicktype == CLICK_LEFT) && down)
+        {
+            skip_double_click = is_toolmgr_action ? false : handled;
+        }
+
+        if (double_click_sp && down)
+        {
+            // Consume click.
+            // Due to handling, double click that is not handled will be immediately followed by LMB/RMB/MMB click
+        }
+        else if ((clicktype == CLICK_DOUBLELEFT)
+                 && skip_double_click)
+        {
+            handled = true;
+        }
+        // If UI handled 'down', it should handle 'up' as well
+        // If we handle 'down' not by UI, then we should handle 'up'/'level' regardless of UI
+        else if (handled)
+        {
+            // UI handled new 'down' so iterupt whatever state we were in.
+            if (mMouseLevel[clicktype] != MOUSE_STATE_SILENT)
+            {
+                if (mMouseLevel[clicktype] == MOUSE_STATE_DOWN)
+                {
+                    mMouseLevel[clicktype] = MOUSE_STATE_CLICK;
+                }
+                else
+                {
+                    mMouseLevel[clicktype] = MOUSE_STATE_UP;
+                }
+            }
+        }
+        else if (down)
+        {
+            if (mMouseLevel[clicktype] == MOUSE_STATE_DOWN)
+            {
+                // this is repeated hit (mouse does not repeat event until release)
+                // for now treat rapid clicking like mouse being held
+                mMouseLevel[clicktype] = MOUSE_STATE_LEVEL;
+            }
+            else
+            {
+                mMouseLevel[clicktype] = MOUSE_STATE_DOWN;
+            }
+        }
+        else if (mMouseLevel[clicktype] != MOUSE_STATE_SILENT)
+        {
+            // Released mouse key
+            if (mMouseLevel[clicktype] == MOUSE_STATE_DOWN)
+            {
+                mMouseLevel[clicktype] = MOUSE_STATE_CLICK;
+            }
+            else
+            {
+                mMouseLevel[clicktype] = MOUSE_STATE_UP;
+            }
+        }
+    }
+
+    return handled;
+}
+
+bool LLViewerInput::scanMouse(
+    const std::vector<LLMouseBinding> &binding,
+    S32 binding_count,
+    EMouseClickType mouse,
+    MASK mask,
+    EMouseState state,
+    bool ignore_additional_masks
+) const
+{
+    LLKeyPressState keyState = LLKeyPressState(false,false,false,1.0);
+    for (S32 i = 0; i < binding_count; i++)
+    {
+        if (binding[i].mMouse == mouse && (ignore_additional_masks ? (binding[i].mMask & mask) == binding[i].mMask : binding[i].mMask == mask))
+        {
+            bool res = false;
+            switch (state)
+            {
+            case MOUSE_STATE_DOWN:
+                keyState.mDown = true;
+                keyState.mState = KEYSTATE_DOWN;
+                res = binding[i].mFunction(keyState);
+                break;
+            case MOUSE_STATE_CLICK:
+                // Button went down and up in scope of single frame
+                // might not work best with some functions,
+                // but some function need specific states specifically
+                keyState.mDown = true;
+                keyState.mState = KEYSTATE_DOWN;
+                res = binding[i].mFunction(keyState);
+                keyState.mDown = false;
+                keyState.mUp = true;
+                keyState.mState = KEYSTATE_UP;
+                res |= binding[i].mFunction(keyState);
+                break;
+            case MOUSE_STATE_LEVEL:
+                keyState.mLevel = true;
+                keyState.mState = KEYSTATE_LEVEL;
+                res = binding[i].mFunction(keyState);
+                break;
+            case MOUSE_STATE_UP:
+                keyState.mUp = true;
+                keyState.mState = KEYSTATE_UP;
+                res = binding[i].mFunction(keyState);
+                break;
+            default:
+                break;
+            }
+            // Key+Mask combinations are supposed to be unique, no need to continue
+            return res;
+        }
+    }
+    return false;
+}
+
+// todo: this recods key, scanMouse() triggers functions with LLKeyPressState
+bool LLViewerInput::scanMouse(EMouseClickType click, EMouseState state) const
+{
+    bool res = false;
+    S32 mode = getMode();
+    MASK mask = gKeyboard->currentMask(true);
+    res = scanMouse(mMouseBindings[mode], static_cast<S32>(mMouseBindings[mode].size()), click, mask, state, false);
+
+    // No user defined actions found or those actions can't handle the key/button,
+    // so handle CONTROL_LBUTTON if nessesary.
+    //
+    // Default handling for MODE_FIRST_PERSON is in LLToolCompGun::handleMouseDown,
+    // and sends AGENT_CONTROL_ML_LBUTTON_DOWN, but it only applies if ML controls
+    // are leftButtonGrabbed(), send a normal click otherwise.
+
+    LLKeyPressState keyState = LLKeyPressState(false,false,false,1.0);
+
+    if (!res
+        && mLMouseDefaultHandling[mode]
+        && (mode != MODE_FIRST_PERSON || !gAgent.leftButtonGrabbed())
+        && (click == CLICK_LEFT || click == CLICK_DOUBLELEFT)
+        )
+    {
+        switch (state)
+        {
+        case MOUSE_STATE_DOWN:
+            keyState.mDown = true;
+            keyState.mState = KEYSTATE_DOWN;
+            agent_control_lbutton_handle(keyState);
+            res = true;
+            break;
+        case MOUSE_STATE_CLICK:
+            // might not work best with some functions,
+            // but some function need specific states too specifically
+            keyState.mDown = true;
+            keyState.mState = KEYSTATE_DOWN;
+            agent_control_lbutton_handle(keyState);
+            keyState.mDown = false;
+            keyState.mUp = true;
+            keyState.mState = KEYSTATE_UP;
+            agent_control_lbutton_handle(keyState);
+            res = true;
+            break;
+        case MOUSE_STATE_UP:
+            keyState.mUp = true;
+            keyState.mState = KEYSTATE_UP;
+            agent_control_lbutton_handle(keyState);
+            res = true;
+            break;
+        default:
+            break;
+        }
+    }
+    return res;
+}
+
+void LLViewerInput::scanMouse()
+{
+    for (S32 i = 0; i < CLICK_COUNT; i++)
+    {
+        if (mMouseLevel[i] != MOUSE_STATE_SILENT)
+        {
+            scanMouse((EMouseClickType)i, mMouseLevel[i]);
+            if (mMouseLevel[i] == MOUSE_STATE_DOWN)
+            {
+                // mouse doesn't support 'continued' state, so after handling, switch to LEVEL
+                mMouseLevel[i] = MOUSE_STATE_LEVEL;
+            }
+            else if (mMouseLevel[i] == MOUSE_STATE_UP || mMouseLevel[i] == MOUSE_STATE_CLICK)
+            {
+                mMouseLevel[i] = MOUSE_STATE_SILENT;
+            }
+        }
+    }
+}
+
+bool LLViewerInput::isMouseBindUsed(const EMouseClickType mouse, const MASK mask, const S32 mode) const
+{
+    auto size = mMouseBindings[mode].size();
+    for (size_t index = 0; index < size; index++)
+    {
+        if (mouse == mMouseBindings[mode][index].mMouse && mask == mMouseBindings[mode][index].mMask)
+            return true;
+    }
+    size = mGlobalMouseBindings[mode].size();
+    for (size_t index = 0; index < size; index++)
+    {
+        if (mouse == mGlobalMouseBindings[mode][index].mMouse && mask == mGlobalMouseBindings[mode][index].mMask)
+            return true;
+    }
+    return false;
+}
+
+// <plus> plus/flycammouse (flycam-keys): matched as scanKey() matches (the binding's mask within the mask held)
+bool LLViewerInput::isKeyBound(const S32 mode, const KEY key, const MASK mask) const
+{
+    if (mode < 0 || mode >= MODE_COUNT)
+    {
+        return false;
+    }
+    for (const LLKeyboardBinding& binding : mKeyBindings[mode])
+    {
+        if (binding.mKey == key && (binding.mMask & mask) == binding.mMask)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+// </plus>
+
+std::string LLViewerInput::getKeyBindingAsString(const std::string& mode, const std::string& control) const
+{
+    S32 keyboard_mode;
+    if (!modeFromString(mode, &keyboard_mode))
+    {
+        keyboard_mode = getMode();
+    }
+
+    std::string res;
+    bool needs_separator = false;
+
+    // keybindings are sorted from having most mask to no mask (from restrictive to less restrictive),
+    // but it's visually better to present this data in reverse
+    std::vector<LLKeyboardBinding>::const_reverse_iterator iter_key = mKeyBindings[keyboard_mode].rbegin();
+    while (iter_key != mKeyBindings[keyboard_mode].rend())
+    {
+        if (iter_key->mFunctionName == control)
+        {
+            if (needs_separator)
+            {
+                res.append(" | ");
+            }
+            res.append(LLKeyboard::stringFromAccelerator(iter_key->mMask, iter_key->mKey));
+            needs_separator = true;
+        }
+        iter_key++;
+    }
+
+    std::vector<LLMouseBinding>::const_reverse_iterator iter_mouse = mMouseBindings[keyboard_mode].rbegin();
+    while (iter_mouse != mMouseBindings[keyboard_mode].rend())
+    {
+        if (iter_mouse->mFunctionName == control)
+        {
+            if (needs_separator)
+            {
+                res.append(" | ");
+            }
+            res.append(LLKeyboard::stringFromAccelerator(iter_mouse->mMask, iter_mouse->mMouse));
+            needs_separator = true;
+        }
+        iter_mouse++;
+    }
+
+    return res;
+}

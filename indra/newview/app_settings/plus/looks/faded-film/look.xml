@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Faded Film</string><key>ja</key><string>色あせたフィルム</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Lifted blacks, muted colors: an old print.</string><key>ja</key><string>黒が浮いて色は控えめ。古いプリント写真のよう。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>40</integer>
+  </map>
+</llsd>

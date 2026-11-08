@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="prefs_graphics_advanced" title="グラフィック詳細設定">
+	<!-- plus: gfx-tabs (research/238). The rows sit in the tabs of en, wrapped the same way
+	     (tab_container / panel / scroll_container / panel), or the translation does not apply. -->
+	<tab_container name="graphics_tabs">
+		<panel label="全般" name="General">
+			<scroll_container name="general_scroll">
+				<panel name="general_scroll_panel">
+					<text name="ShadersText">
+						シェーダー
+					</text>
+					<check_box label="透明な水" name="TransparentWater"/>
+					<check_box label="アンビエントオクルージョン" name="UseSSAO"/>
+					<check_box label="スクリーンスペース反射" name="ScreenSpaceReflections"/>
+					<check_box label="鏡" name="Mirrors"/>
+					<text name="RenderShadowDetailText">
+						影：
+					</text>
+					<combo_box name="ShadowDetail">
+						<combo_box.item label="なし" name="0"/>
+						<combo_box.item label="太陽／月" name="1"/>
+						<combo_box.item label="太陽／月＋プロジェクタ" name="2"/>
+					</combo_box>
+					<text name="PlusShadowDistanceText">
+						影の距離：
+					</text>
+					<combo_box name="PlusShadowDistance" tool_tip="太陽の影がどこまで届くか、遠くでもどれだけくっきり出るかを選びます。「遠い」「とても遠い」は影を細かく描くので、ビデオメモリを多く使います。">
+						<combo_box.item label="近い（96 m）" name="0"/>
+						<combo_box.item label="ふつう（192 m）" name="1"/>
+						<combo_box.item label="遠い（384 m）" name="2"/>
+						<combo_box.item label="とても遠い（512 m）" name="3"/>
+						<combo_box.item label="標準" name="official"/>
+					</combo_box>
+					<text name="PlusShadowPrecisionText">
+						影の細かさ：
+					</text>
+					<combo_box name="PlusShadowPrecision" tool_tip="細い影（脚・手すり・髪）が、遠くでもどれだけ残るかを選びます。「細かい」「とても細かい」は影を細かく描くので、ビデオメモリを多く使います。">
+						<combo_box.item label="ふつう" name="0"/>
+						<combo_box.item label="細かい" name="1"/>
+						<combo_box.item label="とても細かい" name="2"/>
+						<combo_box.item label="標準" name="official"/>
+					</combo_box>
+					<text name="PlusShadowFocusText">
+						影の焦点：
+					</text>
+					<combo_box name="PlusShadowFocus" tool_tip="いちばん細かい影をどこに使うかを選びます。「被写体に合わせる」は、自分のアバター（またはカメラを向けた物）とその影に、画面が許すいちばん細かい影マップを使います。どこに立っていても同じです。被写体よりずっと手前や奥の物の影は粗くなります。写真はいつも被写体に合わせます。">
+						<combo_box.item label="被写体に合わせる" name="1"/>
+						<combo_box.item label="カメラから均等に" name="0"/>
+					</combo_box>
+					<text name="PlusShadowSoftnessText">
+						影の硬さ：
+					</text>
+					<combo_box name="PlusShadowSoftness" tool_tip="太陽の影のふちを、くっきりさせるかやわらかくするかを選びます。写真でもこの選択のまま撮ります。変えても、使用中のプリセットは変わりません。">
+						<combo_box.item label="シャープ" name="0"/>
+						<combo_box.item label="ややシャープ" name="1"/>
+						<combo_box.item label="ふつう" name="2"/>
+						<combo_box.item label="ややソフト" name="3"/>
+						<combo_box.item label="ソフト" name="4"/>
+						<combo_box.item label="標準" name="official"/>
+					</combo_box>
+					<text name="ReflectionDetailText">
+						反射の精度：
+					</text>
+					<combo_box name="ReflectionDetail">
+						<combo_box.item label="静的のみ" name="0"/>
+						<combo_box.item label="静的＋動的" name="1"/>
+						<combo_box.item label="リアルタイム" name="2"/>
+					</combo_box>
+					<text name="ReflectionProbeText">
+						反射の範囲：
+					</text>
+					<combo_box name="ReflectionLevel">
+						<combo_box.item label="なし" name="0"/>
+						<combo_box.item label="手動のみ" name="1"/>
+						<combo_box.item label="手動＋地形" name="2"/>
+						<combo_box.item label="シーン全体" name="3"/>
+					</combo_box>
+					<text name="MirrorResolutionText">
+						鏡の解像度：
+					</text>
+					<text name="HeroProbeUpdateText">
+						鏡の更新頻度：
+					</text>
+					<combo_box name="HeroProbeUpdateRate">
+						<combo_box.item label="低" name="6"/>
+						<combo_box.item label="中" name="3"/>
+						<combo_box.item label="高" name="1"/>
+						<combo_box.item label="最高" name="0"/>
+					</combo_box>
+					<text name="GeneralText">
+						表示
+					</text>
+					<slider label="描画距離：" name="DrawDistance"/>
+					<text name="DrawDistanceMeterText2">
+						m
+					</text>
+					<slider label="最大パーティクル数：" name="MaxParticleCount"/>
+					<slider label="グロー品質：" name="GlowResolution"/>
+					<text name="GlowResolutionText">
+						低
+					</text>
+					<slider label="近くの光源の最大数：" name="MaxLights"/>
+					<slider label="露出：" name="RenderExposure"/>
+					<text name="AvatarText">
+						アバター
+					</text>
+					<text name="AvatarComplexityModeLabel">
+						アバター表示：
+					</text>
+					<combo_box name="AvatarComplexityMode">
+						<combo_box.item label="複雑度で制限" name="0"/>
+						<combo_box.item label="フレンドは常に表示" name="1"/>
+						<combo_box.item label="フレンドのみ表示" name="2"/>
+					</combo_box>
+					<slider tool_tip="複雑なアバターがどの時点でJellyDollとして描画されるかを制御します。" label="最大複雑度：" name="IndirectMaxComplexity"/>
+					<text name="IndirectMaxComplexityText">
+						0
+					</text>
+					<slider label="簡略化せずに描画する最大数：" name="IndirectMaxNonImpostors"/>
+					<text name="IndirectMaxNonImpostorsText">
+						0
+					</text>
+					<slider label="物理演算：" name="AvatarPhysicsDetail"/>
+					<text name="AvatarPhysicsDetailText">
+						低
+					</text>
+					<text name="MeshText">
+						詳細度（LOD）
+					</text>
+					<slider label="オブジェクト：" name="ObjectMeshDetail"/>
+					<text name="ObjectMeshDetailText">
+						低
+					</text>
+					<slider label="フレキシプリム：" name="FlexibleMeshDetail"/>
+					<text name="FlexibleMeshDetailText">
+						低
+					</text>
+					<slider label="木：" name="TreeMeshDetail"/>
+					<text name="TreeMeshDetailText">
+						低
+					</text>
+					<slider label="アバター：" name="AvatarMeshDetail"/>
+					<text name="AvatarMeshDetailText">
+						低
+					</text>
+					<slider label="地形：" name="TerrainMeshDetail"/>
+					<text name="TerrainMeshDetailText">
+						低
+					</text>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="ハードウェア" name="Hardware Settings">
+			<scroll_container name="hardware_scroll">
+				<panel name="hardware_scroll_panel">
+					<text name="af strength label">
+						異方性フィルタリング：
+					</text>
+					<combo_box label="異方性フィルタリング" name="anisotropic_filter">
+						<combo_box.item label="無効" name="disabled" value="0"/>
+						<combo_box.item label="2x" name="2x" value="2"/>
+						<combo_box.item label="4x" name="4x" value="4"/>
+						<combo_box.item label="8x" name="8x" value="8"/>
+						<combo_box.item label="16x" name="16x" value="16"/>
+					</combo_box>
+					<check_box control_name="RenderCompressTextures" label="テクスチャ圧縮の有効化 (再起動後に反映)" name="texture compression" tool_tip="ビデオメモリ内のテクスチャを圧縮し、色の品質をある程度犠牲にして、より高解像度のテクスチャを読み込むようにします。"/>
+					<text name="antialiasing label">
+						アンチエイリアス：
+					</text>
+					<combo_box label="アンチエイリアス" name="fsaa">
+						<combo_box.item label="無効" name="FSAADisabled" value="0"/>
+						<combo_box.item label="FXAA" name="FXAA" value="1"/>
+						<combo_box.item label="SMAA" name="SMAA" value="2"/>
+					</combo_box>
+					<text name="antialiasing restart">
+						（再起動後に反映）
+					</text>
+					<text name="antialiasing quality label">
+						アンチエイリアス品質：
+					</text>
+					<combo_box label="アンチエイリアス" name="fsaa quality">
+						<combo_box.item label="低" name="Low" value="0"/>
+						<combo_box.item label="中" name="Medium" value="1"/>
+						<combo_box.item label="高" name="High" value="2"/>
+						<combo_box.item label="最高" name="Ultra" value="3"/>
+					</combo_box>
+					<check_box label="テンポラル AA（TAA：細い線をなめらかに）" name="taa" tool_tip="テンポラル アンチエイリアス：直前の数フレームを重ねて、止まった景色の細い線や輪郭のギザギザ・ちらつきをならします。上のアンチエイリアスの後に掛かり、FXAA や SMAA もそのまま効きます（両方とも使います）。動く物の後ろにかすかな尾が出ることがあります。保存する写真には掛かりません。負荷は軽めで、再起動せずにすぐ切り替わります。"/>
+					<check_box label="HiDPI ディスプレイに対応（再起動後に反映）" name="use HiDPI" tool_tip="高解像度描画で OpenGL を有効にします。"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="描画" name="Rendering">
+			<scroll_container name="rendering_scroll">
+				<panel name="rendering_scroll_panel">
+					<text name="FrameRateText">
+						フレームレート
+					</text>
+					<spinner label="フレームレート上限（0＝なし）：" name="fpslimit" tool_tip="1秒に描く枚数の上限です。0で制限なし。VSyncがオフの時に、グラフィックカードの負荷と発熱を抑えます。VSyncがオンの時は、モニターのリフレッシュレートより大きい値にしても効果はありません。"/>
+					<button label="合わせる" name="fpslimit_match" tool_tip="モニターのリフレッシュレートに合わせる：このウィンドウがあるモニターのリフレッシュレートを、上限に設定します。VSyncがオンの時、59.94Hzのような端数のあるレート（Windowsの表示で59・119・143・239）は1つ上（60・120・144・240）にします。VSyncに速さを任せ、カクつきを防ぐためです。"/>
+					<check_box label="垂直同期（VSync）を有効化" name="vsync" tool_tip="フレームレートをモニターのリフレッシュレートに同期させ、スムーズなパフォーマンスを実現します。"/>
+					<text name="Texture Rendering">
+						テクスチャ
+					</text>
+					<text name="MaxTextureResolutionLabel">
+						LOD の最大解像度：
+					</text>
+					<combo_box name="MaxTextureResolution" tool_tip="「詳細度（LOD）」テクスチャの最大解像度"/>
+					<text name="Miscellaneous Rendering">
+						その他
+					</text>
+					<check_box label="HDR と発光" name="VintageMode"/>
+					<slider label="ポストプロセス品質：" name="RenderPostProcess"/>
+					<text name="PostProcessText">
+						低
+					</text>
+					<slider label="シャープ化：" name="RenderSharpness"/>
+					<text name="ReflectionProbeCount">
+						反射プローブ上限：
+					</text>
+					<combo_box label="反射プローブ上限：" name="ProbeCount">
+						<combo_box.item label="なし" name="1"/>
+						<combo_box.item label="低" name="32"/>
+						<combo_box.item label="中" name="64"/>
+						<combo_box.item label="高" name="128"/>
+						<combo_box.item label="最高" name="256"/>
+					</combo_box>
+					<text name="TonemapTypeText">
+						トーンマッパー：
+					</text>
+					<combo_box name="TonemapType">
+						<combo_box.item label="Khronos Neutral" name="0"/>
+						<combo_box.item label="ACES" name="1"/>
+						<combo_box.item label="Reinhard（色相を保つ）" name="2"/>
+						<combo_box.item label="Hable（映画調）" name="3"/>
+						<combo_box.item label="Hejl（フィルム調・やわらかめ）" name="4"/>
+					</combo_box>
+					<slider label="トーンマップ混合：" name="TonemapMix" tool_tip="リニア色とトーンマップ後の色の混ぜ具合"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="被写界深度" name="DOF panel">
+			<scroll_container name="dof_scroll">
+				<panel name="dof_scroll_panel">
+					<check_box label="被写界深度を有効にする（ピントが合った所以外をぼかす）" name="UseDoF"/>
+					<check_box name="RenderDepthOfFieldInEditMode" label="編集中も有効にする" tool_tip="オブジェクトを作ったり編集したりしている間も、被写界深度を効かせます。"/>
+					<slider name="CameraFNum" label="F 値（絞り）：" tool_tip="被写界深度に使うカメラの F 値です。小さいほど、ピントの外が大きくぼけます。"/>
+					<slider name="CameraFocal" label="焦点距離（mm）：" tool_tip="被写界深度に使うカメラの焦点距離（ミリ）です。"/>
+					<slider name="Camera FOV" label="画角（度）：" tool_tip="被写界深度に使うカメラの縦の画角（度）です。"/>
+					<slider name="CameraFocusTrans" label="ピントの移動時間：" tool_tip="ピントがある所から次の所へ移るのにかかる時間（秒）です。"/>
+					<slider name="CameraDoFResScale" label="被写界深度の品質：" tool_tip="ぼかしの品質です。高いほどきれいで、低いほど速くなります。"/>
+				</panel>
+			</scroll_container>
+		</panel>
+		<panel label="Charis" name="Charis panel">
+			<scroll_container name="charis_scroll">
+				<panel name="charis_scroll_panel">
+					<text name="UpscaleText">
+						アップスケール
+					</text>
+					<text name="PlusUpscaleText">
+						アップスケール：
+					</text>
+					<combo_box name="PlusUpscale" tool_tip="世界をウィンドウより小さく描き、ウィンドウの大きさに引き伸ばします。グラフィックカードが重い時にフレームレートが上がります。HUD・名前・UI はくっきりのままで、写真は元の大きさで撮ります。撮影画面や撮影ツール（最小化していない時）を開いている間も元の大きさで描くので、その間はフレームレートが下がります。">
+						<combo_box.item label="オフ" name="0"/>
+						<combo_box.item label="AMD FSR 1" name="1"/>
+						<combo_box.item label="単純な拡大（比較用）" name="2"/>
+					</combo_box>
+					<slider name="PlusUpscaleScale" label="描画の大きさ：" tool_tip="世界を描く大きさ（ウィンドウの幅・高さに対する割合）です。0.77 画質、0.67 バランス、0.59 速め、0.5 最速。"/>
+					<slider name="PlusUpscaleSharpness" label="シャープ化：" tool_tip="引き伸ばした絵をどれだけくっきりさせるか（0：しない、1：いちばん強く）。好みで選びます。"/>
+					<text name="AOText">
+						環境遮蔽と間接光
+					</text>
+					<check_box name="PlusGtao" label="GTAO（すみの陰を細かく）" tool_tip="標準の環境遮蔽の代わりに GTAO を使い、すみ・家具の下・面の合わせ目の陰を細かく描きます。「全般」の「アンビエントオクルージョン」がオンの時に使え、それと置き換わります。グラフィックカードの負荷が増えます（品質で加減できます）。"/>
+					<text name="PlusGtaoQualityText">
+						GTAO の品質：
+					</text>
+					<combo_box name="PlusGtaoQuality" tool_tip="「低」「中」は 4 分の 1 の画素で計算します（8・24 サンプル）。「高」はすべての画素です。高いほど細かく、重くなります。">
+						<combo_box.item label="低" name="1"/>
+						<combo_box.item label="中" name="2"/>
+						<combo_box.item label="高" name="3"/>
+					</combo_box>
+					<slider name="PlusGtaoStrength" label="GTAO の強さ：" tool_tip="陰の濃さです。1 で測ったまま、2 で濃く、0 でなし。"/>
+					<slider name="PlusGtaoRadius" label="GTAO の届く距離（m）：" tool_tip="面が別の面に陰を落とす距離（メートル）です。大きいほど広く、やわらかい陰になります。"/>
+					<check_box name="PlusSsgi" label="間接光（SSGI）" tool_tip="近くの照らされた面（日なたの地面、赤い壁）の色を、そばの陰に返します。GTAO・アンビエントオクルージョン・HDR・反射プローブが必要です。"/>
+					<slider name="PlusSsgiStrength" label="間接光の強さ：" tool_tip="近くの面が返す光をどれだけ足すか（1：集めた分すべて）です。"/>
+					<text name="CharisReflectionText">
+						反射と半透明
+					</text>
+					<check_box name="PlusSSR" label="画面内の反射: 新方式" tool_tip="映り込みが遠くまで届き、少し粗い床にもぼけた反射が付きます。「全般」の「スクリーンスペース反射」がオンの時だけ効きます。少し重くなります。ガラス・半透明・水は標準の反射のままです。"/>
+					<text name="OITModeText">
+						半透明の前後関係を正確に（OIT）：
+					</text>
+					<combo_box name="OITMode" tool_tip="髪・まつ毛・ガラス・煙などの重なった半透明を、本当の前後関係どおりに描きます。髪のふちで奥の物が消えたり、まつ毛が髪の上に乗ったりしなくなります。OIT に必要な機能がないグラフィックカードでは選べません。">
+						<combo_box.item label="オフ" name="0"/>
+						<combo_box.item label="アバターの周りだけ" name="1"/>
+						<combo_box.item label="すべて" name="2"/>
+					</combo_box>
+					<check_box label="スナップショットは全 OIT で撮る" name="OITSnapshotFull" tool_tip="上の設定にかかわらず、スナップショットではすべての半透明を OIT で描きます。撮るのに少し時間がかかります。"/>
+					<text name="ObjectFxText">
+						物の出現・消滅の演出
+					</text>
+					<check_box label="読み込み中の物を光の帯で実体化する" name="PlusMaterialize" tool_tip="テクスチャを読み込んでいる間、物を光る線で描きます。届いたら光の帯が下から上へ走り、通った所から本来の見た目に変わります。キャッシュなどですぐ出せる物は、線も帯も出さずにそのまま表示します。読み込み中のワイヤーフレーム表示（デバッグ設定 RenderGrayTextureWireframe、既定でオン）が必要です。"/>
+					<slider label="実体化の時間（秒）：" name="PlusMaterializeSeconds" tool_tip="光の帯が物の下から上まで走り切る秒数です。"/>
+					<text name="PlusMaterializePaletteText">
+						光の色：
+					</text>
+					<combo_box name="PlusMaterializePalette" tool_tip="線と光の帯の色です。「カスタム」では右の色見本の色を使います。">
+						<combo_box.item label="シアン" name="0"/>
+						<combo_box.item label="オレンジ" name="1"/>
+						<combo_box.item label="マゼンタ" name="2"/>
+						<combo_box.item label="グリーン" name="3"/>
+						<combo_box.item label="カスタム" name="4"/>
+					</combo_box>
+					<color_swatch name="PlusMaterializeColor" tool_tip="線と光の帯を好きな色にします。色を選ぶと、光の色が「カスタム」に切り替わります。明るさは選んだ色のまま使います。黒に近い色はシアンになります。"/>
+					<check_box label="アバターも光の帯で実体化する" name="PlusMaterializeAvatar" tool_tip="読み込み中に光る線で描いたアバター（ログイン直後の自分、服や体のテクスチャがまだ届いていない人）が、全部そろった時に光の帯が足元から頭へ 1 回走り、本来の体・服・装着物に変わります。同時に走らせるのは 8 人まで。すぐ表示できたアバターは帯を出しません。"/>
+					<check_box label="物が消える時の演出" name="PlusDerez" tool_tip="近くの物が削除・返却された時（自分の物も他人の物も）、すぐには消さず、光る小さな立方体に崩れて上へ舞いながら消えます。装着物・アバター・物理で動く物・テレポートでは出ません。"/>
+					<slider label="崩れる時間（秒）：" name="PlusDerezSeconds" tool_tip="消える物が崩れ切るまでの秒数です。"/>
+					<text name="PlusDerezPaletteText">
+						光の色：
+					</text>
+					<combo_box name="PlusDerezPalette" tool_tip="崩れていく境目の光の色です。「カスタム」では右の色見本の色を使います。">
+						<combo_box.item label="シアン" name="0"/>
+						<combo_box.item label="オレンジ" name="1"/>
+						<combo_box.item label="マゼンタ" name="2"/>
+						<combo_box.item label="グリーン" name="3"/>
+						<combo_box.item label="カスタム" name="4"/>
+					</combo_box>
+					<color_swatch name="PlusDerezColor" tool_tip="崩れて消える物の光を好きな色にします。色を選ぶと、光の色が「カスタム」に切り替わります。"/>
+				</panel>
+			</scroll_container>
+		</panel>
+	</tab_container>
+	<!-- /plus -->
+	<view_border name="horiz_border"/>
+	<button label="推奨設定値にリセット" name="Defaults"/>
+	<button label="ＯＫ" label_selected="ＯＫ" name="OK"/>
+	<button label="キャンセル" label_selected="キャンセル" name="Cancel"/>
+	<check_box label="RenderAvatarMaxComplexity" name="RenderAvatarMaxComplexity"/>
+	<check_box label="RenderAvatarMaxNonImpostors" name="RenderAvatarMaxNonImpostors"/>
+</floater>

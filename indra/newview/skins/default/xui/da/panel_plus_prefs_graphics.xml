@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The Charis page (research/266 prefs-w-view) in this language: the words of the official panel_preferences_graphics1.xml, by name. -->
+<panel label="Grafik" name="Display panel">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="graphics_scroll">
+			<panel name="graphics_scroll_panel">
+				<plus_ps_text name="ShadersPrefText">
+					Lav
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText2">
+					Middel
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText3">
+					Høj
+				</plus_ps_text>
+				<plus_ps_text name="ShadersPrefText4">
+					Ultra
+				</plus_ps_text>
+				<plus_ps_text name="QualitySpeed">
+					Kvalitet og hastighed:
+				</plus_ps_text>
+				<plus_ps_text name="FasterText">
+					Hurtigere
+				</plus_ps_text>
+				<plus_ps_text name="BetterText">
+					Bedre
+				</plus_ps_text>
+				<plus_ps_slider_compat label="Maks. visnings-afstand:" name="DrawDistance"/>
+				<plus_ps_text name="DrawDistanceMeterText2">
+					m
+				</plus_ps_text>
+				<plus_ps_button_compat label="Nulstil" name="Defaults"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>

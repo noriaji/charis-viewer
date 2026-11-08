@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Which viewer opens secondlife:// links from the browser, and the buttons that make it this
+     one or put back the one before (plus/slurlhandler, research/237), in Preferences > Setup
+     under "Adjust proxy settings". Included from panel_preferences_setup.xml. -->
+<panel
+ background_visible="false"
+ border="false"
+ follows="left|top"
+ height="56"
+ layout="topleft"
+ mouse_opaque="false"
+ name="plus_slurl_handler"
+ width="480">
+    <string name="status_none">nothing (no viewer registered)</string>
+    <string name="status_this">this viewer</string>
+    <string name="status_other">[NAME]</string>
+    <string name="status_other_charis">a Charis Viewer in another folder</string>
+    <string name="status_missing">[NAME] (the program is not there)</string>
+    <string name="status_user_choice"> (chosen in Windows' default apps)</string>
+    <string name="status_second">x-grid links: [NAME]</string>
+    <string name="tip_second">x-grid-location-info:// links (other grids) open in [NAME]. "Open them with this viewer" registers both kinds.</string>
+    <string name="tip_no_exe">(none)</string>
+    <string name="tip_status">Opens secondlife:// links now: [EXE]
+This viewer: [OURS]
+
+Links on web pages (such as "Visit this location" on maps.secondlife.com) open the program registered for secondlife://. The browser first asks whether to open it ("Open Charis Viewer?"); you can tick "always allow" there. Pages at https://maps.secondlife.com themselves stay in the browser.</string>
+    <string name="confirm_take">secondlife:// links from the browser open in [NAME] now.
+
+Open them with this viewer instead? Only your Windows user's settings change (no administrator rights). "Undo" puts [NAME] back.</string>
+    <string name="confirm_take_grid">x-grid-location-info:// links (links to other grids) from the browser open in [NAME] now.
+
+Open them, and secondlife:// links, with this viewer? Only your Windows user's settings change (no administrator rights). "Undo" puts [NAME] back.</string>
+    <string name="confirm_also_grid">x-grid-location-info:// links (links to other grids) open in [NAME] now; they will open in this viewer too.</string>
+    <string name="done_register">secondlife:// links from the browser now open in this viewer. "Undo" puts back what opened them before.</string>
+    <string name="done_register_user_choice">Registered, but Windows' default apps names another app for secondlife:// links, and that choice comes first. Change it in Windows Settings > Apps > Default apps (search for "secondlife").</string>
+    <string name="bad_exe">This viewer's path cannot be registered safely (it has a % sign or another special character). Nothing was changed. Put the viewer in another folder and try again.</string>
+    <string name="failed">The registration could not be written. What was there before was put back.</string>
+    <string name="failed_partial">The registration could not be written, and some of it could not be put back: the links may now open this viewer, another Charis Viewer or nothing. Press "Open them with this viewer" again later.</string>
+    <string name="done_undo">What opened secondlife:// links before this viewer is back.</string>
+    <string name="nothing_to_undo">secondlife:// links are not registered to this viewer (another viewer registered them since); nothing was changed.</string>
+    <string name="failed_undo">Some of the registration could not be put back. Press "Undo" again later, or reinstall the viewer that should open the links.</string>
+    <text
+     follows="left|top"
+     height="10"
+     layout="topleft"
+     left="0"
+     mouse_opaque="false"
+     name="plus_slurl_label"
+     top="0"
+     width="170">
+        SLURLs from the browser:
+    </text>
+    <text
+     follows="left|top"
+     height="12"
+     layout="topleft"
+     left_pad="4"
+     name="plus_slurl_status"
+     parse_urls="false"
+     top_delta="0"
+     use_ellipses="true"
+     width="300">
+        ...
+    </text>
+    <button
+     follows="left|top"
+     height="23"
+     label="Open them with this viewer"
+     layout="topleft"
+     left="50"
+     name="plus_slurl_register"
+     tool_tip="Makes secondlife:// links clicked in the browser open this viewer (for your Windows user only, no administrator rights). What opened them before is kept for Undo. Nothing is registered unless you press this."
+     top_pad="5"
+     width="190" />
+    <button
+     follows="left|top"
+     height="23"
+     label="Undo"
+     layout="topleft"
+     left_pad="10"
+     name="plus_slurl_undo"
+     tool_tip="Puts back the viewer that opened secondlife:// links before you pressed &quot;Open them with this viewer&quot;. Do this before you delete this viewer's folder."
+     top_delta="0"
+     width="120" />
+    <check_box
+     control_name="PlusSLURLCheckAtStart"
+     follows="left|top"
+     height="14"
+     label="At start, tell me when another viewer opens these links"
+     layout="topleft"
+     left="50"
+     name="plus_slurl_check_at_start"
+     tool_tip="Off by default. When on, the viewer looks once at start and tells you when secondlife:// links open another viewer. It only tells; it never registers by itself."
+     top_pad="2"
+     width="420" />
+</panel>

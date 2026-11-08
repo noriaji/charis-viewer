@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="popups" label="Alerty">
+	<plus_ps_box name="ps_ground">
+		<scroll_container name="popups_scroll">
+			<panel name="popups_scroll_panel">
+				<plus_ps_text name="tell_me_label">
+					Powiadom mnie:
+				</plus_ps_text>
+				<plus_ps_check_compat name="friends_online_notify_checkbox" label="Gdy znajomi się logują/wylogowywują" />
+				<plus_ps_text name="show_label">
+					Zawsze pokazuj:
+				</plus_ps_text>
+				<plus_ps_text name="dont_show_label">
+					Nigdy nie pokazuj:
+				</plus_ps_text>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</panel>
