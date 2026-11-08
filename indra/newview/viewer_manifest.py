@@ -890,6 +890,10 @@ class Windows_x86_64_Manifest(ViewerManifest):
             # shortcuts in llvelopack.cpp on_after_install hook instead.
             '--shortcuts', '',
             '--noPortable',
+            # The viewer is 64-bit: without the architecture vpk packs its x86 Update.exe
+            # and stub ("No architecture specified with --runtime, defaulting to x86").
+            # plus/building/release/releasecommon.py VPK_RUNTIME checks it: change both.
+            '--runtime', 'win-x64',
             '--icon', os.path.abspath(icon_path),
         ]
         pack = {

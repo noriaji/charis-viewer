@@ -45,6 +45,9 @@ VELOPACK_PACK_JSON = 'velopack-pack.json'
 VELOPACK_ICON_REL = 'charis-velopack/icon.ico'
 # vpk pack's arguments that velopack-release.py adds itself (never in velopack-pack.json).
 VPK_ADDED_ARGS = ('--packDir', '--outputDir', '-p', '-o')
+# vpk pack's --runtime in velopack-pack.json (viewer_manifest.py writes it: change both).
+# Without the architecture vpk uses its x86 Update.exe and stub for the 64-bit viewer.
+VPK_RUNTIME = 'win-x64'
 # The pdb of each binary in the zip (paths relative to the build folder; <cfg> is the
 # output folder's name), for the symbols zip.
 PDBS = (('newview/<cfg>/secondlife-bin.pdb', '<exe>'),
@@ -192,6 +195,19 @@ def vpk_arg_value(args, name, where):
     if i + 1 >= len(args):
         raise ValueError('%s: vpkArgs ends with %s, without its value' % (where, name))
     return args[i + 1]
+
+
+def has_vpk_runtime(args):
+    """Whether the only runtime argument in vpk's arguments is "--runtime VPK_RUNTIME": no other
+    spelling of it (-r, -r:…, -r=…, -r…, --runtime=…, --runtime:…, any letter case) and no
+    response file (@…), which could carry one."""
+    def runtime_like(arg):
+        a = arg.lower()
+        return a.startswith('--runtime') or (a.startswith('-r') and not a.startswith('--'))
+    if any(a.startswith('@') for a in args) or [a for a in args if runtime_like(a)] != ['--runtime']:
+        return False
+    i = args.index('--runtime')
+    return i + 1 < len(args) and args[i + 1] == VPK_RUNTIME
 
 
 def release_version(source):

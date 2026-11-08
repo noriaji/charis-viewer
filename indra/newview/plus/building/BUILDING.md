@@ -207,7 +207,7 @@ charis-build.sh [--build-dir NAME] [--velopack on|off] [configure | build | chec
 - the projects: no `TRACY_ENABLE`, `LL_RELEASE_FOR_DOWNLOAD=1`, `LL_VULKAN=1` (built with the Vulkan SDK), no incremental linking
 - the build number: from git or `CHARIS_BUILD_NUMBER`, not the floor
 - the output: the viewer exe and the package step's file list, no Tracy files or strings, no developer-build strings, no Tracy symbols in the pdb
-- Velopack (`--velopack on`): `velopack-pack.json` from the same package step, with the package id of `plus/independence/independence.h`, the viewer exe and `--noPortable` (with `off`, a left-over one is a WARN)
+- Velopack (`--velopack on`): `velopack-pack.json` from the same package step, with the package id of `plus/independence/independence.h`, the viewer exe, `--noPortable` and `--runtime win-x64` (with `off`, a left-over one is a WARN)
 - the checkout: the commit the build started from, nothing changed or untracked, no source file changed during the build (a copy without git needs `--commit`; a checkout with git where git fails is NG)
 
 When every item passes, it writes `charis-release-build.txt` in the build

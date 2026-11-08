@@ -37,8 +37,8 @@ What is checked (each line of the output says OK, NG or WARN):
                developer-only strings in any exe/dll, no Tracy symbols in the pdb
   velopack     with --velopack on: velopack-pack.json (the arguments for vpk
                pack) from the same package step, with the package id of
-               plus/independence/independence.h, the viewer exe as the main exe
-               and --noPortable; with off, a left-over one is a WARN
+               plus/independence/independence.h, the viewer exe as the main exe,
+               --noPortable and --runtime win-x64; with off, a left-over one is a WARN
   checkout     HEAD is the commit charis-build.sh started from, nothing changed
                or untracked, no source file changed after the build started.
                Without git: --commit is required, and only the last item is
@@ -62,8 +62,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.dont_write_bytecode = True     # no __pycache__ in the source tree
 from releasecommon import (DEVELOPER_STRINGS, FILE_LIST, OUTPUT_REL, SOURCE, STAMP,  # noqa: E402
-                           TRACY_STRINGS, TRACY_SYMBOLS, VELOPACK_PACK_JSON, VIEWER_EXE_NAMES,
-                           independence_constant, read_text, sha256_file, viewer_exe)
+                           TRACY_STRINGS, TRACY_SYMBOLS, VELOPACK_PACK_JSON, VIEWER_EXE_NAMES, VPK_RUNTIME,
+                           has_vpk_runtime, independence_constant, read_text, sha256_file, viewer_exe)
 
 CHANNEL = 'Charis Viewer'
 CONFIGURE_LOG = 'charis-configure.log'
@@ -356,6 +356,10 @@ def check_velopack(c, build, source, exe, velopack):
              '%s: main exe %r, the build has %r' % (VELOPACK_PACK_JSON, arg('--mainExe'), exe_name))
     c.expect('--noPortable' in args, '%s: no Portable.zip (--noPortable)' % VELOPACK_PACK_JSON,
              '%s: --noPortable missing (a Portable.zip would be made)' % VELOPACK_PACK_JSON)
+    c.expect(has_vpk_runtime(args),
+             '%s: --runtime %s (the 64-bit Update.exe and stub)' % (VELOPACK_PACK_JSON, VPK_RUNTIME),
+             '%s: --runtime is %r, not %s once (vpk would pack its x86 Update.exe)'
+             % (VELOPACK_PACK_JSON, arg('--runtime'), VPK_RUNTIME))
     c.expect(not any(x in args for x in ('--packDir', '--outputDir')),
              '%s: no --packDir/--outputDir (the release tools add them)' % VELOPACK_PACK_JSON,
              '%s: --packDir or --outputDir is given' % VELOPACK_PACK_JSON)
