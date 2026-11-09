@@ -16,7 +16,8 @@ libraries, next to this file). It holds what licenses.txt does not:
      notes on its own parts that follow other projects
   2. the Vulkan libraries Charis Viewer is built with
   3. bundled libraries not listed in licenses.txt (CEF, OpenJPEG, OpenAL
-     Soft, VLC, Velopack)
+     Soft, VLC, Velopack), and the libraries in the translation and
+     subtitle helpers
   4. the notice for the Second Life viewer artwork (CC BY-SA 3.0)
   5. the full texts: Apache License 2.0, GNU LGPL 2.1
 The license files of the bundled packages, one per package, are in the
@@ -1243,6 +1244,228 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
+
+------------------------------------------------------------------------------
+The local translation and voice subtitle helpers (charis-translate.exe,
+charis-subtitle.exe) and vcomp140.dll, next to the viewer
+------------------------------------------------------------------------------
+
+Charis Viewer helpers (translate/subtitle): charis-translate.exe (local
+translation) and charis-subtitle.exe (voice subtitles) are programs of
+Charis Viewer (Copyright Charis Viewer contributors), under the GNU LGPL
+2.1 only (the text is in section 5). Their source code is tools/helpers/
+in the Charis Viewer repository (https://github.com/noriaji/charis-viewer),
+published with the viewer's source. The
+viewer starts them as separate programs for its translation and subtitle
+windows; they send nothing anywhere.
+The translation and Whisper models are not shipped: the viewer fetches them
+when asked to, and their licenses are where they are fetched
+(https://github.com/noriaji/charis-models). The libraries built into the
+helpers, unchanged:
+
+charis-translate.exe:
+  CTranslate2 4.5.0, MIT license (the same text as XeGTAO's in section 1,
+  with these copyright lines):
+    Copyright (c) 2018-     SYSTRAN.
+    Copyright (c) 2019-     The OpenNMT Authors.
+    https://github.com/OpenNMT/CTranslate2
+  and, from CTranslate2's third_party folder:
+  - ruy (Google), Apache License 2.0 (section 5).
+    https://github.com/google/ruy
+  - cpu_features (Google), Apache License 2.0 (section 5).
+    https://github.com/google/cpu_features
+  - cpuinfo and its clog (in ruy's third_party folder), BSD 2-clause (the
+    texts below). https://github.com/pytorch/cpuinfo
+  - JSON for Modern C++ 3.11.2 (in CTranslate2's include folder), MIT
+    license (the same text, with this copyright line):
+    Copyright (c) 2013-2022 Niels Lohmann <https://nlohmann.me>
+    with parts, under the MIT license too, by Bjoern Hoehrmann (2008-2009),
+    Florian Loitsch (2009) and The Abseil Authors (2018), and Hedley by Evan
+    Nemerson (2016-2021, CC0 1.0). https://github.com/nlohmann/json
+  - spdlog, MIT license (the same text, with this copyright line):
+    Copyright (c) 2016 Gabi Melman.
+    with {fmt}, Copyright (c) 2012 - present, Victor Zverovich, MIT license
+    (its exception for object code applies).
+  - avx_mathfun.h, MIT license (the same text, with this copyright line):
+    Copyright (c) 2016 Marcin Junczys-Dowmunt, the University of Edinburgh,
+    Adam Mickiewicz University; based on Giovanni Garberoglio's
+    avx_mathfun.h (zlib license, below), itself based on Julien Pommier's
+    sse_mathfun.h.
+  - avx512_mathfun.h (SIMD_Utils 0.2.5, JishinMaster), BSD 2-clause (below).
+  SentencePiece 0.2.0 (Google), Apache License 2.0 (section 5),
+  https://github.com/google/sentencepiece, and from its third_party folder:
+  - the Abseil parts (Google), Apache License 2.0 (section 5)
+  - protobuf-lite (Google), BSD 3-clause (below)
+  - Darts-clone (Susumu Yata), BSD 3-clause (below)
+
+charis-subtitle.exe:
+  whisper.cpp 1.9.5 with ggml 0.27.0, MIT license (the same text as XeGTAO's
+  in section 1, with this copyright line):
+    Copyright (c) 2023-2026 The ggml authors
+    https://github.com/ggml-org/whisper.cpp
+  and, in ggml's CPU operations (the YaRN rotary embedding), MIT license
+  (the same text, with this copyright line):
+    Copyright (c) 2023 Jeffrey Quesnelle and Bowen Peng.
+
+vcomp140.dll, the OpenMP runtime both helpers use: Microsoft Visual C++ 2022
+redistributable (14.44.35112), distributed under the Visual Studio license
+terms for redistributable code, as msvcp140.dll and vcruntime140.dll next to
+it are.
+
+cpuinfo:
+
+Copyright (c) 2019 Google LLC
+Copyright (c) 2017-2018 Facebook Inc.
+Copyright (C) 2012-2017 Georgia Institute of Technology
+Copyright (C) 2010-2012 Marat Dukhan
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+clog (in cpuinfo):
+
+Copyright (C) 2018 Marat Dukhan
+Copyright (c) 2017-2018 Facebook Inc.
+Copyright (c) 2017 Georgia Institute of Technology
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+protobuf-lite:
+
+Copyright 2008 Google Inc.  All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+    * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+Code generated by the Protocol Buffer compiler is owned by the owner
+of the input file used when generating it.  This code is not
+standalone and requires a support library to be linked with it.  This
+support library is itself covered by the above license.
+
+Darts-clone:
+
+Copyright (c) 2008-2011, Susumu Yata
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+- Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+- Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+- Neither the name of the <ORGANIZATION> nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+avx512_mathfun.h (SIMD_Utils):
+
+Copyright (c) JishinMaster (SIMD_Utils)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+avx_mathfun.h, the original version:
+
+Copyright (C) 2012 Giovanni Garberoglio
+Interdisciplinary Laboratory for Computational Science (LISC)
+Fondazione Bruno Kessler and University of Trento
+
+This software is provided 'as-is', without any express or implied
+warranty.  In no event will the authors be held liable for any damages
+arising from the use of this software.
+
+Permission is granted to anyone to use this software for any purpose,
+including commercial applications, and to alter it and redistribute it
+freely, subject to the following restrictions:
+
+1. The origin of this software must not be misrepresented; you must not
+   claim that you wrote the original software. If you use this software
+   in a product, an acknowledgment in the product documentation would be
+   appreciated but is not required.
+2. Altered source versions must be plainly marked as such, and must not be
+   misrepresented as being the original software.
+3. This notice may not be removed or altered from any source distribution.
 
 ==============================================================================
 4. Second Life viewer artwork

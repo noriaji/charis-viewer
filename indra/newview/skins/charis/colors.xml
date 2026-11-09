@@ -127,6 +127,9 @@
   <color name="PsRowHoverBg" value="0.1137 0.1569 0.2196 1" />
   <color name="PsSearchHitFill" value="0.2353 0.5686 0.9373 0.18" />
   <color name="PsSearchHitRing" value="0.5137 0.7961 1 0.8" />
+  <color name="PsShortcutFill" value="0.0549 0.0667 0.098 0.7" />
+  <color name="PsShortcutOnLeft" value="0.1686 0.3176 0.5216 0.9" />
+  <color name="PsShortcutOnRight" value="0.1176 0.2196 0.3451 0.9" />
 
   <!-- Official names the Charis look changes -->
   <color name="DkGray" reference="PsGround" />

@@ -9824,12 +9824,12 @@ void LLPipeline::applyFXAA(LLRenderTarget* src, LLRenderTarget* dst)
             gGLViewport[2] = gViewerWindow->getWorldViewRectRaw().getWidth();
             gGLViewport[3] = gViewerWindow->getWorldViewRectRaw().getHeight();
 
-            LLRHI::viewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]);
-            // <plus> plus/upscale (research/165): dst is the drawn size, smaller than the window's view
-            if (plus::upscale::active())
-            {
-                LLRHI::viewport(0, 0, width, height);
-            }
+            // <plus> fxaa-origin: dst is a target of its own (the world's size, or the drawn size while upscaled), so draw
+            // from its corner. The world's rect has an origin in the photo mode's detailed view, and drawing at that origin
+            // left the picture shifted inside dst with the frame before FXAA showing in the rest (a double image). The four
+            // gGLViewport lines above stay: dst->flush() goes back to the window with them, for the present pass.
+            // (was: LLRHI::viewport(gGLViewport[0], gGLViewport[1], gGLViewport[2], gGLViewport[3]), and (0, 0) only while upscaled)
+            LLRHI::viewport(0, 0, width, height);
             // </plus>
 
             F32 scale_x = (F32)width / mFXAAMap.getWidth();

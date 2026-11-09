@@ -48,6 +48,9 @@ namespace plus::photoscreen
     // With the UI hidden by View > Hide UI the hiding is undone first. Returns whether it is on.
     bool enter();
 
+    // Whether enter() can go in now (in the world, not quitting). It can still fail if its views cannot be made.
+    bool canEnter();
+
     // Goes out: the UI that was shown comes back (the menu bar, toolbars, bars, floaters, detached
     // windows) and the HUD attachments as they were. Safe to call when it is off, any number of times.
     void leave();

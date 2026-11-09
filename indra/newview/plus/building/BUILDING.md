@@ -338,8 +338,22 @@ Before the first run / 最初に動かす前に:
 
 ## Not in the source / ソースに含まれない物
 
-The voice subtitles (plus/subtitle) start a separate helper program,
-`charis-subtitle.exe`, with a Whisper model. Neither is part of this source or
-of the release zip.
-ボイスの字幕（plus/subtitle）は、別のヘルパー `charis-subtitle.exe` と Whisper の
-モデルを使います。どちらもこのソースと配布 zip には入っていません。
+The voice subtitles and the local translation (plus/subtitle, plus/translate)
+start separate helper programs, `charis-subtitle.exe` and `charis-translate.exe`,
+with Whisper and translation models. Their source is `tools/helpers/` (LGPL 2.1;
+its README.md has the build steps), but the viewer's build does not build them:
+the release workflow takes them, with the OpenMP runtime `vcomp140.dll` they
+load, from a release of https://github.com/noriaji/charis-models pinned by size
+and SHA-256 (`release-package.yml` HELPER_*, `release/fetch-helpers.py`), and puts
+them next to the viewer exe in the zip, the Setup.exe and the update package
+(`make-release-zip.py --helpers`). A new build of a helper goes to a new release
+(helper-2 ...) with new pins; a published release asset is never replaced. The
+models are not shipped (the viewer fetches them when asked to).
+ボイスの字幕とローカル翻訳（plus/subtitle、plus/translate）は、別のヘルパー
+`charis-subtitle.exe`・`charis-translate.exe` と、Whisper・翻訳のモデルを使います。ヘルパーのソースは
+`tools/helpers/`（LGPL 2.1。ビルドの手順はその README.md）ですが、ビューワのビルドでは作りません。リリースのワークフローが、両方が読む OpenMP のランタイム `vcomp140.dll` と一緒に
+https://github.com/noriaji/charis-models のリリースから大きさと SHA-256 を固定して取り出し
+（`release-package.yml` の HELPER_*、`release/fetch-helpers.py`）、zip・Setup.exe・更新パッケージの
+ビューワの exe の隣に入れます（`make-release-zip.py --helpers`）。ヘルパーを作り直したら新しいリリース
+（helper-2 …）に置いて固定値を変えます。公開したリリースのファイルは差し替えません。モデルは同梱しません
+（ビューワが求められた時に取得します）。

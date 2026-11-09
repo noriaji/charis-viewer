@@ -9,6 +9,7 @@ import importlib.util
 import os
 import re
 import sys
+import urllib.parse
 import urllib.request
 
 # The packaging step names the viewer CharisViewer.exe; a build packaged before
@@ -64,6 +65,18 @@ DEVELOPER_ONLY = ('tracy-profiler.exe', 'llplugin/media_plugin_example.dll')
 BUNDLE_DIR = 'app_settings/vk_shader_bundle/'
 BUNDLE_FILES = (BUNDLE_DIR + 'shaders.vkb', BUNDLE_DIR + 'pipeline_keys_seed.bin')
 MIN_FILES = 1000       # the list has several thousand files; fewer means the package step went wrong
+
+# The local translation and subtitle helpers (plus/subtitle helperPath(): next to the viewer exe only) and the
+# OpenMP runtime both of them load (they are built with /openmp; the VC runtime the package step ships has no
+# vcomp140.dll). Built from tools/helpers (not by the viewer's build or the release workflow), published once
+# in a release of noriaji/charis-models and pinned by size and SHA-256 in
+# release-package.yml: fetch-helpers.py takes them, make-release-zip.py --helpers puts them in the zip and the
+# stage (so in the Setup.exe and the update package too). Not in the packaging step's list.
+HELPER_FILES = ('charis-translate.exe', 'charis-subtitle.exe', 'vcomp140.dll')
+# Where fetch-helpers.py may fetch from: the release page's host, and the hosts GitHub sends a release asset's
+# download on to (release-assets... since 2025, objects... before). https only, no other port.
+HELPER_URL_HOSTS = ('github.com',)
+HELPER_REDIRECT_HOSTS = ('github.com', 'release-assets.githubusercontent.com', 'objects.githubusercontent.com')
 
 # Names of Mesa's Windows files (mesa-dist-win's x64 folder, and the OpenGL ones of other
 # Mesa builds): the bake uses Mesa (bake-shaders-ci.py); none of them may be in a release.
@@ -272,40 +285,82 @@ class DownloadFailed(Exception):
     pass
 
 
+class DownloadMismatch(DownloadFailed):
+    """What was fetched is not the pinned file (another size or SHA-256): not a network failure."""
+
+
+def url_host_problem(url, hosts):
+    """Why url is not an https URL on one of hosts (port 443 or none, no user name), or None."""
+    try:
+        parts = urllib.parse.urlsplit(url)
+        port = parts.port
+    except ValueError as e:
+        return 'not a URL (%s)' % e
+    if parts.scheme.lower() != 'https':
+        return 'not https'
+    if parts.username is not None or parts.password is not None:
+        return 'has a user name'
+    if port not in (None, 443):
+        return 'port %s' % port
+    if (parts.hostname or '').lower() not in hosts:
+        return 'host %s is not one of %s' % (parts.hostname, ', '.join(hosts))
+    return None
+
+
 class HttpsOnlyRedirects(urllib.request.HTTPRedirectHandler):
-    """Follows redirects only to https URLs."""
+    """Follows redirects only to https URLs (and, when hosts is given, only to those hosts)."""
+
+    def __init__(self, hosts=None):
+        super().__init__()
+        self.hosts = tuple(hosts) if hosts else None
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         if not newurl.lower().startswith('https://'):
             raise DownloadFailed('refused a redirect from %s to %s (not https)' % (req.full_url, newurl))
+        if self.hosts is not None:
+            why = url_host_problem(newurl, self.hosts)
+            if why:
+                raise DownloadFailed('refused a redirect from %s to %s (%s)' % (req.full_url, newurl, why))
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def download(url, path, size, digest, say=print):
+def copy_checked(stream, part, size, digest, url):
+    """Copies stream to the file part, reading at most size + 1 bytes; DownloadMismatch unless it held exactly
+    size bytes with that SHA-256."""
+    h = hashlib.sha256()
+    got = 0
+    with open(part, 'wb') as f:
+        for block in iter(lambda: stream.read(1 << 20), b''):
+            got += len(block)
+            if got > size:
+                break
+            h.update(block)
+            f.write(block)
+    if got != size or h.hexdigest() != digest:
+        raise DownloadMismatch('%s: %s bytes, sha256 %s; expected %d bytes, sha256 %s: removed'
+                               % (url, got if got <= size else 'more than %d' % size, h.hexdigest(), size, digest))
+
+
+def download(url, path, size, digest, say=print, hosts=None, redirect_hosts=None):
     """Fetches url to path unless a file with that size and SHA-256 is there (https only,
-    the size and SHA-256 checked before the file is put in place). say(text) tells progress;
-    DownloadFailed when it fails."""
+    the size and SHA-256 checked before the file is put in place). With hosts, url must be on
+    one of them and every redirect on one of redirect_hosts (default: hosts). say(text) tells
+    progress; DownloadFailed when it fails (DownloadMismatch: fetched, but not that file)."""
+    if hosts:
+        why = url_host_problem(url, hosts)
+        if why:
+            raise DownloadFailed('refused to fetch %s (%s)' % (url, why))
     if os.path.isfile(path) and os.path.getsize(path) == size and sha256_file(path) == digest:
         say('have %s' % path)
         return
     os.makedirs(os.path.dirname(path), exist_ok=True)
     part = path + '.part'
     say('fetching %s' % url)
-    h = hashlib.sha256()
-    got = 0
     done = False
     try:
-        opener = urllib.request.build_opener(HttpsOnlyRedirects)
-        with opener.open(url, timeout=120) as r, open(part, 'wb') as f:
-            for block in iter(lambda: r.read(1 << 20), b''):
-                got += len(block)
-                if got > size:
-                    break
-                h.update(block)
-                f.write(block)
-        if got != size or h.hexdigest() != digest:
-            raise DownloadFailed('%s: %s bytes, sha256 %s; expected %d bytes, sha256 %s: removed'
-                             % (url, got if got <= size else 'more than %d' % size, h.hexdigest(), size, digest))
+        opener = urllib.request.build_opener(HttpsOnlyRedirects(redirect_hosts or hosts))
+        with opener.open(url, timeout=120) as r:
+            copy_checked(r, part, size, digest, url)
         os.replace(part, path)
         done = True
     except (OSError, http.client.HTTPException) as e:

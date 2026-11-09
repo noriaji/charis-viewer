@@ -19,7 +19,13 @@
 		<text name="join_cost_text">
 			免費
 		</text>
-		<button label="現在就加入!!" name="btn_join"/>
+		<!-- plus: group-info-layout (button row, see en) -->
+		<layout_stack name="join_row">
+			<layout_panel name="btn_join_lp">
+				<button label="現在就加入!!" name="btn_join"/>
+			</layout_panel>
+		</layout_stack>
+		<!-- /plus -->
 	</panel>
 	<text_editor name="charter">
 		群組規章

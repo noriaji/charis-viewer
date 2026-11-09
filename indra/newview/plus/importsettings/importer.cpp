@@ -22,8 +22,10 @@
  */
 
 // The source folder is only read: nothing in it is written, moved or deleted.
-// Its saved logins are read from a copy in our own folder (the store that reads
-// them writes its file back when it goes).
+// Saved logins (user_settings/bin_conf.dat: user names and passwords) are NOT brought over
+// (import-no-logins, 2026-11-09): they do not carry to another computer, and a secret is not
+// copied between viewers. bin_conf.dat is in SKIPPED_ACCOUNT_FILES, and the store that
+// reads it (LLSecAPIBasicHandler) is not used here.
 //
 // Settings (general, graphics, account): the values of settings this viewer has
 // (same name, same type, kept between sessions) are set in this session, as
@@ -57,8 +59,6 @@
 // The graphics preset in use (PresetGraphicActive) is kept only when that preset
 // is there (activePresetChecked()).
 //
-// Saved logins: those we do not have are added; ours stay as they are.
-//
 // Key bindings: the source's key_bindings.xml replaces ours (kept as
 // key_bindings_before_import_<date>.xml), then the photo tools' keys are added
 // to it where it has none (plus::photomode::addDefaultKeys()).
@@ -76,11 +76,9 @@
 #include "llcontrol.h"
 #include "lldir.h"
 #include "llerrorcontrol.h"
-#include "llpanellogin.h"
 #include "llpresetsmanager.h"
 #include "llsdserialize.h"
 #include "llsdutil.h"
-#include "llsechandler_basic.h"
 #include "llstartup.h"
 #include "llstring.h"
 #include "lltimer.h"
@@ -229,14 +227,12 @@ namespace
                                                      "settings_per_account_before_import", "plus_outfit_backup" };
     // toolbars.xml (import-no-toolbar, 2026-11-09): the source's toolbar layout. It names buttons
     // this viewer has not, and brought over it left our toolbars nearly empty. Ours are not touched.
+    // bin_conf.dat (import-no-logins, 2026-11-09): the saved logins (user names and passwords). They
+    // are not brought over; the file is in user_settings, which no loop here copies by name, and
+    // is named so that a copy of it in an account's folder is never made either.
     const char* const SKIPPED_ACCOUNT_FILES[] = { "inbox_new_items.xml", "experience_events.xml",
-                                                  "charis_graphics_before_preset.xml", "toolbars.xml" };
-
-    // Saved-login data whose entries are one per user (merged entry by entry); any other kind
-    // ("credential": the last login of a grid) is taken whole when we have none for that grid.
-    // The official viewer and Firestorm key them alike: the grid ("util.agni.lindenlab.com"),
-    // then "first_last" in lower case (LLSecAPIBasicCredential::userID()).
-    const char* const PER_USER_LOGIN_DATA[] = { "login_list", "mfa_hash" };
+                                                  "charis_graphics_before_preset.xml", "toolbars.xml",
+                                                  "bin_conf.dat" };
 
     // Backups of ours: <name>_<date and time>.xml
     constexpr char BACKUP_SETTINGS[] = "settings_before_import";
@@ -244,7 +240,6 @@ namespace
     constexpr char BACKUP_KEYS[] = "key_bindings_before_import";
     constexpr char BACKUP_WARNINGS[] = "ignorable_dialogs_before_import";  // fix-round68 2
     constexpr char BACKUP_COLORS[] = "colors_before_import";               // fix-round68 2
-    constexpr char LOGINS_COPY[] = "bin_conf_import.tmp";
 
     constexpr char CHAT_LOG_SETTING[] = "InstantMessageLogPath";    // per account
     constexpr char ACCOUNT_SETTINGS_FILE[] = "settings_per_account.xml";
@@ -1176,109 +1171,6 @@ namespace
         c.result.settings += (U32)changes.size();
     }
 
-    // Reads the saved logins of a copy of the source's bin_conf.dat.
-    class SourceLogins : public LLSecAPIBasicHandler
-    {
-    public:
-        explicit SourceLogins(const std::string& file) : LLSecAPIBasicHandler(file, std::string()) {}
-        // fix-round52 3: the store writes its data back to its file when it goes; an undefined
-        // map makes it remove the file instead. So the copy is never written again (encrypted
-        // for this computer), read or not.
-        ~SourceLogins() { mProtectedDataMap = LLSD(); }
-        const LLSD& data() const { return mProtectedDataMap; }
-    };
-
-    // Removes a file when it goes out of scope, on every way out (fix-round52 3).
-    struct RemoveWhenDone
-    {
-        const fs::path path;
-        ~RemoveWhenDone()
-        {
-            std::error_code ec;
-            fs::remove(path, ec);
-        }
-    };
-
-    void importLogins(Context& c)
-    {
-        const fs::path file = c.from / "user_settings" / "bin_conf.dat";
-        std::error_code ec;
-        if (!fs::is_regular_file(file, ec) || !gSecAPIHandler)
-        {
-            return;
-        }
-        // The store writes its file back when it goes: it reads a copy, never the source's file.
-        const fs::path copy = fsyspath(gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, LOGINS_COPY));
-        // Never left behind (the source's saved logins): not after a copy cut short, nor after
-        // a store that could not read it, nor when anything below throws.
-        const RemoveWhenDone remove_copy{ copy };
-        if (!fs::copy_file(file, copy, fs::copy_options::overwrite_existing, ec))
-        {
-            ++c.result.errors;
-            c.note("cannot copy " + utf8(file) + ": " + ec.message());
-            return;
-        }
-
-        LLSD theirs;
-        {
-            LLPointer<SourceLogins> store = new SourceLogins(utf8(copy));
-            try
-            {
-                store->init();      // decrypted with this computer's id, as ours is
-                theirs = store->data();
-            }
-            catch (...)
-            {
-                ++c.result.errors;
-                c.note("cannot read the saved logins of " + utf8(file) + " (made on another computer?)");
-            }
-        }
-        fs::remove(copy, ec);
-        if (!theirs.isMap())
-        {
-            return;
-        }
-
-        U32 added = 0;
-        for (LLSD::map_const_iterator type_it = theirs.beginMap(); type_it != theirs.endMap(); ++type_it)
-        {
-            const std::string& type = type_it->first;
-            if (!type_it->second.isMap())
-            {
-                continue;
-            }
-            const bool per_user = isOneOf(type, PER_USER_LOGIN_DATA);
-            for (LLSD::map_const_iterator id_it = type_it->second.beginMap(); id_it != type_it->second.endMap(); ++id_it)
-            {
-                const std::string& id = id_it->first;     // the grid
-                const LLSD ours = gSecAPIHandler->getProtectedData(type, id);
-                if (per_user && id_it->second.isMap())
-                {
-                    for (LLSD::map_const_iterator user_it = id_it->second.beginMap(); user_it != id_it->second.endMap(); ++user_it)
-                    {
-                        if (!ours.isMap() || !ours.has(user_it->first))
-                        {
-                            gSecAPIHandler->addToProtectedMap(type, id, user_it->first, user_it->second);
-                            added += type == "login_list" ? 1 : 0;
-                        }
-                    }
-                }
-                else if (ours.isUndefined())
-                {
-                    gSecAPIHandler->setProtectedData(type, id, id_it->second);
-                }
-            }
-        }
-        gSecAPIHandler->syncProtectedMap();
-        c.result.logins += added;
-
-        // the login screen's list of names
-        if (LLStartUp::getStartupState() <= STATE_LOGIN_WAIT)
-        {
-            LLPanelLogin::updateServer();
-        }
-    }
-
     void importKeys(Context& c)
     {
         const fs::path theirs = c.from / "user_settings" / "key_bindings.xml";
@@ -1667,7 +1559,7 @@ namespace
 
     void logResult(const Result& result)
     {
-        LL_INFOS("ImportSettings") << result.settings << " settings, " << result.logins << " saved logins, "
+        LL_INFOS("ImportSettings") << result.settings << " settings, "
                                    << (result.keys ? "key bindings, " : "") << result.files << " files ("
                                    << result.kept << " we had already were left, " << result.over_limit
                                    << " over the limit), " << result.errors << " errors"
@@ -1845,7 +1737,7 @@ bool plus::importsettings::start(const Source& source, const Choice& choice,
 
     LL_INFOS("ImportSettings") << "Bringing settings over from " << source.name << " (" << source.root << ")"
                                << (choice.general ? " general" : "") << (choice.graphics ? " graphics" : "")
-                               << (choice.logins ? " logins" : "") << (choice.keys ? " keys" : "")
+                               << (choice.keys ? " keys" : "")
                                << (choice.accounts ? " accounts" : "") << (choice.chat ? " chat" : "")
                                << (choice.files ? " files" : "") << LL_ENDL;
     try
@@ -1857,10 +1749,6 @@ bool plus::importsettings::start(const Source& source, const Choice& choice,
         if (choice.general)
         {
             importColors(c);
-        }
-        if (choice.logins)
-        {
-            importLogins(c);
         }
         if (choice.keys)
         {

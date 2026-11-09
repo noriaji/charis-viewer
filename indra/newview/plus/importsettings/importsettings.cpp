@@ -132,7 +132,6 @@ namespace
             LLStringUtil::format_map_t args;
             args["[NAME]"] = name;
             args["[SETTINGS]"] = llformat("%u", result.settings);
-            args["[LOGINS]"] = llformat("%u", result.logins);
             args["[FILES]"] = llformat("%u", result.files);
             args["[KEPT]"] = llformat("%u", result.kept);
             args["[OVER]"] = llformat("%u", result.over_limit);
@@ -259,7 +258,6 @@ namespace
             Choice c;
             c.general = getChild<LLCheckBoxCtrl>("chk_general")->get();
             c.graphics = getChild<LLCheckBoxCtrl>("chk_graphics")->get();
-            c.logins = getChild<LLCheckBoxCtrl>("chk_logins")->get();
             c.keys = getChild<LLCheckBoxCtrl>("chk_keys")->get();
             c.accounts = getChild<LLCheckBoxCtrl>("chk_accounts")->get();
             c.chat = getChild<LLCheckBoxCtrl>("chk_chat")->get();

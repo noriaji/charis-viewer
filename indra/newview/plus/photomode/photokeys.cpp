@@ -45,6 +45,7 @@
 #include <set>
 #include <sstream>
 
+#include "llappviewer.h"     // gFrameCount
 #include "llcallbacklist.h"
 #include "lldir.h"
 #include "llfile.h"
@@ -82,6 +83,16 @@ namespace plus::photomode
         constexpr F32 FAST       = 3.f;   // with Shift
         constexpr F32 EASE_TIME  = 0.25f; // as NUDGE_TIME and ORBIT_NUDGE_RATE of llviewerinput.cpp
         constexpr F32 EASE_START = 0.05f;
+
+        // The last press of photo_screen_toggle that toggles (keyPhotoScreenToggle), until
+        // takePhotoScreenKeyPress() takes it from the gestures. Main thread.
+        struct TakenPress
+        {
+            bool mTaken = false;
+            KEY  mKey   = KEY_NONE;
+            U32  mFrame = 0;
+        };
+        TakenPress sTakenPress;
 
         // The keys reach here as WASD does, only through LLViewerInput::scanKey, which skips a key that
         // LLViewerWindow::handleKey took (mKeyHandledByUI). It takes every key while any UI control has
@@ -383,8 +394,29 @@ namespace plus::photomode
         if (state == KEYSTATE_DOWN && gKeyboard && !gKeyboard->getKeyRepeated(gKeyboard->currentKey()) && plainKey())
         {
             doOnIdleOneTime([]() { plus::photoscreen::toggle(); });
+            // This press is the photo screen's: LLViewerWindow::handleKey keeps it from the gestures
+            // (takePhotoScreenKeyPress). Not when the toggle would do nothing (not in the world, quitting).
+            if (plus::photoscreen::isActive() || plus::photoscreen::canEnter())
+            {
+                sTakenPress = { true, gKeyboard->currentKey(), gFrameCount };
+            }
         }
         return true;
+    }
+
+    bool takePhotoScreenKeyPress()
+    {
+        // The press recorded above for this same key down: the global keys are called with the keyboard's
+        // own key (gKeyboard->currentKey(), before the key_bindings.xml remap of LLViewerInput::handleKey),
+        // in the same frame and just before the UI. A press that something before the gestures took (a web or
+        // media window, the focused control, the tool, the focus picking), a key the UI skips (the numeric
+        // keypad, mKeysSkippedByUI) or a Return left to its WM_CHAR never asks here: its record is forgotten
+        // by the frame and key check. The modifiers are checked as when it was recorded (plainKey), so a
+        // Ctrl or Alt press of the same key in the same frame keeps its gesture. A press is taken only once.
+        const bool taken = sTakenPress.mTaken && gKeyboard && sTakenPress.mKey == gKeyboard->currentKey()
+                           && sTakenPress.mFrame == gFrameCount && plainKey();
+        sTakenPress.mTaken = false;
+        return taken;
     }
 
     void addDefaultKeys()

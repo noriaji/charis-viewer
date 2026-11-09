@@ -4,12 +4,12 @@
 	<floater.string name="not_now">引き継がずに始める</floater.string>
 	<floater.string name="none">この PC にほかのビューワは見つかりませんでした。設定を別の場所に置いている場合（ポータブル版、別のドライブなど）は、そのフォルダを選んでください。</floater.string>
 	<floater.string name="not_viewer_folder">[FOLDER] にはビューワの設定（user_settings\settings.xml）がないか、このビューワ自身のフォルダです。user_settings が入っているフォルダを選んでください。</floater.string>
-	<floater.string name="confirm">選んだ項目の設定を [NAME] の設定で上書きします。キー割り当てを選んだ場合は、キー割り当ても置き換えます。上書きする前のものは user_settings に日時付きで残します（settings_before_import_〜、key_bindings_before_import_〜、colors_before_import_〜 など）。保存したログイン、チャット履歴などのファイルは今のものを残し、まだないものだけを足します。よろしいですか？</floater.string>
+	<floater.string name="confirm">選んだ項目の設定を [NAME] の設定で上書きします。キー割り当てを選んだ場合は、キー割り当ても置き換えます。上書きする前のものは user_settings に日時付きで残します（settings_before_import_〜、key_bindings_before_import_〜、colors_before_import_〜 など）。チャット履歴などのファイルは今のものを残し、まだないものだけを足します。保存したログイン（ユーザー名とパスワード）は引き継ぎません。よろしいですか？</floater.string>
 	<floater.string name="busy">前回の引き継ぎのファイルをまだコピーしています。終わるまでお待ちください。</floater.string>
 	<floater.string name="logging_in">ログインの途中のため、いまは引き継げません。ログインが終わってから（またはログイン画面で）もう一度お試しください。</floater.string>
 	<floater.string name="applying">設定を引き継いでいます… 新しい設定に合わせて描画（シェーダー）を作り直すため、しばらく止まることがあります。</floater.string>
 	<floater.string name="copying">設定は引き継ぎました。ファイルをコピーしています: [TOTAL] 個中 [COPIED] 個…（この間もほかの操作ができます）</floater.string>
-	<floater.string name="done">[NAME] から、設定 [SETTINGS] 件、保存したログイン [LOGINS] 件、ファイル [FILES] 個を引き継ぎました。</floater.string>
+	<floater.string name="done">[NAME] から、設定 [SETTINGS] 件、ファイル [FILES] 個を引き継ぎました。</floater.string>
 	<floater.string name="done_keys">キー割り当てを置き換えました（今までのものは user_settings に key_bindings_before_import_〜（日時付き）で残してあります）。</floater.string>
 	<floater.string name="done_kept">このビューワに既にあったファイル [KEPT] 個は、そのままにしました。</floater.string>
 	<floater.string name="done_over">大きすぎるか、1 回の引き継ぎの上限（10 万個、2 GB）を超えたファイル [OVER] 個はコピーしていません。ログに名前があります。</floater.string>
@@ -26,7 +26,6 @@
 	<text name="what_label">引き継ぐもの:</text>
 	<check_box name="chk_general" label="一般の設定（チャット、カメラ、移動、音、色、「次回から表示しない」にした確認など）"/>
 	<check_box name="chk_graphics" label="グラフィックの設定、グラフィックプリセット、ウィンドウの大きさ" tool_tip="別の Charis Viewer からの場合だけ、最初から選ばれています。ほかのビューワのグラフィック設定とプリセットは、そのビューワの描画に合わせたものです。Charis Viewer からの場合は、Charis Viewer 独自の描画の設定（アンビエントオクルージョン、グレア、ルックなど）もグラフィックに含みます"/>
-	<check_box name="chk_logins" label="保存したログイン（ユーザー名とパスワード。今のものは残します）"/>
 	<check_box name="chk_keys" label="キー割り当て"/>
 	<check_box name="chk_accounts" label="アカウントごとの設定（プリセット、音量など）"/>
 	<check_box name="chk_chat" label="チャットと IM の履歴"/>

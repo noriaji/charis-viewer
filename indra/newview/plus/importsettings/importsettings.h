@@ -74,7 +74,6 @@ namespace plus::importsettings
     {
         bool general = true;    // settings.xml (but the graphics), the warnings not to show again, the colors
         bool graphics = false;  // the Render* settings (and the Charis Viewer's own), the window, the graphics presets
-        bool logins = true;     // saved user names and passwords (added; ours stay)
         bool keys = true;       // key_bindings.xml (ours kept as key_bindings_before_import_<date>.xml)
         bool accounts = true;   // settings_per_account.xml and the other files of each account
         bool chat = true;       // chat and IM transcripts
@@ -84,7 +83,6 @@ namespace plus::importsettings
     struct Result
     {
         U32 settings = 0;       // values that changed
-        U32 logins = 0;         // saved logins added
         bool keys = false;      // the key bindings were replaced
         U32 files = 0;          // files copied
         U32 kept = 0;           // files this install had already (left as they were)
@@ -97,7 +95,7 @@ namespace plus::importsettings
     // Brings the chosen settings over from the source, into this session (settings
     // take effect now; some of them only at the next start) and into this install's
     // folder. The source is only read. Main thread.
-    // The settings, the saved logins, the key bindings and the accounts' own files are
+    // The settings, the key bindings and the accounts' own files are
     // done at once; the chat logs and the other saved files (thousands, for some) are
     // copied a few each frame, so the window goes on drawing: progress(copied, total)
     // is called as they go, done(result) at the end (also when there was nothing to

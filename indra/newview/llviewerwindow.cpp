@@ -215,6 +215,9 @@
 // <plus> the photo screen's world rectangle (plus/photoscreen)
 #include "plus/photoscreen/photoscreen.h"
 // </plus>
+// <plus> the photo screen's key goes before the gestures (plus/photomode, f12-no-gesture)
+#include "plus/photomode/photokeys.h"
+// </plus>
 // <plus> the flycam on the keyboard and mouse (plus/flycammouse)
 #include "plus/flycammouse/flycammouse.h"
 // </plus>
@@ -3408,6 +3411,17 @@ bool LLViewerWindow::handleKey(KEY key, MASK mask)
         return true;
     }
 
+    // <plus> plus/photomode (f12-no-gesture): the key of the photo screen (photo_screen_toggle, F12 by default; the
+    // official default gestures sit on the function keys) does not play a gesture too. Its global binding already
+    // set off the toggle in handleTranslatedKeyDown(), before this (the global keys never eat a key), and recorded
+    // this press; this only eats it: toggling here again would undo it. The gestures on the other keys, and the
+    // user's gesture settings, stay as they are.
+    if (plus::photomode::takePhotoScreenKeyPress())
+    {
+        LLViewerEventRecorder::instance().logKeyEvent(key, mask);
+        return true;
+    }
+    // </plus>
     // Try for a new-format gesture
     if (LLGestureMgr::instance().triggerGesture(key, mask))
     {

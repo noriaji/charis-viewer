@@ -1,0 +1,10 @@
+# What the helpers' builds fetch and make (README.md): never in this repository.
+/*/third_party/
+/*/build/
+/*/out/
+/*/models/
+/*/.venv/
+*.log
+__pycache__/
+# build-deps.bat is source: the top .gitignore's build-* would hide it.
+!/*/build-deps.bat

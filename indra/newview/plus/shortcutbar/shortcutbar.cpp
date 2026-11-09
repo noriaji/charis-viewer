@@ -28,6 +28,7 @@
 #include "plus.h"
 #include "shortcutbar.h"
 #include "plus/photoscreen/photoscreen.h"
+#include "plus/photoscreen/psui/psstyle.h"
 
 #include "llcallbacklist.h"
 #include "llcontrol.h"
@@ -68,11 +69,14 @@ namespace plus::shortcutbar
         constexpr S32  MAX_ENTRIES        = 40;
         constexpr S32  MAX_DEPTH          = 8;
         constexpr S32  MAX_ALIAS_BYTES    = 40;
-        constexpr S32  MARGIN_LEFT        = 8;
-        constexpr S32  GAP                = 16;   // between two buttons
-        constexpr S32  HIT_PAD            = 6;    // the hover box is this much wider than the text on each side
+        namespace style = plus::psui::style;
+        constexpr S32  BTN_PAD            = style::SHORTCUT_BTN_PAD;     // a button is this much wider than its text on each side
+        constexpr S32  MARGIN_LEFT        = style::SHORTCUT_EDGE + BTN_PAD; // the first text (the first button starts SHORTCUT_EDGE from the edge)
+        constexpr S32  GAP                = 2 * BTN_PAD + style::SHORTCUT_BTN_GAP; // between the texts of two buttons
+        constexpr S32  SEPARATOR_EXTRA    = 2 * style::SHORTCUT_BTN_GAP; // more room between two buttons for a separator line
+        constexpr S32  SEPARATOR_INSET    = 4;    // the separator line stops this far from the row's top and bottom
         constexpr F32  REFRESH_SECONDS    = 0.5f; // enabled / checked state of the items
-        constexpr LLFontGL::ShadowType TEXT_SHADOW = LLFontGL::DROP_SHADOW_SOFT; // as LLButton's label_shadow
+        constexpr LLFontGL::ShadowType TEXT_SHADOW = LLFontGL::DROP_SHADOW_SOFT; // the hint of an empty bar (it has no box), as LLButton's label_shadow
 
         using Path = std::vector<std::string>;
 
@@ -393,12 +397,10 @@ namespace plus::shortcutbar
 
                 const LLRect rect = getLocalRect();
                 const S32 text_y = rect.getCenterY() - (S32)(font->getLineHeight() / 2.f) + 1;
-                const LLColor4 normal = LLUIColorTable::instance().getColor("LtGray");
-                const LLColor4 bright = LLUIColorTable::instance().getColor("White");
-                const LLColor4 dim    = LLUIColorTable::instance().getColor("DkGray");
+                const LLColor4 normal = LLUIColorTable::instance().getColor("LtGray");   // the hint of an empty bar
 
                 // The bar lies over the world, as the Firestorm favorites bar does: no background unless the
-                // user asks for one (0 = clear, 1 = black). The text has the soft shadow of the buttons.
+                // user asks for one (0 = clear, 1 = black). Each button is a translucent box (drawButton()).
                 static LLCachedControl<F32> background(gSavedSettings, SETTING_BACKGROUND, 0.f);
                 const F32 back_alpha = llclamp((F32)background, 0.f, 1.f);
                 if (back_alpha > 0.f)
@@ -417,38 +419,27 @@ namespace plus::shortcutbar
                     return;
                 }
 
+                const F32 alpha = getDrawContext().mAlpha;
+                const F32 box_bottom = F32((rect.getHeight() - style::SHORTCUT_BTN_HEIGHT) / 2);
+                const F32 box_top    = box_bottom + F32(style::SHORTCUT_BTN_HEIGHT);
                 for (S32 i = 0; i < (S32)mSlots.size(); ++i)
                 {
                     const Slot& slot = mSlots[i];
                     const bool hover = (i == mHover) && slot.enabled;
                     if (slot.separatorX >= 0)
                     {
-                        font->renderUTF8("|", 0, slot.separatorX, text_y, dim,
-                                         LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, TEXT_SHADOW);
+                        plus::psui::fillRect(LLRectf(F32(slot.separatorX), box_top - F32(SEPARATOR_INSET), F32(slot.separatorX + 1),
+                                                     box_bottom + F32(SEPARATOR_INSET)),
+                                             plus::psui::Fill::solid(plus::psui::faded(style::DIVIDER_RIGHT, alpha)));
                     }
-                    if (hover)
-                    {
-                        gl_rect_2d(slot.x - HIT_PAD, rect.mTop - 2, slot.x + slot.width + HIT_PAD, rect.mBottom + 2,
-                                   LLColor4(1.f, 1.f, 1.f, 0.14f), true);
-                    }
-                    LLColor4 color = slot.enabled ? (hover ? bright : normal) : dim;
-                    if (slot.checked && slot.enabled)
-                    {
-                        color = LLUIColorTable::instance().getColor("EmphasisColor");
-                    }
-                    font->renderUTF8(slot.label, 0, slot.x, text_y, color,
-                                     LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, TEXT_SHADOW);
+                    drawButton(LLRectf(F32(slot.x - BTN_PAD), box_top, F32(slot.x + slot.width + BTN_PAD), box_bottom),
+                               slot.label, text_y, { hover, hover && mDownOn == i, slot.checked, slot.enabled }, alpha);
                 }
                 if (mMoreX >= 0)
                 {
                     const bool hover = (mHover == MORE);
-                    if (hover)
-                    {
-                        gl_rect_2d(mMoreX - HIT_PAD, rect.mTop - 2, mMoreX + mMoreWidth + HIT_PAD, rect.mBottom + 2,
-                                   LLColor4(1.f, 1.f, 1.f, 0.14f), true);
-                    }
-                    font->renderUTF8(mMoreLabel, 0, mMoreX, text_y, hover ? bright : normal,
-                                     LLFontGL::LEFT, LLFontGL::BOTTOM, LLFontGL::NORMAL, TEXT_SHADOW);
+                    drawButton(LLRectf(F32(mMoreX - BTN_PAD), box_top, F32(mMoreX + mMoreWidth + BTN_PAD), box_bottom),
+                               mMoreLabel, text_y, { hover, hover && mDownOn == MORE, false, true }, alpha);
                 }
             }
 
@@ -528,7 +519,7 @@ namespace plus::shortcutbar
                 // On the clear part the world's own right click (the pie menu) is kept; an empty bar's hint
                 // text still opens the bar's menu, so the bar can be hidden from there.
                 const bool on_hint = mSlots.empty() && sEntries.empty()
-                                     && x >= MARGIN_LEFT - HIT_PAD && x < MARGIN_LEFT + mEmptyWidth + HIT_PAD;
+                                     && x >= MARGIN_LEFT - BTN_PAD && x < MARGIN_LEFT + mEmptyWidth + BTN_PAD;
                 if (hit == NONE && !on_hint)
                 {
                     return false;
@@ -573,16 +564,56 @@ namespace plus::shortcutbar
                 bool        checked = false;
             };
 
+            // One button: a rounded translucent box (the world buttons' navy; hovered: lighter with a lighter
+            // line; pressed: darker, the text one pixel down; on = a menu item with a check mark that is
+            // checked: blue as a chosen segment; disabled: all of it at 40 %) and its text in the middle.
+            struct ButtonState
+            {
+                bool hover   = false;   // under the mouse (an enabled button only)
+                bool pressed = false;   // the mouse button is down on it
+                bool on      = false;   // a check mark item that is checked
+                bool enabled = true;
+            };
+
+            void drawButton(const LLRectf& box, const std::string& label, S32 text_y, const ButtonState& state,
+                            F32 alpha) const
+            {
+                const bool hover = state.hover, pressed = state.pressed, enabled = state.enabled;
+                const bool on = state.on && enabled;
+                const F32 a = enabled ? alpha : alpha * style::STATE_DISABLED;
+                plus::psui::Fill fill = on
+                    ? plus::psui::Fill::horizontal(style::SHORTCUT_ON_LEFT, style::SHORTCUT_ON_RIGHT)
+                    : plus::psui::Fill::solid(style::SHORTCUT_FILL);
+                LLColor4 border = on ? style::BUTTON_ON_BORDER : style::BUTTON_BORDER;
+                if (pressed)
+                {
+                    fill = fill.pressed();
+                }
+                else if (hover)
+                {
+                    fill = fill.hovered();
+                }
+                if (hover)
+                {
+                    border = style::BUTTON_BORDER_HOVER;
+                }
+                plus::psui::drawRoundBordered(box, style::SHORTCUT_BTN_RADIUS, fill.faded(a), plus::psui::faded(border, a));
+                const LLColor4 text = on ? style::TAB_TEXT_ON : style::TEXT_WHITE;
+                LLFontGL::getFontSansSerifSmall()->renderUTF8(label, 0, S32(box.mLeft) + BTN_PAD, text_y - (pressed ? 1 : 0),
+                                                              plus::psui::faded(text, a), LLFontGL::LEFT, LLFontGL::BOTTOM,
+                                                              LLFontGL::NORMAL, LLFontGL::NO_SHADOW);
+            }
+
             S32 hitTest(S32 x) const
             {
                 for (S32 i = 0; i < (S32)mSlots.size(); ++i)
                 {
-                    if (x >= mSlots[i].x - HIT_PAD && x < mSlots[i].x + mSlots[i].width + HIT_PAD)
+                    if (x >= mSlots[i].x - BTN_PAD && x < mSlots[i].x + mSlots[i].width + BTN_PAD)
                     {
                         return i;
                     }
                 }
-                if (mMoreX >= 0 && x >= mMoreX - HIT_PAD && x < mMoreX + mMoreWidth + HIT_PAD)
+                if (mMoreX >= 0 && x >= mMoreX - BTN_PAD && x < mMoreX + mMoreWidth + BTN_PAD)
                 {
                     return MORE;
                 }
@@ -640,7 +671,7 @@ namespace plus::shortcutbar
                 {
                     Slot& slot = all[n];
                     const bool sep = sEntries[slot.entry].separator && !mSlots.empty();
-                    const S32 sep_w = sep ? font->getWidth("|") + GAP : 0;
+                    const S32 sep_w = sep ? SEPARATOR_EXTRA : 0;
                     // Room for this one and, if more follow, the "more" button.
                     const S32 need_more = (n + 1 < all.size()) ? GAP + mMoreWidth : 0;
                     if (x + sep_w + slot.width + need_more > right)
@@ -651,7 +682,8 @@ namespace plus::shortcutbar
                     }
                     if (sep)
                     {
-                        slot.separatorX = x;
+                        // the line is midway between the previous button's right edge and this one's left edge
+                        slot.separatorX = ((x - BTN_PAD - style::SHORTCUT_BTN_GAP) + (x + sep_w - BTN_PAD)) / 2;
                         x += sep_w;
                     }
                     slot.x = x;

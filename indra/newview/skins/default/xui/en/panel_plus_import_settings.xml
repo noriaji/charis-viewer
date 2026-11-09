@@ -17,7 +17,7 @@
      layout="topleft"
      left="0"
      name="plus_import_settings_open"
-     tool_tip="Brings over the settings, saved logins, key bindings and chat logs from the official viewer, Firestorm or another Charis Viewer on this computer. That viewer's files are only read."
+     tool_tip="Brings over the settings, key bindings and chat logs from the official viewer, Firestorm or another Charis Viewer on this computer. That viewer's files are only read."
      top="0"
      width="260">
         <button.commit_callback

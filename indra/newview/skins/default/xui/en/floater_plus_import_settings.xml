@@ -13,7 +13,7 @@
  can_minimize="false"
  can_close="true"
  legacy_header_height="18"
- height="500"
+ height="480"
  width="580"
  layout="topleft"
  name="plus_import_settings"
@@ -22,12 +22,12 @@
     <floater.string name="not_now">Start fresh</floater.string>
     <floater.string name="none">No other viewer was found on this computer. If yours keeps its settings somewhere else (a portable install, another drive), choose its folder.</floater.string>
     <floater.string name="not_viewer_folder">[FOLDER] holds no viewer settings (user_settings\settings.xml), or it is this viewer's own folder. Choose the folder that holds user_settings.</floater.string>
-    <floater.string name="confirm">The settings you chose are replaced by those of [NAME], and so are your key bindings if you chose them. What they replace is kept in user_settings (settings_before_import_, key_bindings_before_import_, colors_before_import_ and so on, with the date). Your saved logins, chat logs and other files stay; those you do not have yet are added. Go ahead?</floater.string>
+    <floater.string name="confirm">The settings you chose are replaced by those of [NAME], and so are your key bindings if you chose them. What they replace is kept in user_settings (settings_before_import_, key_bindings_before_import_, colors_before_import_ and so on, with the date). Your chat logs and other files stay; those you do not have yet are added. Saved logins (user names and passwords) are not brought over. Go ahead?</floater.string>
     <floater.string name="busy">The files of the last import are still being copied. Wait until it is done.</floater.string>
     <floater.string name="logging_in">Logging in: the settings cannot be brought over now. Try again once you are in-world (or from the login screen).</floater.string>
     <floater.string name="applying">Bringing the settings over... The viewer may stop for a while: the shaders are made again for the new settings.</floater.string>
     <floater.string name="copying">The settings are brought over. Copying the files: [COPIED] of [TOTAL]... (you can go on meanwhile)</floater.string>
-    <floater.string name="done">From [NAME]: [SETTINGS] settings, [LOGINS] saved logins and [FILES] files were brought over.</floater.string>
+    <floater.string name="done">From [NAME]: [SETTINGS] settings and [FILES] files were brought over.</floater.string>
     <floater.string name="done_keys">The key bindings were replaced (the ones you had are kept in user_settings as key_bindings_before_import_ with the date).</floater.string>
     <floater.string name="done_kept">[KEPT] files this viewer already had were left as they were.</floater.string>
     <floater.string name="done_over">[OVER] files were too big or past the limit of one import (100,000 files, 2 GB) and were not copied; the log names them.</floater.string>
@@ -116,15 +116,6 @@ What to bring over:
      left="20"
      name="chk_graphics"
      tool_tip="Ticked for another Charis Viewer only: other viewers' graphics settings and presets were made for their own renderers. From a Charis Viewer, its own picture settings (ambient occlusion, glare, looks, ...) are graphics too"
-     top_pad="4"
-     width="548" />
-    <check_box
-     height="16"
-     initial_value="true"
-     label="Saved logins (user names and passwords; yours stay)"
-     layout="topleft"
-     left="20"
-     name="chk_logins"
      top_pad="4"
      width="548" />
     <check_box

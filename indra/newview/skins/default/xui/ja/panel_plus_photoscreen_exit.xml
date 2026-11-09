@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- ja: the words only. Places and sizes come from en/panel_plus_photoscreen_exit.xml (LLXMLNode::updateNode matches by name). -->
+<panel name="plus_photoscreen_exit">
+    <string name="tip_key">撮影モードを抜ける（[KEY]）</string>
+    <string name="tip_nokey">撮影モードを抜ける</string>
+    <plus_ps_box name="exit_box">
+        <plus_ps_icon_button name="b_exit" tool_tip="撮影モードを抜ける" />
+    </plus_ps_box>
+</panel>

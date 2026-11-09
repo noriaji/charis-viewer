@@ -66,6 +66,8 @@ namespace plus::photoscreen::sizes
     inline constexpr S32 CHIP_ROW_H   = 40;     // the chips' height (221 8.: 34 at 912)
     inline constexpr S32 HIST_W       = 195;    // the histogram's frame at the top right (221 9.); its data: the branch ps-histogram
     inline constexpr S32 HIST_H       = 100;    // its height (panel_plus_photoscreen_hud.xml)
+    inline constexpr S32 EXIT_SIZE    = 40;     // the exit button at the top right corner of the world (panel_plus_photoscreen_exit.xml)
+    inline constexpr S32 EXIT_GAP     = 8;      // the histogram's frame hangs this far under it (panel_plus_photoscreen_hud.xml: top = WORLD_INSET + EXIT_SIZE + EXIT_GAP)
     inline constexpr S32 CHAT_W      = 380;     // the chat at most this wide (and 45 % of the world)
     inline constexpr S32 CHAT_INPUT_BOTTOM = 56;    // the chat input's box over the read-out (221 11.: the numbers end 42 over the bottom)
     inline constexpr S32 CHAT_INPUT_H      = 30;

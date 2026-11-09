@@ -20,8 +20,16 @@
 		<text name="join_cost_text">
 			無料
 		</text>
-		<button label="参加します！" name="btn_join"/>
-		<button name="btn_activate" label="有効に"/>
+		<!-- plus: group-info-layout (button row, see en) -->
+		<layout_stack name="join_row">
+			<layout_panel name="btn_join_lp">
+				<button label="参加します！" name="btn_join"/>
+			</layout_panel>
+			<layout_panel name="btn_activate_lp">
+				<button name="btn_activate" label="有効に"/>
+			</layout_panel>
+		</layout_stack>
+		<!-- /plus -->
 	</panel>
 	<text_editor name="charter">
 		グループの理念、指針を記入してください。

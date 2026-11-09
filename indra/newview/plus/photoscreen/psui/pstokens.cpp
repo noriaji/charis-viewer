@@ -141,6 +141,9 @@ namespace plus::psui::style
             { "PsRowHoverBg",           &detail::Colors::ROW_HOVER_BG },
             { "PsSearchHitFill",        &detail::Colors::SEARCH_HIT_FILL },
             { "PsSearchHitRing",        &detail::Colors::SEARCH_HIT_RING },
+            { "PsShortcutFill",         &detail::Colors::SHORTCUT_FILL },
+            { "PsShortcutOnLeft",       &detail::Colors::SHORTCUT_ON_LEFT },
+            { "PsShortcutOnRight",      &detail::Colors::SHORTCUT_ON_RIGHT },
         };
     }
 

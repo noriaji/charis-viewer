@@ -14,7 +14,9 @@
 #            has no secret, and hands over only the bundle and its manifest (data).
 #   package  takes the build's tar and symbols zip, checked by the SHA-256 the build job
 #            gave (so nothing the bake job did can change them), reads the bundle back
-#            without running anything in it (shaderbundle.py check), and makes the release
+#            without running anything in it (shaderbundle.py check), takes the translation
+#            and subtitle helpers from their release, pinned by size and SHA-256 below
+#            (fetch-helpers.py; they are not run here), and makes the release
 #            assets. Mesa never runs here. For a tag the assets (about 1.3 GB) go to the
 #            publish job of release.yml as a workflow artifact kept for 1 day.
 # The build folder (about 9 GB) is never handed between jobs.
@@ -72,6 +74,16 @@ env:
   # nuget.org catalog entry; the same as the hash of the nupkg itself). Empty: a test
   # build prints it with a warning; a tag build stops.
   VPK_NUPKG_SHA512: 'NZ9I8Fbwlz4bHPlxvWeGKx3TXCEUf4AdPHhUHidppgM3CKVt1bGAHHrdBjCjY0S1uokpl60vA889wAzO2/ixmw=='
+  # The local translation and subtitle helpers and the OpenMP runtime they load (releasecommon.py
+  # HELPER_FILES), next to the viewer exe in the zip, the Setup.exe and the update package. They
+  # are built from tools/helpers (not in this workflow) and published once in this release of the models' repository
+  # (never replaced there: a new build goes to a new release, helper-2 ...). Each is pinned here as
+  # "<asset> <size in bytes> <SHA-256>"; fetch-helpers.py takes them from github.com only and stops
+  # on another size or SHA-256 (every build), and a release stops when they cannot be fetched.
+  HELPERS_URL: 'https://github.com/noriaji/charis-models/releases/download/helper-1'
+  HELPER_TRANSLATE: 'charis-translate-0.1.0-win64.exe 4965376 7a3e26951df2c9272673f74a16be5ec35bf24748c891ca72611e5e19a2416387'
+  HELPER_SUBTITLE: 'charis-subtitle-0.1.0-win64.exe 2828288 4716770fb610bf060c331d8df4a70ccc3ab88049a3afe0159dc35472d5beb7b9'
+  HELPER_VCOMP: 'vcomp140-14.44.35112-x64.dll 193152 55aba23cdcd6484fbb06f4155b8ca75adfce7a881f10afd0c49457165e677164'
   BUILD_NAME: build-vc170-64-release
   RELEASE_TOOLS: indra/newview/plus/building/release
   DOTNET_CLI_TELEMETRY_OPTOUT: '1'
@@ -445,7 +457,8 @@ jobs:
           safe() { printf '%s' "$1" | tr -c 'A-Za-z0-9._-' '?' | head -c 80; }
           tmp=$(cygpath -m "$RUNNER_TEMP")
           printf '%s=%s\n' DEPS "$tmp/charis-deps" DIST "$tmp/charis-dist" STAGE "$tmp/charis-stage" \
-            HANDOFF "$tmp/charis-handoff" BUILD "$tmp/charis-handoff/build" BUNDLE_IN "$tmp/charis-bundle-in" >> "$GITHUB_ENV"
+            HANDOFF "$tmp/charis-handoff" BUILD "$tmp/charis-handoff/build" BUNDLE_IN "$tmp/charis-bundle-in" \
+            HELPERS "$tmp/charis-helpers" >> "$GITHUB_ENV"
           version=$(python -I "$RELEASE_TOOLS/release-info.py" tag-version "$TAG")
           [ "$version" = "$VERSION" ] || { echo "::error::the build job says version $VERSION for $TAG, not $version"; exit 1; }
           [ "$SYMBOLS" = "CharisViewer-$VERSION-win64-symbols.zip" ] || { echo "::error::the build job names its symbols zip $SYMBOLS"; exit 1; }
@@ -482,7 +495,7 @@ jobs:
           set -euo pipefail
           changed=$(git status --porcelain --untracked-files=all)
           [ -z "$changed" ] || { echo "::error::the checkout changed while the bundle was taken"; exit 1; }
-          for d in "$HANDOFF" "$DIST" "$STAGE" "$DEPS"; do
+          for d in "$HANDOFF" "$DIST" "$STAGE" "$DEPS" "$HELPERS"; do
             [ ! -e "$d" ] || { echo "::error::$d is there before this job made it"; exit 1; }
           done
           if [ -z "${BUNDLE_ARTIFACT:-}" ]; then
@@ -558,13 +571,53 @@ jobs:
           fi
           printf '%s=%s\n' VPK "$(cygpath -m "$DEPS/vpk/vpk.exe")" >> "$GITHUB_ENV"
 
+      # The translation and subtitle helpers (HELPERS_URL and the pins above), into a folder of their
+      # own that make-release-zip.py puts in the zip and the stage (so vpk packs them too). Exit 3 (a
+      # file that is not the pinned one) stops every build; any other failure stops a release, and a
+      # test build goes on without them, said in a warning and in the run's summary.
+      - name: Take the translation and subtitle helpers
+        run: |
+          set -euo pipefail
+          rc=0
+          python -I "$RELEASE_TOOLS/fetch-helpers.py" --base "$HELPERS_URL" --out "$HELPERS" \
+            --pin charis-translate.exe "$HELPER_TRANSLATE" --pin charis-subtitle.exe "$HELPER_SUBTITLE" \
+            --pin vcomp140.dll "$HELPER_VCOMP" || rc=$?
+          if [ "$rc" = 0 ]; then
+            printf '%s=%s\n' HELPERS_IN yes >> "$GITHUB_ENV"
+            exit 0
+          fi
+          rm -rf "$HELPERS"
+          if [ "$rc" = 3 ] || [ "$rc" = 2 ]; then
+            echo "::error::the translation and subtitle helpers at $HELPERS_URL are not the pinned files, or the pins are wrong (exit $rc): nothing of this build is packed"
+            exit 1
+          fi
+          if [ "$PUBLISH" = true ]; then
+            echo "::error::the translation and subtitle helpers could not be fetched from $HELPERS_URL (exit $rc): a release has them"
+            exit 1
+          fi
+          printf '%s=%s\n' HELPERS_IN no >> "$GITHUB_ENV"
+          echo "::warning title=No translation or subtitle helper::the helpers could not be fetched from $HELPERS_URL (exit $rc): this test build has no charis-translate.exe, charis-subtitle.exe or vcomp140.dll"
+          {
+            echo '### No translation or subtitle helper'
+            echo
+            echo '> [!CAUTION]'
+            echo "> The helpers could not be fetched from $HELPERS_URL (exit $rc): this test build has **no charis-translate.exe, charis-subtitle.exe or vcomp140.dll**, and its translation and voice subtitle windows say the helper is missing. See the package job's \"Take the translation and subtitle helpers\" step. A release (tag) stops here instead."
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Release zip
         run: |
           set -euo pipefail
           no_bundle=()
           [ "$BUNDLE" = yes ] || no_bundle=(--allow-no-bundle)
+          case "$HELPERS_IN" in
+            yes) helpers=(--helpers "$HELPERS") ;;
+            no)
+              [ "$PUBLISH" != true ] || { echo "::error::a release without the translation and subtitle helpers"; exit 1; }
+              helpers=(--allow-no-helpers) ;;
+            *) echo "::error::HELPERS_IN is $HELPERS_IN"; exit 1 ;;
+          esac
           python -I "$RELEASE_TOOLS/make-release-zip.py" --build-dir "$BUILD" --out "$DIST" --stage "$STAGE" \
-            --commit "$GITHUB_SHA" --tag "$TAG" --velopack on "${no_bundle[@]}"
+            --commit "$GITHUB_SHA" --tag "$TAG" --velopack on "${no_bundle[@]}" "${helpers[@]}"
 
       # The Setup.exe's icon: the copy the build job handed over (velopack-pack.json names a
       # file of the build job's source tree, which the configure step wrote). Its place is
@@ -590,6 +643,13 @@ jobs:
             echo "vpk=$VPK_VERSION"
             echo "python=$(python --version 2>&1)"
             echo "shader_bundle_sha256=$BUNDLE_SHA256"
+            echo "helpers=$HELPERS_IN"
+            if [ "$HELPERS_IN" = yes ]; then
+              echo "helpers_url=$HELPERS_URL"
+              echo "helper_charis_translate=$HELPER_TRANSLATE"
+              echo "helper_charis_subtitle=$HELPER_SUBTITLE"
+              echo "helper_vcomp140=$HELPER_VCOMP"
+            fi
             echo "---- charis-release-build.txt"
             cat "$BUILD/charis-release-build.txt"
             if [ -f "$BUILD/packages/installed-packages.xml" ]; then
@@ -619,6 +679,12 @@ jobs:
               echo
               echo '> [!WARNING]'
               echo '> This build has **no shader bundle** (shader_bundle_sha256=none): the shader bake failed or was not run (see the bake job).'
+              echo
+            fi
+            if [ "$HELPERS_IN" != yes ]; then
+              echo
+              echo '> [!WARNING]'
+              echo '> This build has **no translation or subtitle helper** (helpers=no): they could not be fetched (see the package job).'
               echo
             fi
             echo '```'

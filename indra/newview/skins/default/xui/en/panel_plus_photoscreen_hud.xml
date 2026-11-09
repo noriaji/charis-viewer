@@ -2,7 +2,7 @@
 <!--
   The parts over the world of the detailed photo screen (research/221 9.-12.), on the world's rectangle (800 x 450 here; the
   parts follow its edges): the exposure read-out with the shade under it at the bottom left, the chat input over it, the
-  histogram's frame at the top right (drawn only when it has data: the branch ps-histogram), the icons at the bottom right
+  histogram's frame at the top right, under the exit button (the exit is its own panel, panel_plus_photoscreen_exit.xml; drawn only when it has data: the branch ps-histogram), the icons at the bottom right
   (shoot, focus, focus frame, flycam in one box; the simple view in another; over them, while the flycam is on, a line
   saying so) and, over all of them, the world's rounded corners.
   The focus frame and the chat lines are drawn in the code (photodetail_hud.cpp, behind these). The panel takes no mouse.
@@ -40,7 +40,7 @@
      height="100"
      layout="topleft"
      left="593"
-     top="12"
+     top="60"
      width="195"
      name="histogram" />
     <plus_ps_box

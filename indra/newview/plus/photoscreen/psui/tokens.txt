@@ -314,6 +314,16 @@ TABS_TOP_HEIGHT    s32    36             # tab_position top: the strip of tabs o
 TABS_TOP_PAD       s32    14             # before the first tab (plus_ps_row's pad)
 TABS_TOP_GAP       s32    10             # between two tabs
 
+[28. the shortcut bar (plus/shortcutbar: the text buttons of the row under the navigation bar, over the world; not in the picture, in its style)]
+SHORTCUT_BTN_HEIGHT s32   22             # centred in the row (main_view.xml shortcut_bar_container, 24 high)
+SHORTCUT_BTN_RADIUS f32   =COMBO_RADIUS
+SHORTCUT_BTN_PAD   s32    10             # the text to the button's left and right edge
+SHORTCUT_BTN_GAP   s32    6              # between two buttons
+SHORTCUT_EDGE      s32    6              # the window's left edge to the first button
+SHORTCUT_FILL      color  =CHIP_FILL     # a button over the world: the world button's translucent navy
+SHORTCUT_ON_LEFT   color  =SEG_ON_LEFT/0.9   # a menu item that is on (a check mark in the menu): blue, as the chosen segment
+SHORTCUT_ON_RIGHT  color  =SEG_ON_RIGHT/0.9
+
 [fonts (the official sizes nearest to the picture's: research/221 "文字")]
 FONT_TITLE         font   Huge           # headings of the left panel (20 px)
 FONT_HEAD          font   Large          # headings of the right panel, sub-headings (17-18 px)

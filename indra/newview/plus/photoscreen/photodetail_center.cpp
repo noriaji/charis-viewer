@@ -505,11 +505,11 @@ namespace plus::photoscreen::detail
             return LLRect(left, high, right, high - CHIP_ROW_H);
         }
 
-        // The histogram's frame at the top right of the world (its place in panel_plus_photoscreen_hud.xml).
+        // The histogram's frame at the top right of the world, under the exit button (its place in panel_plus_photoscreen_hud.xml).
         LLRect histogramRect()
         {
             const S32 right = sS.world.mRight - WORLD_INSET;
-            const S32 high  = sS.world.mTop - WORLD_INSET;
+            const S32 high  = sS.world.mTop - WORLD_INSET - EXIT_SIZE - EXIT_GAP;
             return LLRect(right - HIST_W, high, right, high - HIST_H);
         }
     }

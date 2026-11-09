@@ -19,6 +19,11 @@ same files. Read-only on the build folder.
   --velopack on|off  the USE_VELOPACK the stamp must say (default: either)
   --allow-no-bundle  without the shader bundle (app_settings/vk_shader_bundle/
                      shaders.vkb in the output folder): a warning, not a stop
+  --helpers DIR      the folder fetch-helpers.py filled and checked: exactly the files
+                     of releasecommon.HELPER_FILES (the local translation and subtitle
+                     helpers, vcomp140.dll), put next to the viewer exe
+  --allow-no-helpers without them: a warning, not a stop (a test build whose helpers
+                     could not be fetched). One of --helpers and this is needed for a zip
   --symbols          also make the symbols zip (the pdb files, for crash dumps)
   --symbols-only     only the symbols zip (no --stage: the release workflow makes it in
                      the build job, which has the pdb files, and the zip in the package
@@ -28,7 +33,8 @@ What goes in: the files the packaging step lists for the installer in the same
 build (secondlife_setup_tmp.nsi), without the developer-only ones; all license
 files in one folder, licenses/; the license texts of libraries linked into the
 exe that no package brings (indra/llvulkan/thirdparty/*LICENSE*); the shader
-bundle; README-charis.txt (README-charis-zip.txt next to this file).
+bundle; the helpers (--helpers); README-charis.txt (README-charis-zip.txt next to
+this file).
 Names: CharisViewer-<version>-win64.zip (-win64-symbols.zip), all under a folder
 of the same name.
 
@@ -54,9 +60,9 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.dont_write_bytecode = True     # no __pycache__ in the source tree
-from releasecommon import (BUNDLE_DIR, BUNDLE_FILES, OUTPUT_REL, PDBS, RELEASE_STAMP, SOURCE,  # noqa: E402
-                           FileListError, checked_rel, read_file_list, read_stamp, release_version, sha256_file,
-                           tag_version, viewer_exe)
+from releasecommon import (BUNDLE_DIR, BUNDLE_FILES, HELPER_FILES, OUTPUT_REL, PDBS, RELEASE_STAMP,  # noqa: E402
+                           SOURCE, FileListError, checked_rel, read_file_list, read_stamp, release_version,
+                           sha256_file, tag_version, viewer_exe)
 README_TEMPLATE = os.path.join(HERE, 'README-charis-zip.txt')
 README_NAME = 'README-charis.txt'
 REQUIRED = ('slplugin.exe', 'llwebrtc.dll', 'licenses.txt', 'licenses-charis.txt', 'ca-bundle.crt',
@@ -128,6 +134,33 @@ def add_bundle(files, output, exe, allow_missing):
     if os.path.getmtime(os.path.join(output, bundle)) < os.path.getmtime(exe):
         raise Stop('the shader bundle is older than %s (made for another build)' % os.path.basename(exe))
     return True
+
+
+def helper_items(files, helpers, allow_missing):
+    """[(source path, name in the zip)] of the helpers next to the viewer exe: exactly HELPER_FILES in the folder
+    helpers (plain files, nothing else there), none of them already in the list. Without helpers, [] when allowed
+    (a warning), else Stop."""
+    if not helpers:
+        if not allow_missing:
+            raise Stop('no --helpers (the translation and subtitle helpers; --allow-no-helpers to go without)')
+        warn('no translation or subtitle helper in this release: the translation and voice subtitle windows say '
+             'charis-translate.exe / charis-subtitle.exe is missing next to the viewer')
+        return []
+    if os.path.islink(helpers) or not os.path.isdir(helpers):
+        raise Stop('--helpers %s is not a folder' % helpers)
+    found = sorted(os.listdir(helpers))
+    if found != sorted(HELPER_FILES):
+        raise Stop('--helpers %s holds %s, not exactly %s' % (helpers, found, sorted(HELPER_FILES)))
+    paths = [(os.path.join(helpers, n), n) for n in HELPER_FILES]
+    bad = [n for src, n in paths if os.path.islink(src) or not os.path.isfile(src)]
+    if bad:
+        raise Stop('--helpers: not plain files: %s' % ', '.join(bad))
+    listed = {f.lower() for f in files}
+    clash = [n for n in HELPER_FILES if n.lower() in listed]
+    if clash:
+        raise Stop('the packaging step\'s list already names %s (a helper of the build, not the pinned one)'
+                   % ', '.join(clash))
+    return paths
 
 
 def split_licenses(files, output):
@@ -304,7 +337,8 @@ def make(a):
 
     files = read_file_list(output, exe)
     has_bundle = add_bundle(files, output, exe, a.allow_no_bundle)
-    extra = split_licenses(files, output)
+    helpers = helper_items(files, a.helpers and os.path.abspath(a.helpers), a.allow_no_helpers)
+    extra = split_licenses(files, output) + helpers
     check_names(files, extra, output, exe_name)
     items = [(os.path.join(output, *f.split('/')), f) for f in sorted(files)] + extra
     check_private_keys(items)
@@ -324,12 +358,14 @@ def make(a):
             f.write(readme_text(exe_name, version, shown, stamp))
         write_zip(zip_path, name, items + [(readme, README_NAME)])
     must_have = [README_NAME, exe_name, 'slplugin.exe', 'licenses.txt', 'licenses-charis.txt',
-                 'licenses/vlc.txt', 'llplugin/dullahan_host.exe'] + ([BUNDLE_FILES[0]] if has_bundle else [])
+                 'licenses/vlc.txt', 'llplugin/dullahan_host.exe'] + ([BUNDLE_FILES[0]] if has_bundle else []) \
+        + [n for _, n in helpers]
     verify_zip(zip_path, name, len(items) + 1, must_have)
 
     if a.symbols:
         make_symbols(build, output, exe_name, name, out)
-    say('Charis Viewer %s (%s), shader bundle: %s' % (shown, stamp['commit'][:10], 'yes' if has_bundle else 'NO'))
+    say('Charis Viewer %s (%s), shader bundle: %s, helpers: %s' % (shown, stamp['commit'][:10],
+        'yes' if has_bundle else 'NO', 'yes' if helpers else 'NO'))
     return 0
 
 
@@ -344,11 +380,15 @@ def main():
     ap.add_argument('--tag')
     ap.add_argument('--velopack', choices=('on', 'off'))
     ap.add_argument('--allow-no-bundle', action='store_true')
+    ap.add_argument('--helpers')
+    ap.add_argument('--allow-no-helpers', action='store_true')
     ap.add_argument('--symbols', action='store_true')
     ap.add_argument('--symbols-only', action='store_true')
     a = ap.parse_args()
     if bool(a.stage) == a.symbols_only:
         ap.error('give --stage (the zip) or --symbols-only, one of them')
+    if a.helpers and a.allow_no_helpers:
+        ap.error('give --helpers or --allow-no-helpers, not both')
     try:
         return make(a)
     except (Stop, ValueError, OSError) as e:

@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="plus_import_settings">
-	<plus_ps_button_compat name="plus_import_settings_open" label="ほかのビューワの設定を引き継ぐ…" tool_tip="この PC にある公式ビューワ、Firestorm、別の Charis Viewer から、設定・保存したログイン・キー割り当て・チャット履歴を引き継ぎます。相手のビューワのファイルは読むだけで、変更しません。" />
+	<plus_ps_button_compat name="plus_import_settings_open" label="ほかのビューワの設定を引き継ぐ…" tool_tip="この PC にある公式ビューワ、Firestorm、別の Charis Viewer から、設定・キー割り当て・チャット履歴を引き継ぎます。相手のビューワのファイルは読むだけで、変更しません。" />
 </panel>

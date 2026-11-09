@@ -3,7 +3,8 @@
  * @brief The middle of the detailed photo screen: the chips inside the world at its top left (look, size,
  *        shape, composition lines) and the panel over the world (read-out, chat, histogram's frame, icon boxes,
  *        rounded corners; the drawing view of the focus frame and the chat lines is photodetail_hud.h). The way
- *        out is F12 (plus/photomode/photokeys) and the simple view's exit (research/221).
+ *        out is F12 (plus/photomode/photokeys) and the exit button at the world's top right corner (photoscreen.cpp,
+ *        panel_plus_photoscreen_exit.xml; both modes).
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Second Life Viewer Source Code

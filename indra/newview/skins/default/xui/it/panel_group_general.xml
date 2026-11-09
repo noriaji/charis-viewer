@@ -20,7 +20,13 @@ Muovi il tuo mouse sopra le opzioni per maggiore aiuto.
 		<text name="join_cost_text">
 			Gratis
 		</text>
-		<button label="ADERISCI ADESSO!" name="btn_join"/>
+		<!-- plus: group-info-layout (button row, see en) -->
+		<layout_stack name="join_row">
+			<layout_panel name="btn_join_lp">
+				<button label="ADERISCI ADESSO!" name="btn_join"/>
+			</layout_panel>
+		</layout_stack>
+		<!-- /plus -->
 	</panel>
 	<text_editor name="charter">
 		Statuto del gruppo

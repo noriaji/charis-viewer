@@ -61,10 +61,10 @@
             width="1024"/>
       <!-- plus: the menu shortcut bar (plus/shortcutbar), the row under the navigation bar. It lies over the
            world with no background, as the Firestorm favorites bar does (under the mini location bar,
-           the floaters and the toolbars) -->
+           the floaters and the toolbars). 24 high: the buttons are 22 high boxes (tokens.txt SHORTCUT_BTN_HEIGHT) -->
       <panel background_visible="false"
              follows="left|top|right"
-             height="20"
+             height="24"
              left="0"
              mouse_opaque="false"
              name="shortcut_bar_container"

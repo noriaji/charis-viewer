@@ -76,24 +76,61 @@ Hover your mouse over the options for more help.
      width="190">
       No charge to join
     </text>
-    <button
-     follows="left|top"
-     left_delta="0"
-     top_pad="6"
+    <!-- plus: group-info-layout. The Join/Leave and Activate buttons share the width right of the picture
+         (left 111 .. panel right - 5) so they follow the panel width and never run past its right edge.
+         Was two fixed 120 px buttons (111 + 120 + 6 + 120 = 357 > 304). -->
+    <layout_stack
+     name="join_row"
+     orientation="horizontal"
+     follows="left|top|right"
+     layout="topleft"
+     left="111"
+     right="-5"
+     top="71"
      height="23"
-     label="Join group"
-     name="btn_join"
-     visible="true"
-     width="120" />
-    <button
-     follows="left|top"
-     left_pad="6"
-     top_delta="0"
-     height="23"
-     label="Activate"
-     name="btn_activate"
-     visible="true"
-     width="120" />
+     border_size="0">
+        <layout_panel
+         name="btn_join_lp"
+         follows="left|top|right"
+         layout="topleft"
+         auto_resize="true"
+         user_resize="false"
+         min_width="60"
+         height="23"
+         width="94">
+            <button
+             follows="left|top|right"
+             layout="topleft"
+             left="0"
+             right="-3"
+             top="0"
+             height="23"
+             label="Join group"
+             name="btn_join"
+             visible="true" />
+        </layout_panel>
+        <layout_panel
+         name="btn_activate_lp"
+         follows="left|top|right"
+         layout="topleft"
+         auto_resize="true"
+         user_resize="false"
+         min_width="60"
+         height="23"
+         width="94">
+            <button
+             follows="left|top|right"
+             layout="topleft"
+             left="0"
+             right="-3"
+             top="0"
+             height="23"
+             label="Activate"
+             name="btn_activate"
+             visible="true" />
+        </layout_panel>
+    </layout_stack>
+    <!-- /plus -->
     </panel>
     <text_editor
      type="string"

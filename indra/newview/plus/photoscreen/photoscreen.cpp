@@ -21,6 +21,9 @@
  *    two modes, the shutter and the exit, at the bottom right of the world's rectangle. These are
  *    the smallest places for them; the later branches (photoscreen-detail, photoscreen-simple) put
  *    their panels on overlay().
+ *  - The exit button (panel_plus_photoscreen_exit.xml): a cross at the top right corner of the world's rectangle in both
+ *    modes; it does what F12 does (leave()), a frame later like the key. It is off while a one-press photo is asked for
+ *    (the picture's size is the world's rectangle at the moment it is taken).
  *  - The conversations (photoconv.cpp): listened to from the way in to the way out (conv::start(), conv::stop()).
  *
  * Speed: nothing is done while it is off but one pointer test in worldRect(). While on, a few
@@ -83,6 +86,7 @@
 #include "lluictrlfactory.h"
 #include "llview.h"
 #include "llviewercontrol.h"
+#include "llviewerinput.h"
 #include "llviewermenu.h"
 #include "llviewerwindow.h"
 #include "pipeline.h"
@@ -329,6 +333,10 @@ namespace plus::photoscreen
         UiScope*          sScope = nullptr;
         LLHandle<LLView>  sOverlay;
         LLHandle<LLPanel> sButtons;
+        LLHandle<LLPanel> sExit;            // the exit button's panel (top right of the world)
+        LLHandle<LLView>  sExitButton;      // the button inside it
+        LLHandle<LLView>  sBarExitButton;   // the old bar's Exit (sButtons: shown in the simple view and in a window too small for a frame)
+        bool              sExitEnabled = true;
         bool              sTickRegistered = false;
 
         // what the views were last laid out for
@@ -369,6 +377,72 @@ namespace plus::photoscreen
             plus::photomode::takePhoto();
         }
 
+        // The exit button's box: WORLD_INSET inside the world's top right corner.
+        LLRect exitRect(const LLRect& world)
+        {
+            const S32 right = world.mRight - WORLD_INSET;
+            const S32 top   = world.mTop - WORLD_INSET;
+            return LLRect(right - EXIT_SIZE, top, right, top - EXIT_SIZE);
+        }
+
+        // Like F12 (keyPhotoScreenToggle): the windows and bars come back on the next idle, not inside the button's own
+        // callback. A second press before then finds the mode off already.
+        void onExit()
+        {
+            doOnIdleOneTime([]() {
+                if (sScope)
+                {
+                    leave();
+                }
+            });
+        }
+
+        void setExitButtonsEnabled(bool enable)
+        {
+            for (const LLHandle<LLView>* handle : { &sExitButton, &sBarExitButton })
+            {
+                if (LLView* button = handle->get())
+                {
+                    button->setEnabled(enable);
+                }
+            }
+        }
+
+        // The button is off while a one-press photo is asked for: the picture takes the world's rectangle as it is when
+        // the photo is taken (photoshot.cpp shotDims()), and a mode left by then would make a different picture.
+        void refreshExitEnabled()
+        {
+            const plus::photomode::ShotState state = plus::photomode::shotState();
+            const bool                       enable = state != plus::photomode::ShotState::Pending && state != plus::photomode::ShotState::Busy;
+            if (enable != sExitEnabled)
+            {
+                sExitEnabled = enable;
+                setExitButtonsEnabled(enable);
+            }
+        }
+
+        // The key(s) of photo_screen_toggle in the key settings as they are now ("F12"), the first when there are several;
+        // empty when none is bound. Read when the mode is entered, not every frame.
+        std::string toggleKey()
+        {
+            const std::string keys = gViewerInput.getKeyBindingAsString(std::string(), "photo_screen_toggle");
+            return keys.substr(0, keys.find(" | "));
+        }
+
+        void refreshExitTip()
+        {
+            LLPanel*   exit = sExit.get();
+            LLView*    button = sExitButton.get();
+            if (!exit || !button)
+            {
+                return;
+            }
+            const std::string key = toggleKey();
+            LLStringUtil::format_map_t args;
+            args["[KEY]"] = key;
+            button->setToolTip(exit->getString(key.empty() ? "tip_nokey" : "tip_key", args));
+        }
+
         // The overlay: made at the first entry, kept (hidden) after it, so no view is deleted from
         // inside one of its own button's callbacks.
         LLView* ensureOverlay()
@@ -406,7 +480,23 @@ namespace plus::photoscreen
                     setSimple(!isSimple());
                 });
                 buttons->getChild<LLButton>("btn_shoot")->setCommitCallback([](LLUICtrl*, const LLSD&) { onShoot(); });
-                buttons->getChild<LLButton>("btn_exit")->setCommitCallback([](LLUICtrl*, const LLSD&) { leave(); });
+                // the same exit as the cross at the top right (and off while a photo is asked for), not leave() directly
+                LLButton* bar_exit = buttons->getChild<LLButton>("btn_exit");
+                bar_exit->setCommitCallback([](LLUICtrl*, const LLSD&) { onExit(); });
+                sBarExitButton = bar_exit->getHandle();
+                bar_exit->setEnabled(sExitEnabled);
+            }
+            LLPanel* exit = LLUICtrlFactory::getInstance()->createFromFile<LLPanel>(
+                "panel_plus_photoscreen_exit.xml", overlay, LLPanel::child_registry_t::instance());
+            if (exit)
+            {
+                sExit = exit->getHandle();
+                if (LLUICtrl* button = exit->findChild<LLUICtrl>("b_exit"))
+                {
+                    sExitButton = button->getHandle();
+                    button->setCommitCallback([](LLUICtrl*, const LLSD&) { onExit(); });
+                    button->setEnabled(sExitEnabled);
+                }
             }
             return overlay;
         }
@@ -447,6 +537,12 @@ namespace plus::photoscreen
                 buttons->setOrigin(world.mRight - size.getWidth() - BUTTON_MARGIN, world.mBottom + BUTTON_MARGIN);
             }
             detail::place(overlay, world, w, h, !in_frame);
+            if (LLPanel* exit = sExit.get())
+            {
+                // after the panels are placed, and in front of them (and of the world's rounded corners)
+                exit->setShape(exitRect(world));
+                overlay->sendChildToFront(exit);
+            }
             sLaidWorld  = world;
             sLaidW      = w;
             sLaidH      = h;
@@ -480,6 +576,7 @@ namespace plus::photoscreen
                 undoHideUiControls();   // View > Hide UI is not for in here
             }
             sScope->hideSingles();
+            refreshExitEnabled();
 
             // In mouselook the world is the whole window (the official code does not ask for our rectangle):
             // the frame and the buttons would be on it.
@@ -533,13 +630,18 @@ namespace plus::photoscreen
         refreshModeButton();    // the world's rectangle follows in the next tick / updateWorldViewRect()
     }
 
+    bool canEnter()
+    {
+        return !mustLeave();
+    }
+
     bool enter()
     {
         if (sScope)
         {
             return true;
         }
-        if (mustLeave())
+        if (!canEnter())
         {
             return false;
         }
@@ -548,6 +650,7 @@ namespace plus::photoscreen
             return false;
         }
         sScope = new UiScope();     // hides; deleting it shows again
+        refreshExitTip();           // the key may have been changed in the key settings
         conv::start();              // the conversations tab's list and badge (photoconv.cpp)
         LLView* overlay = sOverlay.get();
         overlay->setVisible(!gAgentCamera.cameraMouselook());
@@ -618,7 +721,17 @@ namespace plus::photoscreen
     S32 worldTopTaken(S32 left, S32 right)
     {
         LLRect shown;
-        return shownWorldRect(shown) ? detail::topTaken(left, right) : 0;
+        if (!shownWorldRect(shown))
+        {
+            return 0;
+        }
+        S32 taken = detail::topTaken(left, right);
+        const LLRect button = exitRect(shown);      // in both modes
+        if (left < button.mRight && right > button.mLeft)
+        {
+            taken = llmax(taken, shown.mTop - button.mBottom);
+        }
+        return taken;
     }
 
     bool shownWorldRect(LLRect& rect)

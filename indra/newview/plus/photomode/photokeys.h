@@ -52,6 +52,12 @@ namespace plus::photomode
     bool keyGuideNext(EKeystate state);
     bool keyPhotoScreenToggle(EKeystate state);
 
+    // The key of photo_screen_toggle (F12 by default, or the key the user set) is the photo screen's, not a
+    // gesture's too: true once for the key down that keyPhotoScreenToggle() just took and will toggle on (the
+    // same key down, the same frame). LLViewerWindow::handleKey asks before the gestures; the toggle itself
+    // was already set off by the global binding, so the caller only eats the key.
+    bool takePhotoScreenKeyPress();
+
     // Once per command (PlusPhotoKeysCommands lists the ones done): a key_bindings.xml the user saved
     // before a command existed gets its default keys from app_settings/key_bindings.xml, in every mode,
     // unless the user already bound the command there or the key is taken in that mode. A command

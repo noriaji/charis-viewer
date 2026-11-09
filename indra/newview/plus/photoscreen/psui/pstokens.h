@@ -144,6 +144,9 @@ namespace plus::psui::style
             LLColor4 ROW_HOVER_BG            = rgb(0x1d2838);
             LLColor4 SEARCH_HIT_FILL         = rgb(0x3c91ef, 0.18f);
             LLColor4 SEARCH_HIT_RING         = rgb(0x83cbff, 0.8f);
+            LLColor4 SHORTCUT_FILL           = rgb(0x0e1119, 0.7f);
+            LLColor4 SHORTCUT_ON_LEFT        = rgb(0x2b5185, 0.9f);
+            LLColor4 SHORTCUT_ON_RIGHT       = rgb(0x1e3858, 0.9f);
         };
         inline Colors colors;
     }
@@ -436,6 +439,16 @@ namespace plus::psui::style
     constexpr S32 TABS_TOP_HEIGHT                   = 36;   // tab_position top: the strip of tabs over the pages
     constexpr S32 TABS_TOP_PAD                      = 14;   // before the first tab (plus_ps_row's pad)
     constexpr S32 TABS_TOP_GAP                      = 10;   // between two tabs
+
+    // ---- 28. the shortcut bar (plus/shortcutbar: the text buttons of the row under the navigation bar, over the world; not in the picture, in its style) ----
+    constexpr S32 SHORTCUT_BTN_HEIGHT               = 22;   // centred in the row (main_view.xml shortcut_bar_container, 24 high)
+    constexpr F32 SHORTCUT_BTN_RADIUS               = 6.f;
+    constexpr S32 SHORTCUT_BTN_PAD                  = 10;   // the text to the button's left and right edge
+    constexpr S32 SHORTCUT_BTN_GAP                  = 6;   // between two buttons
+    constexpr S32 SHORTCUT_EDGE                     = 6;   // the window's left edge to the first button
+    inline const LLColor4& SHORTCUT_FILL           = detail::colors.SHORTCUT_FILL;   // a button over the world: the world button's translucent navy
+    inline const LLColor4& SHORTCUT_ON_LEFT        = detail::colors.SHORTCUT_ON_LEFT;   // a menu item that is on (a check mark in the menu): blue, as the chosen segment
+    inline const LLColor4& SHORTCUT_ON_RIGHT       = detail::colors.SHORTCUT_ON_RIGHT;
 
     // ---- fonts (the official sizes nearest to the picture's: research/221 "文字") -------------
     constexpr FontSpec FONT_TITLE                   = { "Huge",   0 };   // headings of the left panel (20 px)

@@ -62,10 +62,11 @@ release build (charis-build.sh, profiler off), checked ${checked}
   テレポートはボタンを押した時だけ）。
 - 登録したまま zip 版のフォルダを消す時は、先に［元に戻す］を押してください。
 
-■ ボイスの字幕
-- 字幕に使うヘルパー（charis-subtitle.exe）と Whisper のモデルは、この zip に入っていません（別途）。
-  ヘルパーは ${exe} と同じフォルダに手で置きます。
-  モデルは字幕の窓のボタンで取得するか、%APPDATA%\CharisViewer\subtitle に手で置きます。
+■ ボイスの字幕と翻訳
+- 字幕と翻訳に使うヘルパー（charis-subtitle.exe・charis-translate.exe と、両方が使う vcomp140.dll）は、
+  ${exe} と同じフォルダに入っています。
+- Whisper と翻訳のモデルは、この zip に入っていません。字幕の窓のボタンで取得するか、
+  %APPDATA%\CharisViewer\subtitle に手で置きます。
 
 ■ アンインストール
 - 展開したフォルダを、フォルダごと削除してください。
@@ -146,11 +147,11 @@ folder (for automatic updates, use the installer, Setup.exe, instead).
   it teleports only when you press the button).
 - Before deleting the folder of the zip, press "Undo" if you registered the links.
 
-* Voice subtitles
-- The helper the subtitles use (charis-subtitle.exe) and the Whisper model are not in
-  this zip (they come separately). Put the helper by hand in the folder of
-  ${exe}. Get the model with the button in the subtitle window, or put it
-  by hand in %APPDATA%\CharisViewer\subtitle.
+* Voice subtitles and translation
+- The helpers the subtitles and the translation use (charis-subtitle.exe,
+  charis-translate.exe and vcomp140.dll, which both use) are in the folder of ${exe}.
+- The Whisper and translation models are not in this zip. Get them with the button in
+  the subtitle window, or put them by hand in %APPDATA%\CharisViewer\subtitle.
 
 * Uninstalling
 - Delete the unpacked folder.

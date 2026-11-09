@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The exit button of the photo screen (plus/photoscreen/photoscreen.cpp): a glass box with a cross at the top right of the
+  world's rectangle, in the detailed and the simple view alike. The code places it (layout()); the size here is fixed:
+  40 x 40, the height of the icon boxes. The panel takes no mouse; the box inside does.
+-->
+<panel
+ background_visible="false"
+ follows="right|top"
+ height="40"
+ layout="topleft"
+ mouse_opaque="false"
+ name="plus_photoscreen_exit"
+ width="40">
+    <!-- the tip of the button: with the key bound now ([KEY], set in photoscreen.cpp when the mode is entered), or without -->
+    <string name="tip_key">Exit Photo Mode ([KEY])</string>
+    <string name="tip_nokey">Exit Photo Mode</string>
+    <plus_ps_box
+     follows="all"
+     height="40"
+     kind="glass"
+     layout="topleft"
+     left="0"
+     top="0"
+     width="40"
+     name="exit_box">
+        <plus_ps_icon_button follows="left|top" height="40" icon="close" layout="topleft" left="0" top="0" width="40" name="b_exit" tool_tip="Exit Photo Mode" />
+    </plus_ps_box>
+</panel>
