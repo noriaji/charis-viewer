@@ -478,8 +478,8 @@ sub       PlusDerezColor PlusDerez
 taste     PlusUpscale
 taste     PlusUpscaleScale
 taste     PlusUpscaleSharpness
-# TAA（research/185）。画質の段が決める（2026-10-31 決定: 低・低〜中はオフ、中以降はオン）。MidHigh でもオンで、
-# 公式相当の比較（presets.cpp の applyComparison）がオフにする。細かい値（sub）は段に入れず既定のまま
+# TAA（research/185）。画質の段が決める（2026-11-09 決定: 全段オフ。アバターが激しく動くと絵が乱れるため。2026-10-31 は中以降オンだった）。
+# 公式相当の比較（presets.cpp の applyComparison）もオフにする。細かい値（sub）は段に入れず既定のまま
 render    PlusTAA
 sub       PlusTAABlend PlusTAA
 sub       PlusTAAJitter PlusTAA

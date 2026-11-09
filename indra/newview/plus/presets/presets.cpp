@@ -56,7 +56,7 @@
 // (research/151, Preferences > Charis > Development) is MidHigh, whose Charis
 // features are all off but full OIT, with the official MidHigh's own LOD and
 // anisotropic filtering (featuretable.txt has Firestorm's), partial OIT, the official
-// night sky, no TAA (on at MidHigh, as from Mid up) and a 256 m draw distance.
+// night sky, no TAA (off at every level too) and a 256 m draw distance.
 //
 // The snapshot boost (PlusSnapshotBoost, one check box, on by default) is the
 // second axis: whatever the level, the frames of a snapshot are drawn with
@@ -151,14 +151,14 @@ namespace
     // with the official MidHigh's values where featuretable.txt has Firestorm's, partial OIT
     // (the MidHigh level has full OIT, 2026-10-25; the comparison is "about the official one"),
     // the official night sky (the stars are a matter of taste, not in the levels; the retired comparison
-    // preset had them off), no TAA (the official viewer has none; the MidHigh level has it on, 2026-10-31)
+    // preset had them off), no TAA (the official viewer has none; every level has it off too, 2026-11-09)
     // and 256 m. tools/dummy-sim/level_preset.py writes the same.
     constexpr U32 COMPARISON_LEVEL = LEVEL_MID_HIGH;
     constexpr F32 COMPARISON_FAR_CLIP = 256.f;
     constexpr F32 COMPARISON_VOLUME_LOD = 1.375f;
     constexpr U32 COMPARISON_ANISOTROPIC = 4;
     constexpr U32 COMPARISON_OIT = 1;          // partial (hybrid)
-    constexpr char SETTING_TAA[] = "PlusTAA";   // plus/taa: off in the comparison
+    constexpr char SETTING_TAA[] = "PlusTAA";   // plus/taa: off in every level and in the comparison
 
     // Values read back from F32 settings are compared with this tolerance.
     constexpr F64 F32_TOLERANCE = 1e-4;

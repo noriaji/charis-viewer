@@ -4781,7 +4781,7 @@
   <key>PlusTAA</key>
   <map>
     <key>Comment</key>
-    <string>Temporal anti-aliasing (research/185): the last frame's picture is brought to this frame by the camera's motion and mixed in, after FXAA/SMAA (RenderFSAAType). With PlusTAAJitter the scene is drawn moved by a fraction of a pixel each frame, so thin edges and lines are smoothed over the frames. Things that move on their own (avatars, spinning prims) are only held back by the colours around each pixel. Snapshots and the probes' and mirrors' views are left alone. Vulkan only. Off by default; the quality levels set it (featuretable.txt): off at Low and Low-Mid, on from Mid up (the comparison with the official viewer turns it off).</string>
+    <string>Temporal anti-aliasing (research/185): the last frame's picture is brought to this frame by the camera's motion and mixed in, after FXAA/SMAA (RenderFSAAType). With PlusTAAJitter the scene is drawn moved by a fraction of a pixel each frame, so thin edges and lines are smoothed over the frames. Things that move on their own (avatars, spinning prims) are only held back by the colours around each pixel. Snapshots and the probes' and mirrors' views are left alone. Vulkan only. Off by default; the quality levels set it (featuretable.txt): off at every level (2026-11-09: the avatar picture breaks up when it moves fast).</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>

@@ -127,7 +127,7 @@ PlusSSRDenoise						1	1
 PlusAvatarReflection					1	3
 PlusMirrorAvatars						1	1
 PlusAlphaEdgeFix						1	1
-PlusTAA									1	1
+PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
@@ -390,7 +390,7 @@ PlusSSRDenoise						1	1
 PlusAvatarReflection					1	0
 PlusMirrorAvatars						1	0
 PlusAlphaEdgeFix						1	1
-PlusTAA									1	1
+PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
@@ -477,7 +477,7 @@ PlusSSRDenoise						1	0
 PlusAvatarReflection					1	0
 PlusMirrorAvatars						1	0
 PlusAlphaEdgeFix						1	0
-PlusTAA									1	1	// on from Mid (2026-10-31, the flicker on fine grids is fixed); the comparison item turns it off
+PlusTAA									1	0	// off in every level (2026-11-09: the avatar picture breaks up when it moves fast)
 PlusMaterialize							1	0
 PlusMaterializeAvatar				1	0
 PlusDerez								1	0
@@ -564,7 +564,7 @@ PlusSSRDenoise						1	1
 PlusAvatarReflection					1	3
 PlusMirrorAvatars						1	0
 PlusAlphaEdgeFix						1	1
-PlusTAA									1	1
+PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
@@ -651,7 +651,7 @@ PlusSSRDenoise						1	1
 PlusAvatarReflection					1	3
 PlusMirrorAvatars						1	0
 PlusAlphaEdgeFix						1	1
-PlusTAA									1	1
+PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
@@ -738,7 +738,7 @@ PlusSSRDenoise						1	1
 PlusAvatarReflection					1	3
 PlusMirrorAvatars						1	1
 PlusAlphaEdgeFix						1	1
-PlusTAA									1	1
+PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
