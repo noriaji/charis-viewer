@@ -5,8 +5,10 @@ sys.path: they add this folder themselves before importing this module.
 """
 import hashlib
 import http.client
+import importlib.util
 import os
 import re
+import sys
 import urllib.request
 
 # The packaging step names the viewer CharisViewer.exe; a build packaged before
@@ -210,21 +212,42 @@ def has_vpk_runtime(args):
     return i + 1 < len(args) and args[i + 1] == VPK_RUNTIME
 
 
+# plus/version/packversion.py: version.h's numbers and Velopack's packVersion made from them
+# (viewer_manifest.py loads the same file). Loaded when first used, never at import: the release
+# workflow's bake job checks out only the bake tools, this file among them, and not plus/version
+# (release-package.yml sparse-checkout; the selftest sparse-imports checks it).
+PACKVERSION_PY = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'version', 'packversion.py')
+_packversion = None
+
+
+def packversion_module():
+    """plus/version/packversion.py as a module, loaded once (without writing __pycache__)."""
+    global _packversion
+    if _packversion is None:
+        spec = importlib.util.spec_from_file_location('charis_packversion', PACKVERSION_PY)
+        module = importlib.util.module_from_spec(spec)
+        keep = sys.dont_write_bytecode
+        sys.dont_write_bytecode = True
+        try:
+            spec.loader.exec_module(module)
+        finally:
+            sys.dont_write_bytecode = keep
+        _packversion = module
+    return _packversion
+
+
+def read_version(source):
+    """version.h's numbers (packversion.read_version_h(): number, stage, stage_number,
+    product_name). ValueError when a constant is missing or cannot be carried."""
+    return packversion_module().read_version_h(os.path.join(source, VERSION_H))
+
+
 def release_version(source):
     """(file name version, shown version, (major, minor, patch)) from plus/version/version.h:
-    ('0.1.0-alpha1', '0.1.0 alpha 1', (0, 1, 0)). ValueError when a constant is missing."""
-    text = read_text(os.path.join(source, VERSION_H))
-
-    def constant(kind, name):
-        pat = r'^[ \t]*inline constexpr %s %s%s = %s;' % (
-            kind, name, r'\[\]' if kind == 'char' else '', r'"([^"\\\n]*)"' if kind == 'char' else r'(\d+)')
-        found = re.findall(pat, text, re.M)
-        if len(found) != 1:
-            raise ValueError('%s: %s is there %d times, not once' % (VERSION_H, name, len(found)))
-        return found[0]
-
-    number = tuple(int(constant('int', n)) for n in ('MAJOR', 'MINOR', 'PATCH'))
-    stage, stage_number = constant('char', 'STAGE'), int(constant('int', 'STAGE_NUMBER'))
+    ('0.1.0-alpha1', '0.1.0 alpha 1', (0, 1, 0)). ValueError when a constant is missing.
+    Velopack's packVersion is packversion_module().pack_version() ('0.1.0-alpha.1.<build>')."""
+    info = read_version(source)
+    number, stage, stage_number = info['number'], info['stage'], info['stage_number']
     version = shown = '%d.%d.%d' % number
     if stage:
         version, shown = version + '-' + stage, shown + ' ' + stage

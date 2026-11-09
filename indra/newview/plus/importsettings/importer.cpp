@@ -45,7 +45,7 @@
 // in its settings_per_account.xml, which it reads at its next login.
 //
 // Files (account files, transcripts, poses, environments, ...): copied only
-// where we have no file of that name. Ours are never replaced. The accounts'
+// where we have no file of that name (not toolbars.xml: our toolbars stay). Ours are never replaced. The accounts'
 // own files at once; the chat logs and user_settings' folders (thousands of
 // files, for some) a few each frame, up to MAX_TOTAL_FILES / MAX_TOTAL_BYTES.
 // Graphics presets only with the graphics: they are the source's renderer's.
@@ -227,8 +227,10 @@ namespace
     // offer to put back an outfit from its own sessions, not this viewer's.
     const char* const SKIPPED_ACCOUNT_PREFIXES[] = { "screen_", "texture_list_", "open_notifications_",
                                                      "settings_per_account_before_import", "plus_outfit_backup" };
+    // toolbars.xml (import-no-toolbar, 2026-11-09): the source's toolbar layout. It names buttons
+    // this viewer has not, and brought over it left our toolbars nearly empty. Ours are not touched.
     const char* const SKIPPED_ACCOUNT_FILES[] = { "inbox_new_items.xml", "experience_events.xml",
-                                                  "charis_graphics_before_preset.xml" };
+                                                  "charis_graphics_before_preset.xml", "toolbars.xml" };
 
     // Saved-login data whose entries are one per user (merged entry by entry); any other kind
     // ("credential": the last login of a grid) is taken whole when we have none for that grid.

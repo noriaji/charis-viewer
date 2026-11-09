@@ -37,8 +37,10 @@ What is checked (each line of the output says OK, NG or WARN):
                developer-only strings in any exe/dll, no Tracy symbols in the pdb
   velopack     with --velopack on: velopack-pack.json (the arguments for vpk
                pack) from the same package step, with the package id of
-               plus/independence/independence.h, the viewer exe as the main exe,
-               --noPortable and --runtime win-x64; with off, a left-over one is a WARN
+               plus/independence/independence.h, Charis's version of
+               plus/version/version.h (plus/version/packversion.py), the viewer
+               exe as the main exe, --noPortable and --runtime win-x64; with off,
+               a left-over one is a WARN
   checkout     HEAD is the commit charis-build.sh started from, nothing changed
                or untracked, no source file changed after the build started.
                Without git: --commit is required, and only the last item is
@@ -63,7 +65,8 @@ sys.path.insert(0, HERE)
 sys.dont_write_bytecode = True     # no __pycache__ in the source tree
 from releasecommon import (DEVELOPER_STRINGS, FILE_LIST, OUTPUT_REL, SOURCE, STAMP,  # noqa: E402
                            TRACY_STRINGS, TRACY_SYMBOLS, VELOPACK_PACK_JSON, VIEWER_EXE_NAMES, VPK_RUNTIME,
-                           has_vpk_runtime, independence_constant, read_text, sha256_file, viewer_exe)
+                           has_vpk_runtime, independence_constant, packversion_module, read_text, read_version,
+                           sha256_file, viewer_exe)
 
 CHANNEL = 'Charis Viewer'
 CONFIGURE_LOG = 'charis-configure.log'
@@ -351,6 +354,16 @@ def check_velopack(c, build, source, exe, velopack):
     c.expect(want_id is not None and arg('--packId') == want_id == pack.get('packId'),
              '%s: package id %s (as in llvelopack.cpp)' % (VELOPACK_PACK_JSON, want_id),
              '%s: package id %r, independence.h says %r' % (VELOPACK_PACK_JSON, arg('--packId'), want_id))
+    # Charis's version of version.h (plus/version/packversion.py), not the official one
+    pack_version = pack.get('packVersion')
+    try:
+        pack_build = packversion_module().build_of(pack_version, read_version(source))
+        problem = None if arg('--packVersion') == pack_version else '--packVersion is %r' % arg('--packVersion')
+    except ValueError as err:
+        pack_build, problem = None, str(err)
+    c.expect(problem is None,
+             '%s: version %s (version.h, build %s)' % (VELOPACK_PACK_JSON, pack_version, pack_build),
+             '%s: version %r: %s' % (VELOPACK_PACK_JSON, pack_version, problem))
     exe_name = os.path.basename(exe) if exe else None
     c.expect(arg('--mainExe') == exe_name, '%s: main exe %s' % (VELOPACK_PACK_JSON, exe_name),
              '%s: main exe %r, the build has %r' % (VELOPACK_PACK_JSON, arg('--mainExe'), exe_name))

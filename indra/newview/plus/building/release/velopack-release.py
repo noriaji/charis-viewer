@@ -21,7 +21,9 @@ the update feed with the addresses of the release's assets.
 
 Writes to OUT:
   CharisViewer-<version>-win64-Setup.exe  vpk's <packId>-win-Setup.exe, renamed
-  <packId>-<packVersion>-full.nupkg       the update package (named as vpk names it)
+  <packId>-<packVersion>-full.nupkg       the update package (named as vpk names it; packVersion
+                                          is Charis's version, 0.1.0-alpha.1.<build>: it must be
+                                          the one plus/version/packversion.py makes from version.h)
   releases.win.json                       the update feed: each FileName becomes
       <PROJECT_URL>/releases/download/<tag>/<FileName> (llvelopack.cpp takes no
       other address); the Size and SHA256 of each package are checked against the
@@ -50,8 +52,8 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.dont_write_bytecode = True     # no __pycache__ in the source tree
 from releasecommon import (OUTPUT_REL, SOURCE, VELOPACK_PACK_JSON, VPK_ADDED_ARGS, VPK_RUNTIME,  # noqa: E402
-                           has_vpk_runtime, independence_constant, read_stamp, sha256_file, tag_version,
-                           vpk_arg_value)
+                           has_vpk_runtime, independence_constant, packversion_module, read_stamp, read_version,
+                           sha256_file, tag_version, vpk_arg_value)
 FEED = 'releases.win.json'        # Velopack's feed for its default Windows channel, "win"
 # A package name llvelopack.cpp is_package_file_name() accepts: "<packId>-...nupkg" of
 # letters, digits and ".-_+", no "..", at most 200 characters.
@@ -146,6 +148,14 @@ def read_pack_args(build, pack_id):
     version = pack.get('packVersion')
     if not isinstance(version, str) or not version:
         raise Stop('%s: no packVersion' % path)
+    if args.count('--packVersion') != 1 or vpk_arg_value(args, '--packVersion', path) != version:
+        raise Stop('%s: vpkArgs does not have --packVersion %s once' % (path, version))
+    # Charis's version (version.h of this checkout), not the official one: the installer shows
+    # it, and the updater orders releases by it (plus/version/packversion.py).
+    try:
+        packversion_module().build_of(version, read_version(SOURCE))
+    except ValueError as e:
+        raise Stop('%s: %s' % (path, e))
     pattern = vpk_arg_value(args, '--exclude', path)
     try:
         exclude = re.compile(pattern) if pattern is not None else None

@@ -468,6 +468,33 @@ class ViewerManifest(LLManifest):
                         print(value, file=outf)
                     print(delim, file=outf)
 
+    # <plus> Charis Viewer: the version the installer and the update packages carry
+    def charis_version(self):
+        """(packVersion, version.h's info) from plus/version/packversion.py: Charis's own
+        version (plus/version/version.h) and build number ("0.1.0-alpha.1.3245", "0.1.0" for
+        a release), never the official VIEWER_VERSION.txt that self.args['version'] starts
+        with (its fourth part is Charis's build number: VIEWER_VERSION_REVISION is
+        CHARIS_BUILD_NUMBER, cmake/BuildVersion.cmake). info['product_name'] is the name
+        shown in front of the version ("Charis Viewer")."""
+        import importlib.util
+        folder = os.path.join(self.get_src_prefix(), 'plus', 'version')
+        spec = importlib.util.spec_from_file_location('charis_packversion', os.path.join(folder, 'packversion.py'))
+        packversion = importlib.util.module_from_spec(spec)
+        keep = sys.dont_write_bytecode
+        sys.dont_write_bytecode = True      # no __pycache__ in the source tree
+        try:
+            spec.loader.exec_module(packversion)
+        finally:
+            sys.dont_write_bytecode = keep
+        version = self.args['version']
+        try:
+            info = packversion.read_version_h(os.path.join(folder, 'version.h'))
+            build = packversion.build_number(version[3] if len(version) > 3 else None)
+            return packversion.pack_version(info, build), info
+        except packversion.VersionError as e:
+            raise ManifestError(str(e))
+    # </plus>
+
 
 class Windows_x86_64_Manifest(ViewerManifest):
     # We want the platform, per se, for every Windows build to be 'win'. The
@@ -854,15 +881,16 @@ class Windows_x86_64_Manifest(ViewerManifest):
         if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*', pack_id):
             raise ManifestError("VELOPACK_PACK_ID %r is not a Velopack package id" % pack_id)
         authors = self.independence_constant('PUBLISHER')
-        # Velopack requires SemVer2. Use major.minor.patch-buildnumber so that
-        # Velopack can distinguish builds and order them correctly.
-        version = self.args['version']
-        pack_version = '.'.join(version[:3])
-        if len(version) > 3 and version[3]:
-            pack_version += '-' + version[3]
-        # The title Setup.exe shows; no spaces, as the official packaging keeps it (the
-        # installed apps list shows llvelopack.cpp's own entry, "Charis Viewer").
-        pack_title = self.exec_name()
+        # Velopack requires SemVer2: Charis's version and build number, ordered by SemVer
+        # (0.1.0-alpha.1.<build> < 0.1.0-alpha.2.<build> < 0.1.0), not the official version
+        # (plus/version/packversion.py). It is also the DisplayVersion of the installed apps
+        # list (llvelopack.cpp register_uninstall_info() takes Velopack's app_version).
+        pack_version, version_info = self.charis_version()
+        # The title Setup.exe shows ("Charis Viewer"): version.h's PRODUCT_NAME, as the
+        # installed apps list (llvelopack.cpp's own entry). vpk also names the launcher stub
+        # in the install folder after it ("Charis Viewer.exe"); llvelopack.cpp's shortcuts
+        # and its entry name current\CharisViewer.exe, never the stub.
+        pack_title = version_info['product_name']
         main_exe = self.final_exe()
         # --packDir must be the folder the zip is made from (the files of the .nsi list and the
         # shader bundle), never the build folder: it holds more than these patterns leave out
@@ -1283,11 +1311,10 @@ class Darwin_x86_64_Manifest(ViewerManifest):
         """
         # packId determines install identification - same as Windows for consistency
         pack_id = self.app_name_oneword()  # "SecondLife", "SecondLifeBeta", etc.
-        # Velopack requires SemVer2. Use major.minor.patch-buildnumber so that
-        # Velopack can distinguish builds and order them correctly.
-        pack_version = '.'.join(self.args['version'][:3])
-        if len(self.args['version']) > 3 and self.args['version'][3]:
-            pack_version += '-' + self.args['version'][3]
+        # <plus> Velopack requires SemVer2: Charis's version, as on Windows (charis_version()).
+        # The rest of this macOS step is still the official one (no Charis macOS release yet).
+        pack_version, _ = self.charis_version()
+        # </plus>
         pack_title = self.app_name()  # Display name with spaces
 
         # The .app bundle path (e.g., "/path/to/Second Life Release.app")

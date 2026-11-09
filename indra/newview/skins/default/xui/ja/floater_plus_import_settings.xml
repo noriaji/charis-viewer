@@ -28,7 +28,7 @@
 	<check_box name="chk_graphics" label="グラフィックの設定、グラフィックプリセット、ウィンドウの大きさ" tool_tip="別の Charis Viewer からの場合だけ、最初から選ばれています。ほかのビューワのグラフィック設定とプリセットは、そのビューワの描画に合わせたものです。Charis Viewer からの場合は、Charis Viewer 独自の描画の設定（アンビエントオクルージョン、グレア、ルックなど）もグラフィックに含みます"/>
 	<check_box name="chk_logins" label="保存したログイン（ユーザー名とパスワード。今のものは残します）"/>
 	<check_box name="chk_keys" label="キー割り当て"/>
-	<check_box name="chk_accounts" label="アカウントごとの設定（ツールバー、プリセット、音量など）"/>
+	<check_box name="chk_accounts" label="アカウントごとの設定（プリセット、音量など）"/>
 	<check_box name="chk_chat" label="チャットと IM の履歴"/>
 	<check_box name="chk_files" label="ポーズ、環境、辞書など保存したファイル"/>
 	<button name="btn_import" label="引き継ぐ"/>

@@ -139,7 +139,7 @@ What to bring over:
     <check_box
      height="16"
      initial_value="true"
-     label="Settings of each account (toolbars, presets, volumes, ...)"
+     label="Settings of each account (presets, volumes, ...)"
      layout="topleft"
      left="20"
      name="chk_accounts"
