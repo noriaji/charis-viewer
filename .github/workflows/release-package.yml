@@ -277,12 +277,16 @@ jobs:
   # The shader bundle (research/159: shaders.vkb made from this exe), baked on Mesa's
   # lavapipe, a software Vulkan driver (research/312), on this job's own throwaway runner:
   # the bake tools only (a sparse checkout), no secret, a read-only token. bake-shaders-ci.py
-  # checks Mesa by SHA-256, registers it for the Vulkan loader on this runner only
+  # checks Mesa by SHA-256, unpacks it with the 7-Zip of the runner image (C:\Program
+  # Files\7-Zip\7z.exe; it stops without it: Windows' tar.exe on windows-2022 cannot read
+  # this 7z's LZMA), registers it for the Vulkan loader on this runner only
   # (--register-icd) and checks that its copy of the build is untouched by the bake. What
   # leaves this job is the bundle and its manifest, which the package job reads back before
   # use. Exit 3 (this copy changed while Mesa ran, or holds a Mesa file) stops every build;
-  # any other failure stops a release, and a test build goes on without the bundle. Three
-  # vendors at up to 35 minutes each fit the step's 120.
+  # any other failure stops a release, and a test build goes on without the bundle: the
+  # job still succeeds then, so the step says so in a warning and in the run's summary, and
+  # the package job's summary says the build has no bundle. Three vendors at up to 35
+  # minutes each fit the step's 120.
   bake:
     needs: build
     runs-on: windows-2022
@@ -353,7 +357,13 @@ jobs:
               echo "::error::the shader bake failed: see this step and the charis-bake artifact"
               exit 1
             fi
-            echo "::warning::the shader bake failed: this test build has no shader bundle"
+            echo "::warning title=No shader bundle::the shader bake failed (exit $rc): this test build has no shader bundle"
+            {
+              echo '### No shader bundle'
+              echo
+              echo '> [!CAUTION]'
+              echo "> The shader bake failed (exit $rc): this test build has **no shader bundle** (shader_bundle_sha256=none), and its first start compiles every shader. See the bake job's \"Shader bundle\" step and the charis-bake artifact. A release (tag) stops here instead."
+            } >> "$GITHUB_STEP_SUMMARY"
           fi
           if [ -f "$OUT/shaders.vkb" ]; then
             cp "$WORK/bundle-manifest.tsv" "$OUT/bundle-manifest.tsv"
@@ -605,6 +615,12 @@ jobs:
           printf '%s=%s\n' sums_sha256 "$sums" >> "$GITHUB_OUTPUT"
           {
             echo "### Charis Viewer $VERSION: SHA256SUMS.txt (its SHA-256 $sums)"
+            if [ "$BUNDLE" != yes ]; then
+              echo
+              echo '> [!WARNING]'
+              echo '> This build has **no shader bundle** (shader_bundle_sha256=none): the shader bake failed or was not run (see the bake job).'
+              echo
+            fi
             echo '```'
             cat SHA256SUMS.txt
             echo '```'

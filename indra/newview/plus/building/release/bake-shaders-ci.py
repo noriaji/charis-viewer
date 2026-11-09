@@ -28,8 +28,15 @@ for; on 1 it stops a release and lets a test build go on without the bundle).
      one it records; its commit= goes into the bundle's header. The Vulkan
      loader is in System32 (the viewer loads it from there only).
   2. Mesa MESA_VERSION from mesa-dist-win: the archive's size and SHA-256 are
-     checked before anything in it is unpacked or loaded. Only lavapipe's dll
-     and manifest are unpacked (Windows' own tar.exe reads 7z), into WORK.
+     checked before anything in it is unpacked or loaded. It is unpacked with
+     7-Zip (--seven-zip; not Windows' tar.exe, which reads this 7z on some
+     Windows builds only): its listing first, where no member's name may leave
+     the folder (releasecommon.checked_rel: no drive, ":", "..", device
+     name) and lavapipe's dll and manifest
+     must each be there once as a plain file; then only those two, into
+     WORK/mesa, with 7-Zip's making of links and alternate data streams off
+     (-snl- -snh- -sns-), which must then hold exactly them at the listed
+     sizes (no link, reparse point or anything else).
   3. The Vulkan loader is pointed at lavapipe. A process that is not elevated:
      VK_DRIVER_FILES, for the viewer only. An elevated one ignores that
      variable: then, and only with --register-icd on a GitHub-hosted runner
@@ -69,6 +76,9 @@ Options
                         makes there are removed)
   --mesa-archive FILE   use this copy of the archive instead of fetching it
                         (checked the same way; not inside --work)
+  --seven-zip FILE      7-Zip's 7z.exe (default ProgramFiles\\7-Zip\\7z.exe, where
+                        GitHub's Windows runner images have it). Without it the
+                        run stops before Mesa is fetched (not with --pack-only)
   --bake-only           steps 1-4 only: WORK/out holds the cache and reports
                         (one job a vendor, then a --pack-only job)
   --pack-only DIR...    steps 5-6 only, from the WORK/out folders of
@@ -104,6 +114,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import time
@@ -111,8 +122,8 @@ import time
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.dont_write_bytecode = True     # no __pycache__ in the source tree
-from releasecommon import (MESA_FILE_NAMES, OUTPUT_REL, PDBS, STAMP, DownloadFailed, download,  # noqa: E402
-                           read_stamp, sha256_file, stamp_problems, viewer_exe)
+from releasecommon import (MESA_FILE_NAMES, OUTPUT_REL, PDBS, STAMP, DownloadFailed, FileListError,  # noqa: E402
+                           checked_rel, download, read_stamp, sha256_file, stamp_problems, viewer_exe)
 import shaderbundle  # noqa: E402
 
 MESA_VERSION = '26.2.6'
@@ -124,7 +135,23 @@ MESA_SHA256 = 'b2e00615feaba45942343c265cc8c5f576142ca682c1ac6661922d4b72492877'
 # gdi32, advapi32, shell32, ole32, ntdll).
 MESA_ICD = 'x64/lvp_icd.x86_64.json'
 MESA_DLL = 'x64/vulkan_lvp.dll'
+MESA_MEMBERS = (MESA_ICD, MESA_DLL)
 ICD_LIBRARY_PATH = '.\\vulkan_lvp.dll'
+# The archive is unpacked with 7-Zip (--seven-zip, default default_seven_zip(): GitHub's Windows
+# runner images carry it there). Not Windows' tar.exe: whether its libarchive reads a 7z with
+# LZMA depends on the Windows build (it did on Windows 11; on windows-2022 it says "LZMA codec
+# is unsupported"), so the same step passed on one machine and failed on another. There is no
+# fallback to it: one unpacker everywhere, so a run by hand tests what the release does.
+# In the 7-Zip listing (`l -slt`), the Attributes value is made of: a token of its Windows
+# attribute letters (one a bit, from FILE_ATTRIBUTE_READONLY up, 7-Zip 22 and later's included),
+# of which those for a folder, a reparse point (a link) and a device are refused; bits it has
+# no letter for, as 8 hex digits; and a Unix mode token ("-rw-r--r--"; the first letter is the
+# type). For the members unpacked, any other token is refused too (a form this tool does not
+# know). A link the listing does not show is still refused after unpacking (unpacked_problems).
+SEVEN_ZIP_ATTRIBS = re.compile(r'[RHS8DAdNTsLCOIEVvXPUMB]+')
+SEVEN_ZIP_BAD_ATTRIBS = frozenset('DLd')
+SEVEN_ZIP_HEX_ATTRIBS = re.compile(r'(?:0x)?[0-9A-Fa-f]{8}')
+UNIX_MODE = re.compile(r'[-dlcbps][-rwxsStT]{9}')
 # The Vulkan runtime (loader) installer in the Vulkan SDK the build uses (setup-deps.py's
 # VULKAN_SDK_VERSION), for a runner without vulkan-1.dll in System32.
 VULKAN_RT_SDK = '1.4.363.0'
@@ -271,8 +298,185 @@ def prepare_work(path):
 
 # ---- 2. Mesa and the Vulkan runtime ------------------------------------------
 
-def fetch_mesa(work, given):
+def default_seven_zip():
+    return os.path.join(os.environ.get('ProgramW6432') or os.environ.get('ProgramFiles') or r'C:\Program Files',
+                        '7-Zip', '7z.exe')
+
+
+def name_problem(name):
+    """Why an archive member's name (7-Zip lists it with backslashes) is not a plain relative path
+    that stays in the folder it is unpacked into (releasecommon.checked_rel: no drive or ':', no
+    leading slash, no empty, . or .. part, no device name); '' if it is one."""
+    try:
+        checked_rel(name.replace('\\', '/'), 'the 7-Zip listing')
+    except FileListError as e:
+        return str(e)
+    return ''
+
+
+def parse_7z_listing(text):
+    """The members of `7z l -slt` output: one {key: value} a member, each starting at its Path line.
+    The archive's own block (before the '----------' line) is not a member."""
+    lines = text.splitlines()
+    try:
+        start = next(i for i, line in enumerate(lines) if line.strip() == '----------')
+    except StopIteration:
+        raise Stop('the 7-Zip listing has no "----------" line (not the `l -slt` form this tool reads)')
+    members = []
+    for line in lines[start + 1:]:
+        key, sep, value = line.partition(' =')
+        if not sep or not key or key != key.strip():
+            continue        # a blank line between members, or a line that is not "Key = value"
+        value = value[1:] if value.startswith(' ') else value
+        if key == 'Path':
+            members.append({})
+        elif not members:
+            raise Stop('the 7-Zip listing has a %r line before the first Path' % key)
+        members[-1][key] = value
+    return members
+
+
+def listed_file_problem(member):
+    """Why a member of the 7-Zip listing is not a plain file with a size ('' if it is)."""
+    if member.get('Folder', '-') not in ('-', ''):
+        return 'a folder'
+    if member.get('Anti') == '+':
+        return 'an anti-item'
+    for key in ('Symbolic Link', 'Hard Link', 'Link'):
+        if member.get(key):
+            return 'a link (%s)' % key
+    for token in member.get('Attributes', '').split():
+        if UNIX_MODE.fullmatch(token):
+            if token[0] != '-':
+                return 'not a plain file (mode %s)' % token
+        elif SEVEN_ZIP_ATTRIBS.fullmatch(token):
+            if set(token) & SEVEN_ZIP_BAD_ATTRIBS:
+                return 'a folder, link or device (attributes %s)' % token
+        elif not SEVEN_ZIP_HEX_ATTRIBS.fullmatch(token):
+            return 'attributes this tool does not know (%s)' % token
+    if not re.fullmatch(r'[0-9]+', member.get('Size', '')):
+        return 'no size'
+    return ''
+
+
+def member_problems(members, wanted):
+    """(problems, {wanted name: bytes}) for unpacking `wanted` from the listed members: no member's name
+    may leave the folder (name_problem), and each wanted name (compared as 7-Zip does on Windows: either
+    slash, any case) must be there once, as a plain file."""
+    problems = []
+    found = {w: [] for w in wanted}
+    by_key = {w.replace('\\', '/').lower(): w for w in wanted}
+    for member in members:
+        name = member.get('Path', '')
+        why = name_problem(name)
+        if why:
+            problems.append(why)
+        w = by_key.get(name.replace('\\', '/').lower())
+        if w:
+            found[w].append(member)
+    sizes = {}
+    for w, listed in found.items():
+        if len(listed) != 1:
+            problems.append('%s is there %d times, not once' % (w, len(listed)))
+            continue
+        why = listed_file_problem(listed[0])
+        if why:
+            problems.append('%s: %s' % (w, why))
+        else:
+            sizes[w] = int(listed[0]['Size'])
+    return problems, sizes
+
+
+def seven_zip_list_command(seven_zip, archive):
+    return [seven_zip, 'l', '-t7z', '-slt', '-sccUTF-8', '--', archive]
+
+
+def seven_zip_extract_command(seven_zip, archive, dest, members):
+    """Unpacks exactly `members` (archive paths, no wildcard) of the 7z archive into dest with their
+    paths. 7-Zip's x makes symbolic links, hard links and alternate data streams by default, so
+    -snl- -snh- -sns- turn that off: a link or stream in the archive is not made as one. `--` ends
+    the switches before the paths."""
+    return [seven_zip, 'x', '-t7z', '-y', '-bd', '-r-', '-snl-', '-snh-', '-sns-', '-sccUTF-8', '-o' + dest,
+            '--', archive] + [m.replace('/', '\\') for m in members]
+
+
+def is_link_or_reparse(st):
+    return stat.S_ISLNK(st.st_mode) or bool(getattr(st, 'st_file_attributes', 0) & stat.FILE_ATTRIBUTE_REPARSE_POINT)
+
+
+def unpacked_problems(dest, sizes):
+    """Why dest does not hold exactly `sizes` ({archive path: bytes}) as plain files: something else
+    there, a file missing or of another size, a link or reparse point (not gone into), a hard link."""
+    want = {os.path.normcase(os.path.normpath(name)): (name, size) for name, size in sizes.items()}
+    folders = set()
+    for rel in want:
+        rel = os.path.dirname(rel)
+        while rel:
+            folders.add(rel)
+            rel = os.path.dirname(rel)
+    problems, seen, stack = [], set(), ['']
+    while stack:
+        here = stack.pop()
+        with os.scandir(os.path.join(dest, here)) as entries:
+            for entry in entries:
+                rel = os.path.normcase(os.path.join(here, entry.name))
+                st = os.lstat(entry.path)     # not entry.stat(): on Windows its st_nlink is always 0
+                if is_link_or_reparse(st):
+                    problems.append('%s is a link or reparse point' % rel)
+                elif stat.S_ISDIR(st.st_mode):
+                    if rel in folders:
+                        stack.append(rel)
+                    else:
+                        problems.append('%s: a folder that was not asked for' % rel)
+                elif not stat.S_ISREG(st.st_mode) or rel not in want:
+                    problems.append('%s was not asked for' % rel)
+                elif st.st_size != want[rel][1]:
+                    problems.append('%s is %d bytes, not the listed %d' % (rel, st.st_size, want[rel][1]))
+                elif st.st_nlink > 1:
+                    problems.append('%s has %d hard links' % (rel, st.st_nlink))
+                else:
+                    seen.add(rel)
+    problems += ['%s was not unpacked' % name for rel, (name, _) in sorted(want.items()) if rel not in seen]
+    return problems
+
+
+def command_failure(e):
+    """A failed subprocess.run as text, with the end of what it wrote to stderr when that was captured."""
+    err = getattr(e, 'stderr', None)
+    if isinstance(err, bytes) and err.strip():
+        return '%s (%s)' % (e, err.decode('utf-8', errors='replace').strip()[-400:])
+    return str(e)
+
+
+def unpack_lavapipe(seven_zip, archive, dest):
+    """MESA_MEMBERS of archive into dest (made here) with 7-Zip: the listing is checked first
+    (member_problems), then only those members are unpacked, then dest must hold exactly them at
+    the listed sizes (unpacked_problems). Any failure stops."""
+    try:
+        listing = subprocess.run(seven_zip_list_command(seven_zip, archive), check=True, timeout=600,
+                                 capture_output=True)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise Stop('listing %s with %s: %s' % (archive, seven_zip, command_failure(e)))
+    problems, sizes = member_problems(parse_7z_listing(listing.stdout.decode('utf-8', errors='replace')),
+                                      MESA_MEMBERS)
+    if problems:
+        raise Stop('%s is not unpacked: %s' % (archive, '; '.join(problems[:10])))
+    os.makedirs(dest)
+    try:
+        subprocess.run(seven_zip_extract_command(seven_zip, archive, dest, MESA_MEMBERS), check=True, timeout=600)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise Stop('unpacking %s with %s: %s' % (archive, seven_zip, command_failure(e)))
+    problems = unpacked_problems(dest, sizes)
+    if problems:
+        raise Stop('%s after unpacking %s: %s' % (dest, archive, '; '.join(problems[:10])))
+
+
+def fetch_mesa(work, given, seven_zip):
     """The checked archive's lavapipe, unpacked in WORK/mesa: the manifest's path."""
+    seven_zip = os.path.abspath(seven_zip)
+    if not os.path.isfile(seven_zip):
+        raise Stop('no 7-Zip at %s: it unpacks the Mesa archive (GitHub\'s Windows runner images have it '
+                   'there). Install 7-Zip or give --seven-zip' % seven_zip)
     if given:
         archive = os.path.abspath(given)
         if not os.path.isfile(archive) or os.path.getsize(archive) != MESA_SIZE or sha256_file(archive) != MESA_SHA256:
@@ -285,13 +489,8 @@ def fetch_mesa(work, given):
             raise Stop(str(e))
     say('Mesa %s: %s (%d bytes, sha256 %s)' % (MESA_VERSION, archive, MESA_SIZE, MESA_SHA256))
     dest = os.path.join(work, 'mesa')
-    os.makedirs(dest)
-    tar = os.path.join(system32(), 'tar.exe')
-    try:
-        subprocess.run([tar, '-xf', archive, '-C', dest, MESA_ICD, MESA_DLL], check=True, timeout=600)
-    except (OSError, subprocess.SubprocessError) as e:
-        raise Stop('unpacking %s with %s: %s' % (archive, tar, e))
-    icd, dll = (os.path.normpath(os.path.join(dest, member)) for member in (MESA_ICD, MESA_DLL))
+    unpack_lavapipe(seven_zip, archive, dest)
+    icd, dll = (os.path.normpath(os.path.join(dest, member)) for member in MESA_MEMBERS)
     if not os.path.isfile(icd) or not os.path.isfile(dll):
         raise Stop('%s has no %s or %s' % (archive, MESA_ICD, MESA_DLL))
     try:
@@ -687,7 +886,7 @@ def bake_all(a, work, output, exe):
     ensure_vulkan_runtime(work, a.install_vulkan_runtime)
     if dropped_env():
         say('left out of the viewer environment: %s' % ', '.join(dropped_env()))
-    icd = fetch_mesa(work, a.mesa_archive)
+    icd = fetch_mesa(work, a.mesa_archive, a.seven_zip)
     out = os.path.join(work, 'out')
     os.makedirs(out, exist_ok=True)
     build = os.path.abspath(a.build_dir)
@@ -797,6 +996,7 @@ def main():
     ap.add_argument('--vendors', default=','.join(VENDORS))
     ap.add_argument('--work')
     ap.add_argument('--mesa-archive')
+    ap.add_argument('--seven-zip', default=default_seven_zip())
     steps = ap.add_mutually_exclusive_group()
     steps.add_argument('--bake-only', action='store_true')
     steps.add_argument('--pack-only', nargs='+', metavar='DIR')
