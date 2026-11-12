@@ -7,10 +7,12 @@
      panel_plus_prefs_slurl_handler.xml (their C++ classes as before).
      Height of the list (1080 base): 10 + Network title 40 + bandwidth 31 + port 30 + 10
      + Web title 40 + browser choice 3 x 30 + Javascript 30 + 10
-     + Software updates title 40 + drop-down 33 + 2 checks x 30 + the update check 30 + 10
-     + Proxy title 40 + proxy button 40 + 6 + import button 40 + 10 + the SLURL rows 129 + 14 = 743 (scrolls in 515).
-     The update check's row is hidden while PlusUpdateCheckURL is empty; its class moves the rows under it up by
-     40 then (plus/updatecheck UpdateCheckPanel: its siblings in this list), so the list ends 40 short.
+     + the release-notes check 30 + the update check 30 + 4 + how updates go in 33 + 10
+     + Proxy title 40 + proxy button 40 + 6 + import button 40 + 10 + the SLURL rows 129 + 14 = 677 (scrolls in 515).
+     The update check's rows are hidden while PlusUpdateCheckURL is empty; its class moves the rows under it up by
+     77 then (plus/updatecheck UpdateCheckPanel: its siblings in this list), so the list ends 77 short.
+     The official Software updates title, drop-down and Beta check are not here (removed 2026-11-13; unused). Without an
+     installer (the zip) only the second row ("how updates go in", research/326) is hidden, and they move up by 37.
      Rows at left 14, 529 wide. Bandwidth: label 180 | 6 | slider 290 (value 62) | 6 | kbps 47.
      Port: check 220 | 9 | spinner 300 (label 150). The other checks are whole rows (529, follows left|top|right). -->
 <panel
@@ -46,7 +48,7 @@
              name="setup_scroll_panel"
              background_visible="false"
              follows="left|top"
-             height="743"
+             height="677"
              layout="topleft"
              left="0"
              mouse_opaque="false"
@@ -208,55 +210,6 @@
                  radio_style="false"
                  top="251"
                  width="529" />
-                <!-- Software updates -->
-                <plus_ps_text
-                 name="Software updates:"
-                 follows="left|top|right"
-                 height="40"
-                 kind="title"
-                 layout="topleft"
-                 left="14"
-                 length="1"
-                 mouse_opaque="false"
-                 top="291"
-                 type="string"
-                 width="529">
-                    Software updates:
-                </plus_ps_text>
-                <plus_ps_combo
-                 name="updater_service_combobox"
-                 control_name="UpdaterServiceSetting"
-                 follows="left|top"
-                 height="33"
-                 layout="topleft"
-                 left="14"
-                 top="331"
-                 width="420">
-                    <plus_ps_combo.item
-                     name="Install_automatically"
-                     label="Install each update automatically"
-                     value="3" />
-                    <plus_ps_combo.item
-                     name="Install_ask"
-                     label="Ask me when an optional update is ready to install"
-                     value="1" />
-                    <plus_ps_combo.item
-                     name="Install_manual"
-                     label="Install only mandatory updates"
-                     value="0" />
-                </plus_ps_combo>
-                <plus_ps_check_compat
-                 name="update_willing_to_test"
-                 control_name="UpdaterWillingToTest"
-                 enabled="true"
-                 follows="left|top|right"
-                 height="30"
-                 label="Willing to update to Beta"
-                 layout="topleft"
-                 left="14"
-                 mouse_opaque="true"
-                 top="364"
-                 width="529" />
                 <plus_ps_check_compat
                  name="update_show_release_notes"
                  control_name="UpdaterShowReleaseNotes"
@@ -267,7 +220,7 @@
                  layout="topleft"
                  left="14"
                  mouse_opaque="true"
-                 top="394"
+                 top="291"
                  width="529" />
                 <!-- Charis's own update check (plus/updatecheck; research/123). Its class hides the box while
                      PlusUpdateCheckURL is empty and moves its siblings under it up into its place. -->
@@ -276,10 +229,10 @@
                  class="plus_update_check_panel"
                  filename="panel_plus_prefs_update_check.xml"
                  follows="left|top"
-                 height="30"
+                 height="67"
                  layout="topleft"
                  left="14"
-                 top="424"
+                 top="321"
                  width="529" />
                 <!-- Proxy -->
                 <plus_ps_text
@@ -291,7 +244,7 @@
                  left="14"
                  length="1"
                  mouse_opaque="false"
-                 top="464"
+                 top="398"
                  type="string"
                  width="529">
                     Proxy Settings:
@@ -304,7 +257,7 @@
                  label_selected="Browse"
                  layout="topleft"
                  left="14"
-                 top="504"
+                 top="438"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.Proxy" />
@@ -317,7 +270,7 @@
                  height="40"
                  layout="topleft"
                  left="14"
-                 top="550"
+                 top="484"
                  width="360" />
                 <!-- Which viewer opens secondlife:// links from the browser (plus/slurlhandler, research/237).
                      Its class hides it where the desktop registers the links (not Windows). -->
@@ -329,7 +282,7 @@
                  height="129"
                  layout="topleft"
                  left="14"
-                 top="600"
+                 top="534"
                  width="529" />
             </panel>
         </scroll_container>

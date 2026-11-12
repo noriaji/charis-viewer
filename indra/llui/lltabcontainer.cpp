@@ -1257,12 +1257,14 @@ void LLTabContainer::removeTabPanel(LLPanel* child)
     }
 
     bool has_focus = gFocusMgr.childHasKeyboardFocus(this);
+    S32 removed_idx = -1; // <plus> invcustomtabs (research/314) </plus>
 
     for(std::vector<LLTabTuple*>::iterator iter = mTabList.begin(); iter != mTabList.end(); ++iter)
     {
         LLTabTuple* tuple = *iter;
         if( tuple->mTabPanel == child )
         {
+            removed_idx = static_cast<S32>(iter - mTabList.begin()); // <plus> invcustomtabs </plus>
             // update tab button images if removing the first or last tab
             if ((tuple == mTabList.front()) && (mTabList.size() > 1))
             {
@@ -1294,6 +1296,14 @@ void LLTabContainer::removeTabPanel(LLPanel* child)
 
     // make sure we don't have more locked tabs than we have tabs
     mLockedTabCount = llmin(getTabCount(), mLockedTabCount);
+
+    // <plus> invcustomtabs: a tab removed left of the current one moves the current one a place left; the index
+    // kept pointing one tab further right, which the selectTab() below then selected (research/314)
+    if (removed_idx >= 0 && removed_idx < mCurrentTabIdx)
+    {
+        --mCurrentTabIdx;
+    }
+    // </plus>
 
     // If the tab being deleted is the selected one, select a different tab.
     if (mCurrentTabIdx >= (S32)mTabList.size())
@@ -1827,6 +1837,125 @@ void LLTabContainer::onTabBtn( const LLSD& data, LLPanel* panel )
         tuple->mTabPanel->setFocus(true);
     }
 }
+
+// <plus> invcustomtabs: Firestorm's custom inventory tabs (FIRE-35598, FIRE-36831) (newview/plus/invcustomtabs, research/314)
+void LLTabContainer::setTabPadding(S32 index, S32 padding)
+{
+    if (index < 0 || index >= getTabCount())
+    {
+        return;
+    }
+
+    LLTabTuple* tuple = getTab(index);
+    if (!tuple || !tuple->mButton)
+    {
+        return;
+    }
+
+    static LLUICachedControl<S32> tab_padding("UITabPadding", 0);
+    mTotalTabWidth -= tuple->mButton->getRect().getWidth();
+    tuple->mPadding = padding;
+    tuple->mButton->reshape(llclamp(mFont->getWidth(tuple->mButton->getLabelSelected()) + tab_padding + tuple->mPadding, mMinTabWidth, mMaxTabWidth), tuple->mButton->getRect().getHeight());
+    mTotalTabWidth += tuple->mButton->getRect().getWidth();
+    updateMaxScrollPos();
+}
+
+S32 LLTabContainer::getTabContainedAtPoint(S32 x, S32 y) const
+{
+    // Not while the container is not shown (the inventory's single folder view hides the tab strip).
+    if (getTabsHidden() || !isInVisibleChain())
+    {
+        return -1;
+    }
+
+    const LLButton* arrows[] = { mPrevArrowBtn, mNextArrowBtn, mJumpPrevArrowBtn, mJumpNextArrowBtn };
+    for (const auto* arrow : arrows)
+    {
+        if (arrow && arrow->getVisible() && arrow->getRect().pointInRect(x, y))
+        {
+            return -1;
+        }
+    }
+
+    for (size_t i = 0; i < mTabList.size(); ++i)
+    {
+        const auto* tuple = mTabList[i];
+        if (tuple && tuple->mButton && tuple->mButton->getVisible() && tuple->mButton->getRect().pointInRect(x, y))
+        {
+            return static_cast<S32>(i);
+        }
+    }
+    return -1;
+}
+
+void LLTabContainer::setTabButtonVisible(const LLPanel* panel, bool visible)
+{
+    for (LLTabTuple* tuple : mTabList)
+    {
+        if (tuple->mTabPanel == panel)
+        {
+            if (tuple->mVisible != visible)
+            {
+                tuple->mVisible = visible;
+                if (tuple->mButton)
+                {
+                    tuple->mButton->setVisible(visible);
+                }
+                updateMaxScrollPos();
+            }
+            break;
+        }
+    }
+}
+
+void LLTabContainer::setTabButtonWidth(const LLPanel* panel, S32 width)
+{
+    for (LLTabTuple* tuple : mTabList)
+    {
+        if (tuple->mTabPanel == panel)
+        {
+            if (tuple->mButton)
+            {
+                mTotalTabWidth -= tuple->mButton->getRect().getWidth();
+                tuple->mButton->reshape(width, tuple->mButton->getRect().getHeight());
+                mTotalTabWidth += tuple->mButton->getRect().getWidth();
+                updateMaxScrollPos();
+            }
+            break;
+        }
+    }
+}
+
+// Firestorm inserts at an index through insert_at (a Catznip patch of insertTuple()); the official
+// insertTuple() has only START, END and the current tab's sides, so a tab is added at END and moved.
+void LLTabContainer::moveTabPanel(const LLPanel* panel, S32 index)
+{
+    tuple_list_t::iterator it = std::find_if(mTabList.begin(), mTabList.end(),
+                                             [panel](const LLTabTuple* tuple) { return tuple->mTabPanel == panel; });
+    if (it == mTabList.end())
+    {
+        return;
+    }
+    const S32 last = getTabCount() - 1;
+    index = llclamp(index, llmin(mLockedTabCount, last), last);
+
+    LLPanel* current = getCurrentPanel();
+    LLTabTuple* tuple = *it;
+    mTabList.erase(it);
+    mTabList.insert(mTabList.begin() + index, tuple);
+    if (current)
+    {
+        mCurrentTabIdx = getIndexForPanel(current);
+    }
+
+    // The first and the last tab have images of their own.
+    for (S32 i = 0; i <= last; ++i)
+    {
+        update_images(mTabList[i], i == 0 ? mFirstTabParams : (i == last ? mLastTabParams : mMiddleTabParams), getTabPosition());
+    }
+    updateMaxScrollPos();
+}
+// </plus>
 
 void LLTabContainer::onNextBtn( const LLSD& data )
 {

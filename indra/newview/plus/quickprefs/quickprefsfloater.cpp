@@ -37,6 +37,7 @@
 
 #include "quickprefsfloater.h"
 #include "plus.h"
+#include "plus/photomode/photomode.h"
 
 #include "llagent.h"
 #include "llbutton.h"
@@ -157,11 +158,35 @@ namespace plus::quickprefs
             return var ? var.get() : gSavedPerAccountSettings.getControl(name).get();
         }
 
-        void selectEnvironmentAsset(const LLSD& preset)
+        // The settings object a layer shows now (compared only, never used): another one when anything changed it.
+        const void* inUseOf(plus::photomode::EnvLayer layer)
+        {
+            LLEnvironment& env = LLEnvironment::instance();
+            switch (layer)
+            {
+                case plus::photomode::EnvLayer::Water: return env.getCurrentWater().get();
+                case plus::photomode::EnvLayer::Day:   return env.getCurrentDay().get();
+                default:                               return env.getCurrentSky().get();
+            }
+        }
+
+        // The layer of a preset drop-down (by its name in floater_plus_quickprefs.xml).
+        plus::photomode::EnvLayer layerOf(const LLComboBox* combo)
+        {
+            const std::string& name = combo->getName();
+            return name == "WaterPresetsCombo" ? plus::photomode::EnvLayer::Water
+                 : name == "DCPresetsCombo"    ? plus::photomode::EnvLayer::Day
+                                               : plus::photomode::EnvLayer::Sky;
+        }
+
+        // The preset of a drop-down on: the last one chosen of its layer wins (chosen fast with the arrow keys, an
+        // older one fetched longer would come after it).
+        void selectEnvironmentAsset(LLComboBox* combo)
         {
             LLEnvironment& env = LLEnvironment::instance();
             env.setSelectedEnvironment(LLEnvironment::ENV_LOCAL);
-            env.setEnvironment(LLEnvironment::ENV_LOCAL, preset.asUUID(), LLEnvironment::TRANSITION_DEFAULT);
+            plus::photomode::setLocalEnvironmentAsset(combo->getSelectedValue().asUUID(), layerOf(combo),
+                                                      plus::photomode::EnvTransition::Default);
         }
     }
 
@@ -201,6 +226,8 @@ namespace plus::quickprefs
         getChild<LLUICtrl>("ResetToRegionDefault")->setCommitCallback([this](LLUICtrl*, const LLSD&) { onClickResetToRegionDefault(); });
 
         mEnvChangedConnection = LLEnvironment::instance().setEnvironmentChanged([this](LLEnvironment::EnvSelection_t, S32) { setSelectedEnvironment(); });
+        // a preset that could not be had leaves the environment as it was: the drop-down goes back to the one in use
+        mEnvFailedConnection = plus::photomode::setLocalEnvironmentFailedCallback([this]() { setSelectedEnvironment(); });
 
         // Hover height
         mAvatarZOffsetSlider->setSliderMouseUpCallback([this](LLUICtrl*, const LLSD&) { onAvatarZOffsetFinalCommit(); });
@@ -1163,6 +1190,18 @@ namespace plus::quickprefs
         };
         set_state_entries_enabled(true);
 
+        // The row each shows now: two rows of the same preset (a copy of another name) would go back to the first
+        // one when selected by value, and the next step would go from there.
+        constexpr size_t COMBOS = static_cast<size_t>(plus::photomode::EnvLayer::Count);   // one a layer
+        LLComboBox* const combos[COMBOS] = { mWLPresetsCombo, mWaterPresetsCombo, mDayCyclePresetsCombo };
+        S32  shown_index[COMBOS];
+        LLSD shown_value[COMBOS];
+        for (size_t i = 0; i < COMBOS; ++i)
+        {
+            shown_index[i] = combos[i]->getCurrentIndex();
+            shown_value[i] = combos[i]->getSelectedValue();
+        }
+
         mWLPresetsCombo->selectByValue(LLSD(PRESET_NAME_REGION));
         mWaterPresetsCombo->selectByValue(LLSD(PRESET_NAME_REGION));
         mDayCyclePresetsCombo->selectByValue(LLSD(PRESET_NAME_REGION));
@@ -1200,15 +1239,72 @@ namespace plus::quickprefs
                 }
             }
         }
+
+        // A preset chosen and still coming stays chosen (the environment changes meanwhile, and the arrow keys go on
+        // from it); one that could not be had is not (the one in use, above).
+        for (LLComboBox* combo : { mWLPresetsCombo, mWaterPresetsCombo, mDayCyclePresetsCombo })
+        {
+            const plus::photomode::EnvLayer layer = layerOf(combo);
+            const LLUUID wanted = plus::photomode::localEnvironmentWanted(layer);
+            // only when it has a row here (chosen elsewhere, e.g. the photo screen, it may have none: a miss would
+            // leave the drop-down with nothing chosen)
+            if (plus::photomode::localEnvironmentFetch(layer) == plus::photomode::EnvFetch::Pending
+                && combo->findItemByValue(wanted.asString()))
+            {
+                combo->selectByValue(LLSD(wanted));
+            }
+        }
+        for (size_t i = 0; i < COMBOS; ++i)
+        {
+            if (shown_index[i] >= 0 && combos[i]->getCurrentIndex() != shown_index[i]
+                && combos[i]->getSelectedValue().asString() == shown_value[i].asString())
+            {
+                combos[i]->setCurrentByIndex(shown_index[i]);
+            }
+        }
         set_state_entries_enabled(false);
+    }
+
+    void QuickPrefsFloater::putOnPreset(LLComboBox* combo)
+    {
+        // the row before asking: a preset that cannot be had may fail at once, and the drop-down goes back to the
+        // one in use (setSelectedEnvironment()) before this goes on
+        const S32 index = combo->getCurrentIndex();
+        selectEnvironmentAsset(combo);
+        const plus::photomode::EnvLayer layer = layerOf(combo);
+        AskedPreset& asked = mAsked[static_cast<size_t>(layer)];
+        asked.changes = plus::photomode::localEnvironmentChanges(layer);   // after it: the count it made
+        asked.index   = index;
+        asked.inUse   = inUseOf(layer);     // after it: the one before while it comes (the same when it failed)
+    }
+
+    void QuickPrefsFloater::placeAtFailedPreset(LLComboBox* combo, bool forward)
+    {
+        const plus::photomode::EnvLayer layer = layerOf(combo);
+        const AskedPreset& asked = mAsked[static_cast<size_t>(layer)];
+        if (!forward || plus::photomode::localEnvironmentFetch(layer) != plus::photomode::EnvFetch::Failed
+            || asked.changes != plus::photomode::localEnvironmentChanges(layer) || asked.inUse != inUseOf(layer)
+            || asked.index < 0 || asked.index >= combo->getItemCount())
+        {
+            return;
+        }
+        // the row asked for, while it still holds the preset that could not be had
+        const std::vector<LLScrollListItem*> rows = combo->getAllData();
+        if (rows[asked.index]->getValue().asString() == plus::photomode::localEnvironmentWanted(layer).asString())
+        {
+            combo->setCurrentByIndex(asked.index);
+        }
     }
 
     void QuickPrefsFloater::onPresetCombo(LLComboBox* combo)
     {
-        // The entries that only show the state cannot be clicked; a typed or scrolled-to one is passed on.
+        // The entries that only show the state cannot be clicked; a typed or scrolled-to one is passed on. The arrow
+        // keys of the drop-down move it before this (LLComboBox commit_on_arrow): they go on from the row shown, the
+        // one in use, so after a preset that could not be had they ask for it again (as a click on it does); the
+        // step buttons go on past it (onPresetStep()).
         if (isValidPreset(combo->getSelectedValue()) || stepComboBox(combo, true))
         {
-            selectEnvironmentAsset(combo->getSelectedValue());
+            putOnPreset(combo);
         }
         else
         {
@@ -1218,9 +1314,10 @@ namespace plus::quickprefs
 
     void QuickPrefsFloater::onPresetStep(LLComboBox* combo, bool forward)
     {
+        placeAtFailedPreset(combo, forward);    // forward: go on past a preset that could not be had
         if (stepComboBox(combo, forward))
         {
-            selectEnvironmentAsset(combo->getSelectedValue());
+            putOnPreset(combo);
         }
         else
         {
@@ -1232,6 +1329,11 @@ namespace plus::quickprefs
     {
         mWLPresetsCombo->setValue(LLSD(PRESET_NAME_REGION));
         mWaterPresetsCombo->setValue(LLSD(PRESET_NAME_REGION));
+        for (plus::photomode::EnvLayer layer : { plus::photomode::EnvLayer::Sky, plus::photomode::EnvLayer::Water,
+                                                 plus::photomode::EnvLayer::Day })
+        {
+            plus::photomode::forgetLocalEnvironmentAsset(layer);   // a preset still coming would not show anyway
+        }
         LLEnvironment::instance().setSharedEnvironment();
     }
 

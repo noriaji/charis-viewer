@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- 日本語 UI のボタンの文字の縦位置。
+     en の既定 pad_bottom="2" は英字向けで、日本語の字形（BIZ UDPGothic）だと 2〜3px 上に寄って見える。
+     言語の重ね合わせ（LLXMLNode::updateNode）は、元（en）のノードに既にある属性しか上書きしないので、
+     ここは en/widgets/button.xml に既にある pad_bottom だけを書く。
+     個々のボタンに pad_bottom を足しても、en 側に無ければ無視される。 -->
+<button pad_bottom="0"/>

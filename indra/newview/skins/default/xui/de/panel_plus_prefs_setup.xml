@@ -23,15 +23,6 @@
 					<radio_item name="external_all" label="Integrierten Browser für alle Links verwenden" tool_tip="Integrierten Browser für Hilfe, Internetlinks, usw. verwenden. Der Browser wird als eigenständiges Fenster in [APP_NAME] geöffnet." />
 				</plus_ps_radio>
 				<plus_ps_check_compat name="browser_javascript_enabled" label="Javascript aktivieren" />
-				<plus_ps_text name="Software updates:">
-					Softwareupdates:
-				</plus_ps_text>
-				<plus_ps_combo name="updater_service_combobox">
-					<plus_ps_combo.item name="Install_automatically" label="Alle Updates automatisch installieren" />
-					<plus_ps_combo.item name="Install_ask" label="Mich fragen, wenn ein optionales Update bereit zur Installation ist" />
-					<plus_ps_combo.item name="Install_manual" label="Nur zwingend erforderliche Updates installieren" />
-				</plus_ps_combo>
-				<plus_ps_check_compat name="update_willing_to_test" label="Bereit, Release-Kandidaten zu verwenden" />
 				<plus_ps_check_compat name="update_show_release_notes" label="Versionshinweise nach der Aktualisierung anzeigen" />
 				<plus_ps_text name="Proxy Settings:">
 					Proxy-Einstellungen:

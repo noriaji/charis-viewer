@@ -29,6 +29,11 @@
 				<plus_ps_check_compat name="show_grid_selection_check" label="ログイン画面でグリッドを選べるようにする" />
 				<plus_ps_check_compat name="show_advanced_menu_check" label="「アドバンス」メニューを表示する" />
 				<plus_ps_check_compat name="show_develop_menu_check" label="「開発」メニューを表示する" />
+				<plus_ps_header name="h_build" label="ビルド" />
+				<plus_ps_check_compat name="LimitSelectDistance" label="選択できる距離を制限する" tool_tip="オンの時、アバターからこの距離より遠い物は選択・編集できません（名前や中身が空になります）。" />
+				<plus_ps_spinner name="MaxSelectDistance" label="選択できる距離（メートル）" tool_tip="アバターから選択できる最大の距離（メートル）［既定: 128.000］" />
+				<plus_ps_check_compat name="LimitDragDistance" label="ドラッグできる距離を制限する" />
+				<plus_ps_spinner name="MaxDragDistance" label="ドラッグできる距離（メートル）" tool_tip="移動ツールで 1 回の操作で動かせる最大の距離（メートル、開始点から）［既定: 48.000］" />
 				<plus_ps_header name="h_more" label="ほかの設定" />
 				<plus_ps_button_compat name="remembered_usernames" label="記憶したユーザー名…" />
 				<plus_ps_button_compat name="default_creation_permissions" label="新しく作る物の既定の権限…" />

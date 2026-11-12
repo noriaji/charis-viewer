@@ -6,7 +6,7 @@
      The inventory cache button is Charis's own page now: panel_plus_prefs_inv_cache.xml.
      Height of the list (1080 base): 10 + Cache heading 40 + size row 40 + 6 + location row 34 + 6 + buttons 40 + 10
      + Size heading 40 + 2 sliders x 31 + 10 + Login and menus heading 40 + 4 checks x 30 + 10
-     + More settings heading 40 + 2 button rows x 40 + 6 + 14 = 608 (scrolls in 515).
+     + Build heading 40 + 4 rows x 30 + 10 (select/drag distance, added 2026-11-10) + More settings heading 40 + 2 button rows x 40 + 6 + 14 = 778 (scrolls in 515).
      Rows at left 14, 529 wide. Cache size: spinner 330 (label 240) | 6 | MB 30 | 13 | Clear 160 (the 40 high row;
      the spinner and MB in its middle). Location: label 140 | 6 | glass 383 (the line editor in it); the buttons
      under the glass: Browse 150 | 12 | Default 200. Sliders: label 124 | 12 | slider 393 (value 62). -->
@@ -47,7 +47,7 @@
              name="advanced_scroll_panel"
              background_visible="false"
              follows="left|top"
-             height="608"
+             height="778"
              layout="topleft"
              left="0"
              mouse_opaque="false"
@@ -295,6 +295,76 @@
                  left="14"
                  top="428"
                  width="529" />
+                <!-- Build: how far from the avatar objects can be selected and dragged (same two settings as
+                     Firestorm Preferences > Build; the number is greyed while its check is off) -->
+                <plus_ps_header
+                 name="h_build"
+                 divider="top"
+                 follows="left|top|right"
+                 height="40"
+                 label="Build"
+                 layout="topleft"
+                 left="14"
+                 size="sub"
+                 top="468"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="LimitSelectDistance"
+                 control_name="LimitSelectDistance"
+                 follows="left|top|right"
+                 height="30"
+                 label="Limit select distance"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="When on, objects farther than this from your avatar cannot be selected or edited (their name and contents stay empty)."
+                 top="508"
+                 width="529" />
+                <plus_ps_spinner
+                 name="MaxSelectDistance"
+                 control_name="MaxSelectDistance"
+                 decimal_digits="3"
+                 enabled_control="LimitSelectDistance"
+                 follows="left|top"
+                 height="30"
+                 increment="0.01"
+                 initial_value="128"
+                 label="Select distance (meters)"
+                 label_width="240"
+                 layout="topleft"
+                 left="14"
+                 max_val="1024"
+                 min_val="0.001"
+                 tool_tip="Maximum allowed selection distance (meters from avatar) [Default: 128.000]"
+                 top="538"
+                 width="330" />
+                <plus_ps_check_compat
+                 name="LimitDragDistance"
+                 control_name="LimitDragDistance"
+                 follows="left|top|right"
+                 height="30"
+                 label="Limit drag distance"
+                 layout="topleft"
+                 left="14"
+                 top="578"
+                 width="529" />
+                <plus_ps_spinner
+                 name="MaxDragDistance"
+                 control_name="MaxDragDistance"
+                 decimal_digits="3"
+                 enabled_control="LimitDragDistance"
+                 follows="left|top"
+                 height="30"
+                 increment="0.01"
+                 initial_value="48"
+                 label="Drag distance (meters)"
+                 label_width="240"
+                 layout="topleft"
+                 left="14"
+                 max_val="1024"
+                 min_val="0.001"
+                 tool_tip="Maximum allowed distance in a single operation of move tool (meters from start point) [Default: 48.000]"
+                 top="608"
+                 width="330" />
                 <!-- More settings (buttons that open windows or ask) -->
                 <plus_ps_header
                  name="h_more"
@@ -305,7 +375,7 @@
                  layout="topleft"
                  left="14"
                  size="sub"
-                 top="468"
+                 top="638"
                  width="529" />
                 <plus_ps_button_compat
                  name="remembered_usernames"
@@ -314,7 +384,7 @@
                  label="Remembered Usernames"
                  layout="topleft"
                  left="14"
-                 top="508"
+                 top="678"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.RememberedUsernames" />
@@ -327,7 +397,7 @@
                  height="40"
                  layout="topleft"
                  left="283"
-                 top="508"
+                 top="678"
                  width="260" />
                 <plus_ps_button_compat
                  name="default_creation_permissions"
@@ -336,7 +406,7 @@
                  label="Default Creation Permissions"
                  layout="topleft"
                  left="14"
-                 top="554"
+                 top="724"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.PermsDefault" />
@@ -348,7 +418,7 @@
                  label="Script Development"
                  layout="topleft"
                  left="283"
-                 top="554"
+                 top="724"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.Scripting" />

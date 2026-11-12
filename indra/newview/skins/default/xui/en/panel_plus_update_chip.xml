@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Update (plus/update, research/326 section 4.5): the chip at the bottom right while an update the user agreed to
+  is being fetched, is ready, or failed. update.cpp makes it in the root view, 12 from the right and the bottom of
+  the area between the toolbars (psui::worldChipArea; at the login screen and in the world), at the back of the root
+  view in the world (under floaters, menus and tool tips) and at the front at the login screen (over the login panel), hides it in the photo screen and with the UI hidden,
+  and takes it away once nothing is going on.
+  The chip and its box are not mouse_opaque: only the buttons take clicks (and the words, a PsCtrl, the left
+  button); a click beside them goes to the world.
+  Size (1080 base): 470 x 40. The words 14 to 276 (262; cut with an ellipsis, the whole text and the version in
+  the tool tip), the button 288 to 428 (140 wide, 28 high at 6 from the top), x 436 to 464 (6 from the edge).
+  x is hidden while checking and downloading (the chip cannot be closed then); the button says Cancel there,
+  "Restart and update" when ready (off once pressed: "Quitting..."), Retry when it failed.
+  en: the longest words, "Downloading 100% (1024/1024 MB)" (about 200), fit in 262.
+  ja: the longest words, "更新を取得中 100%（1024/1024 MB）" (6 full width + 2 brackets + 17 narrow, about 220) fit in
+  262; the longest button word, "再起動して更新" (7, about 119), in 140 with the button's 10 at each side.
+  [PERCENT] 0..100, [DONE] / [TOTAL] whole MB, [VERSION] the version's words ("0.1.0 alpha 2 (rev 3300)").
+-->
+<panel
+ background_visible="false"
+ follows="right|bottom"
+ height="40"
+ layout="topleft"
+ mouse_opaque="false"
+ name="plus_update_chip"
+ width="470">
+    <string name="checking">Looking for the update...</string>
+    <string name="downloading">Downloading [PERCENT]% ([DONE]/[TOTAL] MB)</string>
+    <string name="downloading_size_unknown">Downloading ([DONE] MB)</string>
+    <string name="cancelling">Stopping...</string>
+    <string name="quitting">Quitting to put it in...</string>
+    <string name="ready">The update is ready</string>
+    <string name="failed">The update failed</string>
+    <string name="tip_checking">Charis Viewer [VERSION]: reading the update list on GitHub. Cancel stops it.</string>
+    <string name="tip_downloading">Charis Viewer [VERSION] is being downloaded from GitHub: [PERCENT]% ([DONE] of [TOTAL] MB). You can go on using the viewer; Cancel stops it (what came so far is thrown away).</string>
+    <string name="tip_downloading_size_unknown">Charis Viewer [VERSION] is being downloaded from GitHub: [DONE] MB so far. You can go on using the viewer; Cancel stops it (what came so far is thrown away).</string>
+    <string name="tip_ready">Charis Viewer [VERSION] is downloaded. It is put in when you quit the viewer, or now with "Restart and update" (the viewer quits and starts again). x hides this; the update still goes in when you quit.</string>
+    <string name="tip_failed">Charis Viewer [VERSION] could not be installed: [WHY]. Retry starts again; the log (lines with Velopack) has the details.</string>
+    <string name="why_no_update">the update list on GitHub has no newer version yet</string>
+    <string name="why_feed">the update list could not be read</string>
+    <string name="why_download">the download did not finish</string>
+    <string name="why_package">what was downloaded is not the file the update list names</string>
+    <string name="why_install">the installer did not take the download</string>
+    <!-- [AGREED] / [OFFERED]: the installer's versions ("0.1.0-alpha.2.3300") of the notice and of the update list -->
+    <string name="why_version">the update list on GitHub offers [OFFERED], not [AGREED] that was announced (nothing was downloaded)</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_cancel_tip">Stops the download</string>
+    <string name="btn_restart">Restart and update</string>
+    <string name="btn_restart_tip">Quits the viewer, puts in the new version and starts it again</string>
+    <string name="btn_retry">Retry</string>
+    <string name="btn_retry_tip">Starts the download again</string>
+    <plus_ps_box
+     follows="all"
+     height="40"
+     kind="glass"
+     layout="topleft"
+     left="0"
+     mouse_opaque="false"
+     name="chip_box"
+     top="0"
+     width="470">
+        <plus_ps_label
+         follows="left|top|right"
+         height="40"
+         kind="white"
+         layout="topleft"
+         left="14"
+         name="chip_text"
+         tool_tip="An update of Charis Viewer"
+         top="0"
+         width="262" />
+        <plus_ps_button
+         follows="right|top"
+         height="28"
+         label="Cancel"
+         layout="topleft"
+         left="288"
+         name="chip_action"
+         tool_tip="Stops the download"
+         top="6"
+         width="140" />
+        <plus_ps_icon_button
+         follows="right|top"
+         height="28"
+         icon="close"
+         layout="topleft"
+         left="436"
+         name="chip_close"
+         tool_tip="Hides this"
+         top="6"
+         width="28" />
+    </plus_ps_box>
+</panel>

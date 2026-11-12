@@ -186,6 +186,10 @@ namespace
     const LLColor4 DROP_HINT_FILL(0.25f, 0.55f, 1.f, 0.2f);
     const LLColor4 DROP_HINT_EDGE(0.25f, 0.55f, 1.f, 0.9f);
     constexpr S32 DROP_HINT_EDGE_WIDTH = 3;     // UI units
+    // DetachedWindow::drawCornerFill(): how far the fill goes under the
+    // floater's 1 unit border (UI units), and the segments of each quarter arc.
+    constexpr F32 CORNER_FILL_UNDER = 1.f;
+    constexpr S32 CORNER_FILL_STEPS = 8;
     // On (the default): a main window's floater dragged by its title bar off
     // the main window goes apart there, the drag going on (watchDragOut()).
     // Off: the detach button and the menu only. (Dragging a window back onto
@@ -640,6 +644,13 @@ namespace
             return ui;
         }
 
+        // The floaters' rounded corners (their background image's,
+        // WINDOW_RADIUS UI units), in pixels.
+        S32 cornerRadius() const
+        {
+            return ll_round(plus::psui::style::WINDOW_RADIUS * scale.mV[VX]);
+        }
+
         // The whole desktop (every monitor), in UI coordinates.
         LLRect desktopUI() const
         {
@@ -897,6 +908,7 @@ namespace
                     // follow()): the window shows it whole while it catches up.
                     const LLRect ui = floater->calcScreenRect();
                     WindowSpace space(ui, mapping.scale, handle, height);
+                    drawCornerFill(floater, ui);
                     space.draw(floater);
                     for (LLFloater* other : on_top)
                     {
@@ -993,6 +1005,60 @@ namespace
         void placeReturnButton()
         {
             placeTitleButton(mFloater.get(), mReturnButton.get(), false);
+        }
+
+        // Window space, UI units, under the floater: its corners outside its
+        // rounded background, in the colour its border shows over the
+        // window's black. The window's own round corners (OsWindow) are cut
+        // with a smaller radius (DWM) or without anti-aliasing (a region):
+        // what they leave of those corners then reads as the border, not as
+        // black. The fill reaches CORNER_FILL_UNDER into the border's ring,
+        // so that its anti-aliased edge is over the border's colour too.
+        static void drawCornerFill(LLFloater* floater, const LLRect& ui)
+        {
+            const F32 width = (F32)ui.getWidth();
+            const F32 height = (F32)ui.getHeight();
+            const F32 corner = plus::psui::style::WINDOW_RADIUS;
+            const F32 radius = corner - CORNER_FILL_UNDER;
+            if (!floater->isBackgroundVisible() || width < 2.f * corner || height < 2.f * corner)
+            {
+                return;
+            }
+            const bool opaque = floater->isBackgroundOpaque();
+            const LLColor4 border = opaque ? plus::psui::style::WINDOW_BORDER_FOCUS : plus::psui::style::WINDOW_BORDER;
+            const LLColor4 overlay = opaque ? floater->getBackgroundImageOverlay() : floater->getTransparentImageOverlay();
+            // The corner points, and the centres of their arcs, from the bottom left round.
+            const LLVector2 corners[4] = { { 0.f, 0.f }, { width, 0.f }, { width, height }, { 0.f, height } };
+            const LLVector2 centres[4] = { { corner, corner }, { width - corner, corner },
+                                           { width - corner, height - corner }, { corner, height - corner } };
+            gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
+            gGL.color4fv(((border * overlay) % floater->getCurrentTransparency()).mV);
+            gGL.begin(LLRender::TRIANGLES);
+            for (S32 c = 0; c < 4; ++c)
+            {
+                // A fan from the corner point: where the background's edge
+                // meets the window's side, the arc (a quarter, each starting
+                // where the one before ended: the bottom left at 180
+                // degrees), and where it meets the other side.
+                const F32 start = F_PI * (1.f + 0.5f * c);
+                auto point = [&](S32 step)
+                {
+                    const S32 arc = llclamp(step - 1, 0, CORNER_FILL_STEPS);
+                    const F32 angle = start + F_PI_BY_TWO * arc / CORNER_FILL_STEPS;
+                    const F32 r = step == 0 || step == CORNER_FILL_STEPS + 2 ? corner : radius;
+                    return LLVector2(centres[c].mV[VX] + r * cosf(angle), centres[c].mV[VY] + r * sinf(angle));
+                };
+                LLVector2 last = point(0);
+                for (S32 step = 1; step <= CORNER_FILL_STEPS + 2; ++step)
+                {
+                    const LLVector2 next = point(step);
+                    gGL.vertex2f(corners[c].mV[VX], corners[c].mV[VY]);
+                    gGL.vertex2f(last.mV[VX], last.mV[VY]);
+                    gGL.vertex2f(next.mV[VX], next.mV[VY]);
+                    last = next;
+                }
+            }
+            gGL.end();
         }
 
         // Window space, UI units: the whole window tinted and edged.
@@ -1891,6 +1957,7 @@ namespace
             mView->bringToFront(floater, false);
 
             rect = mapping.toScreen(floater->calcScreenRect());     // as the UI rounded it
+            OsWindow::setCornerRadius(mapping.cornerRadius());     // before the window is made: cut to it at once
             mWindows.push_back(std::make_unique<DetachedWindow>(floater, main_rect, could_minimize, rect, place_name, dragged));
             DetachedWindow& window = *mWindows.back();
             places::set(place_name, window.place(true, true));
@@ -1989,6 +2056,7 @@ namespace
                 return;
             }
             mView->setScreenRect(mapping.desktopUI());
+            OsWindow::setCornerRadius(mapping.cornerRadius());     // the UI's scale may have changed
             for (auto it = mWindows.begin(); it != mWindows.end();)
             {
                 DetachedWindow& window = **it;

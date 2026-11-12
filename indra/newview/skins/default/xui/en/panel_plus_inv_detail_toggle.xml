@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The inventory's detail pane button (plus/invexplorer, research/318 8): turns the detail pane on and off
+     (PlusInvExplorerDetail, kept for the next session). invlayout.cpp adds this layout panel once at the end of the
+     official search row (panel_main_inventory.xml, "top_stack"), right of the "new window" button, and shows it only
+     while the window is wide enough for the detail. The button looks like the row's other buttons (31x23 on the
+     toolbar images, the official "Info" icon); pressed means on. It takes no keyboard focus. -->
+<layout_panel
+ auto_resize="false"
+ border="false"
+ height="25"
+ layout="topleft"
+ name="plus_inv_detail_toggle_panel"
+ user_resize="false"
+ visible="false"
+ width="32">
+    <button
+     control_name="PlusInvExplorerDetail"
+     follows="top|right"
+     height="23"
+     image_hover_unselected="Toolbar_Middle_Over"
+     image_overlay="Info"
+     image_selected="Toolbar_Middle_Selected"
+     image_unselected="Toolbar_Middle_Off"
+     is_toggle="true"
+     layout="topleft"
+     left="1"
+     name="plus_inv_detail_toggle"
+     tab_stop="false"
+     tool_tip="Details pane (on/off)"
+     top="0"
+     width="31" />
+</layout_panel>

@@ -2519,24 +2519,24 @@
   <key>PlusUpdateCheck</key>
   <map>
     <key>Comment</key>
-    <string>At start, at most once a day, read PlusUpdateCheckURL and tell when a newer Charis Viewer is out (Preferences > Setup). Only a plain GET of that file is sent; like any web page, the site's log keeps the IP address and the viewer's version. Off by default.</string>
+    <string>At start, at most once a day, read PlusUpdateCheckURL and tell when a newer Charis Viewer is out: a band at the bottom of the login screen at every start while it is newer (research/325), or a small window when the answer comes once the login has started. Only a plain GET of that file is sent; like any web page, the site's log keeps the IP address and the viewer's version. On by default; Preferences > Setup and the band's "Stop notices" turn it off (then nothing is read or shown).</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>Boolean</string>
     <key>Value</key>
-    <integer>0</integer>
+    <integer>1</integer>
   </map>
   <key>PlusUpdateCheckURL</key>
   <map>
     <key>Comment</key>
-    <string>The update file the check reads (JSON, research/123). https only; http only to this computer (localhost, 127.0.0.1, [::1]) to test with a local server. Redirects are not followed. Empty (the default): no update site is set and nothing is checked, even with PlusUpdateCheck on.</string>
+    <string>The update file the check reads (JSON, research/123). https only; http only to this computer (localhost, 127.0.0.1, [::1]) to test with a local server. Redirects are not followed, so not a GitHub Releases download (a redirect) but the file on the repository's branch (research/123 5a). The default is the latest.json of noriaji/charis-viewer; empty: nothing is checked, even with PlusUpdateCheck on.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>String</string>
     <key>Value</key>
-    <string />
+    <string>https://raw.githubusercontent.com/noriaji/charis-viewer/main/latest.json</string>
   </map>
   <key>PlusUpdateCheckSkipped</key>
   <map>
@@ -2552,7 +2552,7 @@
   <key>PlusUpdateCheckLastTime</key>
   <map>
     <key>Comment</key>
-    <string>When the update check last got an answer (seconds since 1970, UTC). Set to 0 to check again at the next start.</string>
+    <string>When the update check last got an answer and judged it (seconds since 1970, UTC). Set to 0 to check again at the next start.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -2574,13 +2574,46 @@
   <key>PlusUpdateCheckAllowedHosts</key>
   <map>
     <key>Comment</key>
-    <string>Hosts whose pages the update window may open (download_url, notes_url), separated by commas, e.g. github.com. Empty: only the host of PlusUpdateCheckURL. An address on any other host is left out.</string>
+    <string>Hosts whose pages the update band and window may open (download_url, notes_url), separated by commas. The default github.com is where the releases are (the update file itself is on raw.githubusercontent.com). Empty: only the host of PlusUpdateCheckURL. An address on any other host is left out.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>String</string>
+    <key>Value</key>
+    <string>github.com</string>
+  </map>
+  <key>PlusUpdateCheckOffer</key>
+  <map>
+    <key>Comment</key>
+    <string>The newer version the last answer of the update check named (its fields as in the update file, JSON), so the login screen tells of it at every start, also between the checks (research/325 4.2). It came from the server: every start reads it again as an answer (at most 16 KiB, the addresses and their hosts checked) and drops it when it is broken or no longer newer. Empty: none.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>String</string>
     <key>Value</key>
     <string />
+  </map>
+  <key>PlusUpdateInstall</key>
+  <map>
+    <key>Comment</key>
+    <string>For the viewer installed with Setup.exe (Velopack; research/326): what is done when the update check (PlusUpdateCheck) finds a newer version. 0: only tell (the button opens the download page, as for the zip). 1 (default): ask; nothing is downloaded until the user presses Download. 2: download it without asking. In every case the new version is put in only when the viewer ends or with Restart and update; 0, or PlusUpdateCheck off, stops a download and throws a downloaded update away. Other values count as 1. No effect for the zip.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>U32</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusUpdateDummy</key>
+  <map>
+    <key>Comment</key>
+    <string>For tests, not saved: where updates cannot be installed (the zip, a viewer run from the build folder), a pretend update for the band, the window and the chip at the bottom right (research/326 section 5). 1: about 20 s for 280 MB, then ready ("Restart and update" does not quit). 2: fails at 40%. Nothing is sent or written. 0 (default): off. No effect where Setup.exe installed the viewer.</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>U32</string>
+    <key>Value</key>
+    <integer>0</integer>
   </map>
   <key>PlusSelfFirst</key>
   <map>
@@ -3498,7 +3531,7 @@
     <key>Type</key>
     <string>U32</string>
     <key>Value</key>
-    <integer>0</integer>
+    <integer>8</integer>
   </map>
   <key>PlusAreaSearchIncludeAttached</key>
   <map>
@@ -3514,7 +3547,7 @@
   <key>PlusAreaSearchRange</key>
   <map>
     <key>Comment</key>
-    <string>Area search, while the window is open (metres, up to 512): (1) the list shows only objects within this distance of you; (2) the simulator is asked to send objects from this far, or from the draw distance when that is farther. 0: (1) no distance limit to the list (everything the viewer has, loaded or in its cache), (2) the draw distance. What is drawn does not change; the farther objects are only listed.</string>
+    <string>Area search, while the window is open (metres, up to 512): (1) the list shows only objects within this distance of you; (2) the simulator is asked to send objects from this far, or from the draw distance when that is farther. 0: the draw distance (up to 512 as well), for both (1) and (2). What is drawn does not change; the farther objects are only listed.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -4882,7 +4915,7 @@
   <key>PlusInvExplorerDetail</key>
   <map>
     <key>Comment</key>
-    <string>Inventory window: show the detail pane (name, type, creator, owner, permissions, UUID of the selected item) on the right while the window is wide enough.</string>
+    <string>Inventory window: show the detail pane (name, type, creator, owner, permissions, UUID of the selected item) on the right while the window is wide enough (PlusInvExplorerMinWidth). Turned on and off by the button at the right end of the search row, which shows while the window is wide enough; kept for the next session. Off, the pane is not updated and its width goes to the column on its left.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -4893,13 +4926,74 @@
   <key>PlusInvExplorerMinWidth</key>
   <map>
     <key>Comment</key>
-    <string>Inventory window: the width in pixels from which the detail pane shows.</string>
+    <string>Inventory window: the width in pixels from which the detail pane shows (between the tab row and the received items, right of the tab's contents). It hides 40 pixels below it. Raised to what the folder tree's 240 and the detail pane's 200 minimums need.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>S32</string>
     <key>Value</key>
     <integer>640</integer>
+  </map>
+  <key>PlusInvExplorerDetailWidth</key>
+  <map>
+    <key>Comment</key>
+    <string>Inventory window: the width in pixels of the detail pane, as last set by dragging the split before it (written when the split is let go or the window closes). Kept between 200 and 8192. A window too narrow for it shows the pane narrower (the center column gives way first, then the detail pane, then the folder tree) and keeps this width; the widths from which the detail pane and the three columns show count the pane at 200.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>260</integer>
+  </map>
+  <!-- invexplorer: three columns (plus/invexplorer/invcolumns, research/318) -->
+  <key>PlusInvExplorerColumns</key>
+  <map>
+    <key>Comment</key>
+    <string>Inventory window: while the window is wide enough (PlusInvExplorerColumnsWidth), show three columns like a file explorer: the tab's folders on the left, the objects in the folder chosen there in the middle (through the tab's search and filter), the detail pane on the right. Off: one column as before.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusInvExplorerColumnsWidth</key>
+  <map>
+    <key>Comment</key>
+    <string>Inventory window: the width in pixels from which the three columns show (PlusInvExplorerColumns). They go back to one column 40 pixels below it. Kept between 663 and 8192, and raised to what the left tree's 160, the center's 240 and (while it shows) the detail pane's 200 minimums need; a detail pane widened by hand does not raise it (it shows narrower).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>860</integer>
+  </map>
+  <key>PlusInvExplorerLeftWidth</key>
+  <map>
+    <key>Comment</key>
+    <string>Inventory window, three columns (PlusInvExplorerColumns): the width in pixels of the folder tree on the left, as last set by dragging the split between it and the center column (written when the split is let go or the window closes). Kept between 160 and 8192; a narrow window gives the center column its 240 and the detail pane its 200 first. A wider window widens the center column only.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>260</integer>
+  </map>
+  <!-- invcustomtabs: the inventory's custom filter tabs (plus/invcustomtabs, research/314). Firestorm's name and format (FIRE-35598, FIRE-36831) -->
+  <key>FSInventoryCustomTabs</key>
+  <map>
+    <key>Comment</key>
+    <string>Inventory window: the custom filter tabs made with "+" (an array of maps with 'name', 'filter', 'states' and 'tabhidden' keys). Kept per account.</string>
+    <key>PerAccount</key>
+    <integer>1</integer>
+    <key>HideFromEditor</key>
+    <integer>1</integer>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>LLSD</string>
+    <key>Value</key>
+    <array/>
   </map>
   <!-- lostattach: attachments kept through teleports and region crossings (from Firestorm FIRE-12004; research/146) -->
   <key>FSExperimentalLostAttachmentsFix</key>
@@ -5540,6 +5634,17 @@
     <string>Boolean</string>
     <key>Value</key>
     <integer>0</integer>
+  </map>
+  <key>PlusImpostorCapturesPerFrame</key>
+  <map>
+    <key>Comment</key>
+    <string>Impostor pictures (full body renders of far avatars) taken per 1/60 s on average (at most as many per frame as 1/30 s would give); the others keep their last picture and are taken in the next frames. Old pictures have twice as many, an animesh is taken with its avatar, and an avatar with no picture is always taken at once (research/319). 0 = no limit. Whatever the value, there is no limit while a snapshot is taken. At most 64.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>U32</string>
+    <key>Value</key>
+    <integer>2</integer>
   </map>
 </map>
 </llsd>

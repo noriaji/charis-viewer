@@ -573,6 +573,7 @@ namespace plus::psui
     {
         line = rowLabel(label, tipOf(label, tip), COMBO_H, COMBO_PAD, left, beside);
         PsCombo::Params p = paramsOf<PsCombo>("combo", mRight - left, COMBO_H, std::string(), tipOf(label, tip));
+        p.commit_on_arrow = true;   // the photo screen's drop-downs choose with the arrow keys at once (combo-arrow)
         return LLUICtrlFactory::create<PsCombo>(p);
     }
 
@@ -728,6 +729,7 @@ namespace plus::psui
         const S32 combo_width = llmax(1, mRight - STEP_W - STEP_GAP - combo_left);
         arrow("step_prev", "chevron_left", prev_tip, -1, left);
         PsCombo::Params p = paramsOf<PsCombo>("combo", combo_width, COMBO_H, std::string(), tipOf(label, tip));
+        p.commit_on_arrow = true;   // as comboRow()
         PsCombo* view = LLUICtrlFactory::create<PsCombo>(p);
         put(view, combo_left, top, combo_width, COMBO_H);
         arrow("step_next", "chevron_right", next_tip, 1, mRight - STEP_W);

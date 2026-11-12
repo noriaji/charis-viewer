@@ -454,6 +454,30 @@
 	<string name="SaveDiffLabel">Save Diff</string>
 	<string name="OverWriteLabel">Overwrite?</string>
 	<string name="confirm_overwrite_message">Overwrite existing pose “[POSE_NAME]”?</string>
+	<string name="hand_save_failed">The name “[NAME]” cannot be used for a hand preset. Use a name that works as a file name (no / : * ? and the like).</string>
+	<string name="hand_save_write_failed">The hand preset “[NAME]” could not be written. Check that the disk has room and the folder can be written to.</string>
+	<string name="hand_read_failed">The joints of this hand could not be read. This avatar may not have hand joints.</string>
+	<string name="hand_save_name_taken">“[NAME]” is the name of a built-in hand preset. Please use another name.</string>
+	<string name="hand_no_pose">The hand controls need an avatar that you may pose and that is posing now. Select it and start posing first.</string>
+	<string name="hand_overwrite_confirm">Overwrite the hand preset “[NAME]”?</string>
+	<string name="hand_delete_confirm">Delete the hand preset “[NAME]”?</string>
+	<string name="hand_delete_failed">The hand preset “[NAME]” could not be deleted.</string>
+	<string name="hand_delete_builtin_label">Delete (built-in preset)</string>
+	<!-- plus: display names of the hand presets (file names stay as they are) -->
+	<string name="hand_preset_name_Flat">Flat Hand</string>
+	<string name="hand_preset_name_Grip">Grip</string>
+	<string name="hand_preset_name_Tight_Grip">Tight Grip</string>
+	<string name="hand_preset_name_Pointing">Pointing</string>
+	<string name="hand_preset_name_Relaxed">Relaxed</string>
+	<string name="hand_preset_name_Okay">OK</string>
+	<string name="hand_preset_name_Thumbs_Up">Thumbs Up</string>
+	<string name="hand_preset_name_Horns">Horns</string>
+	<string name="hand_preset_name_Two_Finger_Salute">Two-Finger Salute</string>
+	<string name="hand_preset_name_Open_Hand">Open Hand</string>
+	<string name="hand_preset_name_Peace">Peace</string>
+	<string name="hand_preset_name_Rock">Rock</string>
+	<string name="hand_preset_name_Gun">Finger Gun</string>
+	<!-- /plus -->
 
 	<floater.string name="FiledateFormat">
 		[year,datetime,local]/[mthnum,datetime,local]/[day,datetime,local] [hour,datetime,local]:[min,datetime,local]:[second,datetime,local]
@@ -770,6 +794,80 @@
 					 tab_position="top"
 					 top="0"
 					 width="235">
+						<!-- plus: hand tab Easy (research/315) -->
+						<panel
+						 follows="all"
+						 background_visible="false"
+						 height="265"
+						 layout="topleft"
+						 left="0"
+						 title="Easy"
+						 name="hands_easy_panel"
+						 top="0"
+						 width="177">
+							<!-- Content: 160 wide (the 235 wide joints tabs keep 177 for the page, minus 2 frame and 15 scrollbar), 662 high, so it scrolls in the 265 high tab. -->
+							<scroll_container
+							 color="DkGray2"
+							 opaque="false"
+							 follows="all"
+							 height="265"
+							 layout="topleft"
+							 left="0"
+							 top="0"
+							 name="hands_easy_scroll"
+							 reserve_scroll_corner="false"
+							 width="177">
+								<panel
+								 follows="left|top"
+								 background_visible="false"
+								 height="662"
+								 layout="topleft"
+								 left="0"
+								 top="0"
+								 name="hands_easy_content"
+								 width="160">
+									<text follows="left|top" layout="topleft" left="2" top="6" height="14" width="62" name="he_side_label">Hand:</text>
+									<combo_box follows="left|top" layout="topleft" left="66" top="2" height="20" width="92" name="he_side" tool_tip="Which hand the sliders edit"><combo_box.item label="Left hand" name="left" value="left"/><combo_box.item label="Right hand" name="right" value="right"/><combo_box.commit_callback function="Poser.HandEasySide"/></combo_box>
+									<text follows="left|top" layout="topleft" font="SansSerifSmallBold" left="2" top="28" height="14" width="156" name="he_hdr_whole" use_ellipses="true">Whole hand</text>
+									<text follows="left|top" layout="topleft" left="2" top="44" height="12" width="156" name="he_grip_label" use_ellipses="true">Grip</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="0" max_val="1" initial_value="0" left="2" top="56" height="16" width="156" name="he_grip" tool_tip="Bends all four fingers together; fingers you set one by one keep their differences"><slider.commit_callback function="Poser.HandEasy" parameter="grip"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="74" height="12" width="156" name="he_fan_label" use_ellipses="true">Fan out</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="-1" max_val="1" initial_value="0" left="2" top="86" height="16" width="156" name="he_fan" tool_tip="Spreads or closes all four fingers together"><slider.commit_callback function="Poser.HandEasy" parameter="fan"/></slider>
+									<text follows="left|top" layout="topleft" font="SansSerifSmallBold" left="2" top="108" height="14" width="156" name="he_hdr_thumb" use_ellipses="true">Thumb</text>
+									<text follows="left|top" layout="topleft" left="2" top="124" height="12" width="156" name="he_thumb_wrap_label" use_ellipses="true">Thumb to pinky side</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="0" max_val="1" initial_value="0" left="2" top="136" height="16" width="156" name="he_thumb_wrap" tool_tip="Folds the thumb over the palm toward the little finger"><slider.commit_callback function="Poser.HandEasy" parameter="thumb_wrap"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="154" height="12" width="156" name="he_thumb_swing_label" use_ellipses="true">Away / toward palm</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="-1" max_val="1" initial_value="0" left="2" top="166" height="16" width="156" name="he_thumb_swing" tool_tip="Spreads the thumb away from the hand in the plane of the palm (left), or turns it toward the palm to face the fingers (right, the OK sign)"><slider.commit_callback function="Poser.HandEasy" parameter="thumb_swing"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="184" height="12" width="156" name="he_thumb_arch_label" use_ellipses="true">Thumb arch back</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="0" max_val="1" initial_value="0" left="2" top="196" height="16" width="156" name="he_thumb_arch" tool_tip="Arches the thumb back toward the back of the hand (the thumbs-up)"><slider.commit_callback function="Poser.HandEasy" parameter="thumb_arch"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="214" height="12" width="156" name="he_thumb_bend_label" use_ellipses="true">Thumb bend</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="0" max_val="1" initial_value="0" left="2" top="226" height="16" width="156" name="he_thumb_bend" tool_tip="Bends the thumb"><slider.commit_callback function="Poser.HandEasy" parameter="thumb_bend"/></slider>
+									<text follows="left|top" layout="topleft" font="SansSerifSmallBold" left="2" top="248" height="14" width="156" name="he_hdr_fingers" use_ellipses="true">Fingers</text>
+									<text follows="left|top" layout="topleft" left="2" top="264" height="12" width="156" name="he_curl_label_index" use_ellipses="true">Index curl</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="0" max_val="1" initial_value="0" left="2" top="276" height="16" width="156" name="he_curl_index" tool_tip="Bends the knuckle, middle and tip joints of this finger together"><slider.commit_callback function="Poser.HandEasy" parameter="curl_1"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="294" height="12" width="156" name="he_spread_label_index" use_ellipses="true">Index spread</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="-1" max_val="1" initial_value="0" left="2" top="306" height="16" width="156" name="he_spread_index" tool_tip="Spreads this finger sideways"><slider.commit_callback function="Poser.HandEasy" parameter="sprd_1"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="324" height="12" width="156" name="he_curl_label_middle" use_ellipses="true">Middle curl</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="0" max_val="1" initial_value="0" left="2" top="336" height="16" width="156" name="he_curl_middle" tool_tip="Bends the knuckle, middle and tip joints of this finger together"><slider.commit_callback function="Poser.HandEasy" parameter="curl_2"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="354" height="12" width="156" name="he_spread_label_middle" use_ellipses="true">Middle spread</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="-1" max_val="1" initial_value="0" left="2" top="366" height="16" width="156" name="he_spread_middle" tool_tip="Spreads this finger sideways"><slider.commit_callback function="Poser.HandEasy" parameter="sprd_2"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="384" height="12" width="156" name="he_curl_label_ring" use_ellipses="true">Ring curl</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="0" max_val="1" initial_value="0" left="2" top="396" height="16" width="156" name="he_curl_ring" tool_tip="Bends the knuckle, middle and tip joints of this finger together"><slider.commit_callback function="Poser.HandEasy" parameter="curl_3"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="414" height="12" width="156" name="he_spread_label_ring" use_ellipses="true">Ring spread</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="-1" max_val="1" initial_value="0" left="2" top="426" height="16" width="156" name="he_spread_ring" tool_tip="Spreads this finger sideways"><slider.commit_callback function="Poser.HandEasy" parameter="sprd_3"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="444" height="12" width="156" name="he_curl_label_pinky" use_ellipses="true">Pinky curl</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="0" max_val="1" initial_value="0" left="2" top="456" height="16" width="156" name="he_curl_pinky" tool_tip="Bends the knuckle, middle and tip joints of this finger together"><slider.commit_callback function="Poser.HandEasy" parameter="curl_4"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="474" height="12" width="156" name="he_spread_label_pinky" use_ellipses="true">Pinky spread</text>
+									<slider follows="left|top" layout="topleft" show_text="false" decimal_digits="2" increment="0.01" min_val="-1" max_val="1" initial_value="0" left="2" top="486" height="16" width="156" name="he_spread_pinky" tool_tip="Spreads this finger sideways"><slider.commit_callback function="Poser.HandEasy" parameter="sprd_4"/></slider>
+									<text follows="left|top" layout="topleft" left="2" top="510" height="70" width="156" word_wrap="true" name="he_hint">Highlighted label: that finger was edited joint by joint. Moving its slider replaces it.</text>
+									<button follows="left|top" layout="topleft" left="2" top="586" height="20" width="77" label="Right > Left" name="he_copy_to_left" tool_tip="Copies the right hand onto the left so that both look alike"><button.commit_callback function="Poser.HandEasyCopy" parameter="left"/></button>
+									<button follows="left|top" layout="topleft" left="81" top="586" height="20" width="77" label="Left > Right" name="he_copy_to_right" tool_tip="Copies the left hand onto the right so that both look alike"><button.commit_callback function="Poser.HandEasyCopy" parameter="right"/></button>
+									<line_editor follows="left|top" layout="topleft" left="2" top="612" height="20" width="156" commit_on_focus_lost="false" label="Hand preset name..." name="he_save_name"/>
+									<button follows="left|top" layout="topleft" left="2" top="636" height="20" width="156" label="Save hand" name="he_save" tool_tip="Saves this hand as a preset (both hands) in the Presets tab"><button.commit_callback function="Poser.HandEasySave"/></button>
+								</panel>
+							</scroll_container>
+						</panel>
+						<!-- /plus -->
 						<panel
 						 follows="all"
 						 background_visible="false"
@@ -821,6 +919,7 @@
 							 width="479"
 							 multi_select="false"
 							 name="hand_presets_scroll"
+							 tool_tip="Click a preset to apply it to the hand you last chose with Set Left / Set Right. Right-click a preset to delete it (built-in ones cannot be deleted)"
 							 top="0">
 								<scroll_list.columns
 								 label="Preset Name"
@@ -842,7 +941,7 @@
 							 layout="topleft"
 							 label="Set Left"
 							 name="button_loadHandPoseLeft"
-							 tool_tip="Click to set your left hand to the selected preset"
+							 tool_tip="Click to set your left hand to the selected preset. Clicking a preset then applies it to this hand"
 							 top_delta="238"
 							 left_pad="1"
 							 left="2"
@@ -856,7 +955,7 @@
 							 layout="topleft"
 							 label="Set Right"
 							 name="button_loadHandPoseRight"
-							 tool_tip="Click to set your right hand to the selected preset"
+							 tool_tip="Click to set your right hand to the selected preset. Clicking a preset then applies it to this hand"
 							 left_pad="2"
 							 top_delta="0"
 							 width="85" >

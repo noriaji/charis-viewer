@@ -307,6 +307,7 @@
                          name="nearby_chat_icon"
                          visible="false"
                          width="20"/>
+                        <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; bg_writeable_color was ScriptBackground (white) under the light words, so the box's colour name while typed in (white in the default skin, as before; research/239) -->
                         <chat_editor
                          layout="topleft"
                          expand_lines_count="5"
@@ -315,7 +316,7 @@
                          height="20"
                          is_expandable="true"
                          text_tentative_color="TextFgTentativeColor"
-                         bg_writeable_color="ScriptBackground"
+                         bg_writeable_color="TextBgFocusColor"
                          name="chat_editor"
                          max_length="1023"
                          spellcheck="true"
@@ -324,6 +325,7 @@
                          left_pad="5"
                          right="-30"
                          wrap="true" />
+                        <!-- /plus -->
                         <button
                          name="emoji_recent_panel_toggle_btn"
                          tool_tip="Shows/hides recent emojis"

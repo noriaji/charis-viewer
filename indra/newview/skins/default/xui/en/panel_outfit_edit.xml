@@ -272,6 +272,7 @@ It is calculated as border_size + 2*UIResizeBarOverlap
                         width="311"
                         visible="false">
 
+                    <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was black on the official light box, so the box's own colour name (research/239) -->
                     <filter_editor
                             background_image="TextField_Search_Off"
                             enabled="true"
@@ -283,8 +284,9 @@ It is calculated as border_size + 2*UIResizeBarOverlap
                             height="25"
                             name="look_item_filter"
                             search_button_visible="true"
-                            text_color="black"
+                            text_color="TextFgColor"
                             visible="true"/>
+                    <!-- /plus -->
 
                 </layout_panel>
             </layout_stack>

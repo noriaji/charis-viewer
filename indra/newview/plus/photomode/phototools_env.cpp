@@ -125,9 +125,10 @@ namespace plus::photomode::tools
             {
                 look.state = EnvLook::State::Fetching;
                 ++sLookFetches;
-                // The same asset fetch "Apply" uses (the viewer's asset cache first). The answer comes on
-                // the main thread, after the row may be gone: it keeps nothing of it.
-                LLSettingsVOBase::getSettingsAsset(asset_id, [](LLUUID id, LLSettingsBase::ptr_t settings, S32 status, LLExtStat) {
+                // The viewer's asset cache first. The answer comes on the main thread, after the row may be gone: it
+                // keeps nothing of it. Marked as the swatches' (fetchSettingsAsset()): a sky put on meanwhile does not
+                // take the answer away (sLookFetches would stay up and stop the swatches after MAX_LOOK_FETCHES).
+                fetchSettingsAsset(asset_id, &sLooks, [](const LLUUID& id, const LLSettingsBase::ptr_t& settings, S32 status) {
                     --sLookFetches;
                     EnvLook& found = sLooks[id];
                     found.state    = EnvLook::State::Failed;

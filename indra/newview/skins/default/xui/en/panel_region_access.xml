@@ -122,6 +122,7 @@
         name="allowed_search_panel"
         right="-1"
         top="0">
+           <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was Black on the official light box, so the box's own colour name (research/239) -->
            <filter_editor
             follows="left|top|right"
             height="23"
@@ -130,10 +131,11 @@
             label="Search allowed agents"
             max_length_chars="300"
             name="allowed_search_input"
-            text_color="Black"
+            text_color="TextFgColor"
             text_pad_left="10"
             top="4"
             width="440" />
+           <!-- /plus -->
            <button
             follows="left|top"
             height="23"
@@ -224,6 +226,7 @@
         name="allowed_group_search_panel"
         right="-1"
         top="0">
+           <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was Black on the official light box, so the box's own colour name (research/239) -->
            <filter_editor
             follows="left|top|right"
             height="23"
@@ -232,10 +235,11 @@
             label="Search allowed groups"
             max_length_chars="300"
             name="allowed_group_search_input"
-            text_color="Black"
+            text_color="TextFgColor"
             text_pad_left="10"
             top="4"
             width="440" />
+           <!-- /plus -->
            <button
             follows="left|top"
             height="23"
@@ -326,6 +330,7 @@
         name="banned_search_panel"
         right="-1"
         top="0">
+           <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was Black on the official light box, so the box's own colour name (research/239) -->
            <filter_editor
             follows="left|top|right"
             height="23"
@@ -334,10 +339,11 @@
             label="Search banned agents"
             max_length_chars="300"
             name="banned_search_input"
-            text_color="Black"
+            text_color="TextFgColor"
             text_pad_left="10"
             top="4"
             width="440" />
+           <!-- /plus -->
                <button
                 follows="left|top"
                 height="23"

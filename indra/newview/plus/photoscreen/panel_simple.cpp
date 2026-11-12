@@ -221,6 +221,15 @@ namespace plus::photoscreen::simple
             std::string          skySearchLower;
             F64                  skyNextCollect = 0.0;
             LLUUID               skyShownCurrent;
+            // the row put on last here (currentSkyRow()): its layer, the layer's count of changes and what the layer
+            // showed just after it (the one before, while it comes); and the row shown as the one in use before it
+            // (a row shown only because it was still coming does not count)
+            LLUUID               skyLastItem;
+            pm::EnvLayer         skyLastLayer = pm::EnvLayer::Sky;
+            U32                  skyLastChanges = 0;
+            pm::EnvSource        skyLastSource = pm::EnvSource::Other;
+            LLUUID               skyLastSourceAsset;
+            LLUUID               skyShownBefore;
 
             S32 railBottom = 0;                 // where place() put the rail and the panel (UI pixels from the bottom)
             S32 bodyBottom = 0;
@@ -612,11 +621,43 @@ namespace plus::photoscreen::simple
             return true;
         }
 
-        // The row of the sky or water in use, or -1.
-        int currentSkyRow()
+        enum class SkyRowFor { Shown, Step };
+
+        // The row of the sky or water in use, or -1. The row put on last here counts while nothing else changed its
+        // layer since and its sky is still coming (shown, and stepped from), could not be had while the layer still
+        // shows what it showed when it was asked for (stepped from: the steps go past it; shown is the row shown
+        // before it, not the first row of the same sky), or is the one in use (the row itself: another row of the
+        // same sky, a copy of another name, is not it; the steps went round between the two before: combo-arrow).
+        // Else the first row of the sky in use.
+        int currentSkyRow(SkyRowFor use)
         {
             LLUUID asset;
-            if (pm::environmentSource(sS.skyWater, asset) != pm::EnvSource::Asset)
+            const pm::EnvSource source = pm::environmentSource(sS.skyWater, asset);
+            const bool asset_in_use = source == pm::EnvSource::Asset;
+            const pm::EnvLayer layer = sS.skyWater ? pm::EnvLayer::Water : pm::EnvLayer::Sky;
+            if (sS.skyLastItem.notNull() && sS.skyLastLayer == layer && sS.skyLastChanges == pm::localEnvironmentChanges(layer))
+            {
+                const pm::EnvFetch fetch = pm::localEnvironmentFetch(layer);
+                const bool failed_here = fetch == pm::EnvFetch::Failed && source == sS.skyLastSource
+                                         && asset == sS.skyLastSourceAsset;
+                // shown while it could not be had: the row shown before it, while that is still the one in use
+                const bool shown_before = failed_here && use == SkyRowFor::Shown;
+                const LLUUID& row_item = shown_before ? sS.skyShownBefore : sS.skyLastItem;
+                for (size_t i = 0; i < sS.skyRows.size(); ++i)
+                {
+                    if (sS.skyRows[i].item != row_item)
+                    {
+                        continue;
+                    }
+                    const bool in_use = asset_in_use && sS.skyRows[i].asset == asset;
+                    if (in_use || (!shown_before && (fetch == pm::EnvFetch::Pending || failed_here)))
+                    {
+                        return (int)i;
+                    }
+                    break;
+                }
+            }
+            if (!asset_in_use)
             {
                 return -1;
             }
@@ -656,7 +697,7 @@ namespace plus::photoscreen::simple
             setToggle(w.skyKindSky, !sS.skyWater);
             setToggle(w.skyKindWater, sS.skyWater);
 
-            const int current = currentSkyRow();
+            const int current = currentSkyRow(SkyRowFor::Shown);
             const LLUUID item = current >= 0 ? sS.skyRows[current].item : LLUUID::null;
             if (item != sS.skyShownCurrent)
             {
@@ -693,14 +734,36 @@ namespace plus::photoscreen::simple
             {
                 return;
             }
+            // The row shown now, to show while this one could not be had: only a row shown as the one in use. A row
+            // shown because it is still coming is not (it may never come): the one shown before it stays.
+            const int          shown        = currentSkyRow(SkyRowFor::Shown);
+            const pm::EnvLayer shown_layer  = sS.skyWater ? pm::EnvLayer::Water : pm::EnvLayer::Sky;
+            LLUUID             in_use_asset;
+            const bool         shown_in_use = shown >= 0
+                                              && pm::environmentSource(sS.skyWater, in_use_asset) == pm::EnvSource::Asset
+                                              && sS.skyRows[shown].asset == in_use_asset;
+            const bool         shown_coming = shown >= 0 && !shown_in_use && sS.skyRows[shown].item == sS.skyLastItem
+                                              && sS.skyLastLayer == shown_layer
+                                              && sS.skyLastChanges == pm::localEnvironmentChanges(shown_layer)
+                                              && pm::localEnvironmentFetch(shown_layer) == pm::EnvFetch::Pending;
+            const LLUUID shown_before = shown_coming ? sS.skyShownBefore
+                                                     : shown >= 0 ? sS.skyRows[shown].item : LLUUID::null;
             if (pm::applyEnvironmentItem(item))
             {
                 pm::noteApplied(item);
+                pm::EnvKind kind = pm::EnvKind::Sky;
+                pm::environmentKind(item, kind);
+                sS.skyLastItem    = item;
+                sS.skyLastLayer   = kind == pm::EnvKind::Water ? pm::EnvLayer::Water : pm::EnvLayer::Sky;
+                sS.skyLastChanges = pm::localEnvironmentChanges(sS.skyLastLayer);   // after it: the count it made
+                sS.skyLastSource  = pm::environmentSource(kind == pm::EnvKind::Water, sS.skyLastSourceAsset);
+                sS.skyShownBefore = shown_before;
             }
             refreshSky(false);
         }
 
-        // The one before / after the one in use in the list, round; with none in use, the first or the last.
+        // The one before / after the one in use in the list (or the one put on last, still coming or not had), round;
+        // with none in use, the first or the last.
         void stepSky(int direction)
         {
             if (sS.skyRows.empty())
@@ -708,7 +771,7 @@ namespace plus::photoscreen::simple
                 return;
             }
             const int count   = (int)sS.skyRows.size();
-            const int current = currentSkyRow();
+            const int current = currentSkyRow(SkyRowFor::Step);
             int       next    = current < 0 ? (direction > 0 ? 0 : count - 1) : (current + direction + count) % count;
             putOnSky(sS.skyRows[next].item);
         }

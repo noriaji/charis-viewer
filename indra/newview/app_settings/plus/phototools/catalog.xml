@@ -1560,10 +1560,10 @@
 <key>look</key><boolean>0</boolean>
 <key>label_en</key><string>Camera Moves Freely</string>
 <key>label_ja</key><string>カメラを自由に動かす</string>
-<key>keywords_en</key><string>around avatar distance limit constraints</string>
-<key>keywords_ja</key><string>カメラ 距離 制限 自由 離れる</string>
-<key>tip_en</key><string>The camera moves freely around the avatar: it can go as far from the avatar as you like, without the usual limit.</string>
-<key>tip_ja</key><string>カメラをアバターから好きなだけ離せるようにします。通常の距離の制限がなくなります。</string>
+<key>keywords_en</key><string>around avatar distance limit constraints walls ground</string>
+<key>keywords_ja</key><string>カメラ 距離 制限 自由 離れる 壁 地面</string>
+<key>tip_en</key><string>The camera moves freely around the avatar: it can go as far from the avatar as you like, without the usual limit. The camera is no longer pushed back out of walls or kept above the ground either, in the photo mode and out of it.</string>
+<key>tip_ja</key><string>カメラをアバターから好きなだけ離せるようにします。通常の距離の制限がなくなります。壁の押し戻しと地面の下限も、撮影中かどうかに関わらず外れます。</string>
 </map>
 <map>
 <key>setting</key><string>PlusIgnoreSimCameraConstraint</string>

@@ -33,7 +33,8 @@ namespace plus::psui
 
 namespace plus::photoscreen::detail::skywater
 {
-    // Adds the two cards and, while it is open, the list (inside the scene section of the column).
+    // Adds the two cards and, while it is open, the list (inside the scene section of the column). With the
+    // keyboard on a card or a row (a click or Tab), Up / Down put on the row before / after; Esc closes the list.
     void fill(plus::psui::Stack& stack);
     // Every tick while the scene tab is shown: the cards' names, the list's rows (made again only when
     // what they show changed) and the row in use. Cheap when nothing changed.

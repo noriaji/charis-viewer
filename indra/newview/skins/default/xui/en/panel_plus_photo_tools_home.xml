@@ -154,6 +154,7 @@
                  name="preset_autumn"
                  tool_tip="The Autumn Alley look (deep reds and oranges) with Clarity 35 and Texture 20, weak halation and vignette, slightly darker shadows and a little more contrast, weak Glare, and shadow edges soft enough for dappled light. The light direction and the quality (such as the shadow distance) are left alone: choose a low afternoon sky from the sky list first. Another preset puts the look and its effects back; Undo All goes back to the values the photo tools had when they were opened." />
                 <combo_box
+                 commit_on_arrow="true"
                  follows="left|top"
                  height="22"
                  label="My Presets"
@@ -496,6 +497,7 @@
              top="331"
              width="583">
                 <combo_box
+                 commit_on_arrow="true"
                  follows="left|top"
                  height="22"
                  layout="topleft"
@@ -505,6 +507,7 @@
                  name="home_shot_size"
                  tool_tip="How big the photo is (the long side)" />
                 <combo_box
+                 commit_on_arrow="true"
                  follows="left|top"
                  height="22"
                  layout="topleft"
@@ -582,6 +585,7 @@
                  name="btn_home_guide"
                  tool_tip="Show lines over the screen to help the composition, and the frame of the photo when its shape is not the window's. They are not in the picture." />
                 <combo_box
+                 commit_on_arrow="true"
                  follows="left|top"
                  height="22"
                  layout="topleft"

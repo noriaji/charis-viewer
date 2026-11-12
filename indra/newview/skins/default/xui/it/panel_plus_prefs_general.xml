@@ -69,11 +69,11 @@
                 <plus_ps_text name="text_box3">
                     Risposta Non disturbare:
                 </plus_ps_text>
-                <plus_ps_box name="dnd_response_glass">
+                <panel name="dnd_response_glass">
                     <text_editor name="do_not_disturb_response">
                         log_in_to_change
                     </text_editor>
-                </plus_ps_box>
+                </panel>
             </panel>
         </scroll_container>
     </plus_ps_box>

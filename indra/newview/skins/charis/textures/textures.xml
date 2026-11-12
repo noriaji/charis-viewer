@@ -7,6 +7,7 @@
   <texture name="Window_NoTitle_Background" file_name="charis/window.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
   <texture name="Toast_Background" file_name="charis/window.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
   <texture name="Inspector_Background" file_name="charis/window.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
+  <texture name="Volume_Background" file_name="charis/window.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
   <texture name="Window_Foreground" file_name="charis/window_focus.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
   <texture name="Window_NoTitle_Foreground" file_name="charis/window_focus.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
   <texture name="Toast_Over" file_name="charis/window_focus.png" preload="true" scale.left="14" scale.top="50" scale.right="50" scale.bottom="14" />
@@ -33,4 +34,114 @@
   <texture name="Icon_Dock_Press" file_name="charis/title_dock_press.png" preload="true" />
   <texture name="Icon_Help_Foreground" file_name="charis/title_help.png" preload="true" />
   <texture name="Icon_Help_Press" file_name="charis/title_help_press.png" preload="true" />
+  <texture name="DropDown_Off" file_name="charis/dropdown_off.png" preload="true" scale.left="4" scale.top="19" scale.right="99" scale.bottom="4" />
+  <texture name="DropDown_On" file_name="charis/dropdown_open.png" preload="true" scale.left="4" scale.top="19" scale.right="99" scale.bottom="4" />
+  <texture name="DropDown_Press" file_name="charis/dropdown_press.png" preload="true" scale.left="4" scale.top="19" scale.right="99" scale.bottom="4" />
+  <texture name="DropDown_Disabled" file_name="charis/dropdown_disabled.png" preload="true" scale.left="4" scale.top="19" scale.right="99" scale.bottom="4" />
+  <texture name="ComboButton_Off" file_name="charis/combo_arrow_off.png" preload="true" scale.left="2" scale.top="19" scale.right="18" scale.bottom="2" />
+  <texture name="ComboButton_Selected" file_name="charis/combo_arrow_open.png" preload="true" scale.left="2" scale.top="19" scale.right="18" scale.bottom="2" />
+  <texture name="ComboButton_Disabled" file_name="charis/combo_arrow_disabled.png" preload="true" scale.left="2" scale.top="19" scale.right="18" scale.bottom="2" />
+  <texture name="ComboButton_UpOff" file_name="charis/combo_up_off.png" preload="true" scale.left="2" scale.top="19" scale.right="18" scale.bottom="2" />
+  <texture name="ComboButton_UpSelected" file_name="charis/combo_up_press.png" preload="true" scale.left="2" scale.top="19" scale.right="18" scale.bottom="2" />
+  <texture name="ComboButton_On" file_name="charis/combo_on.png" preload="true" scale.left="2" scale.top="19" scale.right="18" scale.bottom="2" />
+  <texture name="ComboButton_Arrow" file_name="charis/combo_bare_arrow.png" preload="true" scale.left="2" scale.top="19" scale.right="18" scale.bottom="2" />
+  <texture name="TextField_Off" file_name="charis/field_off.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="TextField_Search_Off" file_name="charis/field_off.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="TextField_Active" file_name="charis/field_focus.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="TextField_Search_Active" file_name="charis/field_focus.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="TextField_Disabled" file_name="charis/field_disabled.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="TextField_Search_Disabled" file_name="charis/field_disabled.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="TextField_Highlight" file_name="charis/field_found.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="TextField_Search_Highlight" file_name="charis/field_found.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="Search" file_name="charis/search.png" preload="false" />
+  <texture name="Checkbox_Off" file_name="charis/check_off.png" preload="true" />
+  <texture name="Checkbox_Press" file_name="charis/check_off_press.png" preload="true" />
+  <texture name="Checkbox_On" file_name="charis/check_on.png" preload="true" />
+  <texture name="Checkbox_On_Press" file_name="charis/check_on_press.png" preload="true" />
+  <texture name="Checkbox_Off_Disabled" file_name="charis/check_off_disabled.png" preload="true" />
+  <texture name="Checkbox_On_Disabled" file_name="charis/check_on_disabled.png" preload="true" />
+  <texture name="RadioButton_Off" file_name="charis/radio_off.png" preload="true" />
+  <texture name="RadioButton_Press" file_name="charis/radio_off_press.png" preload="true" />
+  <texture name="RadioButton_On" file_name="charis/radio_on.png" preload="true" />
+  <texture name="RadioButton_On_Press" file_name="charis/radio_on_press.png" preload="true" />
+  <texture name="RadioButton_Disabled" file_name="charis/radio_off_disabled.png" preload="true" />
+  <texture name="RadioButton_On_Disabled" file_name="charis/radio_on_disabled.png" preload="true" />
+  <texture name="SliderThumb_Off" file_name="charis/slider_knob.png" preload="false" />
+  <texture name="SliderThumb_Press" file_name="charis/slider_knob_press.png" preload="false" />
+  <texture name="SliderThumb_Disabled" file_name="charis/slider_knob_disabled.png" preload="false" />
+  <texture name="SliderTrack_Horiz" file_name="charis/slider_track_h.png" preload="false" scale.left="4" scale.top="4" scale.right="100" scale.bottom="2" />
+  <texture name="SliderTrack_Vert" file_name="charis/slider_track_v.png" preload="false" scale.left="2" scale.top="100" scale.right="4" scale.bottom="4" />
+  <texture name="Stepper_Up_Off" file_name="charis/spin_up.png" preload="false" />
+  <texture name="Stepper_Up_Press" file_name="charis/spin_up_press.png" preload="false" />
+  <texture name="Stepper_Down_Off" file_name="charis/spin_down.png" preload="false" />
+  <texture name="Stepper_Down_Press" file_name="charis/spin_down_press.png" preload="false" />
+  <texture name="ScrollArrow_Up" file_name="charis/scroll_arrow_up.png" preload="true" scale.left="2" scale.top="13" scale.right="13" scale.bottom="2" />
+  <texture name="ScrollArrow_Down" file_name="charis/scroll_arrow_down.png" preload="true" scale.left="2" scale.top="13" scale.right="13" scale.bottom="2" />
+  <texture name="ScrollArrow_Left" file_name="charis/scroll_arrow_left.png" preload="true" scale.left="2" scale.top="13" scale.right="13" scale.bottom="2" />
+  <texture name="ScrollArrow_Right" file_name="charis/scroll_arrow_right.png" preload="true" scale.left="2" scale.top="13" scale.right="13" scale.bottom="2" />
+  <texture name="TabTop_First_Flat_Off" file_name="charis/tab_top_off.png" preload="false" scale.left="8" scale.top="8" scale.right="62" scale.bottom="9" />
+  <texture name="TabTop_Middle_Flat_Off" file_name="charis/tab_top_off.png" preload="false" scale.left="8" scale.top="8" scale.right="62" scale.bottom="9" />
+  <texture name="TabTop_Last_Flat_Off" file_name="charis/tab_top_off.png" preload="false" scale.left="8" scale.top="8" scale.right="62" scale.bottom="9" />
+  <texture name="TabTop_First_Flat_Selected" file_name="charis/tab_top_on.png" preload="false" scale.left="8" scale.top="8" scale.right="62" scale.bottom="9" />
+  <texture name="TabTop_Middle_Flat_Selected" file_name="charis/tab_top_on.png" preload="false" scale.left="8" scale.top="8" scale.right="62" scale.bottom="9" />
+  <texture name="TabTop_Last_Flat_Selected" file_name="charis/tab_top_on.png" preload="false" scale.left="8" scale.top="8" scale.right="62" scale.bottom="9" />
+  <texture name="TabTop_Right_Flashing" file_name="charis/tab_top_flash.png" preload="false" scale.left="8" scale.top="8" scale.right="62" scale.bottom="9" />
+  <texture name="TabLeft_Flat_Off" file_name="charis/tab_left_off.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="TabLeft_Flat_Selected" file_name="charis/tab_left_on.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="ListItem_Select" file_name="charis/list_row_on.png" preload="true" scale.left="3" scale.top="22" scale.right="278" scale.bottom="2" />
+  <texture name="ListItem_Over" file_name="charis/list_row_hover.png" preload="true" scale.left="2" scale.top="22" scale.right="278" scale.bottom="2" />
+  <texture name="Accordion_Off" file_name="charis/accordion_off.png" preload="false" />
+  <texture name="Accordion_Over" file_name="charis/accordion_over.png" preload="false" />
+  <texture name="Accordion_Press" file_name="charis/accordion_press.png" preload="false" />
+  <texture name="Accordion_Selected" file_name="charis/accordion_focus.png" preload="false" />
+  <texture name="Accordion_ArrowClosed_Off" file_name="charis/accordion_closed.png" preload="false" />
+  <texture name="Accordion_ArrowOpened_Off" file_name="charis/accordion_open.png" preload="false" />
+  <texture name="Accordion_ArrowClosed_Press" file_name="charis/accordion_closed_press.png" preload="false" />
+  <texture name="Accordion_ArrowOpened_Press" file_name="charis/accordion_open_press.png" preload="false" />
+  <texture name="MarketplaceBtn_Off" file_name="charis/marketplace_closed.png" preload="true" scale.left="30" scale.top="19" scale.right="35" scale.bottom="4" />
+  <texture name="MarketplaceBtn_Selected" file_name="charis/marketplace_open.png" preload="true" scale.left="30" scale.top="19" scale.right="35" scale.bottom="4" />
+  <texture name="SegmentedBtn_Left_Off" file_name="charis/segment_left_off.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Left_Over" file_name="charis/segment_left_over.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Left_Press" file_name="charis/segment_left_press.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Left_Disabled" file_name="charis/segment_left_disabled.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Left_Selected" file_name="charis/segment_left_selected.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Left_Selected_Over" file_name="charis/segment_left_selected_over.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Left_Selected_Press" file_name="charis/segment_left_selected_press.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Left_Selected_Disabled" file_name="charis/segment_left_selected_disabled.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Middle_Disabled" file_name="charis/segment_middle_disabled.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Middle_Selected" file_name="charis/segment_middle_selected.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Middle_Selected_Press" file_name="charis/segment_middle_selected_press.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Middle_Selected_Disabled" file_name="charis/segment_middle_selected_disabled.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Right_Off" file_name="charis/segment_right_off.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Right_Over" file_name="charis/segment_right_over.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Right_Press" file_name="charis/segment_right_press.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Right_Disabled" file_name="charis/segment_right_disabled.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Right_Selected" file_name="charis/segment_right_selected.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Right_Selected_Press" file_name="charis/segment_right_selected_press.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="SegmentedBtn_Right_Selected_Disabled" file_name="charis/segment_right_selected_disabled.png" preload="true" scale.left="4" scale.top="19" scale.right="22" scale.bottom="4" />
+  <texture name="Toolbar_Left_Off" file_name="charis/bar_button_off.png" preload="false" scale.left="5" scale.top="23" scale.right="29" scale.bottom="4" />
+  <texture name="Toolbar_Left_Over" file_name="charis/bar_button_over.png" preload="false" scale.left="5" scale.top="23" scale.right="29" scale.bottom="4" />
+  <texture name="Toolbar_Left_Selected" file_name="charis/bar_button_selected.png" preload="false" scale.left="5" scale.top="23" scale.right="29" scale.bottom="4" />
+  <texture name="Toolbar_Left_Flash" file_name="charis/bar_button_flash.png" preload="false" scale.left="5" scale.top="23" scale.right="29" scale.bottom="4" />
+  <texture name="Toolbar_Middle_Off" file_name="charis/bar_button_off.png" preload="false" scale.left="2" scale.top="23" scale.right="29" scale.bottom="2" />
+  <texture name="Toolbar_Middle_Over" file_name="charis/bar_button_over.png" preload="false" scale.left="2" scale.top="23" scale.right="29" scale.bottom="2" />
+  <texture name="Toolbar_Middle_Selected" file_name="charis/bar_button_selected.png" preload="false" scale.left="2" scale.top="23" scale.right="29" scale.bottom="2" />
+  <texture name="Toolbar_Middle_Flash" file_name="charis/bar_button_flash.png" preload="false" scale.left="5" scale.top="23" scale.right="29" scale.bottom="4" />
+  <texture name="Toolbar_Right_Off" file_name="charis/bar_button_off.png" preload="false" scale.left="2" scale.top="23" scale.right="26" scale.bottom="4" />
+  <texture name="Toolbar_Right_Over" file_name="charis/bar_button_over.png" preload="false" scale.left="2" scale.top="23" scale.right="26" scale.bottom="4" />
+  <texture name="Toolbar_Right_Selected" file_name="charis/bar_button_selected.png" preload="false" scale.left="2" scale.top="23" scale.right="26" scale.bottom="4" />
+  <texture name="Toolbar_Right_Flash" file_name="charis/bar_button_flash.png" preload="false" scale.left="2" scale.top="23" scale.right="26" scale.bottom="4" />
+  <texture name="Flyout_Left" file_name="charis/shape_flyout_left.png" preload="false" />
+  <texture name="Flyout_Right" file_name="charis/shape_flyout_right.png" preload="false" />
+  <texture name="Flyout_Pointer" file_name="charis/shape_flyout_pointer.png" preload="false" />
+  <texture name="Inspector_Hover" file_name="charis/shape_inspector_hover.png" preload="false" />
+  <texture name="Badge_Background" file_name="charis/shape_badge_background.png" preload="true" scale.left="9" scale.top="12" scale.right="248" scale.bottom="12" />
+  <texture name="Parcel_VoiceNo_Light" file_name="icons/Parcel_VoiceNo_Dark.png" preload="false" />
+  <texture name="Parcel_FlyNo_Light" file_name="icons/Parcel_FlyNo_Dark.png" preload="false" />
+  <texture name="Parcel_PushNo_Light" file_name="icons/Parcel_PushNo_Dark.png" preload="false" />
+  <texture name="Parcel_BuildNo_Light" file_name="icons/Parcel_BuildNo_Dark.png" preload="false" />
+  <texture name="Parcel_SeeAVsOff_Light" file_name="icons/Parcel_SeeAVsOff_Dark.png" preload="false" />
+  <texture name="Parcel_ForSale_Light" file_name="charis/icon_parcel_forsale_light.png" preload="false" />
+  <texture name="Pathfinding_Dirty" file_name="charis/icon_pathfinding_dirty.png" preload="false" />
+  <texture name="Pathfinding_Disabled" file_name="charis/icon_pathfinding_disabled.png" preload="false" />
 </textures>

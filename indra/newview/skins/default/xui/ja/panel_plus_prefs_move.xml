@@ -7,6 +7,7 @@
             <panel name="move_scroll_panel">
                 <plus_ps_slider_compat name="camera_fov" label="視野角" />
                 <plus_ps_slider_compat name="camera_offset_scale" label="距離" />
+                <plus_ps_check_compat name="DisableCameraConstraints" label="カメラの動ける範囲の制限を外す" tool_tip="カメラを通常の範囲より遠くや、地面より下にも動かせるようになります。壁の押し戻しと地面の下限も外れます（部屋の中ではカメラが壁の外に出て、自分が見えなくなることがあります）。カメラ操作に慣れていないと、変な角度の写真が増えるかもしれません。" />
                 <plus_ps_text name="heading2">
                     カメラを自動で動かす場面：
                 </plus_ps_text>

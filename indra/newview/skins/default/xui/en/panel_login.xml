@@ -256,6 +256,7 @@
                valign="center">
                Grid
               </text>
+              <!-- plus ui-old-recolor: label_color and label_color_selected TextFgColor (were Black on TextField_Active, which is dark in the Charis skin; research/239) -->
               <combo_box
                allow_text_entry="false"
                font="SansSerifTiny"
@@ -272,8 +273,8 @@
                   pad_bottom="1"
                   pad_left="10"
                   font="SansSerifLarge"
-                  label_color="Black"
-                  label_color_selected="Black"
+                  label_color="TextFgColor"
+                  label_color_selected="TextFgColor"
                   draw_focus_border="false"
                   image_overlay="ComboButton_Arrow"
                   image_overlay_right_delta="10"
@@ -282,6 +283,7 @@
                   image_pressed="TextField_Active"
                   image_pressed_selected="TextField_Active"/>
               </combo_box>
+              <!-- /plus -->
             </layout_panel>
             <layout_panel
              auto_resize="false"

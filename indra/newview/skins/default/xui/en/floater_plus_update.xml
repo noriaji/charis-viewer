@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <!--
   Update check (plus/updatecheck): a newer Charis Viewer is out. Opened by updatecheck.cpp
-  at the login screen or once the world is up. [VERSION] and [CURRENT] are versions
+  once the world is up, when the answer came after the login had started (at the login
+  screen the band panel_plus_update_banner.xml tells of it; research/325). [VERSION] and [CURRENT] are versions
   ("0.1.0 alpha 2 (rev 1970)"); the message of the update file follows the body.
   The text is plain: no links in it (research/130 M1; a message could show one address
   and go to another, or run a secondlife:///app command). Pages open only from the
@@ -28,6 +29,9 @@
     <!-- btn_download when the update file names only the notes (no download page) -->
     <floater.string name="btn_notes">Open what's new</floater.string>
     <floater.string name="btn_notes_tip">Opens the page of what's new in your web browser (the update file names no download page)</floater.string>
+    <!-- btn_download where updates can be installed (Setup.exe; plus/update, research/326): the user agrees here -->
+    <floater.string name="btn_install">Download</floater.string>
+    <floater.string name="btn_install_tip">Downloads the new version from GitHub (you can go on using the viewer; the bottom right shows how far it is). It is put in when you quit, or with "Restart and update".</floater.string>
     <text_editor
      follows="all"
      height="160"
@@ -58,7 +62,7 @@
      layout="topleft"
      left_pad="6"
      name="btn_later"
-     tool_tip="Closes this. You will be reminded the next time you start the viewer, at least a day from now."
+     tool_tip="Closes this. You are told again at the next start, at the login screen."
      top_delta="0"
      width="90" />
     <button

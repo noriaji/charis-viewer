@@ -38,6 +38,7 @@
              name="new_texture"
              relative_width="0.3" />
     </scroll_list>
+    <!-- plus ui-old-recolor: text_color TextFgColor (was dark green 0.1 0.5 0.1 written here, 3.7:1 on the Charis skin's dark box; research/239) -->
     <text_editor
       top="375"
       height="140"
@@ -46,9 +47,10 @@
       right="-8"
       name="output_log"
       font="Monospace"
-      text_color="0.1 0.5 0.1 1.0"
+      text_color="TextFgColor"
       width="480">
     </text_editor>
+    <!-- /plus -->
     <button
       follows="left|bottom"
       height="20"

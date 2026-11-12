@@ -20,6 +20,7 @@
    left="0"
    name="buttons_panel"
    top="0">
+    <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was Black on the official light box, so the box's own colour name (research/239) -->
     <filter_editor
      follows="left|top|right"
      height="23"
@@ -28,10 +29,11 @@
      label="Filter People"
      max_length_chars="300"
      name="people_filter_input"
-     text_color="Black"
+     text_color="TextFgColor"
      text_pad_left="10"
      top="4"
      width="204" />
+    <!-- /plus -->
     <menu_button
      follows="top|right"
      height="25"

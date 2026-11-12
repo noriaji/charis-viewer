@@ -492,14 +492,21 @@
                  width="529">
                     Do Not Disturb response:
                 </plus_ps_text>
-                <!-- the reply: the official text editor in a glass box (its colours: the skin's names) -->
-                <plus_ps_box
+                <!-- the reply: the official text editor (see-through) on the one-line fields' box: the skin's
+                     TextField_Off (FIELD_BG with the light border; ui-old-recolor). A glass box was hardly seen on
+                     the panel. A panel does not follow the editor's focus, so the border stays as it is while
+                     typing. The name stays (the translations lay over it by name) -->
+                <panel
                  name="dnd_response_glass"
+                 background_visible="true"
+                 background_opaque="true"
+                 bg_opaque_image="TextField_Off"
+                 bg_alpha_image="TextField_Off"
                  follows="left|top"
                  height="60"
-                 kind="glass"
                  layout="topleft"
                  left="14"
+                 mouse_opaque="false"
                  top="543"
                  width="529">
                     <text_editor
@@ -521,7 +528,7 @@
                      word_wrap="true">
                         log_in_to_change
                     </text_editor>
-                </plus_ps_box>
+                </panel>
             </panel>
         </scroll_container>
     </plus_ps_box>

@@ -9,16 +9,18 @@
          save_rect="true"
          title="360 SNAPSHOT"
          width="800">
+  <!-- plus ui-old-recolor: bg_opaque_color DkGray2 (was grey 0.195 written here; the Charis skin's panel colour through the palette, research/239) -->
   <panel layout="topleft"
        background_visible="true"
        top="0"
        follows="left|bottom|top"
        left="0"
        width="200"
-       bg_opaque_color="0.195 0.195 0.195 1"
+       bg_opaque_color="DkGray2"
        background_opaque="true"
        height="400"
        name="ui_panel_left">
+  <!-- /plus -->
     <text
        follows="top|left|right"
        height="16"
@@ -105,24 +107,26 @@
             top_delta="35"
             width="180" />
   </panel>
+  <!-- plus ui-old-recolor: bg_opaque_color DkGray2 here and DkGray for the browser (were greys 0.195 and 0.225 written here; research/239) -->
   <panel layout="topleft"
      background_visible="true"
      top="0"
      follows="all"
      left="200"
      width="600"
-     bg_opaque_color="0.195 0.195 0.195 1"
+     bg_opaque_color="DkGray2"
      background_opaque="true"
      height="400"
      name="ui_panel_right">
     <web_browser top="10"
                  follows="all"
-                 bg_opaque_color="0.225 0.225 0.225 1"
+                 bg_opaque_color="DkGray"
                  left="0"
                  width="590"
                  height="368"
                  name="360capture_contents"
                  trusted_content="true" />
+  <!-- /plus -->
     <text follows="bottom"
           layout="topleft"
           name="statusbar"

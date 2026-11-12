@@ -80,6 +80,9 @@ namespace plus::updatecheck
             return true;
         }
 
+        // Between the hosts of a list (hostInList(), hostListEmpty()).
+        constexpr std::string_view HOST_SEPARATORS = ", ;\t";
+
         template <typename T>
         int order(T a, T b)
         {
@@ -269,9 +272,55 @@ namespace plus::updatecheck
         return v.patch < patch;
     }
 
+    std::string numbersText(int major, int minor, int patch)
+    {
+        return std::to_string(major) + "." + std::to_string(minor) + "." + std::to_string(patch);
+    }
+
+    std::string packageVersion(const Version& v)
+    {
+        const std::string numbers = numbersText(v.major, v.minor, v.patch);
+        if (v.stage_rank == STAGE_RELEASE)
+        {
+            return numbers;
+        }
+        const std::string stage = stageName(v.stage_rank);
+        if (stage.empty())
+        {
+            return std::string();
+        }
+        std::string version = numbers + "-" + stage + "." + std::to_string(v.stage_number);
+        if (v.build)
+        {
+            version += "." + std::to_string(v.build);
+        }
+        return version;
+    }
+
+    bool packageVersionMatches(std::string_view feed, std::string_view agreed)
+    {
+        if (feed.empty() || agreed.empty())
+        {
+            return false;
+        }
+        if (feed == agreed)
+        {
+            return true;
+        }
+        const size_t dash = agreed.find('-');
+        const bool without_build = dash != std::string_view::npos
+            && std::count(agreed.begin() + dash, agreed.end(), '.') == 1;   // "-stage.n": no ".build"
+        if (!without_build || feed.size() <= agreed.size() + 1
+            || feed.substr(0, agreed.size()) != agreed || feed[agreed.size()] != '.')
+        {
+            return false;
+        }
+        return feed.find_first_not_of("0123456789", agreed.size() + 1) == std::string_view::npos;
+    }
+
     std::string key(const Version& v)
     {
-        std::string text = std::to_string(v.major) + "." + std::to_string(v.minor) + "." + std::to_string(v.patch);
+        std::string text = numbersText(v.major, v.minor, v.patch);
         if (v.stage_rank != STAGE_RELEASE)
         {
             text += "-";
@@ -287,7 +336,7 @@ namespace plus::updatecheck
 
     std::string displayText(const Version& v)
     {
-        std::string text = std::to_string(v.major) + "." + std::to_string(v.minor) + "." + std::to_string(v.patch);
+        std::string text = numbersText(v.major, v.minor, v.patch);
         if (v.stage_rank != STAGE_RELEASE)
         {
             text += " ";
@@ -330,12 +379,12 @@ namespace plus::updatecheck
         size_t pos = 0;
         while (pos < list.size())
         {
-            const size_t start = list.find_first_not_of(", ;\t", pos);
+            const size_t start = list.find_first_not_of(HOST_SEPARATORS, pos);
             if (start == std::string_view::npos)
             {
                 break;
             }
-            const size_t end = std::min(list.find_first_of(", ;\t", start), list.size());
+            const size_t end = std::min(list.find_first_of(HOST_SEPARATORS, start), list.size());
             const std::string_view entry = list.substr(start, end - start);
             if (entry.size() == host.size())
             {
@@ -352,6 +401,11 @@ namespace plus::updatecheck
             pos = end;
         }
         return false;
+    }
+
+    bool hostListEmpty(std::string_view list)
+    {
+        return list.find_first_not_of(HOST_SEPARATORS) == std::string_view::npos;
     }
 
     bool dueForCheck(uint32_t now, uint32_t last, uint32_t interval)

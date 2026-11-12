@@ -50,6 +50,7 @@
 #include "v2math.h"
 #include "lluictrlfactory.h"
 #include "lltooltip.h"
+#include "lltimer.h" // <plus> commit_on_arrow </plus>
 
 // <plus> plus/detach (research/87): llui.cpp, where a popup opened on a detached window goes
 LLRect plus_popup_area(const LLView* area_view, const LLView* at_view, S32 at_x, S32 at_y, const LLRect& area);
@@ -59,6 +60,83 @@ LLRect plus_popup_area(const LLView* area_view, const LLView* at_view, S32 at_x,
 S32 MAX_COMBO_WIDTH = 500;
 
 static LLDefaultChildRegistry::Register<LLComboBox> register_combo_box("combo_box");
+
+// <plus> commit_on_arrow
+namespace
+{
+    // The keys with which LLScrollListCtrl::handleKeyHere() moves the selection. Page Up / Page Down only while the
+    // list is open: a list never opened has no page yet (getLinesPerPage() is 0) and they would move one row the
+    // wrong way; closed, they are left to the official handling.
+    bool isListMoveKey(KEY key, MASK mask, bool list_open)
+    {
+        if (mask != MASK_NONE)
+        {
+            return false;
+        }
+        switch (key)
+        {
+            case KEY_UP: case KEY_DOWN: case KEY_HOME: case KEY_END:
+                return true;
+            case KEY_PAGE_UP: case KEY_PAGE_DOWN:
+                return list_open;
+            default:
+                return false;
+        }
+    }
+}
+
+// The list of a combo box with commit_on_arrow. A key reaches it from the combo box while it is closed
+// (LLComboBox::handleKeyHere()) and straight from the keyboard focus while it is open; either way, a move tells
+// the combo box. Not registered as a widget: made only by the combo box (with the list's own params).
+class LLComboBox::ArrowList : public LLScrollListCtrl
+{
+public:
+    explicit ArrowList(const LLScrollListCtrl::Params& p) : LLScrollListCtrl(p) {}
+
+    bool handleKeyHere(KEY key, MASK mask) override
+    {
+        const bool repeated = gKeyboard && gKeyboard->getKeyRepeated(key);
+        // A held Page Up / Page Down does nothing after its press: closed, the list opens on it (the official way)
+        // and open, it commits and closes, so held it would open and close the list over and over.
+        if (mOwner && repeated && mask == MASK_NONE && (key == KEY_PAGE_UP || key == KEY_PAGE_DOWN))
+        {
+            return true;
+        }
+        if (!mOwner || !isListMoveKey(key, mask, getVisible()))
+        {
+            return LLScrollListCtrl::handleKeyHere(key, mask);
+        }
+        // A held arrow key (Home, End) goes on, a move in KEY_REPEAT_MOVE_SECONDS at most after the last one's commit
+        // ended: each move commits, and a commit may be heavy (a sky fetched, the graphics level applied), so not at
+        // the keyboard's repeat rate. The repeats in between are taken and do nothing. A press always moves.
+        if (repeated && LLTimer::getTotalSeconds() - mLastKeyMoveSeconds < KEY_REPEAT_MOVE_SECONDS)
+        {
+            return true;
+        }
+        LLScrollListItem* before = getFirstSelected();
+        const S32 before_cell = before ? before->getSelectedCell() : -1;
+        const bool handled = LLScrollListCtrl::handleKeyHere(key, mask);
+        if (getFirstSelected() != before)
+        {
+            // the commit may make the combo box (and this list) again: written only while this list lives
+            const LLHandle<LLView> self = getHandle();
+            mOwner->onListKeyMoved(before, before_cell);
+            if (!self.get())
+            {
+                return handled;
+            }
+        }
+        mLastKeyMoveSeconds = LLTimer::getTotalSeconds();   // after the commit: a heavy one counts in the wait
+        return handled;
+    }
+
+    LLComboBox* mOwner = nullptr;   // the combo box this list is a child of (set when it is made)
+
+private:
+    static constexpr F64 KEY_REPEAT_MOVE_SECONDS = 0.12;    // a held key: about 8 rows a second
+    F64 mLastKeyMoveSeconds = 0.0;  // LLTimer::getTotalSeconds() when the last key's move (and commit) ended
+};
+// </plus>
 
 void LLComboBox::PreferredPositionValues::declareValues()
 {
@@ -78,6 +156,7 @@ LLComboBox::Params::Params()
     show_text_as_tentative("show_text_as_tentative", true),
     max_chars("max_chars", 20),
     list_position("list_position", BELOW),
+    commit_on_arrow("commit_on_arrow", false), // <plus> </plus>
     items("item"),
     combo_button("combo_button"),
     combo_list("combo_list"),
@@ -101,6 +180,7 @@ LLComboBox::LLComboBox(const LLComboBox::Params& p)
     mTextChangedCallback(p.text_changed_callback()),
     mListPosition(p.list_position),
     mLastSelectedIndex(-1),
+    mCommitOnArrow(p.commit_on_arrow), // <plus> </plus>
     mLabel(p.label)
 {
     // Text label button
@@ -138,7 +218,21 @@ LLComboBox::LLComboBox(const LLComboBox::Params& p)
     params.visible(false);
     params.commit_on_keyboard_movement(false);
 
-    mList = LLUICtrlFactory::create<LLScrollListCtrl>(params);
+    // <plus> commit_on_arrow: a list that tells of a move by a key, also while it is open and has the keyboard
+    if (mCommitOnArrow)
+    {
+        // the commit is the combo box's (onListKeyMoved()): a list committing on its own would commit twice and
+        // give onListKeyMoved() the row after the move as the one before
+        params.commit_on_selection_change(false);
+        ArrowList* list = LLUICtrlFactory::create<ArrowList>(params);
+        list->mOwner = this;
+        mList = list;
+    }
+    else
+    {
+        mList = LLUICtrlFactory::create<LLScrollListCtrl>(params);
+    }
+    // </plus>
     addChild(mList);
 
     // Mouse-down on button will transfer mouse focus to the list
@@ -873,6 +967,35 @@ void LLComboBox::onItemSelected(const LLSD& data)
     onCommit();
 }
 
+// <plus> commit_on_arrow: a key moved the selection (ArrowList). As a click on the row: the list closes (if it was
+// open; the keyboard stays with the combo box) and the choice is committed. Home, End, Page Up or Page Down onto a
+// row that cannot be chosen (a separator, a heading) leaves nothing chosen: the choice before comes back and nothing
+// is committed (closed, the official list would have reopened and hideList() put it back).
+void LLComboBox::onListKeyMoved(LLScrollListItem* before, S32 before_cell)
+{
+    const LLScrollListItem* after = mList->getFirstSelected();
+    if (!after || !after->getEnabled())
+    {
+        if (before)
+        {
+            mList->selectItem(before, before_cell, true);
+        }
+        else
+        {
+            mList->deselectAllItems(true);
+        }
+        return;
+    }
+    // The mouse held on the list since the click that opened it: its mouse up would commit the row under it again.
+    if (mList->hasMouseCapture())
+    {
+        gFocusMgr.setMouseCapture(nullptr);
+    }
+    mButton->setForcePressedState(false);
+    onItemSelected(LLSD());
+}
+// </plus>
+
 bool LLComboBox::handleToolTip(S32 x, S32 y, MASK mask)
 {
     std::string tool_tip;
@@ -916,7 +1039,18 @@ bool LLComboBox::handleKeyHere(KEY key, MASK mask)
             // highlight the original selection before potentially selecting a new item
             mList->mouseOverHighlightNthItem(mList->getItemIndex(last_selected_item));
         }
+        // <plus> commit_on_arrow: a move is committed by the list (onListKeyMoved()); the list stays closed, as
+        // after a click on a row, and the next key does the same. Read before: the commit may change this widget.
+        const bool committed_by_list = mCommitOnArrow && isListMoveKey(key, mask, mList->getVisible());
+        // </plus>
         result = mList->handleKeyHere(key, mask);
+
+        // <plus>
+        if (committed_by_list)
+        {
+            return result;
+        }
+        // </plus>
 
         // will only see return key if it is originating from line editor
         // since the dropdown button eats the key

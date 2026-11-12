@@ -44,7 +44,9 @@
 // and putting back the secondlife:// registration at uninstall
 #include "llhttpconstants.h"
 #include "plus/independence/independence.h"
+#include "plus/update/update.h"           // research/326: the update the user agreed to
 #include "plus/updatecheck/updateversion.h"
+#include "lldiriterator.h"                // research/326: the temp files of earlier runs
 #include "plus/subtitle/subtitlehash.h"   // plus::subtitle::Sha256 (the Windows crypto API)
 #if LL_WINDOWS
 #include "plus/slurlhandler/slurlregistry.h"
@@ -96,6 +98,7 @@ static void show_required_update_prompt();
 static void show_downloading_notification(const std::string& version);
 static void ensure_update_manager(bool allow_downgrade);
 static void velopack_download_pending_update();
+static void register_plus_update_backend();   // <plus> research/326 </plus>
 static std::unordered_map<std::string, std::string> sAssetUrlMap; // basename -> original absolute URL
 
 // <plus> research/311 section 2.3, research/262 section 5-5. The feed and the packages come
@@ -165,11 +168,23 @@ static bool update_certificates_checked()
     return true;
 }
 
+// research/326: the request a coroutine of the update is waiting for, so that Cancel
+// (plus/update) can stop it at once. Main thread; empty while none waits.
+static std::weak_ptr<LLCoreHttpUtil::HttpCoroutineAdapter> sWaitingUpdateRequest;
+
+// What one GET of the update asks besides the address (research/326 section 4.2).
+struct UpdateGet
+{
+    std::string range;          // a Range header ("bytes=0-8388607"), or "" for the whole file
+    std::string final_address;  // out: the address that answered (after the redirects)
+};
+
 // GETs url (a coroutine waits), following redirects to allowed addresses only.
 // True with the adapter's result in result (the body: update_body(result), not
 // copied: a package is hundreds of MB); false (a log line says why) for anything else.
 static bool get_from_update_hosts(const std::string& url, const char* adapter_name,
-                                  size_t max_bytes, unsigned int transfer_timeout_s, LLSD& result)
+                                  size_t max_bytes, unsigned int transfer_timeout_s, LLSD& result,
+                                  UpdateGet* get = nullptr)
 {
     if (!update_certificates_checked())
     {
@@ -194,6 +209,13 @@ static bool get_from_update_hosts(const std::string& url, const char* adapter_na
     headers->append(HTTP_OUT_HEADER_ACCEPT, "*/*");
     headers->append(HTTP_OUT_HEADER_CONTENT_TYPE, "");
     headers->append("X-SecondLife-UDP-Listen-Port", "");
+    if (get && !get->range.empty())
+    {
+        headers->append(HTTP_OUT_HEADER_RANGE, get->range);
+        // A piece is bytes of the file as it is: not packed for the way (libcurl asks for any
+        // packing by default and unpacks; a packed piece could not be unpacked on its own)
+        headers->append(HTTP_OUT_HEADER_ACCEPT_ENCODING, "identity");
+    }
 
     std::string address = url;
     for (int redirects = 0; ; ++redirects)
@@ -205,11 +227,17 @@ static bool get_from_update_hosts(const std::string& url, const char* adapter_na
             return false;
         }
 
+        sWaitingUpdateRequest = httpAdapter;
         result = httpAdapter->getRawAndSuspend(httpRequest, address, httpOpts, headers);
+        sWaitingUpdateRequest.reset();
         const LLSD& httpResults = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
         const LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(httpResults);
         if (status)
         {
+            if (get)
+            {
+                get->final_address = address;
+            }
             return true;
         }
 
@@ -376,20 +404,49 @@ static std::string download_url_raw(const std::string& url)
     return std::string(rawBody.begin(), rawBody.end());
 }
 
+// <plus> research/311, 326: whether what arrived (sha, all of it added) has the SHA-256 the feed
+// gives (lower or upper case hex); a log line when not. Sha256 uses the Windows crypto API: on
+// macOS it computes nothing and every package is refused (to solve before a Mac release).
+static bool package_sha256_is(plus::subtitle::Sha256& sha, const std::string& feed_sha256)
+{
+    const std::string got_sha256 = sha.hex();   // lower case hex, "" when it could not be computed
+    std::string want_sha256 = feed_sha256;
+    LLStringUtil::toLower(want_sha256);
+    if (got_sha256.empty() || got_sha256 != want_sha256)
+    {
+        LL_WARNS("Velopack") << "Downloaded package's SHA-256 " << (got_sha256.empty() ? "(not computed)" : got_sha256)
+                             << " is not the feed's " << feed_sha256 << ": not used" << LL_ENDL;
+        return false;
+    }
+    return true;
+}
+// </plus>
+
 // <plus> research/311: expected_size and expected_sha256 (lower or upper case hex) are the
-// feed's for the package; what arrived is compared with them before it is written
+// feed's for the package; what arrived is compared with them before it is written.
+// research/326: why (when given) says PackageMismatch for a size or a SHA-256 that is not the
+// feed's, DownloadFailed for the rest.
 static bool download_url_to_file(const std::string& url, const std::string& local_path,
-                                 uint64_t expected_size, const std::string& expected_sha256)
+                                 uint64_t expected_size, const std::string& expected_sha256,
+                                 plus::update::Failure* why = nullptr)
 // </plus>
 {
     // <plus> research/311: allowed hosts only, redirects checked one by one; the size and the
     // SHA-256 the feed gives are checked here (Velopack is handed a file that matches)
+    if (why)
+    {
+        *why = plus::update::Failure::DownloadFailed;
+    }
     LLSD result;
     if (!get_from_update_hosts(url, "VelopackDownload", UPDATE_MAX_PACKAGE_BYTES, UPDATE_PACKAGE_TRANSFER_TIMEOUT_S, result))
     {
         return false;
     }
     const LLSD::Binary& rawBody = update_body(result);
+    if (why)
+    {
+        *why = plus::update::Failure::PackageMismatch;   // until the size and the SHA-256 match
+    }
     if (rawBody.size() != expected_size)
     {
         LL_WARNS("Velopack") << "Downloaded package has " << rawBody.size() << " bytes, the feed says "
@@ -398,16 +455,13 @@ static bool download_url_to_file(const std::string& url, const std::string& loca
     }
     plus::subtitle::Sha256 sha;
     sha.add(rawBody.data(), rawBody.size());
-    // Lower case hex, "" when it could not be computed. Sha256 uses the Windows crypto API:
-    // on macOS it is always "" and every package is refused (to solve before a Mac release).
-    const std::string got_sha256 = sha.hex();
-    std::string want_sha256 = expected_sha256;
-    LLStringUtil::toLower(want_sha256);
-    if (got_sha256.empty() || got_sha256 != want_sha256)
+    if (!package_sha256_is(sha, expected_sha256))
     {
-        LL_WARNS("Velopack") << "Downloaded package's SHA-256 " << (got_sha256.empty() ? "(not computed)" : got_sha256)
-                             << " is not the feed's " << expected_sha256 << ": not used" << LL_ENDL;
         return false;
+    }
+    if (why)
+    {
+        *why = plus::update::Failure::DownloadFailed;    // a write that fails below
     }
     // </plus>
     llofstream outFile(local_path, std::ios::binary | std::ios::trunc);
@@ -433,6 +487,10 @@ static bool download_url_to_file(const std::string& url, const std::string& loca
 // Custom source callbacks
 //
 
+// <plus> research/326 section 4.3: an exception caught in custom_get_release_feed (main thread)
+static std::exception_ptr sFeedException;
+// </plus>
+
 static char* custom_get_release_feed(void* user_data, const char* releases_name)
 {
     std::string base = feed_base_url(); // <plus> fixed in the build (research/311) </plus>
@@ -441,7 +499,20 @@ static char* custom_get_release_feed(void* user_data, const char* releases_name)
     std::string url = base + "/" + releases_name;
     LL_INFOS("Velopack") << "Fetching release feed: " << url << LL_ENDL;
 
-    std::string json_str = download_url_raw(url);
+    // <plus> research/326 section 4.3: an exception (the viewer ending while the feed is read)
+    // does not go through Velopack's frames: kept, and thrown again once it has returned
+    // (check_for_updates_here())
+    std::string json_str;
+    try
+    {
+        json_str = download_url_raw(url);
+    }
+    catch (...)
+    {
+        sFeedException = std::current_exception();
+        return nullptr;
+    }
+    // </plus>
     if (json_str.empty())
     {
         return nullptr;
@@ -473,6 +544,7 @@ static void custom_free_release_feed(void* user_data, char* feed)
 }
 
 static std::string sPreDownloadedAssetPath;
+static std::string sPreDownloadedAssetName;   // <plus> research/326: the feed's name of that package </plus>
 
 static bool custom_download_asset(void* user_data,
                                    const vpkc_asset_t* asset,
@@ -492,9 +564,28 @@ static bool custom_download_asset(void* user_data,
     LL_INFOS("Velopack") << "Download asset callback: filename=" << filename
         << " local_path=" << local_path
         << " size=" << asset->Size << LL_ENDL;
+    // <plus> research/326: only the package that was fetched (Velopack asking for another one, a
+    // delta, gets nothing: the full one stays for it to fall back on)
+    if (filename != sPreDownloadedAssetName)
+    {
+        LL_WARNS("Velopack") << "Velopack asks for " << filename << ", but " << sPreDownloadedAssetName
+                             << " was downloaded: not handed over" << LL_ENDL;
+        return false;
+    }
+    // </plus>
     vpkc_source_report_progress(progress_callback_id, 0);
 
-    std::ifstream src(sPreDownloadedAssetPath, std::ios::binary);
+    // <plus> research/326: moved when it can be (the temp folder and Velopack's are on the same
+    // drive as a rule): no copy of hundreds of MB on the main thread. Another drive: copied below.
+    if (LLFile::rename(sPreDownloadedAssetPath, local_path, EXDEV) == 0)
+    {
+        vpkc_source_report_progress(progress_callback_id, 100);
+        LL_INFOS("Velopack") << "Asset moved into place" << LL_ENDL;
+        return true;
+    }
+    // </plus>
+
+    llifstream src(sPreDownloadedAssetPath, std::ios::binary); // <plus> research/326: llifstream (a path in UTF-8) </plus>
     llofstream dst(local_path, std::ios::binary | std::ios::trunc);
     if (!src.is_open() || !dst.is_open())
     {
@@ -505,6 +596,13 @@ static bool custom_download_asset(void* user_data,
     dst << src.rdbuf();
     dst.close();
     src.close();
+    // <plus> research/326: a full disk leaves a cut-short copy
+    if (dst.fail())
+    {
+        LL_WARNS("Velopack") << "Failed to copy the package to " << local_path << LL_ENDL;
+        return false;
+    }
+    // </plus>
 
     vpkc_source_report_progress(progress_callback_id, 100);
     LL_INFOS("Velopack") << "Asset copy complete" << LL_ENDL;
@@ -1579,9 +1677,87 @@ bool velopack_initialize()
 #if LL_WINDOWS
     replace_velopack_uninstall_entry();
 #endif
+    // research/326: updates the user agrees to go in through Velopack (plus/update)
+    register_plus_update_backend();
     // </plus>
     return true;
 }
+
+// <plus> research/311, 326: the full package of sPendingCheckInfo, checked (a plain name: it
+// becomes a file in the temp folder; a SHA-256 to compare the download with, vpk writes one
+// for every package), and where to get it. False, with a log line, when there is none.
+struct PendingPackage
+{
+    uint64_t size = 0;          // the feed's Size (copied: nothing of Velopack's is read after a wait)
+    std::string file_name;
+    std::string sha256;
+    std::string url;
+    std::string local_path;     // in the temp folder: <file_name>.<process id>.download (two viewers do not share it)
+};
+
+static bool pending_package(PendingPackage& package)
+{
+    const vpkc_asset_t* target = sPendingCheckInfo ? sPendingCheckInfo->TargetFullRelease : nullptr;
+    if (!target)
+    {
+        LL_WARNS("Velopack") << "Not downloaded: the update names no full package" << LL_ENDL;
+        return false;
+    }
+    package.size = target->Size;
+    package.sha256 = ll_safe_string(target->SHA256);
+    package.file_name = target->FileName ? target->FileName : "";
+    if (!is_package_file_name(package.file_name))
+    {
+        LL_WARNS("Velopack") << "Not downloaded: the feed names the package \"" << package.file_name
+                             << "\", not a plain " << plus::independence::VELOPACK_PACK_ID << "-*.nupkg name" << LL_ENDL;
+        return false;
+    }
+    if (package.sha256.size() != 64)
+    {
+        LL_WARNS("Velopack") << "Not downloaded: the feed gives no SHA-256 for " << package.file_name << LL_ENDL;
+        return false;
+    }
+    auto url_it = sAssetUrlMap.find(package.file_name);
+    if (url_it != sAssetUrlMap.end())
+    {
+        package.url = url_it->second;
+    }
+    else
+    {
+        package.url = feed_base_url() + "/" + package.file_name;   // fixed in the build (research/311)
+    }
+    package.local_path = gDirUtilp->getExpandedFilename(LL_PATH_TEMP,
+        llformat("%s.%d.download", package.file_name.c_str(), LLApp::getPid()));
+    return true;
+}
+
+// Velopack takes the downloaded package (custom_download_asset copies it into its own
+// folder): sPendingCheckInfo becomes sPendingUpdate, put in when the viewer ends.
+static bool hand_off_package(const PendingPackage& package)
+{
+    LL_INFOS("Velopack") << "Pre-download complete, handing to Velopack" << LL_ENDL;
+    sPreDownloadedAssetPath = package.local_path;
+    sPreDownloadedAssetName = package.file_name;
+    const bool taken = vpkc_download_updates(sUpdateManager, sPendingCheckInfo, on_progress, nullptr);
+    sPreDownloadedAssetPath.clear();
+    sPreDownloadedAssetName.clear();
+    if (!taken)
+    {
+        char descr[512];
+        vpkc_get_last_error(descr, sizeof(descr));
+        LL_WARNS("Velopack") << "Failed to download update: " << ll_safe_string((const char*)descr) << LL_ENDL;
+        return false;
+    }
+    if (sPendingUpdate)
+    {
+        vpkc_free_update_info(sPendingUpdate);
+    }
+    sPendingUpdate = sPendingCheckInfo;
+    sPendingCheckInfo = nullptr; // Ownership transferred
+    LL_INFOS("Velopack") << "Update downloaded and pending" << LL_ENDL;
+    return true;
+}
+// </plus>
 
 // Downloads the update that was found during the check phase.
 // Operates on sPendingCheckInfo which was set by velopack_check_for_updates.
@@ -1600,74 +1776,429 @@ static void velopack_download_pending_update()
 
     // Pre-download the nupkg at the coroutine level where getRawAndSuspend works.
     // The download callback inside the Rust FFI cannot use coroutine HTTP.
-    // <plus> research/311: the feed's package: a plain name (it becomes a file in the temp
-    // folder) and a SHA-256 to compare the download with (vpk writes one for every package)
-    const vpkc_asset_t* target = sPendingCheckInfo->TargetFullRelease;
-    if (!target)
+    // <plus> research/311, 326: the checks and the hand-off are shared with the plus update
+    PendingPackage package;
+    if (!pending_package(package))
     {
-        LL_WARNS("Velopack") << "Not downloaded: the update names no full package" << LL_ENDL;
         return;
     }
-    const std::string target_sha256 = ll_safe_string(target->SHA256);
-    // </plus>
-    std::string asset_filename = sPendingCheckInfo->TargetFullRelease->FileName
-        ? sPendingCheckInfo->TargetFullRelease->FileName : "";
-    // <plus> research/311
-    if (!is_package_file_name(asset_filename))
-    {
-        LL_WARNS("Velopack") << "Not downloaded: the feed names the package \"" << asset_filename
-                             << "\", not a plain " << plus::independence::VELOPACK_PACK_ID << "-*.nupkg name" << LL_ENDL;
-        return;
-    }
-    if (target_sha256.size() != 64)
-    {
-        LL_WARNS("Velopack") << "Not downloaded: the feed gives no SHA-256 for " << asset_filename << LL_ENDL;
-        return;
-    }
-    // </plus>
-    std::string asset_url;
-    auto url_it = sAssetUrlMap.find(asset_filename);
-    if (url_it != sAssetUrlMap.end())
-    {
-        asset_url = url_it->second;
-    }
-    else
-    {
-        std::string base = feed_base_url(); // <plus> fixed in the build (research/311) </plus>
-        if (!base.empty() && base.back() == '/')
-            base.pop_back();
-        asset_url = base + "/" + asset_filename;
-    }
+    LL_INFOS("Velopack") << "Pre-downloading " << url_for_log(package.url)
+        << " to " << package.local_path << LL_ENDL;
 
-    sPreDownloadedAssetPath = gDirUtilp->getExpandedFilename(LL_PATH_TEMP, asset_filename);
-    LL_INFOS("Velopack") << "Pre-downloading " << asset_url
-        << " to " << sPreDownloadedAssetPath << LL_ENDL;
-
-    if (!download_url_to_file(asset_url, sPreDownloadedAssetPath, target->Size, target_sha256)) // <plus> checked against the feed </plus>
+    if (!download_url_to_file(package.url, package.local_path, package.size, package.sha256)) // checked against the feed
     {
         LL_WARNS("Velopack") << "Failed to pre-download update asset" << LL_ENDL;
-        sPreDownloadedAssetPath.clear();
         return;
     }
+    hand_off_package(package);
+    LLFile::remove(package.local_path, ENOENT);   // Velopack has it now (moved or copied), or did not take it
+    // </plus>
+}
 
-    LL_INFOS("Velopack") << "Pre-download complete, handing to Velopack" << LL_ENDL;
-    if (vpkc_download_updates(sUpdateManager, sPendingCheckInfo, on_progress, nullptr))
+// <plus> research/326: the update the user agreed to (plus/update's backend). One at a time,
+// in a coroutine on the main thread: the feed (Velopack's check, through the callbacks
+// above), the package in pieces into the temp folder (the progress for the chip; Cancel
+// between and during the pieces), the checks against the feed, then Velopack takes it.
+// Nothing here runs before plus/update's begin(), which comes only from the user's
+// "Download" or the setting PlusUpdateInstall 2 the user chose. Windows only (macOS cannot
+// compute the SHA-256 yet: package_sha256_is()); velopack_cleanup() reads sUpdateRunning on both.
+namespace
+{
+    bool sUpdateRunning = false;    // the coroutine is on its way (main thread); velopack_cleanup() frees nothing then
+}
+
+#if LL_WINDOWS
+namespace
+{
+    constexpr uint64_t     UPDATE_PIECE_BYTES       = uint64_t(8) * 1024 * 1024;   // about 38 pieces for 300 MB
+    constexpr unsigned int UPDATE_PIECE_TIMEOUT_S   = 120;
+
+    // The viewer is ending (or has stopped: isExiting() leaves STOPPED out): nothing of Velopack's is touched.
+    bool update_ending()
+    {
+        return !LLApp::isRunning();
+    }
+
+    // "<pack id>-*.download" left in the temp folder by a run that crashed or was ended by force (hundreds of
+    // MB each): removed before a new download. One another viewer is still writing is open and is not
+    // removed (Windows refuses; nothing else happens); one changed in the last DOWNLOAD_KEEP_SECONDS is
+    // left too (another viewer may have just closed it to hand it to Velopack).
+    constexpr F64 DOWNLOAD_KEEP_SECONDS = 10 * 60;
+
+    void remove_old_downloads()
+    {
+        const F64 now = LLDate::now().secondsSinceEpoch();
+        const std::string temp = gDirUtilp->getExpandedFilename(LL_PATH_TEMP, "");
+        const std::string mask = std::string(plus::independence::VELOPACK_PACK_ID) + "-*.download";
+        LLDirIterator iter(temp, mask);
+        std::string name;
+        while (iter.next(name))
+        {
+            const std::string path = gDirUtilp->add(temp, name);
+            llstat info;
+            if (!LLFile::isfile(path) || LLFile::stat(path, &info) != 0
+                || now - static_cast<F64>(info.st_mtime) < DOWNLOAD_KEEP_SECONDS)
+            {
+                continue;   // not a file, or written lately
+            }
+            if (LLFile::remove(path, EACCES) == 0)
+            {
+                LL_INFOS("Velopack") << "Removed the download of an earlier run: " << name << LL_ENDL;
+            }
+        }
+    }
+
+
+    // Velopack's check of the feed (custom_get_release_feed fetches it while the coroutine
+    // waits inside); an exception kept by the callback is thrown again here, out of Velopack.
+    vpkc_update_check_t check_for_updates_here(vpkc_update_info_t** info)
+    {
+        sFeedException = nullptr;
+        const vpkc_update_check_t result = vpkc_check_for_updates(sUpdateManager, info);
+        if (sFeedException)
+        {
+            std::exception_ptr kept = sFeedException;
+            sFeedException = nullptr;
+            if (*info)
+            {
+                vpkc_free_update_info(*info);
+                *info = nullptr;
+            }
+            std::rethrow_exception(kept);
+        }
+        return result;
+    }
+
+    // "bytes A-B/TOTAL" of a Content-Range, nothing after it: whether it says first..last of total.
+    bool content_range_is(const std::string& value, uint64_t first, uint64_t last, uint64_t total)
+    {
+        unsigned long long a = 0, b = 0, t = 0;
+        int end = -1;
+        return sscanf(value.c_str(), "bytes %llu-%llu/%llu%n", &a, &b, &t, &end) == 3
+            && end >= 0 && static_cast<size_t>(end) == value.size()
+            && a == first && b == last && t == total;
+    }
+
+    // Exiting: the viewer is ending (velopack_cleanup() may have run): nothing of Velopack's is touched.
+    enum class PieceResult { Done, NotPieces, Failed, Cancelled, Exiting };
+
+    // The answer to a piece that failed says the server does not give pieces: the whole file (200), more
+    // than the piece (the reply limit), or a range it cannot give (416). Only then is it fetched whole.
+    bool not_given_in_pieces(const LLSD& result)
+    {
+        const LLSD& http_results = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
+        const LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
+        const S32 code = status.isHttpStatus() ? (S32)status.getType() : 0;
+        return code == HTTP_OK || code == HTTP_REQUESTED_RANGE_NOT_SATISFIABLE
+            || status == LLCore::HttpStatus(LLCore::HttpStatus::EXT_CURL_EASY, CURLE_WRITE_ERROR)
+            || status == LLCore::HttpStatus(LLCore::HttpStatus::EXT_CURL_EASY, CURLE_FILESIZE_EXCEEDED);
+    }
+
+    // The package of total_bytes from url into local_path, UPDATE_PIECE_BYTES at a time (Range),
+    // its SHA-256 compared with sha256 at the end. NotPieces: the first piece did not come as a
+    // piece (the whole file, more than asked for, 416, a 206 without the right Content-Range): the
+    // caller fetches it whole; any other failure is Failed.
+    // The address the redirects ended at is used for the next piece; a piece that fails there is
+    // asked for once more from url (the asset host's address is short-lived).
+    PieceResult download_in_pieces(const std::string& url, const std::string& local_path,
+                                   uint64_t total_bytes, const std::string& sha256, plus::update::Failure& why)
+    {
+        why = plus::update::Failure::DownloadFailed;
+        llofstream out(local_path, std::ios::binary | std::ios::trunc);
+        if (!out.is_open())
+        {
+            LL_WARNS("Velopack") << "Failed to open file for writing: " << local_path << LL_ENDL;
+            return PieceResult::Failed;
+        }
+        plus::subtitle::Sha256 sha;
+        std::string answered_at;    // the address the last piece came from ("" none yet)
+        for (uint64_t offset = 0; offset < total_bytes; )
+        {
+            if (plus::update::isCancelRequested())
+            {
+                return PieceResult::Cancelled;
+            }
+            const uint64_t length = std::min(UPDATE_PIECE_BYTES, total_bytes - offset);
+            const uint64_t last = offset + length - 1;
+            UpdateGet get;
+            get.range = llformat("bytes=%llu-%llu", (unsigned long long)offset, (unsigned long long)last);
+            LLSD result;
+            bool ok = get_from_update_hosts(answered_at.empty() ? url : answered_at, "VelopackPiece",
+                                            (size_t)length, UPDATE_PIECE_TIMEOUT_S, result, &get);
+            if (!ok && !answered_at.empty() && !plus::update::isCancelRequested())
+            {
+                LL_INFOS("Velopack") << "Piece at " << offset << " asked for again from " << url_for_log(url) << LL_ENDL;
+                answered_at.clear();
+                ok = get_from_update_hosts(url, "VelopackPiece", (size_t)length, UPDATE_PIECE_TIMEOUT_S, result, &get);
+            }
+            if (update_ending())
+            {
+                return PieceResult::Exiting;
+            }
+            if (plus::update::isCancelRequested())
+            {
+                return PieceResult::Cancelled;
+            }
+            if (!ok)
+            {
+                return offset == 0 && not_given_in_pieces(result) ? PieceResult::NotPieces : PieceResult::Failed;
+            }
+            const LLSD& http_results = result[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS];
+            const LLCore::HttpStatus status = LLCoreHttpUtil::HttpCoroutineAdapter::getStatusFromLLSD(http_results);
+            const S32 code = status.isHttpStatus() ? (S32)status.getType() : 0;
+            const LLSD& range = http_results[LLCoreHttpUtil::HttpCoroutineAdapter::HTTP_RESULTS_HEADERS]["content-range"];
+            const LLSD::Binary& body = update_body(result);
+            const bool whole_at_once = code == HTTP_OK && offset == 0 && body.size() == total_bytes;
+            const bool piece = code == HTTP_PARTIAL_CONTENT && body.size() == length
+                && range.isString() && content_range_is(range.asString(), offset, last, total_bytes);
+            if (!piece && !whole_at_once)
+            {
+                LL_WARNS("Velopack") << "Piece " << get.range << " came as HTTP " << code << " with " << body.size()
+                                     << " bytes" << (range.isString() ? " (" + range.asString() + ")" : std::string()) << LL_ENDL;
+                return offset == 0 ? PieceResult::NotPieces : PieceResult::Failed;
+            }
+            out.write(reinterpret_cast<const char*>(body.data()), body.size());
+            if (out.fail())
+            {
+                LL_WARNS("Velopack") << "Failed to write the downloaded package to " << local_path << LL_ENDL;
+                return PieceResult::Failed;
+            }
+            sha.add(body.data(), body.size());
+            offset += body.size();
+            answered_at = get.final_address;
+            plus::update::reportProgress(offset, total_bytes);
+        }
+        out.close();
+        if (out.fail())
+        {
+            LL_WARNS("Velopack") << "Failed to write the downloaded package to " << local_path << LL_ENDL;
+            return PieceResult::Failed;
+        }
+        if (!package_sha256_is(sha, sha256))
+        {
+            why = plus::update::Failure::PackageMismatch;
+            return PieceResult::Failed;
+        }
+        return PieceResult::Done;
+    }
+
+    // Every way out of the coroutine: the temp file goes, the check's answer is let go of when
+    // nothing took it, and plus/update hears an end (Failed when no end was reported: an early
+    // return that forgot to, or an exception other than the viewer ending).
+    struct UpdateRunScope
+    {
+        std::string temp_path;
+        bool reported = false;
+
+        UpdateRunScope() { sUpdateRunning = true; }
+        ~UpdateRunScope()
+        {
+            sUpdateRunning = false;
+            sWaitingUpdateRequest.reset();
+            if (!temp_path.empty())
+            {
+                LLFile::remove(temp_path, ENOENT);    // gone already when Velopack moved it
+            }
+            if (update_ending())
+            {
+                return;     // nothing of Velopack's is touched (velopack_cleanup() left it; it leaks at the end)
+            }
+            if (sPendingCheckInfo)
+            {
+                vpkc_free_update_info(sPendingCheckInfo);
+                sPendingCheckInfo = nullptr;
+            }
+            if (!reported)
+            {
+                plus::update::reportFailed(plus::update::Failure::DownloadFailed);
+            }
+        }
+
+        void failed(plus::update::Failure why)
+        {
+            reported = true;
+            plus::update::reportFailed(why);
+        }
+        void cancelled()
+        {
+            reported = true;
+            plus::update::reportCancelled();
+        }
+        void ready()
+        {
+            reported = true;
+            plus::update::reportReady();
+        }
+    };
+
+    void update_coro()
+    {
+        UpdateRunScope run;
+        remove_old_downloads();
+        ensure_update_manager(false);
+        if (!sUpdateManager)
+        {
+            run.failed(plus::update::Failure::FeedUnreadable);
+            return;
+        }
+
+        vpkc_update_info_t* info = nullptr;
+        const vpkc_update_check_t checked = check_for_updates_here(&info);
+        if (update_ending())
+        {
+            return;     // the answer is not looked at (left to leak: velopack_cleanup() kept the manager)
+        }
+        if (plus::update::isCancelRequested())
+        {
+            if (info)
+            {
+                vpkc_free_update_info(info);
+            }
+            run.cancelled();
+            return;
+        }
+        if (checked != UPDATE_AVAILABLE || !info)
+        {
+            if (info)
+            {
+                vpkc_free_update_info(info);
+            }
+            LL_INFOS("Velopack") << "No update available from feed (result=" << (int)checked << ")" << LL_ENDL;
+            run.failed(checked == UPDATE_ERROR ? plus::update::Failure::FeedUnreadable
+                                               : plus::update::Failure::NoUpdateInFeed);
+            return;
+        }
+        if (sPendingCheckInfo)
+        {
+            vpkc_free_update_info(sPendingCheckInfo);
+        }
+        sPendingCheckInfo = info;
+        sTargetVersion = info->TargetFullRelease && info->TargetFullRelease->Version
+            ? info->TargetFullRelease->Version : "";
+        sIsRequired = false;
+
+        // The version the user agreed to (the update file's numbers, stage and build): nothing else is installed.
+        const std::string& agreed = plus::update::expectedPackageVersion();
+        plus::update::reportPackageVersion(sTargetVersion);
+        if (!plus::updatecheck::packageVersionMatches(sTargetVersion, agreed))   // "" matches nothing
+        {
+            LL_WARNS("Velopack") << "The feed offers " << (sTargetVersion.empty() ? std::string("(unknown)") : sTargetVersion)
+                                 << ", not " << (agreed.empty() ? std::string("(unknown)") : agreed)
+                                 << " that the update file named and the user agreed to: not downloaded" << LL_ENDL;
+            run.failed(plus::update::Failure::VersionMismatch);
+            return;
+        }
+
+        PendingPackage package;
+        if (!pending_package(package))
+        {
+            run.failed(plus::update::Failure::FeedUnreadable);
+            return;
+        }
+        if (package.size == 0 || package.size > UPDATE_MAX_PACKAGE_BYTES)
+        {
+            LL_WARNS("Velopack") << "Not downloaded: the feed gives " << package.size << " bytes for "
+                                 << package.file_name << " (1 to " << UPDATE_MAX_PACKAGE_BYTES << " taken)" << LL_ENDL;
+            run.failed(plus::update::Failure::FeedUnreadable);
+            return;
+        }
+        LL_INFOS("Velopack") << "Update available: " << sTargetVersion << " (agreed to: "
+                             << agreed << "); downloading "
+                             << url_for_log(package.url) << " (" << package.size << " bytes)" << LL_ENDL;
+        plus::update::reportDownloading(package.size);
+
+        run.temp_path = package.local_path;
+        plus::update::Failure why = plus::update::Failure::DownloadFailed;
+        PieceResult got = download_in_pieces(package.url, package.local_path, package.size, package.sha256, why);
+        if (got == PieceResult::NotPieces && !plus::update::isCancelRequested())
+        {
+            LL_INFOS("Velopack") << "The package did not come in pieces; fetched whole (no progress until it is in)" << LL_ENDL;
+            got = download_url_to_file(package.url, package.local_path, package.size, package.sha256, &why)
+                ? PieceResult::Done : PieceResult::Failed;
+            if (update_ending())
+            {
+                got = PieceResult::Exiting;
+            }
+        }
+        if (got == PieceResult::Exiting)
+        {
+            return;     // the viewer is ending: Velopack is not touched
+        }
+        // A cancel is looked at again right before the hand-over (it may have come during the last piece):
+        // nothing the user took back is handed to Velopack
+        if (got == PieceResult::Cancelled || plus::update::isCancelRequested())
+        {
+            LL_INFOS("Velopack") << "Download stopped (Cancel or a setting)" << LL_ENDL;
+            run.cancelled();
+            return;
+        }
+        if (got != PieceResult::Done)
+        {
+            run.failed(why);
+            return;
+        }
+        plus::update::reportProgress(package.size, package.size);
+        if (!hand_off_package(package))
+        {
+            run.failed(plus::update::Failure::HandOffFailed);
+            return;
+        }
+        run.ready();
+    }
+
+    void update_start()
+    {
+        if (sUpdateRunning)
+        {
+            LL_WARNS("Velopack") << "An update is on its way already" << LL_ENDL;
+            return;     // plus/update does not start a second one (its state is not Idle)
+        }
+        LLCoros::instance().launch("PlusVelopackUpdate", &update_coro);
+    }
+
+    void update_cancel()
+    {
+        if (auto waiting = sWaitingUpdateRequest.lock())
+        {
+            waiting->cancelSuspendedOperation();
+        }
+    }
+
+    void update_discard()
     {
         if (sPendingUpdate)
         {
+            LL_INFOS("Velopack") << "The downloaded update " << sTargetVersion << " is not put in" << LL_ENDL;
             vpkc_free_update_info(sPendingUpdate);
+            sPendingUpdate = nullptr;
         }
-        sPendingUpdate = sPendingCheckInfo;
-        sPendingCheckInfo = nullptr; // Ownership transferred
-        LL_INFOS("Velopack") << "Update downloaded and pending" << LL_ENDL;
+        sRestartAfterUpdate = false;
     }
-    else
+
+    void update_restart_now()
     {
-        char descr[512];
-        vpkc_get_last_error(descr, sizeof(descr));
-        LL_WARNS("Velopack") << "Failed to download update: " << ll_safe_string((const char*)descr) << LL_ENDL;
+        velopack_request_restart_after_update();
     }
+
+    // The quit after "Restart and update" was called off: the update still goes in at the end, without a restart
+    void update_keep_running()
+    {
+        sRestartAfterUpdate = false;
+    }
+
+    const plus::update::Backend PLUS_UPDATE_BACKEND = { &update_start, &update_cancel, &update_discard, &update_restart_now,
+                                                        &update_keep_running };
 }
+#endif // LL_WINDOWS
+
+static void register_plus_update_backend()
+{
+#if LL_WINDOWS
+    // Not on macOS: the SHA-256 there is not computed yet (package_sha256_is()), so nothing would pass
+    plus::update::setBackend(&PLUS_UPDATE_BACKEND);
+#endif // the backend's functions above are left out of the macOS build
+}
+// </plus>
 
 static void on_downloading_closed(const LLSD& notification, const LLSD& response)
 {
@@ -1758,6 +2289,15 @@ void velopack_check_for_updates(const std::string& required_version, const std::
     if (!velopack_is_installed())
     {
         LL_INFOS("Velopack") << "Not a Velopack installation (the zip): no update check through Velopack" << LL_ENDL;
+        return;
+    }
+    // research/326 section 4.4: updates go through plus/update, after the user agreed (TPV 1d). This
+    // way (only the update service of --update-service calls it) would download without asking with
+    // UpdaterServiceSetting 3, the official default, and show the official notices besides Charis's.
+    if (sInstallKind == EInstallKind::Velopack)
+    {
+        LL_INFOS("Velopack") << "Update check from the update service not used: updates are offered by the "
+                             << "update check and installed once the user agrees (plus/update)" << LL_ENDL;
         return;
     }
     // </plus>
@@ -1887,6 +2427,16 @@ void velopack_apply_pending_update(bool restart)
 
 void velopack_cleanup()
 {
+    // <plus> research/326: the update coroutine (plus/update) is waiting and resumes only later, at
+    // LLCoros' own cleanup, possibly inside Velopack's check: the manager, the source and the check's
+    // answer it may still use are not freed (the process is ending; they leak). The coroutine touches
+    // nothing of Velopack's once the viewer is exiting.
+    if (sUpdateRunning)
+    {
+        LL_INFOS("Velopack") << "An update was on its way at the end: Velopack's objects are left as they are" << LL_ENDL;
+        return;
+    }
+    // </plus>
     if (sUpdateManager)
     {
         vpkc_free_update_manager(sUpdateManager);

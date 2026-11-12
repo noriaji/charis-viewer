@@ -228,6 +228,8 @@
 			<menu_item_separator/>
 			<menu_item_call label="グリッドオプション…" name="Grid Options"/>
 			<menu_item_call label="デフォルトの権限設定…" name="Set default permissions"/>
+			<menu_item_check label="光を表示" name="Build Show Lights"/>
+			<menu_item_check label="実像を表示" name="Build Show Physics Shapes"/>
 		</menu>
 		<menu label="アップロード" name="Upload">
 			<menu_item_call label="画像（L$ [COST]）…" name="Upload Image"/>

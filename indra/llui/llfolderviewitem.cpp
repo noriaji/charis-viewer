@@ -1298,6 +1298,10 @@ S32 LLFolderViewFolder::arrange( S32* width, S32* height )
 
     LL_RECORD_BLOCK_TIME(FTM_ARRANGE);
 
+    // <plus> invexplorer: a folders-only view (LLFolderView::setFoldersOnly, research/318) counts and shows no items
+    const bool folders_only = getRoot()->isFoldersOnly();
+    // </plus>
+
     // evaluate mHasVisibleChildren
     mHasVisibleChildren = false;
     if (mAreChildrenInited && getViewModelItem()->descendantsPassedFilter())
@@ -1305,7 +1309,7 @@ S32 LLFolderViewFolder::arrange( S32* width, S32* height )
         // We have to verify that there's at least one child that's not filtered out
         bool found = false;
         // Try the items first
-        for (items_t::iterator iit = mItems.begin(); iit != mItems.end(); ++iit)
+        for (items_t::iterator iit = mItems.begin(); !folders_only && iit != mItems.end(); ++iit) // <plus> folders_only </plus>
         {
             LLFolderViewItem* itemp = (*iit);
             found = itemp->isPotentiallyVisible();
@@ -1376,7 +1380,7 @@ S32 LLFolderViewFolder::arrange( S32* width, S32* height )
                 iit != mItems.end(); ++iit)
             {
                 LLFolderViewItem* itemp = (*iit);
-                itemp->setVisible(itemp->isPotentiallyVisible());
+                itemp->setVisible(!folders_only && itemp->isPotentiallyVisible()); // <plus> folders_only </plus>
 
                 if (itemp->getVisible())
                 {

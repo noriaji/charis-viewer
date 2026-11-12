@@ -35,6 +35,7 @@
 
 #include "llfloater.h"
 #include "llsd.h"
+#include "plus/photomode/photomode.h"
 
 #include <boost/signals2.hpp>
 #include <list>
@@ -136,6 +137,12 @@ namespace plus::quickprefs
         static bool stepComboBox(LLComboBox* combo, bool forward);
         void onPresetCombo(LLComboBox* combo);
         void onPresetStep(LLComboBox* combo, bool forward);
+        // The preset of the drop-down on, and what was asked noted (mAsked).
+        void putOnPreset(LLComboBox* combo);
+        // Going forward, the drop-down on the preset asked for last while it could not be had (the steps go on past
+        // it). Going back, the steps go from the row shown (the one in use): placed, the step back would ask for the
+        // one in use again and undo what was changed in it.
+        void placeAtFailedPreset(LLComboBox* combo, bool forward);
         void onClickResetToRegionDefault();
 
         // Hover height
@@ -173,8 +180,22 @@ namespace plus::quickprefs
         LLSpinCtrl*     mControlMaxSpinner       = nullptr;
         LLSpinCtrl*     mControlIncrementSpinner = nullptr;
 
+        // By layer (sky, water, day cycle: plus::photomode::EnvLayer): the row asked for last, the layer's count of
+        // changes and the one in use just after it (the one before, while it comes). While that preset could not be
+        // had and nothing changed the layer since, here or another way (the official menus, Apply Locally, the
+        // photo screen's land's sky, the shared environment), the drop-down shows the one in use but the steps
+        // forward go on from this row.
+        struct AskedPreset
+        {
+            U32         changes = 0;
+            S32         index   = -1;
+            const void* inUse   = nullptr;  // the settings object in use (compared only, never used)
+        };
+        AskedPreset mAsked[static_cast<size_t>(plus::photomode::EnvLayer::Count)];
+
         boost::signals2::scoped_connection mEditModeConnection;
         boost::signals2::scoped_connection mEnvChangedConnection;
+        boost::signals2::scoped_connection mEnvFailedConnection;     // plus::photomode: a preset could not be had
         boost::signals2::scoped_connection mRegionChangedConnection;
         boost::signals2::scoped_connection mHoverSettingConnection;
         boost::signals2::scoped_connection mNonImpostorsConnection;

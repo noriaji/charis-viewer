@@ -137,6 +137,7 @@
              height="20"
              layout="topleft"
              left="63"
+             commit_on_arrow="true"
              name="WLPresetsCombo"
              top="34"
              width="150" />
@@ -184,6 +185,7 @@
              height="20"
              layout="topleft"
              left="63"
+             commit_on_arrow="true"
              name="WaterPresetsCombo"
              top="60"
              width="150" />
@@ -231,6 +233,7 @@
              height="20"
              layout="topleft"
              left="63"
+             commit_on_arrow="true"
              name="DCPresetsCombo"
              top="86"
              width="150" />

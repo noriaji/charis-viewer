@@ -76,6 +76,7 @@
                     <radio_item height="18" label="Clicked Spot" layout="topleft" left="350" top="0" width="120" name="focus_click"   value="4" tool_tip="Click a place of the world to focus there; click again to move it. While choosing, clicks do not touch objects. Esc stops choosing (the focus stays)." />
                 </radio_group>
                 <combo_box
+                 commit_on_arrow="true"
                  follows="left|top|right"
                  height="20"
                  layout="topleft"
@@ -85,6 +86,7 @@
                  name="focus_who"
                  tool_tip="Who the focus follows (people near the camera, nearest first)" />
                 <combo_box
+                 commit_on_arrow="true"
                  follows="top|right"
                  height="20"
                  layout="topleft"

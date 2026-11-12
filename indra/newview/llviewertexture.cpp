@@ -2618,7 +2618,10 @@ bool LLViewerFetchedTexture::updateFetch()
             c = mComponents;
         }
 
-        const U32 override_tex_discard_level = gSavedSettings.getU32("TextureDiscardLevel");
+        // <plus> cpu-trim-safe: a cached control, not a name lookup at each texture request (was: gSavedSettings.getU32("TextureDiscardLevel"))
+        static LLCachedControl<U32> texture_discard_level(gSavedSettings, "TextureDiscardLevel", 0);
+        // </plus>
+        const U32 override_tex_discard_level = texture_discard_level; // <plus> cpu-trim-safe </plus>
         if (override_tex_discard_level != 0 && override_tex_discard_level <= MAX_DISCARD_LEVEL)
         {
             desired_discard = override_tex_discard_level;

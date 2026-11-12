@@ -375,6 +375,7 @@ namespace plus::photoscreen::detail
             {
                 ui::PsLabel* name = label(words, tip);
                 ui::PsCombo::Params p(LLUICtrlFactory::getDefaultParams<ui::PsCombo>());
+                p.commit_on_arrow = true;   // the arrow keys choose at once (combo-arrow)
                 if (!tip.empty())
                 {
                     p.tool_tip(tip);

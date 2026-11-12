@@ -63,6 +63,8 @@
 #include "llenvironment.h"
 #include "llweb.h"
 #include "plus/invexplorer/invexplorer.h" // <plus> inventory detail pane (research/220) </plus>
+#include "plus/invexplorer/invcolumns.h" // <plus> three columns: the gear menu acts on the column chosen last (research/318) </plus>
+#include "plus/invcustomtabs/invcustomtabs.h" // <plus> named filter tabs (research/314) </plus>
 
 const std::string FILTERS_FILENAME("filters.xml");
 
@@ -157,6 +159,7 @@ LLPanelMainInventory::LLPanelMainInventory(const LLPanel::Params& p)
     mEnableCallbackRegistrar.add("Inventory.EnvironmentEnabled", [](LLUICtrl *, const LLSD &) { return LLPanelMainInventory::hasSettingsInventory(); });
     mEnableCallbackRegistrar.add("Inventory.MaterialsEnabled", [](LLUICtrl *, const LLSD &) { return LLPanelMainInventory::hasMaterialsInventory(); });
 
+    PlusInvCustomTabs::registerCommitCallbacks(this); // <plus> invcustomtabs: the custom tabs' right-click menu </plus>
 
     mSavedFolderState = new LLSaveFolderState();
     mSavedFolderState->setApply(false);
@@ -226,6 +229,15 @@ bool LLPanelMainInventory::postBuild()
         favorites_filter.markDefault();
         mFavoritesPanel->setSelectCallback(boost::bind(&LLPanelMainInventory::onSelectionChange, this, mFavoritesPanel, _1, _2));
     }
+
+    // <plus> invfinder: the "AI Search" tab (panel_main_inventory.xml, plus/invfinder) tells of its selection as the
+    // tabs above do: the detail pane shows it, and in three columns the center opens the folder chosen there
+    // (plus/invexplorer, research/318 9)
+    if (LLInventoryPanel* ai_search_panel = findChild<LLInventoryPanel>("AI Search"))
+    {
+        ai_search_panel->setSelectCallback(boost::bind(&LLPanelMainInventory::onSelectionChange, this, ai_search_panel, _1, _2));
+    }
+    // </plus>
 
     mSearchTypeCombo  = getChild<LLComboBox>("search_type");
     if(mSearchTypeCombo)
@@ -337,12 +349,14 @@ bool LLPanelMainInventory::postBuild()
     // Trigger callback for focus received so we can deselect items in inbox/outbox
     LLFocusableElement::setFocusReceivedCallback(boost::bind(&LLPanelMainInventory::onFocusReceived, this));
 
+    PlusInvCustomTabs::install(this, mFilterEditor); // <plus> invcustomtabs: "+" and the saved custom tabs (research/314) </plus>
     return true;
 }
 
 // Destroys the object
 LLPanelMainInventory::~LLPanelMainInventory( void )
 {
+    plus::invexplorer::forget(this); // <plus> the detail pane and the three columns keep nothing for this view (research/318) </plus>
     // Save the filters state.
     // Some params types cannot be saved this way
     // for example, LLParamSDParser doesn't know about U64,
@@ -620,6 +634,7 @@ void LLPanelMainInventory::resetFilters()
     }
 
     setFilterTextFromFilter();
+    PlusInvCustomTabs::notifyFilterStateChanged(this); // <plus> invcustomtabs: a custom tab saves its filter </plus>
 }
 
 void LLPanelMainInventory::resetAllItemsFilters()
@@ -636,6 +651,13 @@ void LLPanelMainInventory::resetAllItemsFilters()
 
 void LLPanelMainInventory::findLinks(const LLUUID& item_id, const std::string& item_name)
 {
+    // <plus> invcustomtabs: links are found on My Inventory, as reset_inventory_filter() clears the search there: on a
+    // custom tab the "only links" mode would be saved with the tab, without the item it looks for (research/314)
+    if (PlusInvCustomTabs::activePanelIsCustom(this))
+    {
+        selectAllItemsPanel();
+    }
+    // </plus>
     mFilterSubString = item_name;
 
     LLInventoryFilter &filter = mActivePanel->getFilter();
@@ -714,6 +736,7 @@ void LLPanelMainInventory::onSelectSearchType()
     {
         setSearchType(LLInventoryFilter::SEARCHTYPE_UUID);
     }
+    PlusInvCustomTabs::notifyFilterStateChanged(this); // <plus> invcustomtabs: a custom tab saves its search type </plus>
 }
 
 void LLPanelMainInventory::setSearchType(LLInventoryFilter::ESearchType type)
@@ -779,6 +802,18 @@ bool LLPanelMainInventory::filtersVisible(void* user_data)
 
 void LLPanelMainInventory::onClearSearch()
 {
+    // <plus> invcustomtabs: clearing a custom tab's words keeps its saved filter (types, links: as Firestorm's FIRE-5160),
+    // the official tabs' shared words and the folder state they save (plus/invcustomtabs, research/314)
+    if (PlusInvCustomTabs::activePanelIsCustom(this))
+    {
+        setFilterSubString(LLStringUtil::null);
+        if (mInboxPanel)
+        {
+            mInboxPanel->onClearSearch();
+        }
+        return;
+    }
+    // </plus>
     bool initially_active = false;
     if (mActivePanel && (getActivePanel() != mWornItemsPanel))
     {
@@ -839,22 +874,29 @@ void LLPanelMainInventory::onFilterEdit(const std::string& search_string )
         LLInventoryModelBackgroundFetch::instance().start();
     }
 
-    mFilterSubString = search_string;
-    if (mActivePanel->getFilterSubString().empty() && mFilterSubString.empty())
+    // <plus> invcustomtabs: a custom tab keeps its own words and leaves the official tabs' shared words
+    // (mFilterSubString) and their saved folder state alone (plus/invcustomtabs, research/314)
+    const bool custom_tab = PlusInvCustomTabs::activePanelIsCustom(this);
+    if (!custom_tab)
+    {
+        mFilterSubString = search_string;
+    }
+    if (mActivePanel->getFilterSubString().empty() && search_string.empty())
     {
             // current filter and new filter empty, do nothing
             return;
     }
 
     // save current folder open state if no filter currently applied
-    if (!mActivePanel->getFilter().isNotDefault())
+    if (!custom_tab && !mActivePanel->getFilter().isNotDefault())
     {
         mSavedFolderState->setApply(false);
         mActivePanel->getRootFolder()->applyFunctorRecursively(*mSavedFolderState);
     }
 
     // set new filter string
-    setFilterSubString(mFilterSubString);
+    setFilterSubString(search_string);
+    // </plus>
 
     if (mInboxPanel)
     {
@@ -905,6 +947,15 @@ void LLPanelMainInventory::onFilterEdit(const std::string& search_string )
 
 void LLPanelMainInventory::onFilterSelected()
 {
+    // <plus> invcustomtabs: "+" and the hidden-tabs arrow are not views; their selection goes back to a real tab
+    // (plus/invcustomtabs, research/314)
+    if (PlusInvCustomTabs::redirectButtonTabSelection(this))
+    {
+        return;
+    }
+    const bool was_custom_tab = PlusInvCustomTabs::activePanelIsCustom(this);
+    // </plus>
+
     // Find my index
     setActivePanel();
 
@@ -913,12 +964,20 @@ void LLPanelMainInventory::onFilterSelected()
         return;
     }
 
+    PlusInvCustomTabs::noteActivePanel(this, mActivePanel); // <plus> invcustomtabs: the tab left saves its filter </plus>
+
     if (getActivePanel() == mWornItemsPanel)
     {
         mActivePanel->openAllFolders();
     }
     updateSearchTypeCombo();
-    setFilterSubString(mFilterSubString);
+    // <plus> invcustomtabs: a custom tab keeps its own words; the official tabs get the shared ones
+    const bool custom_tab = PlusInvCustomTabs::activePanelIsCustom(this);
+    if (!custom_tab)
+    {
+        setFilterSubString(mFilterSubString);
+    }
+    // </plus>
     LLInventoryFilter& filter = getCurrentFilter();
     LLFloaterInventoryFinder *finder = getFinder();
     if (finder)
@@ -935,6 +994,13 @@ void LLPanelMainInventory::onFilterSelected()
         LLInventoryModelBackgroundFetch::instance().start();
     }
     setFilterTextFromFilter();
+    // <plus> invcustomtabs: Received Items follows the words of the tab shown when a custom tab is left or shown
+    // (only when its words differ; not while custom tabs are being loaded)
+    if (custom_tab || was_custom_tab)
+    {
+        PlusInvCustomTabs::syncReceivedItemsOnTabChange(this);
+    }
+    // </plus>
 }
 
 const std::string LLPanelMainInventory::getFilterSubString()
@@ -964,6 +1030,13 @@ bool LLPanelMainInventory::handleDragAndDrop(S32 x, S32 y, MASK mask, bool drop,
         }
     }
 
+    // <plus> invcustomtabs: nothing drops on "+" or the hidden-tabs arrow, and hovering must not select them
+    // (Firestorm's FIRE-36910 crash) (plus/invcustomtabs, research/314)
+    if (PlusInvCustomTabs::handleDragAndDrop(this, x, y))
+    {
+        return true;
+    }
+    // </plus>
     bool handled = LLPanel::handleDragAndDrop(x, y, mask, drop, cargo_type, cargo_data, accept, tooltip_msg);
 
     return handled;
@@ -986,10 +1059,12 @@ void LLPanelMainInventory::setFocusOnFilterEditor()
 // virtual
 void LLPanelMainInventory::draw()
 {
-    plus::invexplorer::tick(this); // <plus> the detail pane shows while the window is wide </plus>
+    plus::invexplorer::tick(this); // <plus> the detail pane shows while the window is wide; wider, three columns (research/318) </plus>
     if (mActivePanel && mFilterEditor)
     {
-        mFilterEditor->setText(mFilterSubString);
+        // <plus> invcustomtabs: the search box shows a custom tab's own words (a pointer lookup) (research/314)
+        mFilterEditor->setText(PlusInvCustomTabs::activePanelIsCustom(this) ? mActivePanel->getFilter().getFilterSubStringOrig() : mFilterSubString);
+        // </plus>
     }
     if (mActivePanel && mResortActivePanel)
     {
@@ -1002,6 +1077,7 @@ void LLPanelMainInventory::draw()
         mActivePanel->setSortOrder(order);
         mResortActivePanel = false;
     }
+    PlusInvCustomTabs::onParentDraw(this); // <plus> invcustomtabs: a custom tab opens My Inventory when first shown </plus>
     LLPanel::draw();
     updateItemcountText();
     updateCombinationVisibility();
@@ -1164,7 +1240,7 @@ void LLPanelMainInventory::setSelectCallback(const LLFolderView::signal_t::slot_
 void LLPanelMainInventory::onSelectionChange(LLInventoryPanel *panel, const std::deque<LLFolderViewItem*>& items, bool user_action)
 {
     updateListCommands();
-    plus::invexplorer::onSelection(this, items); // <plus> the detail pane shows the selection </plus>
+    plus::invexplorer::onSelection(this, panel, items); // <plus> the detail pane shows the selection; three columns (research/318) </plus>
     panel->onSelectionChange(items, user_action);
 }
 
@@ -1285,7 +1361,14 @@ void LLFloaterInventoryFinder::updateElementsFromFilter()
     bool show_created_by_others = ((filter_creator == LLInventoryFilter::FILTERCREATOR_ALL) || (filter_creator == LLInventoryFilter::FILTERCREATOR_OTHERS));
 
     // update the ui elements
-    setTitle(mFilter->getName());
+    // <plus> invcustomtabs: a custom tab's filter is named after its inner panel name; the title is the tab's label (research/314)
+    std::string title;
+    if (!PlusInvCustomTabs::findTabLabel(mPanelMainInventory, mFilter, title))
+    {
+        title = mFilter->getName();
+    }
+    setTitle(title);
+    // </plus>
 
     mCheckAnimation->setValue((S32) (filter_types & 0x1 << LLInventoryType::IT_ANIMATION));
     mCheckCallingCard->setValue((S32) (filter_types & 0x1 << LLInventoryType::IT_CALLINGCARD));
@@ -1313,6 +1396,7 @@ void LLFloaterInventoryFinder::updateElementsFromFilter()
 
 void LLFloaterInventoryFinder::draw()
 {
+    const S32 prev_generation = PlusInvCustomTabs::captureFilterGeneration(mPanelMainInventory); // <plus> invcustomtabs (research/314) </plus>
     U64 filter = 0xffffffffffffffffULL;
     bool filtered_by_all_types = true;
 
@@ -1462,6 +1546,9 @@ void LLFloaterInventoryFinder::draw()
         mPanelMainInventory->getPanel()->setDateSearchDirection(getDateSearchDirection());
     }
 
+    // <plus> invcustomtabs: a custom tab saves the filter the finder changed (only when it changed) (research/314)
+    PlusInvCustomTabs::notifyIfFilterChanged(mPanelMainInventory, prev_generation);
+    // </plus>
     LLPanel::draw();
 }
 
@@ -1483,6 +1570,7 @@ void LLFloaterInventoryFinder::onCreatorSelfFilterCommit()
         mPanelMainInventory->getCurrentFilter().setFilterCreator(LLInventoryFilter::FILTERCREATOR_OTHERS);
         mCreatorOthers->set(true);
     }
+    PlusInvCustomTabs::notifyFilterStateChanged(mPanelMainInventory); // <plus> invcustomtabs (research/314) </plus>
 }
 
 void LLFloaterInventoryFinder::onCreatorOtherFilterCommit()
@@ -1503,6 +1591,7 @@ void LLFloaterInventoryFinder::onCreatorOtherFilterCommit()
         mPanelMainInventory->getCurrentFilter().setFilterCreator(LLInventoryFilter::FILTERCREATOR_SELF);
         mCreatorSelf->set(true);
     }
+    PlusInvCustomTabs::notifyFilterStateChanged(mPanelMainInventory); // <plus> invcustomtabs (research/314) </plus>
 }
 
 bool LLFloaterInventoryFinder::getCheckShowEmpty()
@@ -1841,7 +1930,7 @@ void LLPanelMainInventory::saveTexture(const LLSD& userdata)
     }
     else
     {
-        LLFolderViewItem* current_item = getActivePanel()->getRootFolder()->getCurSelectedItem();
+        LLFolderViewItem* current_item = plus::invcolumns::commandPanel(this)->getRootFolder()->getCurSelectedItem(); // <plus> invcolumns: the column chosen last (research/318) </plus>
         if (!current_item)
         {
             return;
@@ -1916,7 +2005,7 @@ void LLPanelMainInventory::onCustomAction(const LLSD& userdata)
     // This doesn't currently work, since the viewer can't change an assetID an item.
     if (command_name == "regenerate_link")
     {
-        LLInventoryPanel *active_panel = getActivePanel();
+        LLInventoryPanel *active_panel = plus::invcolumns::commandPanel(this); // <plus> invcolumns: the column chosen last (research/318) </plus>
         LLFolderViewItem* current_item = active_panel->getRootFolder()->getCurSelectedItem();
         if (!current_item)
         {
@@ -1942,7 +2031,7 @@ void LLPanelMainInventory::onCustomAction(const LLSD& userdata)
         }
         else
         {
-        LLFolderViewItem* current_item = getActivePanel()->getRootFolder()->getCurSelectedItem();
+        LLFolderViewItem* current_item = plus::invcolumns::commandPanel(this)->getRootFolder()->getCurSelectedItem(); // <plus> invcolumns: the column chosen last (research/318) </plus>
         if (!current_item)
         {
             return;
@@ -1975,7 +2064,7 @@ void LLPanelMainInventory::onCustomAction(const LLSD& userdata)
         }
         else
         {
-            LLFolderViewItem* current_item = getActivePanel()->getRootFolder()->getCurSelectedItem();
+            LLFolderViewItem* current_item = plus::invcolumns::commandPanel(this)->getRootFolder()->getCurSelectedItem(); // <plus> invcolumns: the column chosen last (research/318) </plus>
             if (!current_item)
             {
                 return;
@@ -1995,7 +2084,7 @@ void LLPanelMainInventory::onCustomAction(const LLSD& userdata)
         }
         else
         {
-        LLFolderViewItem* current_item = getActivePanel()->getRootFolder()->getCurSelectedItem();
+        LLFolderViewItem* current_item = plus::invcolumns::commandPanel(this)->getRootFolder()->getCurSelectedItem(); // <plus> invcolumns: the column chosen last (research/318) </plus>
         if (current_item)
         {
             LLInvFVBridge* bridge = (LLInvFVBridge*)current_item->getViewModelItem();
@@ -2054,6 +2143,12 @@ void LLPanelMainInventory::onCustomAction(const LLSD& userdata)
             std::set<LLUUID> uuids{ mCombinationGalleryPanel->getFirstSelectedItemID()};
             LLAvatarActions::shareWithAvatars(uuids, gFloaterView->getParentFloater(this));
         }
+        // <plus> invcolumns: an object chosen in the center column is what is shared (research/318)
+        else if (LLInventoryPanel* center = plus::invcolumns::chosenCenter(this))
+        {
+            LLAvatarActions::shareWithAvatars(center);
+        }
+        // </plus>
         else
         {
             LLAvatarActions::shareWithAvatars(this);
@@ -2124,7 +2219,8 @@ bool LLPanelMainInventory::isSaveTextureEnabled(const LLSD& userdata)
     }
     else
     {
-        LLFolderView* root_folder = getActivePanel() ? getActivePanel()->getRootFolder() : nullptr;
+        LLInventoryPanel* command_panel = plus::invcolumns::commandPanel(this); // <plus> invcolumns: the column chosen last (research/318) </plus>
+        LLFolderView* root_folder = command_panel ? command_panel->getRootFolder() : nullptr; // <plus> invcolumns: the column chosen last (research/318) </plus>
         LLFolderViewItem* current_item = root_folder ? root_folder->getCurSelectedItem() : nullptr;
         if (current_item)
         {
@@ -2147,7 +2243,7 @@ bool LLPanelMainInventory::isActionEnabled(const LLSD& userdata)
     if (command_name == "not_empty")
     {
         bool status = false;
-        LLFolderViewItem* current_item = getActivePanel()->getRootFolder()->getCurSelectedItem();
+        LLFolderViewItem* current_item = plus::invcolumns::commandPanel(this)->getRootFolder()->getCurSelectedItem(); // <plus> invcolumns: the column chosen last (research/318) </plus>
         if (current_item)
         {
             const LLUUID& item_id = static_cast<LLFolderViewModelItemInventory*>(current_item->getViewModelItem())->getUUID();
@@ -2160,7 +2256,7 @@ bool LLPanelMainInventory::isActionEnabled(const LLSD& userdata)
     }
     if (command_name == "delete")
     {
-        return getActivePanel()->isSelectionRemovable();
+        return plus::invcolumns::commandPanel(this)->isSelectionRemovable(); // <plus> invcolumns: the column chosen last (research/318) </plus>
     }
     if (command_name == "save_texture")
     {
@@ -2174,7 +2270,7 @@ bool LLPanelMainInventory::isActionEnabled(const LLSD& userdata)
             item_id = mCombinationGalleryPanel->getFirstSelectedItemID();
         }
         else{
-        LLFolderViewItem* current_item = getActivePanel()->getRootFolder()->getCurSelectedItem();
+        LLFolderViewItem* current_item = plus::invcolumns::commandPanel(this)->getRootFolder()->getCurSelectedItem(); // <plus> invcolumns: the column chosen last (research/318) </plus>
         if (!current_item) return false;
         item_id = static_cast<LLFolderViewModelItemInventory*>(current_item->getViewModelItem())->getUUID();
         }
@@ -2194,7 +2290,7 @@ bool LLPanelMainInventory::isActionEnabled(const LLSD& userdata)
             item_id = mCombinationGalleryPanel->getFirstSelectedItemID();
         }
         else{
-        LLFolderView* root = getActivePanel()->getRootFolder();
+        LLFolderView* root = plus::invcolumns::commandPanel(this)->getRootFolder(); // <plus> invcolumns: the column chosen last (research/318) </plus>
         std::set<LLFolderViewItem*> selection_set = root->getSelectionList();
         if (selection_set.size() != 1) return false;
         LLFolderViewItem* current_item = root->getCurSelectedItem();
@@ -2211,7 +2307,7 @@ bool LLPanelMainInventory::isActionEnabled(const LLSD& userdata)
     // This doesn't currently work, since the viewer can't change an assetID an item.
     if (command_name == "regenerate_link")
     {
-        LLFolderViewItem* current_item = getActivePanel()->getRootFolder()->getCurSelectedItem();
+        LLFolderViewItem* current_item = plus::invcolumns::commandPanel(this)->getRootFolder()->getCurSelectedItem(); // <plus> invcolumns: the column chosen last (research/318) </plus>
         if (!current_item) return false;
         const LLUUID& item_id = static_cast<LLFolderViewModelItemInventory*>(current_item->getViewModelItem())->getUUID();
         const LLViewerInventoryItem *item = gInventory.getItem(item_id);
@@ -2229,6 +2325,12 @@ bool LLPanelMainInventory::isActionEnabled(const LLSD& userdata)
             return can_share_item(mCombinationGalleryPanel->getFirstSelectedItemID());
         }
         else{
+        // <plus> invcolumns: an object chosen in the center column is what is shared (research/318)
+        if (LLInventoryPanel* center = plus::invcolumns::chosenCenter(this))
+        {
+            return LLAvatarActions::canShareSelectedItems(center);
+        }
+        // </plus>
         LLFolderViewItem* current_item = getActivePanel()->getRootFolder()->getCurSelectedItem();
         if (!current_item) return false;
         LLSidepanelInventory* parent = LLFloaterSidePanelContainer::getPanel<LLSidepanelInventory>("inventory");
@@ -2770,6 +2872,39 @@ void LLPanelMainInventory::scrollToInvPanelSelection()
 {
     mCombinationInventoryPanel->getRootFolder()->scrollToShowSelection();
 }
+
+// <plus> invcustomtabs: named filter tabs (plus/invcustomtabs, research/314)
+bool LLPanelMainInventory::handleRightMouseDown(S32 x, S32 y, MASK mask)
+{
+    return PlusInvCustomTabs::handleRightMouseDown(this, x, y) || LLPanel::handleRightMouseDown(x, y, mask);
+}
+
+bool LLPanelMainInventory::handleMouseDown(S32 x, S32 y, MASK mask)
+{
+    if (PlusInvCustomTabs::handleMouseDown(this, x, y))
+    {
+        return true;
+    }
+    return LLPanel::handleMouseDown(x, y, mask);
+}
+
+bool LLPanelMainInventory::handleDoubleClick(S32 x, S32 y, MASK mask)
+{
+    if (PlusInvCustomTabs::handleDoubleClick(this, x, y))
+    {
+        return true;
+    }
+    return LLPanel::handleDoubleClick(x, y, mask);
+}
+
+void LLPanelMainInventory::refreshFinderFromFilter()
+{
+    if (LLFloaterInventoryFinder* finder = getFinder())
+    {
+        finder->updateElementsFromFilter();
+    }
+}
+// </plus>
 
 // List Commands                                                              //
 ////////////////////////////////////////////////////////////////////////////////

@@ -196,6 +196,7 @@ namespace plus::photoscreen::detail
                 :   icon("icon"),
                     chevron("chevron", false)
                 {
+                    changeDefault(commit_on_arrow, true);   // the arrow keys choose at once (combo-arrow)
                 }
             };
 

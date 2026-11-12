@@ -105,6 +105,74 @@ namespace
         return test;
     }
 
+    // How the windows' corners are rounded (roundCorners()): set on the
+    // window thread as each window is made (the system's answer, the same
+    // for every window), read on both threads.
+    enum class Corners : U8
+    {
+        Unknown,    // no window made yet (or only test windows with a frame)
+        Dwm,        // Windows 11 and later: DWM rounds them
+        Region,     // before: each window's shape is a rounded region (cutCorners())
+    };
+    std::atomic<Corners> sCorners{ Corners::Unknown };
+    // OsWindow::setCornerRadius(): written on the main thread, read on the
+    // window thread (cutCorners()). Pixels.
+    std::atomic<S32> sCornerRadius{ 0 };
+    constexpr S32 MAX_CORNER_RADIUS = 64;   // pixels: the floaters' radius at any UI scale is less
+
+    // Window thread: window's shape, a rectangle whose corners are rounded
+    // by sCornerRadius (square while that is 0, or while the window is
+    // maximized or minimized). Windows owns the region once it is set.
+    void cutCorners(HWND window)
+    {
+        RECT rect = {};
+        GetWindowRect(window, &rect);
+        const S32 width = rect.right - rect.left;
+        const S32 height = rect.bottom - rect.top;
+        const S32 radius = sCornerRadius.load();
+        HRGN region = NULL;
+        if (radius > 0 && width > 0 && height > 0 && !IsZoomed(window) && !IsIconic(window))
+        {
+            // The corners' ellipse is 2 radii across; the region leaves out
+            // its right column and bottom row, hence one more.
+            region = CreateRoundRectRgn(0, 0, width + 1, height + 1, 2 * radius, 2 * radius);
+        }
+        if (!SetWindowRgn(window, region, TRUE) && region)
+        {
+            DeleteObject(region);
+        }
+    }
+
+    // Window thread, as the window is made: its corners rounded (as the
+    // floater's background drawn in it is). DWM does it where it can
+    // (Windows 11 and later), keeping it through every size and drawing the
+    // edge anti-aliased; its own thin border is left out (the floater draws
+    // one). Before Windows 11 the attribute is unknown (the call fails, no
+    // harm done): the window's shape is cut instead, again at each WM_SIZE.
+    void roundCorners(HWND window)
+    {
+        if (styleTest().caption)
+        {
+            return;     // a test window with a frame: Windows' own corners
+        }
+        const DWM_WINDOW_CORNER_PREFERENCE round = DWMWCP_ROUND;
+        if (SUCCEEDED(DwmSetWindowAttribute(window, DWMWA_WINDOW_CORNER_PREFERENCE, &round, sizeof(round))))
+        {
+            const COLORREF no_border = DWMWA_COLOR_NONE;
+            DwmSetWindowAttribute(window, DWMWA_BORDER_COLOR, &no_border, sizeof(no_border));
+            if (sCorners.exchange(Corners::Dwm) != Corners::Dwm)
+            {
+                LL_INFOS("Detach") << "Detached windows: corners rounded by DWM" << LL_ENDL;
+            }
+            return;
+        }
+        if (sCorners.exchange(Corners::Region) != Corners::Region)
+        {
+            LL_INFOS("Detach") << "Detached windows: corners rounded by a window region (no DWM corner preference)" << LL_ENDL;
+        }
+        cutCorners(window);
+    }
+
     // Window thread: how deep toMainWindow() is nested; loops broken.
     thread_local int tForwardDepth = 0;
     std::atomic<U32> sForwardLoopsBroken{ 0 };
@@ -403,6 +471,13 @@ namespace
         case WM_DPICHANGED:
             return 0;       // keeps its size: the UI is drawn at the main window's scale (research/87 4 (g))
 
+        case WM_SIZE:
+            if (sCorners.load() == Corners::Region)
+            {
+                cutCorners(window);     // the region was cut to the old size
+            }
+            break;
+
         case WM_DESTROY:
         {
             {
@@ -500,6 +575,7 @@ namespace plus::detach
                 std::lock_guard<std::mutex> lock(sWindowsMutex);
                 sWindows.push_back(window);
             }
+            roundCorners(window);
             shared->handle = window;
             if (shared->closed)
             {
@@ -667,6 +743,30 @@ namespace plus::detach
         return text.str();
     }
 
+    void OsWindow::setCornerRadius(S32 pixels)
+    {
+        pixels = llclamp(pixels, 0, MAX_CORNER_RADIUS);
+        // The radius first, then the mode: a window made meanwhile on the
+        // window thread (the mode, then the radius) is cut to it either way.
+        if (sCornerRadius.exchange(pixels) == pixels || sCorners.load() != Corners::Region || !sMainWindow)
+        {
+            return;     // DWM's corners have their own radius
+        }
+        // Every window cut again where they live (the window thread owns them).
+        plus_post_to_window_thread(sMainWindow, []()
+        {
+            std::vector<HWND> windows;
+            {
+                std::lock_guard<std::mutex> lock(sWindowsMutex);
+                windows = sWindows;
+            }
+            for (HWND window : windows)
+            {
+                cutCorners(window);
+            }
+        });
+    }
+
     void OsWindow::installHooks()
     {
         gPlusIsDetachedWindow = &isDetachedWindow;
@@ -820,6 +920,7 @@ namespace plus::detach
     void* OsWindow::handle() const { return nullptr; }
     void OsWindow::setRect(const ScreenRect& rect) { mRect = rect; }
     std::string OsWindow::describe() const { return "no OS window"; }
+    void OsWindow::setCornerRadius(S32) {}
     void OsWindow::installHooks() {}
     bool OsWindow::hasMouseCapture() { return false; }
     void OsWindow::beginDrawing(void*, S32) {}

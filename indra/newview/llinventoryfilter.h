@@ -363,6 +363,12 @@ public:
 
     LLInventoryFilter& operator =(const LLInventoryFilter& other);
 
+    // <plus> invexplorer: take everything that decides which objects pass from another filter (the words, the search
+    // type, the filter ops and their defaults, the AI search's ids), not the name, the messages or the single-folder
+    // mode. Restarts this filter only when something differed; returns whether it did (research/318).
+    bool                plusCopyFrom(const LLInventoryFilter& other);
+    // </plus>
+
     bool checkAgainstFilterThumbnails(const LLUUID& object_id) const;
     bool checkAgainstFilterFavorites(const LLUUID& object_id) const;
 

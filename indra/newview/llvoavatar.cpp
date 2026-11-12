@@ -31,6 +31,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <sstream>
+#include <algorithm> // <plus> research/319 </plus>
 
 #include "llaudioengine.h"
 #include "noise.h"
@@ -1192,6 +1193,7 @@ void LLVOAvatar::resetImpostors()
         avatar->mImpostor.release();
         avatar->mNeedsImpostorUpdate = true;
         avatar->mLastImpostorUpdateReason = 1;
+        avatar->mImpostorUnusable = true; // <plus> research/319 </plus>
     }
 }
 
@@ -5097,6 +5099,12 @@ bool LLVOAvatar::computeNeedsUpdate()
             //mLastImpostorUpdateReason = 10;
         }
     }
+    // <plus> research/319: while it is drawn in full (visible, not an impostor) its old picture is of something else
+    if (!isSelf() && (!sLimitNonImpostors || mUpdatePeriod <= 1) && isVisible() && !isVisuallyMuted())
+    {
+        mImpostorUnusable = true;
+    }
+    // </plus>
     return needs_update;
 }
 
@@ -8985,6 +8993,7 @@ bool LLVOAvatar::processFullyLoadedChange(bool loading)
         // Fix for jellydoll initially invisible
         mNeedsImpostorUpdate = true;
         mLastImpostorUpdateReason = 6;
+        mImpostorUnusable = true; // <plus> research/319: the picture was taken while it was a cloud </plus>
     }
 
     return changed;
@@ -11441,7 +11450,12 @@ namespace
         line << std::fixed << std::setprecision(2);
         line << "over " << c.frames << " frames: avatars full " << full << " impostor " << impostor << " jellydoll " << jellydoll
              << " invisible " << invisible << " offscreen " << offscreen << " (animesh " << animesh << ")"
-             << "; impostor updates/frame " << c.impostor_updates * per << " [reasons";
+             << "; impostor updates/frame " << c.impostor_updates * per
+             // <plus> research/319
+             << " deferred/frame " << c.impostor_deferred * per
+             << " (old picture " << c.impostor_deferred_old * per << ", longest wait " << c.impostor_max_wait << " s)"
+             // </plus>
+             << " [reasons";
         for (U32 i = 0; i < RHI_IMPOSTOR_REASONS; ++i)
         {
             if (sRHIImpostorReasons[i])
@@ -11497,29 +11511,215 @@ namespace
     }
 }
 
+// <plus> research/319: the extents of its drawable (with its attachments), as the culling tests a
+// bridge's, in the camera's frustum. Not isVisible(): that is also true of one only the shadow, probe or
+// water passes see, and of an animesh off screen. Main thread, outside the render passes.
+bool LLVOAvatar::extentsInCameraFrustum() const
+{
+    if (mDrawable.isNull())
+    {
+        return false;
+    }
+    const LLVector4a* extents = mDrawable->getSpatialExtents();
+    LLVector4a center;
+    center.setAdd(extents[0], extents[1]);
+    center.mul(0.5f);
+    LLVector4a size;
+    size.setSub(extents[1], extents[0]);
+    size.mul(0.5f);
+    return LLViewerCamera::getInstance()->AABBInFrustum(center, size) != 0;
+}
+
+extern bool gSnapshot; // llviewerdisplay.cpp: a picture is being taken (also tiles of one)
+// </plus>
+
 //static
 void LLVOAvatar::updateImpostors()
 {
     LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
 
+    // <plus> research/319: a cap on the impostor pictures taken in one frame.
+    // A crowd that turns with the camera asks for dozens of pictures at once
+    // (each one a full body render); the rest keep their last picture and are
+    // taken in the following frames. The flag mNeedsImpostorUpdate stays set
+    // until generateImpostor clears it, so nothing else remembers what is due.
+    // - An avatar with no picture at all draws nothing (renderImpostor), so it is
+    //   always taken at once, as before (once per avatar, not on every turn).
+    // - The cap is per 1/60 s of time between the calls on average (only the fraction of a
+    //   picture is carried over), so the rate of pictures does not fall with the frame rate;
+    //   a gap longer than 1/30 s counts as 1/30 s (a slow frame must not ask for many more).
+    // - An avatar whose picture is old or of something else (mImpostorUnusable,
+    //   or older than IMPOSTOR_OLD_AGE) has a budget twice as big and goes first.
+    // - After resetImpostors every picture is gone: all of them are "no picture", so all are
+    //   taken at once, as before the cap.
+    // 0 = no cap (as before).
+    static LLCachedControl<U32> captures_setting(gSavedSettings, "PlusImpostorCapturesPerFrame", 2);
+    static F32 credit = 0.f;
+    // twice MAX_IMPOSTOR_INTERVAL (computeNeedsUpdate): flagged this long, it was out of sight, a
+    // full avatar or kept waiting meanwhile: its picture is old
+    constexpr F32 IMPOSTOR_OLD_AGE = 8.f;
+    // a near avatar's picture ages faster: urgency = wait / (URGENCY_BASE + distance / URGENCY_RANGE)
+    constexpr F32 URGENCY_BASE = 0.25f;
+    constexpr F32 URGENCY_RANGE = 30.f;
+    // a long frame gets more pictures, but at most as many as 1/30 s would (not 0.1 s: taking
+    // them lengthens the frame, which would ask for more; research/319 section 8)
+    constexpr F32 MAX_DT = 1.f / 30.f;
+    const U32 cap = llmin<U32>(captures_setting, 64);
+    // Snapshots (also the tiles of one) take every picture, as before the cap: one display()
+    // per tile must not leave an avatar on the border with an old picture in one of them.
+    const bool unlimited = cap == 0 || gSnapshot;
+    // This function's own clock: the time between its calls, not between the main loop's turns
+    // (a turn with only the UI in it is short; a tile of a snapshot is no frame at all).
+    static F64 last_call = 0.0;
+    const F64 now_seconds = LLFrameTimer::getTotalSeconds();
+    const F64 since_last = last_call > 0.0 ? now_seconds - last_call : 0.0;
+    last_call = now_seconds;
+    // not called for a while (minimized, hidden): the waits counted before are over. Longer than
+    // a UI-only pause of the world (PlusUiFrameMaxPauseMs, 1 s), so that using the UI while the world runs slowly
+    // does not reset them
+    const bool gap = since_last > 5.0;
+    const F32 dt = (F32)llclamp(since_last, 0.0, (F64)MAX_DT);
+    credit += cap * dt * 60.f;
+    const U32 budget = unlimited ? 0 : (U32)credit;
+    struct Due
+    {
+        LLVOAvatar* avatar;
+        LLVOAvatar* root;   // the avatar an animesh is attached to, else itself
+        F32 urgency;        // wait / how old its picture may be; F32_MAX: old or of something else
+        F32 distance;
+        bool onscreen;
+        bool no_picture;    // draws nothing until taken: never deferred
+        bool old;           // picture old or of something else
+        bool pending;       // not taken yet
+    };
+    static std::vector<Due> due;                // reused: no allocation per frame
+    static std::vector<LLVOAvatar*> taken_roots;
+    due.clear();
+    taken_roots.clear();
+
     for (LLCharacter* character : LLCharacter::sInstances)
     {
         LLVOAvatar* avatar = (LLVOAvatar*)character;
-        if (!avatar->isDead()
+        if (!(!avatar->isDead()
             && avatar->isVisible()
             && avatar->isImpostor()
-            && avatar->needsImpostorUpdate())
+            && avatar->needsImpostorUpdate()))
         {
-            if (LLRHI::sAvatarStats)
+            // not waiting for a picture any more (out of sight, drawn in full, its flag
+            // taken by its avatar's): a wait is counted from the next time it is left
+            avatar->mImpostorWaitSince = 0.f;
+            continue;
+        }
+        if (gap)
+        {
+            avatar->mImpostorWaitSince = 0.f;
+        }
+        {
+            F32 age = (F32)(gFrameTimeSeconds - avatar->mLastImpostorUpdateFrameTime);
+            if (!llfinite(age) || age < 0.f)
             {
-                ++LLRHI::sAvatarCounters.impostor_updates;
-                const S32 reason = avatar->mLastImpostorUpdateReason;
-                ++sRHIImpostorReasons[reason >= 0 && reason < (S32)RHI_IMPOSTOR_REASONS - 1 ? reason : RHI_IMPOSTOR_REASONS - 1];
+                age = F32_MAX;
             }
-            avatar->calcMutedAVColor();
-            gPipeline.generateImpostor(avatar);
+            LLVOAvatar* attached = avatar->getAttachedAvatar();
+            const bool no_picture = !avatar->mImpostor.isComplete()
+                // an animesh's own request is overwritten by its avatar's flag: not deferred
+                || (attached && avatar->mImpostorUnusable);
+            const bool old = no_picture || avatar->mImpostorUnusable || age > IMPOSTOR_OLD_AGE;
+            F32 distance = avatar->mDrawable.notNull() ? avatar->mDrawable->mDistanceWRTCamera : 0.f;
+            if (!llfinite(distance))
+            {
+                distance = F32_MAX;
+            }
+            due.push_back({ avatar, attached ? attached : avatar,
+                            old ? F32_MAX : age / (URGENCY_BASE + distance / URGENCY_RANGE),
+                            distance,
+                            avatar->mDrawable.notNull() && avatar->mDrawable->isVisible() && avatar->extentsInCameraFrustum(),
+                            no_picture, old, true });
         }
     }
+
+    if (!unlimited && due.size() > 1)
+    {
+        // On screen first, then the old pictures, then the most overdue, the nearer first among equals.
+        std::sort(due.begin(), due.end(), [](const Due& a, const Due& b)
+        {
+            if (a.onscreen != b.onscreen) return a.onscreen;
+            if (a.urgency != b.urgency) return a.urgency > b.urgency;
+            return a.distance < b.distance;
+        });
+    }
+
+    auto take = [&](Due& d)
+    {
+        LLVOAvatar* avatar = d.avatar;
+        if (LLRHI::sAvatarStats)
+        {
+            ++LLRHI::sAvatarCounters.impostor_updates;
+            const S32 reason = avatar->mLastImpostorUpdateReason;
+            ++sRHIImpostorReasons[reason >= 0 && reason < (S32)RHI_IMPOSTOR_REASONS - 1 ? reason : RHI_IMPOSTOR_REASONS - 1];
+        }
+        avatar->calcMutedAVColor();
+        gPipeline.generateImpostor(avatar);
+        taken_roots.push_back(avatar);
+        d.pending = false;
+    };
+
+    // First pass: an animesh whose avatar is due too waits for it (taken with it below).
+    U32 taken = 0;
+    U32 taken_old = 0;
+    bool any_left = false;
+    for (Due& d : due)
+    {
+        if (d.root != d.avatar && !d.no_picture
+            && std::find_if(due.begin(), due.end(), [&](const Due& o) { return o.avatar == d.root; }) != due.end())
+        {
+            any_left = true;
+            continue;
+        }
+        if (!unlimited && !d.no_picture && (d.old ? taken_old >= 2 * budget : taken >= budget))
+        {
+            any_left = true;
+            continue;
+        }
+        if (!d.no_picture)
+        {
+            ++(d.old ? taken_old : taken);
+        }
+        take(d);
+    }
+    if (any_left)
+    {
+        // An animesh is taken with the avatar it is attached to (its flag is the
+        // avatar's, copied each frame): a picture of one without the other would
+        // be taken from another direction or lost.
+        for (Due& d : due)
+        {
+            if (!d.pending)
+            {
+                continue;
+            }
+            if (d.root != d.avatar && std::find(taken_roots.begin(), taken_roots.end(), d.root) != taken_roots.end())
+            {
+                take(d);
+                continue;
+            }
+            if (!unlimited && LLRHI::sAvatarStats)
+            {
+                ++LLRHI::sAvatarCounters.impostor_deferred;
+                LLRHI::sAvatarCounters.impostor_deferred_old += d.old ? 1 : 0;
+                if (d.avatar->mImpostorWaitSince == 0.f)
+                {
+                    d.avatar->mImpostorWaitSince = std::max<F32>(gFrameTimeSeconds, 0.001f);
+                }
+                LLRHI::sAvatarCounters.impostor_max_wait = llmax(LLRHI::sAvatarCounters.impostor_max_wait,
+                                                                 (F32)(gFrameTimeSeconds - d.avatar->mImpostorWaitSince));
+            }
+        }
+    }
+    // only the fraction of a picture is carried over: a quiet frame does not save up a burst
+    // (the old pictures' budget is twice the normal one: an old picture costs half a credit)
+    credit = llclamp(credit - llmax((F32)taken, 0.5f * (F32)taken_old), 0.f, 0.999f);
+    // </plus>
 
     LLCharacter::sAllowInstancesChange = true;
 
@@ -12308,6 +12508,7 @@ void LLVOAvatar::setVisualMuteSettings(VisualMuteSettings set)
     mVisuallyMuteSetting = set;
     mNeedsImpostorUpdate = true;
     mLastImpostorUpdateReason = 7;
+    mImpostorUnusable = true; // <plus> research/319 </plus>
 
     LLRenderMuteList::getInstance()->saveVisualMuteSetting(getID(), S32(set));
 }
@@ -12393,6 +12594,7 @@ void LLVOAvatar::updateOverallAppearance()
         {
             mNeedsImpostorUpdate = true;
             mLastImpostorUpdateReason = 8;
+            mImpostorUnusable = true; // <plus> research/319 </plus>
         }
         updateMeshVisibility();
     }

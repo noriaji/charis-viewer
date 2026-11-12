@@ -555,11 +555,12 @@
      mouse_opaque="true"
      name="location_icon"
      width="16" />
+    <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_readonly_color was DkGray on the official light box, so the box's own colour name (research/239) -->
     <search_editor
      follows="top|right"
      search_button_visible="false"
      height="22"
-     text_readonly_color="DkGray"
+     text_readonly_color="TextFgReadOnlyColor"
      label="Regions by Name"
      layout="topleft"
      top_delta="-2"
@@ -568,6 +569,7 @@
      select_on_focus="true"
      tool_tip="Type the name of a region"
      width="152"/>
+    <!-- /plus -->
    <button
      follows="top|right"
      height="23"

@@ -178,6 +178,12 @@ namespace plus::safemode::badge
         }
     }
 
+    S32 cornerHeight()
+    {
+        const LLView* badge = sView.get();
+        return badge && badge->getVisible() ? HEIGHT + style::RELOAD_MARGIN : 0;
+    }
+
     void attach()
     {
         // at the front: over the login panel

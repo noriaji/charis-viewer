@@ -737,6 +737,7 @@
           top="172"
           width="124" />
         <plus_ps_combo
+          commit_on_arrow="true"
           name="c_focus_mode"
           height="33"
           layout="topleft"
@@ -818,6 +819,7 @@
           top="291"
           width="124" />
         <plus_ps_combo
+          commit_on_arrow="true"
           name="c_bokeh"
           height="33"
           layout="topleft"
@@ -976,6 +978,7 @@
           top="648"
           width="124" />
         <plus_ps_combo
+          commit_on_arrow="true"
           name="c_lut"
           height="33"
           layout="topleft"

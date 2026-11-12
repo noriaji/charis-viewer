@@ -23,15 +23,6 @@
 					<radio_item name="external_all" label="すべてのリンクを内蔵ブラウザで開く" tool_tip="ヘルプや Web のリンクなどを内蔵ブラウザで開きます。内蔵ブラウザは [APP_NAME] の中に新しいウィンドウとして開きます。" />
 				</plus_ps_radio>
 				<plus_ps_check_compat name="browser_javascript_enabled" label="JavaScript を有効にする" />
-				<plus_ps_text name="Software updates:">
-					ソフトウェアの更新：
-				</plus_ps_text>
-				<plus_ps_combo name="updater_service_combobox">
-					<plus_ps_combo.item name="Install_automatically" label="更新を自動でインストールする" />
-					<plus_ps_combo.item name="Install_ask" label="任意の更新の準備ができたら確認する" />
-					<plus_ps_combo.item name="Install_manual" label="必須の更新だけインストールする" />
-				</plus_ps_combo>
-				<plus_ps_check_compat name="update_willing_to_test" label="ベータ版への更新も受け取る" />
 				<plus_ps_check_compat name="update_show_release_notes" label="更新の後にリリースノートを表示する" />
 				<plus_ps_text name="Proxy Settings:">
 					プロキシ：

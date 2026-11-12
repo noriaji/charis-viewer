@@ -43,6 +43,8 @@ Firestorm Viewer (Phoenix Firestorm Project), GNU LGPL 2.1 only:
   - chat keyword alerts (The Phoenix Firestorm Project, Inc.)
   - Local Mesh (Vaalith Jinn; glTF importer by Beq Janus)
   - Protect folder (Ansariel Hiller)
+  - the inventory's custom filter tabs (PanteraPolnocy; FIRE-35598, FIRE-36831;
+    the idea of a tabbed inventory comes from the Catznip viewer)
   - RLVa, the RestrainedLove API support (Kitty Barnett; GNU LGPL 2.1; the code
     follows Firestorm's rlv*.cpp / rlv*.h, RLVa 2.4.2; plus/rlv/ORIGIN.md lists
     what was left out or rewritten)
@@ -200,7 +202,10 @@ for the photo screen's icons:
   skins/charis/textures/charis/title_*.png (the windows' title bar buttons:
   Lucide's "x", "minus", "copy", "arrow-down-to-line" and "circle-help") are
   drawn from the same path data by plus/photoscreen/psui/make_ui_tokens.py
-  (skins/charis/ORIGIN.md).
+  (skins/charis/ORIGIN.md), as are skins/charis/textures/charis/check_*.png
+  (the check mark of the check boxes: Lucide's "check") and
+  skins/charis/textures/charis/search.png (the magnifier of the search
+  fields: Lucide's "search").
   The license of Lucide:
 
 ISC License

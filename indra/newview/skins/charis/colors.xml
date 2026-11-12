@@ -166,6 +166,17 @@
   <color name="ToolTipTextColor" reference="PsTextWhite" />
   <color name="SearchableControlHighlightBgColor" reference="PsSearchHitFill" />
   <color name="SearchableControlHighlightFontColor" reference="PsAccentLine" />
+  <color name="TextFgColor" reference="PsTextWhite" />
+  <color name="TextFgTentativeColor" reference="PsTextDim" />
+  <color name="TextCursorColor" reference="PsTextWhite" />
+  <color name="TextBgWriteableColor" reference="PsFieldBg" />
+  <color name="TextBgFocusColor" reference="PsFieldBg" />
+  <color name="SelectionColor" reference="PsAccentLine" />
+  <color name="TextEmbeddedItemColor" reference="PsLinkText" />
+  <color name="TextFgReadOnlyColor" reference="PsTextLabel" />
+  <color name="OutfitGalleryItemUnselected" reference="PsCardBorder" />
+  <color name="OutfitGalleryItemSelected" reference="PsRailSelLeft" />
+  <color name="BadgeImageColor" reference="PsBadgeFill" />
 
   <!-- Official names that refer to a palette name above: read again here so they follow it -->
   <color name="AccordionHeaderTextColor" reference="LtGray" />
@@ -205,8 +216,6 @@
   <color name="ObjectBubbleColor" value="0.125 0.125 0.125 .66" />
   <color name="ObjectChatColor" value="0.3 0.82 1 1" />
   <color name="SystemChatColor" value="0.75 0.75 0.75 1" />
-  <color name="TextBgWriteableColor" value="0.75 0.75 0.75 1" />
-  <color name="TextFgReadOnlyColor" value="0.75 0.75 0.75 1" />
   <color name="OutputMonitorMutedColor" value="0.169 0.169 0.169 1" />
 
 </colors>

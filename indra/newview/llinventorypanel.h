@@ -268,6 +268,12 @@ public:
     // Clean up stuff when the folder root gets deleted
     void clearFolderRoot();
 
+    // <plus> invcolumns: a list whose folder plus/invexplorer chooses (the center of three columns) keeps its root
+    // view when that folder is removed from the inventory (itemChanged), and plus/invexplorer moves it to a folder
+    // that exists. Off (the official lists): the root is destroyed with its folder (research/318 9)
+    void plusSetRootOutlivesFolder(bool outlives) { mPlusRootOutlivesFolder = outlives; }
+    // </plus>
+
     static void callbackPurgeSelectedItems(const LLSD& notification, const LLSD& response, const std::vector<LLUUID> inventory_selected);
 
     void changeFolderRoot(const LLUUID& new_id) {};
@@ -312,6 +318,7 @@ protected:
 
     bool mBuildChildrenViews; // build root and children
     bool mRootInited;
+    bool mPlusRootOutlivesFolder = false; // <plus> invcolumns: plusSetRootOutlivesFolder (research/318 9) </plus>
 
 
     //--------------------------------------------------------------------
@@ -440,6 +447,17 @@ public:
     typedef std::function<void()> root_changed_callback_t;
     boost::signals2::connection setRootChangedCallback(root_changed_callback_t cb);
 
+    // <plus> invcolumns: whether a change of the root gives the window the keyboard focus and brings it to the front
+    // (updateSingleFolderRoot; the official lists: always). plus/invexplorer turns it off while it changes the
+    // center column's folder itself. Returns what it was (research/318 9)
+    bool plusSetRootChangeTakesFocus(bool takes_focus)
+    {
+        const bool before = mPlusRootChangeTakesFocus;
+        mPlusRootChangeTakesFocus = takes_focus;
+        return before;
+    }
+    // </plus>
+
 protected:
     LLInventorySingleFolderPanel(const Params& params);
     ~LLInventorySingleFolderPanel();
@@ -452,6 +470,7 @@ protected:
     std::list<LLUUID> mForwardFolders;
 
     boost::signals2::signal<void()> mRootChangedSignal;
+    bool mPlusRootChangeTakesFocus = true; // <plus> invcolumns: plusSetRootChangeTakesFocus (research/318 9) </plus>
 };
 
 /************************************************************************/

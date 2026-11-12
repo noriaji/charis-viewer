@@ -130,6 +130,26 @@ public:
     void setSingleFolderMode(bool is_single_mode) { mSingleFolderMode = is_single_mode; }
     bool isSingleFolderMode() const { return mSingleFolderMode; }
 
+    // <plus> invexplorer: a view that lays out and shows only its folders, not the items in them (the left column of
+    // the inventory window's three columns, plus/invexplorer/invcolumns, research/318). The filter and the views are
+    // the same: arrange() hides the item rows and sanitizeSelection() moves a selected item to its folder.
+    void setFoldersOnly(bool folders_only)
+    {
+        if (mFoldersOnly != folders_only)
+        {
+            mFoldersOnly = folders_only;
+            mFoldersOnlyGaveWay = LLHandle<LLView>();
+            mFoldersOnlyGaveWayRename = false;
+            arrangeAll();
+        }
+    }
+    bool isFoldersOnly() const { return mFoldersOnly; }
+    // The item that sanitizeSelection() moved away from in this update (null: none), once: the selection signal that
+    // follows in the same update can hand it on (the center column selects it there). *wanted_rename: a new item was
+    // about to be renamed; that rename does not start here (it would open on the folder).
+    LLFolderViewItem* takeFoldersOnlyGaveWay(bool* wanted_rename);
+    // </plus>
+
     // Close all folders in the view
     void closeAllFolders();
     void openTopLevelFolders();
@@ -311,6 +331,11 @@ protected:
                                     mShowSingleSelection,
                                     mSuppressFolderMenu,
                                     mSingleFolderMode;
+    // <plus> invexplorer: setFoldersOnly(), takeFoldersOnlyGaveWay() (research/318)
+    bool                            mFoldersOnly = false;
+    LLHandle<LLView>                mFoldersOnlyGaveWay;
+    bool                            mFoldersOnlyGaveWayRename = false;
+    // </plus>
 
     // Renaming variables and methods
     LLFolderViewItem*               mRenameItem;  // The item currently being renamed

@@ -1274,8 +1274,12 @@ void LLAgentCamera::updateLookAt(const S32 mouse_x, const S32 mouse_y)
             F32 y_from_center =
                 ((F32) mouse_y / (F32) gViewerWindow->getWorldViewHeightScaled() ) - 0.5f;
 
-            frameCamera.yaw( - x_from_center * gSavedSettings.getF32("YawFromMousePosition") * DEG_TO_RAD);
-            frameCamera.pitch( - y_from_center * gSavedSettings.getF32("PitchFromMousePosition") * DEG_TO_RAD);
+            // <plus> cpu-trim-safe: cached controls, not name lookups each frame (was: gSavedSettings.getF32("YawFromMousePosition") / ("PitchFromMousePosition"))
+            static LLCachedControl<F32> yaw_from_mouse(gSavedSettings, "YawFromMousePosition", 90.f);
+            static LLCachedControl<F32> pitch_from_mouse(gSavedSettings, "PitchFromMousePosition", 90.f);
+            // </plus>
+            frameCamera.yaw( - x_from_center * yaw_from_mouse * DEG_TO_RAD); // <plus> cpu-trim-safe </plus>
+            frameCamera.pitch( - y_from_center * pitch_from_mouse * DEG_TO_RAD); // <plus> cpu-trim-safe </plus>
             lookAtType = LOOKAT_TARGET_FREELOOK;
         }
 
@@ -1543,7 +1547,10 @@ void LLAgentCamera::updateCamera()
         {
             const F32 SMOOTHING_HALF_LIFE = 0.02f;
 
-            F32 smoothing = LLSmoothInterpolation::getInterpolant(gSavedSettings.getF32("CameraPositionSmoothing") * SMOOTHING_HALF_LIFE, false);
+            // <plus> cpu-trim-safe: a cached control, not a name lookup each frame (was: gSavedSettings.getF32("CameraPositionSmoothing"))
+            static LLCachedControl<F32> camera_position_smoothing(gSavedSettings, "CameraPositionSmoothing", 1.f);
+            // </plus>
+            F32 smoothing = LLSmoothInterpolation::getInterpolant(camera_position_smoothing * SMOOTHING_HALF_LIFE, false); // <plus> cpu-trim-safe </plus>
 
             if (mFocusOnAvatar && !mFocusObject) // we differentiate on avatar mode
             {

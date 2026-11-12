@@ -550,6 +550,20 @@ bool LLFolderView::changeSelection(LLFolderViewItem* selection, bool selected)
     return rv;
 }
 
+// <plus> invexplorer (research/318)
+LLFolderViewItem* LLFolderView::takeFoldersOnlyGaveWay(bool* wanted_rename)
+{
+    LLFolderViewItem* item = dynamic_cast<LLFolderViewItem*>(mFoldersOnlyGaveWay.get());
+    if (wanted_rename)
+    {
+        *wanted_rename = item && mFoldersOnlyGaveWayRename;
+    }
+    mFoldersOnlyGaveWay = LLHandle<LLView>();
+    mFoldersOnlyGaveWayRename = false;
+    return item;
+}
+// </plus>
+
 void LLFolderView::sanitizeSelection()
 {
     LL_PROFILE_ZONE_SCOPED_CATEGORY_UI;
@@ -558,6 +572,13 @@ void LLFolderView::sanitizeSelection()
     LLFolderViewItem* original_selected_item = getCurSelectedItem();
 
     std::vector<LLFolderViewItem*> items_to_remove;
+    // <plus> invexplorer: what gave way below is handed on only in the update it happened in (research/318)
+    if (mFoldersOnly)
+    {
+        mFoldersOnlyGaveWay = LLHandle<LLView>();
+        mFoldersOnlyGaveWayRename = false;
+    }
+    // </plus>
     // <plus> One walk up the parents per item checks both the visibility and
     // whether an ancestor is selected too. This runs every frame the view is
     // shown, and the old check compared every selected item with every other
@@ -602,6 +623,16 @@ void LLFolderView::sanitizeSelection()
 
         //  deselect item if any ancestor is closed or didn't pass filter requirements,
         //  if an ancestor is selected too, or if it is the invisible root folder.
+        // invexplorer (research/318): a folders-only view shows no items, so a selected item gives way to its folder
+        // below (keys such as Delete must not act on a row that is not shown) (setFoldersOnly). A rename waiting for
+        // a new item must not open on that folder: it is handed on with the item (takeFoldersOnlyGaveWay).
+        if (mFoldersOnly && item->mListedIn && !item->mListedAsFolder)
+        {
+            visible = false;
+            mFoldersOnlyGaveWay = item->getHandle();   // the last one: the current selection
+            mFoldersOnlyGaveWayRename = mFoldersOnlyGaveWayRename || mNeedsAutoRename;
+            mNeedsAutoRename = false;
+        }
         if (!visible || ancestor_selected || item == getRoot())
         {
             items_to_remove.push_back(item);

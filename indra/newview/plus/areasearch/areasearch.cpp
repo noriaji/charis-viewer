@@ -37,6 +37,7 @@
 #include <iterator>
 
 #include "llagent.h"
+#include "llagentcamera.h"
 #include "llapp.h"
 #include "llavatarnamecache.h"
 #include "llcachename.h"
@@ -50,6 +51,7 @@
 #include "llviewerparcelmgr.h"
 #include "llviewercontrol.h"
 #include "llviewerregion.h"
+#include "llvoavatar.h"
 #include "llvocache.h"
 #include "object_flags.h"
 #include "llprimitive.h"
@@ -147,6 +149,31 @@ namespace plus::areasearch
             return text;
         }
 
+        // The words of the quick filter: split at spaces (half width, ideographic U+3000 and tabs; any
+        // run of them is one separator, none at the ends makes no empty word), lower-cased like the
+        // other needles. Split as wide characters, so that a byte of a multi-byte character is never
+        // taken for a separator.
+        std::vector<std::string> quickFilterWords(const std::string& text)
+        {
+            static const LLWString separators = { llwchar(0x20), llwchar(0x09), llwchar(0x3000) };
+            std::vector<LLWString> tokens;
+            LLWStringUtil::getTokens(utf8str_to_wstring(text), tokens, separators, LLWString());
+            std::vector<std::string> words;
+            words.reserve(tokens.size());
+            for (const LLWString& token : tokens)
+            {
+                words.push_back(lowerAscii(wstring_to_utf8str(token)));
+            }
+            return words;
+        }
+
+        // What a name shows until the name cache has it (text conditions see it; the quick filter does not).
+        const std::string& waitingName()
+        {
+            static const std::string waiting = LLTrans::getString("AvatarNameWaiting");
+            return waiting;
+        }
+
         // Worn by an avatar (the agent's or anyone's): an attachment's root hangs from the avatar,
         // its other prims from the root (HUDs too). An attached animesh is told by its parents as
         // well (its getAvatar() is its control avatar, which is no parent); an animesh rezzed in
@@ -163,8 +190,7 @@ namespace plus::areasearch
 
         F32 distanceTo(const LLVector3d& from, LLViewerObject* object)
         {
-            // A HUD attachment is where the agent is.
-            return object->isHUDAttachment() ? 0.f : static_cast<F32>(dist_vec(from, object->getPositionGlobal()));
+            return static_cast<F32>(dist_vec(from, positionOf(object)));
         }
 
         // Without an object (nullptr): where the cache record said it is.
@@ -173,11 +199,15 @@ namespace plus::areasearch
             return object ? distanceTo(from, object) : static_cast<F32>(dist_vec(from, entry.position));
         }
 
-        // PlusAreaSearchRange, metres (0: no limit).
+        // PlusAreaSearchRange, metres. 0 is the draw distance: the cache records of the regions around
+        // reach far past it (the whole region, and the regions the grid keeps), and a list of all of them
+        // is not what "0" is taken to mean. Held to MAX_RANGE either way: a draw distance beyond it
+        // lists (and asks the simulator for) no more than MAX_RANGE.
         F32 searchRange()
         {
             static LLCachedControl<F32> range(gSavedSettings, "PlusAreaSearchRange");
-            return llclamp(static_cast<F32>(range), 0.f, MAX_RANGE);
+            const F32 metres = static_cast<F32>(range);
+            return llclamp(metres > 0.f ? metres : gAgentCamera.mDrawDistance, 0.f, MAX_RANGE);
         }
 
         // ObjectProperties: the official handler (a selection of the agent's) and the engine's.
@@ -199,6 +229,22 @@ namespace plus::areasearch
     bool keepObjects()
     {
         return sEngine && sEngine->running();
+    }
+
+    LLVector3d positionOf(LLViewerObject* object)
+    {
+        if (object->isHUDAttachment())
+        {
+            return gAgent.getPositionGlobal();
+        }
+        if (object->isAttachment() && object->mDrawable.isNull())
+        {
+            if (LLVOAvatar* wearer = object->getAvatarAncestor())
+            {
+                return wearer->getPositionGlobal();
+            }
+        }
+        return object->getPositionGlobal();
     }
 
     F32 farRange()
@@ -356,7 +402,7 @@ namespace plus::areasearch
             mNeedle[i]  = std::move(needle[i]);
             mPattern[i] = std::move(pattern[i]);
         }
-        mAnyNeedle = lowerAscii(criteria.anyText);
+        mAnyNeedles = quickFilterWords(criteria.anyText);
 
         checkRegion();
         if (cacheClear)
@@ -430,7 +476,7 @@ namespace plus::areasearch
             mOwns360 = true;
             gAgent.changeInterestListMode(IL_MODE_360);
         }
-        // The range changed (the Options tab): the next pass lists what came within it and
+        // The range changed (the List tab's input): the next pass lists what came within it and
         // removes the rows of what is beyond it now. Nothing is asked again.
         const F32 range = searchRange();
         if (range != mRange)
@@ -588,7 +634,7 @@ namespace plus::areasearch
                 entry.id           = id;
                 entry.localId      = object->getLocalID();
                 entry.regionHandle = object->getRegion()->getHandle();
-                entry.position     = object->getPositionGlobal();
+                entry.position     = positionOf(object);
                 continue;
             }
             Entry& entry = it->second;
@@ -596,7 +642,7 @@ namespace plus::areasearch
             // Where it is, for when the object goes and the record speaks for it: a record seen only
             // while ACTIVE (visitRecord()) gives no position, and the range would measure from the
             // origin until the record is read again, taking the row out (research/275 L078).
-            entry.position = object->getPositionGlobal();
+            entry.position = positionOf(object);
             if (entry.request == Entry::Request::Finished)
             {
                 tryList(entry, object);
@@ -1133,7 +1179,7 @@ namespace plus::areasearch
                 return;
             }
         }
-        if (c.onlyParcel && !LLViewerParcelMgr::instance().inAgentParcel(object ? object->getPositionGlobal() : entry.position))
+        if (c.onlyParcel && !LLViewerParcelMgr::instance().inAgentParcel(object ? positionOf(object) : entry.position))
         {
             return;
         }
@@ -1298,8 +1344,7 @@ namespace plus::areasearch
             }
             mNameConnections[id] = request;
         }
-        static const std::string waiting = LLTrans::getString("AvatarNameWaiting");
-        return waiting;
+        return waitingName();
     }
 
     // A name came: noted, and the rows are looked at once for all the names of the frame on the
@@ -1394,17 +1439,34 @@ namespace plus::areasearch
 
     bool Engine::anyTextMatches(const Row& row) const
     {
-        if (mAnyNeedle.empty())
+        if (mAnyNeedles.empty())
         {
             return true;
         }
-        for (const std::string* text : { &row.name, &row.description, &row.owner, &row.group, &row.creator, &row.lastOwner })
+        // Each text lower-cased once for all the words. A name the cache does not have yet counts as
+        // empty (the placeholder is no word to search for); applyArrivedNames() judges the row again
+        // when it comes.
+        const std::string& waiting = waitingName();
+        const auto lowered = [&waiting](const std::string& text) { return text == waiting ? std::string() : lowerAscii(text); };
+        const std::string texts[] = { lowerAscii(row.name), lowerAscii(row.description), lowered(row.owner),
+                                      lowered(row.group),   lowered(row.creator),        lowered(row.lastOwner) };
+        // Every word is in one of the texts (not all in the same one): AND.
+        for (const std::string& needle : mAnyNeedles)
         {
-            if (lowerAscii(*text).find(mAnyNeedle) != std::string::npos)
+            bool found = false;
+            for (const std::string& text : texts)
             {
-                return true;
+                if (text.find(needle) != std::string::npos)
+                {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+            {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 }

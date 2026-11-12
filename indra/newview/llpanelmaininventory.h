@@ -35,6 +35,11 @@
 
 #include "llfolderview.h"
 
+// <plus> invcustomtabs: named filter tabs (plus/invcustomtabs, research/314)
+#include <memory>
+class PlusInvCustomTabs;
+// </plus>
+
 class LLComboBox;
 class LLFolderViewItem;
 class LLInventoryPanel;
@@ -63,6 +68,7 @@ class LLPanelMainInventory : public LLPanel, LLInventoryObserver
 {
 public:
     friend class LLFloaterInventoryFinder;
+    friend class PlusInvCustomTabs; // <plus> invcustomtabs (plus/invcustomtabs, research/314) </plus>
 
     LLPanelMainInventory(const LLPanel::Params& p = getDefaultParams());
     ~LLPanelMainInventory();
@@ -77,6 +83,12 @@ public:
     };
 
     virtual bool handleKeyHere(KEY key, MASK mask);
+    // <plus> invcustomtabs: the custom tabs' right click, close icon, "+" and hidden-tabs arrow (plus/invcustomtabs, research/314)
+    /*virtual*/ bool handleRightMouseDown(S32 x, S32 y, MASK mask);
+    /*virtual*/ bool handleMouseDown(S32 x, S32 y, MASK mask);
+    /*virtual*/ bool handleDoubleClick(S32 x, S32 y, MASK mask);
+    void refreshFinderFromFilter();
+    // </plus>
 
     // Inherited functionality
     /*virtual*/ bool handleDragAndDrop(S32 x, S32 y, MASK mask, bool drop,
@@ -232,6 +244,8 @@ private:
 
     boost::signals2::connection mListViewRootUpdatedConnection;
     boost::signals2::connection mGalleryRootUpdatedConnection;
+
+    std::unique_ptr<PlusInvCustomTabs> mCustomTabs; // <plus> invcustomtabs (plus/invcustomtabs, research/314) </plus>
 
     //////////////////////////////////////////////////////////////////////////////////
     // List Commands                                                                //

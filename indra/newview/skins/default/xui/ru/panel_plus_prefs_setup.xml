@@ -23,15 +23,6 @@
 					<radio_item name="external_all" label="Для всех ссылок следует использовать встроенный браузер" tool_tip="Для просмотра справки, ссылок на веб-страницы и т. д. будет использоваться встроенный браузер. Этот браузер открывается как новое окно в [APP_NAME]." />
 				</plus_ps_radio>
 				<plus_ps_check_compat name="browser_javascript_enabled" label="Разрешить Javascript" />
-				<plus_ps_text name="Software updates:">
-					Обновления ПО:
-				</plus_ps_text>
-				<plus_ps_combo name="updater_service_combobox">
-					<plus_ps_combo.item name="Install_automatically" label="Автоматическая установка каждого обновления" />
-					<plus_ps_combo.item name="Install_ask" label="Когда необязательное обновление будет готово к установке, запросите меня" />
-					<plus_ps_combo.item name="Install_manual" label="Установка только обязательных обновлений" />
-				</plus_ps_combo>
-				<plus_ps_check_compat name="update_willing_to_test" label="Устанавливать бета-версии" />
 				<plus_ps_check_compat name="update_show_release_notes" label="Показать заметки о выпуске после обновления" />
 				<plus_ps_text name="Proxy Settings:">
 					Настройки прокси-сервера:

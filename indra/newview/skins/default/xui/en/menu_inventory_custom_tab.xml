@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The right-click menu of a custom inventory tab (plus/invcustomtabs, research/314;
+     Firestorm's FIRE-35598 and FIRE-36831). -->
+
+<menu
+ layout="topleft"
+ mouse_opaque="false"
+ name="menu_inventory_custom_tab"
+ visible="false">
+  <menu_item_call
+   label="Rename..."
+   layout="topleft"
+   name="rename_tab">
+    <on_click function="PlusInvCustomTab.Rename" />
+  </menu_item_call>
+  <menu_item_call
+   label="Clone"
+   layout="topleft"
+   name="clone_tab">
+    <on_click function="PlusInvCustomTab.Clone" />
+  </menu_item_call>
+  <menu_item_separator layout="topleft" />
+  <menu_item_call
+   label="Hide"
+   layout="topleft"
+   name="hide_tab">
+    <on_click function="PlusInvCustomTab.Hide" />
+  </menu_item_call>
+  <menu_item_call
+   label="Close"
+   layout="topleft"
+   name="close_tab">
+    <on_click function="PlusInvCustomTab.Close" />
+  </menu_item_call>
+</menu>

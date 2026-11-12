@@ -1741,6 +1741,9 @@ namespace LLRHI
         U32 shadow_packets = 0;                 // rigged native shadow packets
         U32 shadow_packet_rows = 0;             // of which carry a row
         U32 impostor_updates = 0;               // LLPipeline::generateImpostor calls
+        U32 impostor_deferred = 0;              // pictures due but left to a later frame (PlusImpostorCapturesPerFrame, research/319)
+        U32 impostor_deferred_old = 0;          // of which the picture shown is old or of something else (one with none is never deferred)
+        F32 impostor_max_wait = 0.f;            // longest wait (s) of a deferred picture, from when it was first left to a later frame
         U32 updates_full = 0, updates_impostor = 0;             // LLVOAvatar::idleUpdate calls
         U64 update_ns_full = 0, update_ns_impostor = 0;
         U64 character_ns_full = 0, character_ns_impostor = 0;   // of which updateCharacter

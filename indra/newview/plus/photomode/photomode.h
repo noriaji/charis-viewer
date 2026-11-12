@@ -26,13 +26,19 @@
 #ifndef PLUS_PHOTOMODE_PHOTOMODE_H
 #define PLUS_PHOTOMODE_PHOTOMODE_H
 
+#include <functional>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "llsd.h"
 #include "lluuid.h"
 #include "v3dmath.h"
+
+#include <boost/signals2.hpp>
+
+class LLSettingsBase;
 
 namespace plus::photomode
 {
@@ -132,6 +138,37 @@ namespace plus::photomode
     bool applyEnvironmentItem(const LLUUID& item_id);
     // "Back to the land's settings": clears the personal environment (sky and water).
     void clearEnvironment();
+
+    // A settings asset (a sky, a water, a day cycle) read, as LLSettingsVOBase::getSettingsAsset() does, except that
+    // owner marks the request: the asset storage drops a second request for an asset still coming only when its
+    // callback and user data are the first's (LLAssetStorage::getAssetData(): two lambdas always compare the same,
+    // and getSettingsAsset() gives no user data), so a request of another part for the same asset (the official
+    // menus, Apply Locally, the photo tools' swatches) would take this one's answer away. One owner, one address that
+    // stays (a static): its own second request for an asset still coming is still dropped.
+    using SettingsFetched = std::function<void(const LLUUID& asset_id, const std::shared_ptr<LLSettingsBase>& settings, S32 status)>;
+    void fetchSettingsAsset(const LLUUID& asset, const void* owner, SettingsFetched done);
+
+    // The personal environment from a settings asset (a sky, a water or a day cycle), as
+    // LLEnvironment::setEnvironment(ENV_LOCAL, asset, transition) does, except that each layer wants one asset:
+    // what comes is put on only while it is the one its layer wants, so choosing fast with the arrow keys ends on
+    // the last one chosen (an older one, fetched longer, is not put on after it). A day cycle drops the sky and
+    // water still coming (it replaces them); a sky or water chosen after a day cycle goes on it, also when the day
+    // cycle comes later.
+    enum class EnvLayer { Sky, Water, Day, Count };
+    enum class EnvTransition { Instant, Default };
+    enum class EnvFetch { None, Pending, Arrived, Failed };    // of the asset a layer wants
+    void setLocalEnvironmentAsset(const LLUUID& asset, EnvLayer layer, EnvTransition transition);
+    // A layer set here and now another way (the land's again, cleared): what is still coming for it is dropped.
+    void forgetLocalEnvironmentAsset(EnvLayer layer);
+    // The number of the layer's changes asked for here (each of the two above): the arrow keys' cursor.
+    U32 localEnvironmentChanges(EnvLayer layer);
+    EnvFetch localEnvironmentFetch(EnvLayer layer);
+    // The asset the layer wants now (null: none, or dropped). With localEnvironmentFetch(): the one still coming, or
+    // the one that could not be had (a view may show the one coming instead of the one in use).
+    LLUUID localEnvironmentWanted(EnvLayer layer);
+    // Called when a layer's wanted asset could not be had (or was not of the layer's kind). The environment does
+    // not change then, so a view that shows the one coming goes back to the one in use here.
+    boost::signals2::connection setLocalEnvironmentFailedCallback(const std::function<void()>& cb);
     // The sky back to the land's; a water chosen stays.
     void restoreLandSky();
     // The water back to the land's; the sky stays.

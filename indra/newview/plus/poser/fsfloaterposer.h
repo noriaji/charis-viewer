@@ -32,6 +32,7 @@
 #include "lltoolmgr.h"
 #include "fsposeranimator.h"
 #include "fsmaniprotatejoint.h"
+#include "handcurl.h" // <plus> hand tab "Easy"
 
 class FSVirtualTrackpad;
 class LLButton;
@@ -39,6 +40,8 @@ class LLCheckBoxCtrl;
 class LLLineEditor;
 class LLScrollListCtrl;
 class LLSliderCtrl;
+class LLTextBox; // <plus>
+class LLContextMenu; // <plus>
 class LLTabContainer;
 class FSLoadPoseTimer;
 
@@ -302,6 +305,51 @@ public:
     void onClickLoadLeftHandPose();
     void onClickLoadRightHandPose();
     void onClickLoadHandPose(bool isRightHand);
+    // <plus> a click on a hand preset applies it to the hand last chosen with Set Left / Set Right
+    void onHandPresetClick(S32 x, S32 y, MASK mask);
+    void onHandPresetRightClick(S32 x, S32 y);
+    void deleteHandPreset(const std::string& fileStem);
+    bool isShippedHandPreset(const std::string& fileStem) const;
+    LLHandle<LLContextMenu> mHandPresetMenuHandle;
+    void setHandPresetTarget(bool isRightHand);
+    std::string handPresetDisplayName(const std::string& fileStem); // the one place file name -> list text
+    LLButton* mHandPresetLeftBtn{ nullptr };
+    LLButton* mHandPresetRightBtn{ nullptr };
+    S32       mHandPresetTarget{ -1 }; // -1 none yet, 0 left, 1 right
+    // </plus>
+    // <plus> hand tab "Easy": finger curl / spread sliders over the joint values (research/315, handcurl.h).
+    // The joints are the truth; the sliders are a copy that is refreshed (only while the tab is visible) after a
+    // slider, a preset, a copy, a joint edit or an avatar change. A slider writes only its own axis of the joints.
+    void onHandEasyCommit(LLUICtrl* ctrl, const std::string& id);
+    void onHandEasyCopy(bool toRightHand);
+    void onHandEasySave();
+    bool saveHandEasyPreset(const std::string& name, const plus::handcurl::HandRaw& hand, bool isRightHand);
+    void showHandEasyMessage(const std::string& stringName, const std::string& name);
+    void refreshHandEasy(const LLUICtrl* skipControl = nullptr);
+    bool isHandEasyRight() const;
+    LLVOAvatar* getHandEasyAvatar() const;
+    const FSPoserAnimator::FSPoserJoint* getHandEasyJoint(bool isRightHand, S32 digit, S32 joint) const;
+    bool readHandEasy(LLVOAvatar* avatar, bool isRightHand, plus::handcurl::HandRaw& hand);
+    bool writeHandEasy(LLVOAvatar* avatar, bool isRightHand, const plus::handcurl::HandRaw& before, const plus::handcurl::HandRaw& after, U32 sliderJoints);
+    mutable const FSPoserAnimator::FSPoserJoint* mHandEasyJointCache[2][plus::handcurl::HAND_DIGITS][3]{}; // [right][digit][joint]
+    LLPanel*      mHandEasyPnl{ nullptr };
+    LLUICtrl*     mHandEasySideCmb{ nullptr };
+    LLUICtrl*     mHandEasySaveNameEditor{ nullptr };
+    LLSliderCtrl* mHandEasyCurl[plus::handcurl::FINGER_COUNT]{};
+    LLSliderCtrl* mHandEasySpread[plus::handcurl::FINGER_COUNT]{};
+    LLSliderCtrl* mHandEasyThumbWrap{ nullptr };   // toward the little finger
+    LLSliderCtrl* mHandEasyThumbSwing{ nullptr };  // away from the hand (-1) .. toward the palm (+1)
+    LLSliderCtrl* mHandEasyThumbArch{ nullptr };   // arched back toward the back of the hand
+    LLSliderCtrl* mHandEasyThumbBend{ nullptr };
+    LLSliderCtrl* mHandEasyGrip{ nullptr };
+    LLSliderCtrl* mHandEasyFan{ nullptr };
+    LLTextBox*    mHandEasyCurlLabel[plus::handcurl::FINGER_COUNT]{};   // highlighted while that finger is "custom"
+    LLTextBox*    mHandEasySpreadLabel[plus::handcurl::FINGER_COUNT]{}; // highlighted while that finger's knuckle is outside the spread's range
+    LLTextBox*    mHandEasyThumbLabel[4]{};                              // wrap, swing, arch, bend
+    bool          mHandEasyCurlCustom[plus::handcurl::FINGER_COUNT]{};   // what the labels show now (a label is written only when it changes)
+    bool          mHandEasySpreadCustom[plus::handcurl::FINGER_COUNT]{};
+    bool          mHandEasyThumbCustom[4]{};
+    // </plus>
     void onClickSavingToBvh();
     void onCommitSpinner(const LLUICtrl* spinner, const S32 ID);
     void onCommitSlider(const LLUICtrl* slider, const S32 id);
@@ -310,6 +358,7 @@ public:
 
     // UI Refreshments
     void refreshRotationSlidersAndSpinners();
+    void refreshRotationControlsOfSelectedJoint(); // <plus> the rotation spinners / sliders / trackball part of the above, without the hand tab
     void refreshPositionSlidersAndSpinners();
     void refreshScaleSlidersAndSpinners();
     void refreshTrackpadCursor();

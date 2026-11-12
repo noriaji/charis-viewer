@@ -23,15 +23,6 @@
 					<radio_item name="external_all" label="Usa il browser integrato per tutti i link" tool_tip="Utilizza il browser Web integrato per l'aiuto, per i link Web e così via. Questo browser si apre in una nuova finestra in [APP_NAME]." />
 				</plus_ps_radio>
 				<plus_ps_check_compat name="browser_javascript_enabled" label="Abilita Javascript" />
-				<plus_ps_text name="Software updates:">
-					Aggiornamenti software:
-				</plus_ps_text>
-				<plus_ps_combo name="updater_service_combobox">
-					<plus_ps_combo.item name="Install_automatically" label="Installa gli aggiornamenti automaticamente" />
-					<plus_ps_combo.item name="Install_ask" label="Chiedimi quando è pronto un aggiornamento facoltativo" />
-					<plus_ps_combo.item name="Install_manual" label="Installa solo gli aggiornamenti obbligatori" />
-				</plus_ps_combo>
-				<plus_ps_check_compat name="update_willing_to_test" label="Disponibile agli aggiornamenti con versioni non rilasciate" />
 				<plus_ps_check_compat name="update_show_release_notes" label="Mostra note di release dopo l'aggiornamento" />
 				<plus_ps_text name="Proxy Settings:">
 					Impostazioni proxy:

@@ -182,6 +182,30 @@
 	<string name="SaveDiffLabel">差分を保存</string>
 	<string name="OverWriteLabel">上書きしますか？</string>
 	<string name="confirm_overwrite_message">ポーズ「[POSE_NAME]」を上書きしますか？</string>
+	<string name="hand_save_failed">「[NAME]」は手のプリセットの名前に使えません。ファイル名に使える名前にしてください（/ : * ? などは使えません）。</string>
+	<string name="hand_save_write_failed">手のプリセット「[NAME]」を書き込めませんでした。ディスクの空きと、フォルダに書き込めるかを確かめてください。</string>
+	<string name="hand_read_failed">この手の関節を読み取れませんでした。このアバターには手の関節が無いかもしれません。</string>
+	<string name="hand_save_name_taken">「[NAME]」は組み込みの手のプリセットの名前です。別の名前にしてください。</string>
+	<string name="hand_no_pose">手の操作には、ポーズを付けてよく、いまポーズ中のアバターが要ります。アバターを選んで、先にポーズを開始してください。</string>
+	<string name="hand_overwrite_confirm">手のプリセット「[NAME]」を上書きしますか？</string>
+	<string name="hand_delete_confirm">手のプリセット「[NAME]」を削除しますか？</string>
+	<string name="hand_delete_failed">手のプリセット「[NAME]」を削除できませんでした。</string>
+	<string name="hand_delete_builtin_label">削除（組み込みのため不可）</string>
+	<!-- plus: display names of the hand presets (file names stay as they are) -->
+	<string name="hand_preset_name_Flat">開く（平手）</string>
+	<string name="hand_preset_name_Grip">握る</string>
+	<string name="hand_preset_name_Tight_Grip">強く握る</string>
+	<string name="hand_preset_name_Pointing">指差し</string>
+	<string name="hand_preset_name_Relaxed">リラックス</string>
+	<string name="hand_preset_name_Okay">OK</string>
+	<string name="hand_preset_name_Thumbs_Up">サムズアップ</string>
+	<string name="hand_preset_name_Horns">コルナ</string>
+	<string name="hand_preset_name_Two_Finger_Salute">2本指の敬礼</string>
+	<string name="hand_preset_name_Open_Hand">開いた手</string>
+	<string name="hand_preset_name_Peace">ピース</string>
+	<string name="hand_preset_name_Rock">ロック</string>
+	<string name="hand_preset_name_Gun">銃の形</string>
+	<!-- /plus -->
 
 	<!-- The layout is a vertical stack of 3 rows, and each row a horizontal stack of panels -->
 	<layout_stack name="poser_stack">
@@ -220,19 +244,51 @@
 						</scroll_list>
 					</panel>
 					<tab_container title="手" name="hands_tabs">
+						<!-- plus: hand tab Easy (research/315) -->
+						<panel title="簡単" name="hands_easy_panel">
+							<scroll_container name="hands_easy_scroll">
+								<panel name="hands_easy_content">
+								<text name="he_side_label">対象の手：</text>
+								<combo_box name="he_side" tool_tip="スライダーで動かす手を選びます。"><combo_box.item label="左手" name="left"/><combo_box.item label="右手" name="right"/></combo_box>
+								<text name="he_hdr_whole">手全体</text>
+								<text name="he_grip_label">握る</text><slider name="he_grip" tool_tip="4 本の指をまとめて曲げます。1 本ずつ決めた指の差は保たれます。"/>
+								<text name="he_fan_label">広げる</text><slider name="he_fan" tool_tip="4 本の指をまとめて広げたり閉じたりします。"/>
+								<text name="he_hdr_thumb">親指</text>
+								<text name="he_thumb_wrap_label">親指を小指側へ</text><slider name="he_thumb_wrap" tool_tip="親指を手のひらの上で小指側へ折り込みます。"/>
+								<text name="he_thumb_swing_label">手から離す／手のひらへ</text><slider name="he_thumb_swing" tool_tip="左へ動かすと、親指をほぼ手のひらの面内で手から離して広げます。右へ動かすと、親指を手のひら側へ向けて指と向き合わせます（OK サインの形）。"/>
+								<text name="he_thumb_arch_label">親指を反らす</text><slider name="he_thumb_arch" tool_tip="親指を手の甲側へ反らして立てます（サムズアップの形）。"/>
+								<text name="he_thumb_bend_label">親指の曲げ</text><slider name="he_thumb_bend" tool_tip="親指を曲げます。"/>
+								<text name="he_hdr_fingers">指</text>
+								<text name="he_curl_label_index">人差し指 曲げ</text><slider name="he_curl_index" tool_tip="この指の付け根・中・先の 3 つの関節をまとめて曲げます。"/>
+								<text name="he_spread_label_index">人差し指 広げ</text><slider name="he_spread_index" tool_tip="この指を横に広げます。"/>
+								<text name="he_curl_label_middle">中指 曲げ</text><slider name="he_curl_middle" tool_tip="この指の付け根・中・先の 3 つの関節をまとめて曲げます。"/>
+								<text name="he_spread_label_middle">中指 広げ</text><slider name="he_spread_middle" tool_tip="この指を横に広げます。"/>
+								<text name="he_curl_label_ring">薬指 曲げ</text><slider name="he_curl_ring" tool_tip="この指の付け根・中・先の 3 つの関節をまとめて曲げます。"/>
+								<text name="he_spread_label_ring">薬指 広げ</text><slider name="he_spread_ring" tool_tip="この指を横に広げます。"/>
+								<text name="he_curl_label_pinky">小指 曲げ</text><slider name="he_curl_pinky" tool_tip="この指の付け根・中・先の 3 つの関節をまとめて曲げます。"/>
+								<text name="he_spread_label_pinky">小指 広げ</text><slider name="he_spread_pinky" tool_tip="この指を横に広げます。"/>
+								<text name="he_hint">色の付いたラベルの指は、関節を 1 つずつ動かして作った形です。スライダーを動かすと、その指は作り直されます。</text>
+								<button label="右 > 左" name="he_copy_to_left" tool_tip="右手の形を左手に写します（左右対称の形になります）。"/>
+								<button label="左 > 右" name="he_copy_to_right" tool_tip="左手の形を右手に写します（左右対称の形になります）。"/>
+								<line_editor label="手のプリセット名…" name="he_save_name"/>
+								<button label="手を保存" name="he_save" tool_tip="この手の形をプリセット（左右とも）として保存します。「プリセット」タブに並びます。"/>
+								</panel>
+							</scroll_container>
+						</panel>
+						<!-- /plus -->
 						<panel title="調整" name="hands_joints_panel">
 							<scroll_list name="hand_joints_scroll">
 								<scroll_list.columns label="身体部位" name="joint"/>
 							</scroll_list>
 						</panel>
 						<panel title="プリセット" name="hands_presets_panel">
-							<scroll_list name="hand_presets_scroll">
+							<scroll_list name="hand_presets_scroll" tool_tip="プリセットをクリックすると、最後に「左にセット」「右にセット」を押した側の手に適用します。右クリックで削除できます（組み込みのプリセットは削除できません）。">
 								<scroll_list.columns label="プリセット名" name="load_file_name_column"/>
 								<scroll_list.columns label="日付" name="load_file_date_column"/>
 								<scroll_list.columns label="日付" name="load_file_date_sort_column"/>
 							</scroll_list>
-							<button label="左にセット" name="button_loadHandPoseLeft" tool_tip="ダブルクリックして左手を選択したプリセットに設定します。"/>
-							<button label="右にセット" name="button_loadHandPoseRight" tool_tip="ダブルクリックして右手を選択したプリセットに設定します。"/>
+							<button label="左にセット" name="button_loadHandPoseLeft" tool_tip="押すと左手を選択したプリセットに設定します。以後は、プリセットをクリックするとこの手に適用します。"/>
+							<button label="右にセット" name="button_loadHandPoseRight" tool_tip="押すと右手を選択したプリセットに設定します。以後は、プリセットをクリックするとこの手に適用します。"/>
 						</panel>
 					</tab_container>
 					<panel title="その他" name="misc_joints_panel">

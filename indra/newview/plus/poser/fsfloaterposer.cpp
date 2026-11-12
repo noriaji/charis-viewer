@@ -46,6 +46,10 @@
 #include "llsliderctrl.h"
 #include "llstring.h"
 #include "lltabcontainer.h"
+#include "lltextbox.h" // <plus>
+#include "llmenugl.h" // <plus> the right-click menu of the hand preset list
+#include "lluictrlfactory.h" // <plus>
+#include "lluicolortable.h" // <plus>
 #include "fstoolcomppose.h"
 #include "llviewercontrol.h"
 #include "llviewerobjectlist.h"
@@ -119,6 +123,12 @@ FSFloaterPoser::FSFloaterPoser(const LLSD& key) : LLFloater(key)
     mCommitCallbackRegistrar.add("Poser.BrowseCache", [this](LLUICtrl*, const LLSD&) { onClickBrowsePoseCache(); });
     mCommitCallbackRegistrar.add("Poser.LoadLeftHand", [this](LLUICtrl*, const LLSD&) { onClickLoadLeftHandPose(); });
     mCommitCallbackRegistrar.add("Poser.LoadRightHand", [this](LLUICtrl*, const LLSD&) { onClickLoadRightHandPose(); });
+    // <plus> hand tab "Easy" (research/315)
+    mCommitCallbackRegistrar.add("Poser.HandEasy", [this](LLUICtrl* ctrl, const LLSD& data) { onHandEasyCommit(ctrl, data.asString()); });
+    mCommitCallbackRegistrar.add("Poser.HandEasySide", [this](LLUICtrl*, const LLSD&) { refreshHandEasy(); });
+    mCommitCallbackRegistrar.add("Poser.HandEasyCopy", [this](LLUICtrl*, const LLSD& data) { onHandEasyCopy(data.asString() == "right"); });
+    mCommitCallbackRegistrar.add("Poser.HandEasySave", [this](LLUICtrl*, const LLSD&) { onHandEasySave(); });
+    // </plus>
 
     mCommitCallbackRegistrar.add("Poser.FlipPose", [this](LLUICtrl*, const LLSD&) { onClickFlipPose(); });
     mCommitCallbackRegistrar.add("Poser.FlipJoint", [this](LLUICtrl*, const LLSD&) { onClickFlipSelectedJoints(); });
@@ -186,6 +196,15 @@ bool FSFloaterPoser::postBuild()
     mPoseSaveNameEditor->setPrevalidate(&LLTextValidate::validateASCIIPrintableNoPipe);
 
     mHandPresetsScrollList = getChild<LLScrollListCtrl>("hand_presets_scroll");
+    // <plus> a click on a preset applies it to the hand last chosen with the Set buttons. The mouse-up signal, not the commit
+    // (which also comes from the arrow keys): moving the selection with the keyboard must not apply anything.
+    mHandPresetsScrollList->setMouseUpCallback([this](LLUICtrl*, S32 x, S32 y, MASK mask) { onHandPresetClick(x, y, mask); });
+    // The right button opens the menu (the list calls this only for a click on a row); it applies nothing: the mouse-up
+    // signal above is the left button's.
+    mHandPresetsScrollList->setRightMouseDownCallback([this](LLUICtrl*, S32 x, S32 y, MASK) { onHandPresetRightClick(x, y); });
+    mHandPresetLeftBtn  = getChild<LLButton>("button_loadHandPoseLeft");
+    mHandPresetRightBtn = getChild<LLButton>("button_loadHandPoseRight");
+    // </plus>
 
     mPosXSlider = getChild<LLSliderCtrl>("av_position_inout");
     mPosYSlider = getChild<LLSliderCtrl>("av_position_leftright");
@@ -240,6 +259,32 @@ bool FSFloaterPoser::postBuild()
     mFaceJointsPnl = getChild<LLPanel>("face_joints_panel");
     mHandsTabs = getChild<LLTabContainer>("hands_tabs");
     mHandsJointsPnl = mHandsTabs->getChild<LLPanel>("hands_joints_panel");
+    // <plus> hand tab "Easy"
+    mHandEasyPnl = mHandsTabs->getChild<LLPanel>("hands_easy_panel");
+    mHandEasySideCmb = mHandEasyPnl->getChild<LLUICtrl>("he_side");
+    mHandEasySaveNameEditor = mHandEasyPnl->getChild<LLUICtrl>("he_save_name");
+    {
+        static const char* const FINGER_IDS[plus::handcurl::FINGER_COUNT] = { "index", "middle", "ring", "pinky" };
+        for (S32 i = 0; i < plus::handcurl::FINGER_COUNT; ++i)
+        {
+            mHandEasyCurl[i]       = mHandEasyPnl->getChild<LLSliderCtrl>(std::string("he_curl_") + FINGER_IDS[i]);
+            mHandEasySpread[i]     = mHandEasyPnl->getChild<LLSliderCtrl>(std::string("he_spread_") + FINGER_IDS[i]);
+            mHandEasyCurlLabel[i]  = mHandEasyPnl->getChild<LLTextBox>(std::string("he_curl_label_") + FINGER_IDS[i]);
+            mHandEasySpreadLabel[i] = mHandEasyPnl->getChild<LLTextBox>(std::string("he_spread_label_") + FINGER_IDS[i]);
+        }
+    }
+    mHandEasyThumbWrap       = mHandEasyPnl->getChild<LLSliderCtrl>("he_thumb_wrap");
+    mHandEasyThumbSwing      = mHandEasyPnl->getChild<LLSliderCtrl>("he_thumb_swing");
+    mHandEasyThumbArch       = mHandEasyPnl->getChild<LLSliderCtrl>("he_thumb_arch");
+    mHandEasyThumbBend       = mHandEasyPnl->getChild<LLSliderCtrl>("he_thumb_bend");
+    mHandEasyThumbLabel[0]   = mHandEasyPnl->getChild<LLTextBox>("he_thumb_wrap_label");
+    mHandEasyThumbLabel[1]   = mHandEasyPnl->getChild<LLTextBox>("he_thumb_swing_label");
+    mHandEasyThumbLabel[2]   = mHandEasyPnl->getChild<LLTextBox>("he_thumb_arch_label");
+    mHandEasyThumbLabel[3]   = mHandEasyPnl->getChild<LLTextBox>("he_thumb_bend_label");
+    mHandEasyGrip            = mHandEasyPnl->getChild<LLSliderCtrl>("he_grip");
+    mHandEasyFan             = mHandEasyPnl->getChild<LLSliderCtrl>("he_fan");
+    mHandsTabs->setCommitCallback([this](LLUICtrl*, const LLSD&) { refreshHandEasy(); });
+    // </plus>
     mMiscJointsPnl = getChild<LLPanel>("misc_joints_panel");
     mCollisionVolumesPnl = getChild<LLPanel>("collision_volumes_panel");
 
@@ -457,6 +502,13 @@ void FSFloaterPoser::onClose(bool app_quitting)
     }
 
     disableVisualManipulators();
+    // <plus> the hand preset menu is a child of the menu holder, not of this floater: it goes with the floater's closing
+    if (LLContextMenu* menu = mHandPresetMenuHandle.get())
+    {
+        menu->die();
+        mHandPresetMenuHandle.markDead();
+    }
+    // </plus>
     delete mLoadPoseTimer;
     LLFloater::onClose(app_quitting);
 }
@@ -506,7 +558,10 @@ void FSFloaterPoser::refreshPoseScroll(LLScrollListCtrl* posesScrollList, std::o
 
         LLSD row;
         row["columns"][0]["column"] = "load_file_name_column";
-        row["columns"][0]["value"] = name;
+        // <plus> the file's name stays the row's value; hand presets show a translated display name
+        row["value"] = name;
+        row["columns"][0]["value"] = (subDirectory.has_value() && *subDirectory == POSE_PRESETS_HANDS_SUBDIRECTORY) ? handPresetDisplayName(name) : name;
+        // </plus>
         row["columns"][1]["column"] = "load_file_date_column";
         row["columns"][1]["value"] = date_str;
         row["columns"][2]["column"] = "load_file_date_sort_column";
@@ -1200,11 +1255,13 @@ void FSFloaterPoser::setLoadingProgress(bool started)
 
 void FSFloaterPoser::onClickLoadLeftHandPose()
 {
+    setHandPresetTarget(false); // <plus>
     onClickLoadHandPose(false);
 }
 
 void FSFloaterPoser::onClickLoadRightHandPose()
 {
+    setHandPresetTarget(true); // <plus>
     onClickLoadHandPose(true);
 }
 
@@ -1259,7 +1316,9 @@ void FSFloaterPoser::onClickLoadHandPose(bool isRightHand)
     if (!item)
         return;
 
-    std::string poseName = item->getColumn(0)->getValue().asString();
+    // <plus> the row's value is the file's name; the text of its first column is the display name (handPresetDisplayName)
+    std::string poseName = item->getValue().asString();
+    // </plus>
     std::string pathname = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, POSE_SAVE_SUBDIRECTORY, std::string(POSE_PRESETS_HANDS_SUBDIRECTORY));
     if (!gDirUtilp->fileExists(pathname))
         return;
@@ -1308,12 +1367,26 @@ void FSFloaterPoser::onClickLoadHandPose(bool isRightHand)
                 if (!poserJoint)
                     continue;
 
+                // <plus> a joint the user took out of the pose ("pose this joint" off) is left alone, as the rotation
+                // controls leave it: a value loaded into it would not show, and would jump in when the joint is posed again
+                if (!mPoserAnimator.isPosingAvatarJoint(avatar, *poserJoint))
+                    continue;
+                // </plus>
+
                 vec3.setValue(control_map["rotation"]);
                 mPoserAnimator.loadJointRotation(avatar, poserJoint, true, true, vec3);
             }
         }
 
         addBoldToScrollList(mHandJointsScrollList, avatar);
+        // <plus> what shows the joints follows: the rotation controls of the selected joint (they kept the angles of
+        // before the preset), the Easy sliders, and the undo / redo buttons (loading a joint drops its undo history and
+        // then keeps the state from before the preset as its one step, unless the joint was changed a moment before:
+        // FSJointPose::addStateToUndo)
+        refreshRotationSlidersAndSpinners();
+        refreshTrackpadCursor();
+        enableOrDisableRedoAndUndoButton();
+        // </plus>
     }
     catch ( const std::exception& e )
     {
@@ -1876,6 +1949,10 @@ void FSFloaterPoser::onSetAvatarToTpose()
     mPoserAnimator.setAllAvatarStartingRotationsToZero(avatar);
     refreshTextHighlightingOnJointScrollLists();
     enableOrDisableRedoAndUndoButton();
+    // <plus> what is seen changed (the base rotations went to zero): the rotation controls and the hand tab's Easy sliders follow
+    refreshRotationSlidersAndSpinners();
+    refreshTrackpadCursor();
+    // </plus>
 }
 
 void FSFloaterPoser::onResetJoint(const LLSD& data)
@@ -2442,6 +2519,12 @@ void FSFloaterPoser::refreshTrackpadCursor()
 }
 
 void FSFloaterPoser::refreshRotationSlidersAndSpinners()
+{
+    refreshRotationControlsOfSelectedJoint();
+    refreshHandEasy(); // <plus> a joint edited by hand: the Easy sliders follow (returns at once while that tab is hidden)
+}
+
+void FSFloaterPoser::refreshRotationControlsOfSelectedJoint()
 {
     LLVector3 rotation = getRotationOfFirstSelectedJoint();
 
@@ -3399,3 +3482,591 @@ void FSLoadPoseTimer::tryLoading(std::string filePath, E_LoadPoseMethods loadMet
     mLoadAttempts   = 0;
     mAttemptLoading = true;
 }
+
+// <plus> hand tab "Easy" (research/315). Joint values are the truth, the sliders are their copy (handcurl.h).
+namespace
+{
+constexpr const char* HAND_DIGIT_NAMES[plus::handcurl::HAND_DIGITS] = { "Thumb", "Index", "Middle", "Ring", "Pinky" };
+constexpr F32         HAND_EASY_WRITE_EPSILON                       = 1e-5f;
+constexpr F32         HAND_EASY_SHOWN_EPSILON                       = 0.006f; // a slider already this close to its joint value is left alone (the sliders keep multiples of their 0.01 increment: half of it)
+
+// The joints of a hand as bits, for writeHandEasy's "the joints this slider can move": bit digit * 3 + joint.
+constexpr U32 HAND_EASY_KNUCKLE        = 1; // joint 1 of a digit
+constexpr U32 HAND_EASY_JOINTS_2_AND_3 = 6;
+constexpr U32 HAND_EASY_ALL_JOINTS     = 7;
+constexpr U32 handEasyJointsOfDigit(S32 digit, U32 joints) { return joints << (3 * digit); }
+constexpr U32 handEasyJointsOfFingers(U32 joints)
+{
+    U32 bits = 0;
+    for (S32 digit = 1; digit < plus::handcurl::HAND_DIGITS; ++digit) // (digit 0 is the thumb)
+        bits |= handEasyJointsOfDigit(digit, joints);
+    return bits;
+}
+
+bool handEasyDiffers(const plus::handcurl::Raw& a, const plus::handcurl::Raw& b)
+{
+    return std::fabs(a.x - b.x) > HAND_EASY_WRITE_EPSILON || std::fabs(a.y - b.y) > HAND_EASY_WRITE_EPSILON ||
+           std::fabs(a.z - b.z) > HAND_EASY_WRITE_EPSILON;
+}
+} // namespace
+
+bool FSFloaterPoser::isHandEasyRight() const
+{
+    return mHandEasySideCmb && mHandEasySideCmb->getValue().asString() == "right";
+}
+
+LLVOAvatar* FSFloaterPoser::getHandEasyAvatar() const
+{
+    LLVOAvatar* avatar = getUiSelectedAvatar();
+    if (!avatar)
+        return nullptr;
+    if (!havePermissionToAnimateAvatar(avatar) && !havePermissionToAnimateOtherAvatar(avatar))
+        return nullptr;
+    if (!mPoserAnimator.isPosingAvatar(avatar))
+        return nullptr;
+    return avatar;
+}
+
+const FSPoserAnimator::FSPoserJoint* FSFloaterPoser::getHandEasyJoint(bool isRightHand, S32 digit, S32 joint) const
+{
+    if (digit < 0 || digit >= plus::handcurl::HAND_DIGITS || joint < 0 || joint > 2)
+        return nullptr;
+    // the joint list of the animator does not change after it is built: the 30 joints are looked up once
+    const FSPoserAnimator::FSPoserJoint*& cached = mHandEasyJointCache[isRightHand ? 1 : 0][digit][joint];
+    if (!cached)
+    {
+        const std::string name = std::string("mHand") + HAND_DIGIT_NAMES[digit] + char('1' + joint) + (isRightHand ? "Right" : "Left");
+        cached                 = mPoserAnimator.getPoserJointByName(name);
+    }
+    return cached;
+}
+
+/// Reads the 15 joints as they are seen (public x base rotation, as bone-frame angles: the numbers the hand preset
+/// files hold). With a base rotation left in a joint (a Bento hand animation that ran when the posing began) the
+/// public part alone is not what is on the screen.
+bool FSFloaterPoser::readHandEasy(LLVOAvatar* avatar, bool isRightHand, plus::handcurl::HandRaw& hand)
+{
+    for (S32 d = 0; d < plus::handcurl::HAND_DIGITS; ++d)
+    {
+        for (S32 k = 0; k < 3; ++k)
+        {
+            const FSPoserAnimator::FSPoserJoint* joint = getHandEasyJoint(isRightHand, d, k);
+            LLVector3                            v;
+            bool                                 baseIsZero = true;
+            if (!joint || !mPoserAnimator.getJointSeenRotation(avatar, *joint, &v, &baseIsZero))
+                return false;
+            hand.joint[d][k] = plus::handcurl::Raw{ v.mV[VX], v.mV[VY], v.mV[VZ] };
+        }
+    }
+    return true;
+}
+
+/// Writes the joints this action moved (and every joint that still has a base rotation, which is zeroed, the way
+/// loading a hand preset does, so that what is written is what is seen). A joint locked to the world is not written
+/// (the correction a moved parent gives it would be written over), and neither is one the user took out of the pose
+/// ("pose this joint" off: the value would not show, and would jump in when the joint is posed again), as the rotation
+/// controls leave it.
+/// A slider writes a digit whole or not at all: sliderJoints are the joints the slider can move (bit digit * 3 + joint;
+/// the same for a slider whatever the pose is, so that it does not start or stop working in the middle of a drag), and
+/// when one of them (or a joint the slider moved outside them) cannot be written, none of that digit's joints is.
+/// (The value of a slider is read from all the joints of its digit, the ones that cannot be written too: with a part
+/// of the digit written, the reading stays behind the slider, and every further step of a drag adds that difference to
+/// the joints that can be written again - they ran far past the end of their path.) With sliderJoints 0 (a copy: one
+/// write of given values, nothing is read back and added) each joint is written or left on its own.
+/// Returns whether a joint the action moved was written (the zeroing of a left-over base rotation alone does not count).
+bool FSFloaterPoser::writeHandEasy(LLVOAvatar* avatar, bool isRightHand, const plus::handcurl::HandRaw& before,
+                                   const plus::handcurl::HandRaw& after, U32 sliderJoints)
+{
+    const bool savingToExternal = getSavingToBvh();
+    bool       wrote            = false; // any joint
+    bool       wroteMoved       = false; // a joint the action moved
+    auto       canWrite         = [this, avatar](const FSPoserAnimator::FSPoserJoint* joint)
+    {
+        return joint && mPoserAnimator.isPosingAvatarJoint(avatar, *joint) && !mPoserAnimator.getRotationIsWorldLocked(avatar, *joint);
+    };
+    for (S32 d = 0; d < plus::handcurl::HAND_DIGITS; ++d)
+    {
+        bool digitRefused = false;
+        for (S32 k = 0; k < 3 && !digitRefused; ++k)
+        {
+            // one of the slider's joints, or (a slider's set that left a joint out must not let it through) one a
+            // slider moved all the same
+            const bool slidersJoint = (sliderJoints & handEasyJointsOfDigit(d, 1u << k)) != 0 ||
+                                      (sliderJoints != 0 && handEasyDiffers(before.joint[d][k], after.joint[d][k]));
+            digitRefused = slidersJoint && !canWrite(getHandEasyJoint(isRightHand, d, k));
+        }
+        if (digitRefused)
+            continue;
+
+        for (S32 k = 0; k < 3; ++k)
+        {
+            const FSPoserAnimator::FSPoserJoint* joint = getHandEasyJoint(isRightHand, d, k);
+            if (!canWrite(joint))
+                continue; // (for a slider, not one of its joints: only its left-over base rotation is not zeroed)
+            LLVector3 seen;
+            bool      baseIsZero = true;
+            mPoserAnimator.getJointSeenRotation(avatar, *joint, &seen, &baseIsZero);
+            const plus::handcurl::Raw& from = before.joint[d][k];
+            const plus::handcurl::Raw& to   = after.joint[d][k];
+            const bool moved = handEasyDiffers(from, to);
+            if (baseIsZero && !moved)
+                continue; // only the joints this action moved: the rest keep their undo history
+            // the part that moves, for the joints locked to the world below this one
+            const LLVector3 delta(to.x - from.x, to.y - from.y, to.z - from.z);
+            mPoserAnimator.setJointRotation(avatar, joint, LLVector3(to.x, to.y, to.z), delta, NONE, POSER_FRAME_BONE, SWAP_NOTHING,
+                                            NEGATE_NOTHING, savingToExternal || !baseIsZero || mPoserAnimator.userSetBaseRotationToZero(avatar, *joint),
+                                            ABSOLUTE_ROT); // the mark "the user set the base to zero" (Recapture) is kept
+            wrote = true;
+            wroteMoved |= moved;
+        }
+    }
+    if (wrote)
+    {
+        addBoldToScrollList(mHandJointsScrollList, avatar); // the marks of the joint list, as the rotation sliders do
+        refreshRotationControlsOfSelectedJoint();           // the rotation spinners and the trackball must not keep the old angles
+        refreshTrackpadCursor();                            // (the trackball's cursor is made from the spinners)
+        enableOrDisableRedoAndUndoButton();                 // a written joint has a step to undo (and no step to redo any more)
+    }
+    return wroteMoved;
+}
+
+/// id: "grip" / "fan" (whole hand), "thumb_wrap" / "thumb_swing" / "thumb_arch" / "thumb_bend", "curl_N" / "sprd_N" (N = 1..4: index..pinky).
+void FSFloaterPoser::onHandEasyCommit(LLUICtrl* ctrl, const std::string& id)
+{
+    using namespace plus::handcurl;
+    LLVOAvatar* avatar = getHandEasyAvatar();
+    const bool  right  = isHandEasyRight();
+    HandRaw     before;
+    if (!ctrl || !avatar || !readHandEasy(avatar, right, before))
+    {
+        refreshHandEasy(); // nothing to write to (not posing, no permission): the slider goes back to what the joints show
+        return;
+    }
+
+    HandRaw hand = before;
+    const F32 v  = clampf((F32)ctrl->getValue().asReal(), -1.f, 1.f);
+    // sliderJoints: the joints the slider can move (handcurl.h): a curl all three joints of its finger, a spread the
+    // knuckle, the thumb's wrap, swing and arch Thumb1 and with it Thumb2 and 3 (they keep their bend), its bend Thumb2 and 3
+    U32 sliderJoints = 0;
+    if (id == "grip")
+    {
+        shiftAllFingerCurl(hand, right, v - meanFingerCurl(hand, right));
+        sliderJoints = handEasyJointsOfFingers(HAND_EASY_ALL_JOINTS);
+    }
+    else if (id == "fan")
+    {
+        shiftAllFingerSpread(hand, right, v - meanFingerSpread(hand, right));
+        sliderJoints = handEasyJointsOfFingers(HAND_EASY_KNUCKLE);
+    }
+    else if (id == "thumb_wrap" || id == "thumb_swing" || id == "thumb_arch")
+    {
+        if (id == "thumb_wrap")
+            setThumbWrap(hand, right, v);
+        else if (id == "thumb_swing")
+            setThumbSwing(hand, right, v);
+        else
+            setThumbArch(hand, right, v);
+        sliderJoints = handEasyJointsOfDigit(0, HAND_EASY_ALL_JOINTS);
+    }
+    else if (id == "thumb_bend")
+    {
+        setThumbBend(hand, right, v);
+        sliderJoints = handEasyJointsOfDigit(0, HAND_EASY_JOINTS_2_AND_3);
+    }
+    else if (id.size() == 6 && (id.compare(0, 5, "curl_") == 0 || id.compare(0, 5, "sprd_") == 0))
+    {
+        const S32 number = id[5] - '0';
+        if (number < 1 || number > FINGER_COUNT)
+            return;
+        const Finger finger = static_cast<Finger>(number - 1);
+        if (id[0] == 'c')
+        {
+            setFingerCurl(hand, right, finger, v);
+            sliderJoints = handEasyJointsOfDigit(slotOf(finger), HAND_EASY_ALL_JOINTS);
+        }
+        else
+        {
+            setFingerSpread(hand, right, finger, v);
+            sliderJoints = handEasyJointsOfDigit(slotOf(finger), HAND_EASY_KNUCKLE);
+        }
+    }
+    else
+        return;
+
+    // The slider that was dragged stays where it is (a whole-hand bar that clamped would jump back). When none of the
+    // joints it moves was written (its digit has a joint that is out of the pose or locked to the world among the
+    // slider's: see writeHandEasy; or there was nothing to move) it goes back to what the joints show, like the others.
+    const bool wroteMoved = writeHandEasy(avatar, right, before, hand, sliderJoints);
+    refreshHandEasy(wroteMoved ? ctrl : nullptr);
+}
+
+/// Copies the other hand onto this one so that both look alike (every joint mirrored). A joint of this hand that is out
+/// of the pose or locked to the world keeps its value, joint by joint (the rest of its finger is copied).
+void FSFloaterPoser::onHandEasyCopy(bool toRightHand)
+{
+    using namespace plus::handcurl;
+    LLVOAvatar* avatar = getHandEasyAvatar();
+    if (!avatar)
+    {
+        showHandEasyMessage("hand_no_pose", std::string());
+        return;
+    }
+
+    HandRaw source, before;
+    if (!readHandEasy(avatar, !toRightHand, source) || !readHandEasy(avatar, toRightHand, before))
+    {
+        showHandEasyMessage("hand_read_failed", std::string());
+        return;
+    }
+
+    writeHandEasy(avatar, toRightHand, before, mirrorHand(source), 0); // (0: no slider's joints, each joint on its own)
+    refreshHandEasy();
+}
+
+/// Brings the sliders to what the joints show. Does nothing while the tab is hidden, and a slider that already shows
+/// its value is not written (the gizmo on a hand joint calls this at every mouse move).
+void FSFloaterPoser::refreshHandEasy(const LLUICtrl* skipControl)
+{
+    using namespace plus::handcurl;
+    if (!mHandEasyPnl || !mHandEasyPnl->isInVisibleChain())
+        return;
+
+    const bool  right  = isHandEasyRight();
+    HandRaw     hand;
+    LLVOAvatar* avatar = getUiSelectedAvatar();
+    if (!avatar || !readHandEasy(avatar, right, hand))
+        hand = HandRaw();
+
+    auto setValueIfChanged = [skipControl](LLSliderCtrl* slider, F32 value)
+    {
+        if (slider && slider != skipControl && std::fabs((F32)slider->getValue().asReal() - value) > HAND_EASY_SHOWN_EPSILON)
+            slider->setValue(value);
+    };
+    auto markCustom = [](LLTextBox* label, bool& shown, bool custom)
+    {
+        if (!label || shown == custom)
+            return;
+        shown = custom;
+        label->setColor(LLUIColorTable::instance().getColor(custom ? "EmphasisColor" : "LabelTextColor"));
+    };
+
+    for (S32 i = 0; i < FINGER_COUNT; ++i)
+    {
+        const Finger finger = static_cast<Finger>(i);
+        bool         custom = false;
+        setValueIfChanged(mHandEasyCurl[i], getFingerCurl(hand, right, finger, &custom));
+        markCustom(mHandEasyCurlLabel[i], mHandEasyCurlCustom[i], custom);
+        // a knuckle outside the slider's range (a preset's hand-made finger): the slider stands at its end, and its
+        // first move brings the knuckle into the range; the label says so beforehand, as the curl's does
+        setValueIfChanged(mHandEasySpread[i], getFingerSpread(hand, right, finger, &custom));
+        markCustom(mHandEasySpreadLabel[i], mHandEasySpreadCustom[i], custom);
+    }
+    bool custom = false;
+    setValueIfChanged(mHandEasyThumbWrap, getThumbWrap(hand, right, &custom));
+    markCustom(mHandEasyThumbLabel[0], mHandEasyThumbCustom[0], custom);
+    setValueIfChanged(mHandEasyThumbSwing, getThumbSwing(hand, right, &custom));
+    markCustom(mHandEasyThumbLabel[1], mHandEasyThumbCustom[1], custom);
+    setValueIfChanged(mHandEasyThumbArch, getThumbArch(hand, right, &custom));
+    markCustom(mHandEasyThumbLabel[2], mHandEasyThumbCustom[2], custom);
+    setValueIfChanged(mHandEasyThumbBend, getThumbBend(hand, right, &custom));
+    markCustom(mHandEasyThumbLabel[3], mHandEasyThumbCustom[3], custom);
+    setValueIfChanged(mHandEasyGrip, meanFingerCurl(hand, right));
+    setValueIfChanged(mHandEasyFan, meanFingerSpread(hand, right));
+}
+
+/// A short message to the user (a string of this floater, "[NAME]" replaced by name).
+void FSFloaterPoser::showHandEasyMessage(const std::string& stringName, const std::string& name)
+{
+    std::string                message = tryGetString(stringName);
+    LLStringUtil::format_map_t format_args;
+    format_args["[NAME]"] = name;
+    LLStringUtil::format(message, format_args);
+    LLSD args;
+    args["MESSAGE"] = message;
+    LLNotificationsUtil::add("GenericAlert", args);
+}
+
+void FSFloaterPoser::onHandEasySave()
+{
+    using namespace plus::handcurl;
+    // Same rule as the pose save: the typed name becomes a file name (plus::isSafeFileStem), never a path.
+    const std::string name = mHandEasySaveNameEditor ? mHandEasySaveNameEditor->getValue().asString() : std::string();
+    if (!plus::isSafeFileStem(name))
+    {
+        showHandEasyMessage("hand_save_failed", name);
+        return;
+    }
+
+    // A shipped preset is not written over: the user's file would take its place for good (it could not be deleted from
+    // here, and the shipped one would not be copied again over the higher version of a user's file).
+    if (isShippedHandPreset(name))
+    {
+        showHandEasyMessage("hand_save_name_taken", name);
+        return;
+    }
+
+    // Two rows must not show the same text: a name that is the shown name of another preset (a shipped one) is refused.
+    for (LLScrollListItem* item : mHandPresetsScrollList->getAllData())
+    {
+        if (item->getValue().asString() != name && item->getColumn(0)->getValue().asString() == name)
+        {
+            showHandEasyMessage("hand_save_name_taken", name);
+            return;
+        }
+    }
+
+    LLVOAvatar* avatar = getHandEasyAvatar();
+    if (!avatar)
+    {
+        showHandEasyMessage("hand_no_pose", name);
+        return;
+    }
+
+    const bool right = isHandEasyRight();
+    HandRaw    hand;
+    if (!readHandEasy(avatar, right, hand))
+    {
+        showHandEasyMessage("hand_read_failed", name);
+        return;
+    }
+
+    const std::string fullPath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, POSE_SAVE_SUBDIRECTORY,
+                                                                std::string(POSE_PRESETS_HANDS_SUBDIRECTORY), name + POSE_INTERNAL_FORMAT_FILE_EXT);
+    if (!gDirUtilp->fileExists(fullPath))
+    {
+        saveHandEasyPreset(name, hand, right);
+        return;
+    }
+
+    std::string                message = tryGetString("hand_overwrite_confirm"); // (a preset of the user's own: shipped ones were refused above)
+    LLStringUtil::format_map_t format_args;
+    format_args["[NAME]"] = name;
+    LLStringUtil::format(message, format_args);
+    LLSD args;
+    args["MESSAGE"] = message;
+    LLHandle<LLFloater> handle = getHandle();
+    LLNotificationsUtil::add("GenericAlertYesCancel", args, LLSD(),
+        [handle, name, hand, right](const LLSD& notification, const LLSD& response)
+        {
+            if (LLNotificationsUtil::getSelectedOption(notification, response) != 0)
+                return;
+            if (auto* floater = dynamic_cast<FSFloaterPoser*>(handle.get()))
+                floater->saveHandEasyPreset(name, hand, right);
+        });
+}
+
+/// Writes the hand (as it is seen: base rotation zero) as a preset of the user's hand_presets folder. Both hands are
+/// written (the loader of "Set Left" / "Set Right" reads the side it is asked for), the other one mirrored from the
+/// chosen one. A failure is told to the user. The name is checked once more here (the one place that writes): a file
+/// name, and not a shipped preset's.
+bool FSFloaterPoser::saveHandEasyPreset(const std::string& name, const plus::handcurl::HandRaw& hand, bool isRightHand)
+{
+    using namespace plus::handcurl;
+    if (!plus::isSafeFileStem(name))
+    {
+        showHandEasyMessage("hand_save_failed", name);
+        return false;
+    }
+    if (isShippedHandPreset(name))
+    {
+        showHandEasyMessage("hand_save_name_taken", name);
+        return false;
+    }
+
+    createUserPoseDirectoryIfNeeded();
+
+    try
+    {
+        const HandRaw sides[2] = { isRightHand ? mirrorHand(hand) : hand, isRightHand ? hand : mirrorHand(hand) }; // left, right
+        LLSD          record;
+        record["version"]["value"] = plus::handcurl::USER_HAND_PRESET_FILE_VERSION; // above every shipped file's: an update does not replace it
+        for (S32 side = 0; side < 2; ++side)
+        {
+            for (S32 d = 0; d < HAND_DIGITS; ++d)
+            {
+                for (S32 k = 0; k < 3; ++k)
+                {
+                    const FSPoserAnimator::FSPoserJoint* joint = getHandEasyJoint(side == 1, d, k);
+                    if (!joint)
+                        continue;
+                    const Raw&        r    = sides[side].joint[d][k];
+                    const std::string bone = joint->jointName();
+                    record[bone]["enabled"]                 = true;
+                    record[bone]["jointBaseRotationIsZero"] = true;
+                    record[bone]["position"]                = LLVector3::zero.getValue();
+                    record[bone]["rotation"]                = LLVector3(r.x, r.y, r.z).getValue();
+                    record[bone]["scale"]                   = LLVector3::zero.getValue();
+                }
+            }
+        }
+
+        const std::string fullPath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, POSE_SAVE_SUBDIRECTORY,
+                                                                    std::string(POSE_PRESETS_HANDS_SUBDIRECTORY), name + POSE_INTERNAL_FORMAT_FILE_EXT);
+        // As savePoseToXml(): written next to it, checked, then moved over it. (The log names the file, not the folder.)
+        const std::string tempPath = fullPath + ".tmp";
+        {
+            llofstream file;
+            file.open(tempPath.c_str());
+            if (!file.is_open())
+            {
+                LL_WARNS("Poser") << "Unable to save hand preset " << name << LL_ENDL;
+                showHandEasyMessage("hand_save_write_failed", name);
+                return false;
+            }
+            LLSDSerialize::toPrettyXML(record, file);
+            file.close();
+            if (file.fail())
+            {
+                LL_WARNS("Poser") << "Unable to save hand preset " << name << ": cannot write the file" << LL_ENDL;
+                LLFile::remove(tempPath);
+                showHandEasyMessage("hand_save_write_failed", name);
+                return false;
+            }
+        }
+        if (LLFile::rename(tempPath, fullPath) != 0)
+        {
+            LL_WARNS("Poser") << "Unable to save hand preset " << name << ": cannot replace the file" << LL_ENDL;
+            LLFile::remove(tempPath);
+            showHandEasyMessage("hand_save_write_failed", name);
+            return false;
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LL_WARNS("Posing") << "Exception caught saving a hand preset: " << e.what() << LL_ENDL;
+        showHandEasyMessage("hand_save_write_failed", name);
+        return false;
+    }
+
+    refreshPoseScroll(mHandPresetsScrollList, POSE_PRESETS_HANDS_SUBDIRECTORY);
+    return true;
+}
+// </plus>
+
+// <plus> hand preset list: display names and the click target
+/// The one place a hand preset's file name (the identity) becomes the text in the list. The names of the shipped
+/// presets come from the floater's strings (hand_preset_name_<file name>, en and ja); any other file (the user's own
+/// presets) shows its name as it is.
+std::string FSFloaterPoser::handPresetDisplayName(const std::string& fileStem)
+{
+    const std::string shown = tryGetString("hand_preset_name_" + fileStem);
+    return shown.empty() ? fileStem : shown;
+}
+
+void FSFloaterPoser::setHandPresetTarget(bool isRightHand)
+{
+    mHandPresetTarget = isRightHand ? 1 : 0;
+    if (mHandPresetLeftBtn)
+        mHandPresetLeftBtn->setToggleState(!isRightHand);
+    if (mHandPresetRightBtn)
+        mHandPresetRightBtn->setToggleState(isRightHand);
+}
+
+/// The mouse button went up over the list (the list has selected the row under the pointer by now).
+void FSFloaterPoser::onHandPresetClick(S32 x, S32 y, MASK mask)
+{
+    if (mHandPresetTarget < 0)
+        return; // no hand chosen yet: Set Left / Set Right decide the first time
+    if (mask != MASK_NONE || !mHandPresetsScrollList->getItemListRect().pointInRect(x, y))
+        return; // a modified click, or one on the scroll bar / header
+    if (!mHandPresetsScrollList->hitItem(x, y))
+        return; // the empty part below the rows: the selection stays, and must not be applied again (it would undo the hand's later edits)
+    onClickLoadHandPose(mHandPresetTarget == 1);
+}
+// </plus>
+
+// <plus> hand preset list: delete (right click)
+/// A shipped preset (a file of app_settings) comes back at the next start (createUserPoseDirectoryIfNeeded copies it again), so
+/// it is not deleted, and it is not saved over (onHandEasySave). The check is the file in the program's folder, not a list of
+/// names; the letters' case does not count ("grip" is the file Grip.xml on Windows, whatever the file system of the program's
+/// folder says).
+bool FSFloaterPoser::isShippedHandPreset(const std::string& fileStem) const
+{
+    const std::string dir = gDirUtilp->getExpandedFilename(LL_PATH_APP_SETTINGS, POSE_PRESETS_SOURCE_DIR_PLUS, POSE_PRESETS_SOURCE_DIR_FEATURE,
+                                                           std::string(POSE_PRESETS_HANDS_SUBDIRECTORY));
+    const std::string fileName = fileStem + POSE_INTERNAL_FORMAT_FILE_EXT;
+    if (gDirUtilp->fileExists(gDirUtilp->add(dir, fileName)))
+        return true;
+    for (const std::string& shipped : gDirUtilp->getFilesInDir(dir))
+    {
+        if (LLStringUtil::compareInsensitive(shipped, fileName) == 0)
+            return true;
+    }
+    return false;
+}
+
+void FSFloaterPoser::onHandPresetRightClick(S32 x, S32 y)
+{
+    LLScrollListItem* item = mHandPresetsScrollList->hitItem(x, y);
+    if (!item || !LLMenuGL::sMenuContainer)
+        return;
+    mHandPresetsScrollList->selectItemAt(x, y, MASK_NONE); // the row under the pointer is the one the menu is about
+
+    const std::string fileStem = item->getValue().asString();
+    const std::string shown    = item->getColumn(0)->getValue().asString();
+    const bool        shipped  = isShippedHandPreset(fileStem);
+
+    LLUICtrl::CommitCallbackRegistry::ScopedRegistrar registrar;
+    LLHandle<LLFloater>                               handle = getHandle();
+    registrar.add("Poser.HandPresetDelete",
+        [handle, fileStem, shown](LLUICtrl*, const LLSD&)
+        {
+            auto* floater = dynamic_cast<FSFloaterPoser*>(handle.get());
+            if (!floater)
+                return;
+            std::string                message = floater->tryGetString("hand_delete_confirm");
+            LLStringUtil::format_map_t format_args;
+            format_args["[NAME]"] = shown;
+            LLStringUtil::format(message, format_args);
+            LLSD args;
+            args["MESSAGE"] = message;
+            LLNotificationsUtil::add("GenericAlertYesCancel", args, LLSD(),
+                [handle, fileStem](const LLSD& notification, const LLSD& response)
+                {
+                    if (LLNotificationsUtil::getSelectedOption(notification, response) != 0)
+                        return;
+                    if (auto* again = dynamic_cast<FSFloaterPoser*>(handle.get()))
+                        again->deleteHandPreset(fileStem);
+                });
+        });
+
+    if (LLContextMenu* old = mHandPresetMenuHandle.get())
+    {
+        old->die();
+        mHandPresetMenuHandle.markDead();
+    }
+    LLContextMenu* menu = LLUICtrlFactory::getInstance()->createFromFile<LLContextMenu>(
+        "menu_fs_poser_hand_preset.xml", LLMenuGL::sMenuContainer, LLMenuHolderGL::child_registry_t::instance());
+    if (!menu)
+        return;
+    mHandPresetMenuHandle = menu->getHandle();
+    if (LLMenuItemGL* deleteItem = menu->findChild<LLMenuItemGL>("delete"))
+    {
+        deleteItem->setEnabled(!shipped);
+        if (shipped)
+            deleteItem->setLabel(tryGetString("hand_delete_builtin_label"));
+    }
+    menu->show(x, y);
+    LLMenuGL::showPopup(mHandPresetsScrollList, menu, x, y);
+}
+
+/// Deletes the user's copy of a hand preset (the file of the user's hand_presets folder). The name is the file name the
+/// list holds, checked once more by the rule of loading (plus::isLoadableFileStem: no path, no dots that leave the folder);
+/// a shipped one is refused again here.
+void FSFloaterPoser::deleteHandPreset(const std::string& fileStem)
+{
+    if (!plus::isLoadableFileStem(fileStem) || isShippedHandPreset(fileStem))
+        return;
+
+    const std::string fullPath = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, POSE_SAVE_SUBDIRECTORY,
+                                                                std::string(POSE_PRESETS_HANDS_SUBDIRECTORY), fileStem + POSE_INTERNAL_FORMAT_FILE_EXT);
+    if (gDirUtilp->fileExists(fullPath) && LLFile::remove(fullPath) != 0)
+    {
+        LL_WARNS("Poser") << "Unable to delete hand preset " << fileStem << LL_ENDL;
+        showHandEasyMessage("hand_delete_failed", handPresetDisplayName(fileStem)); // the name the list shows, as the confirmation did
+        return;
+    }
+    // the list is built again: the selection goes with the row; the hand chosen for the click (mHandPresetTarget) stays
+    refreshPoseScroll(mHandPresetsScrollList, POSE_PRESETS_HANDS_SUBDIRECTORY);
+}
+// </plus>

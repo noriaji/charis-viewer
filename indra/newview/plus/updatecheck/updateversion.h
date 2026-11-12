@@ -71,12 +71,27 @@ namespace plus::updatecheck
     // the build do not count: min_version "0.1.0" accepts 0.1.0 alpha 1).
     bool numbersBelow(const Version& v, int major, int minor, int patch);
 
+    // "0.1.0": the three numbers alone (in key(), displayText() and the copy of the update file).
+    std::string numbersText(int major, int minor, int patch);
+
     // "0.1.0-alpha.2+262911132": what PlusUpdateCheckSkipped keeps.
     std::string key(const Version& v);
 
     // "0.1.0 alpha 2 (rev 1970)": what the window shows (the build
     // number is shown as "rev": the commits since the branch from the official viewer).
     std::string displayText(const Version& v);
+
+    // The installer's version of v (Velopack's packVersion), as plus/version/packversion.py pack_version()
+    // makes it for the package: "0.1.0-alpha.2.3300", a release "0.1.0" (its build left out), a stage
+    // without a number "0.1.0-beta.0". Without a build (v.build 0): "0.1.0-alpha.2". "" for a stage that
+    // is not one (research/326 section 4.2).
+    std::string packageVersion(const Version& v);
+
+    // Whether feed (the update feed's version) is agreed (packageVersion() of the version the user agreed
+    // to): the same text, or, for agreed without a build ("0.1.0-alpha.2"), that and "." and ASCII digits
+    // ("0.1.0-alpha.2.3300"; leading zeros and 0 pass, as the build number is not checked here). A release
+    // and a version with a build match only themselves. An empty one matches nothing.
+    bool packageVersionMatches(std::string_view feed, std::string_view agreed);
 
     // A web address that may be fetched or opened (research/130 M3):
     //   - https://, or http:// only for this computer (localhost, 127.0.0.1,
@@ -104,6 +119,9 @@ namespace plus::updatecheck
     // Whether host is one of the hosts in list (separated by commas, semicolons
     // or spaces; any case). An empty host or list matches nothing.
     bool hostInList(std::string_view host, std::string_view list);
+
+    // Whether list names no host (empty, or only separators).
+    bool hostListEmpty(std::string_view list);
 
     // Whether a check is due: never checked (last 0), the clock went back,
     // or at least interval seconds since the last check.

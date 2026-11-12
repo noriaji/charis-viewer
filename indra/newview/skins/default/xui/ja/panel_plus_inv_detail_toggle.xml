@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<layout_panel name="plus_inv_detail_toggle_panel">
+	<button name="plus_inv_detail_toggle" tool_tip="詳細の表示／非表示"/>
+</layout_panel>

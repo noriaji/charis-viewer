@@ -96,6 +96,9 @@
   <string name="PlusInvCacheMarked">The inventory cache will be deleted at your next login. Log out and log in again when you are ready.</string>
   <string name="PlusInvCacheLoginFirst">The inventory cache is kept for each account: log in first, then press the button.</string>
   <string name="PlusInvCacheNotWritten">Could not mark the inventory cache for deletion (the cache folder could not be written).</string>
+  <!-- invcustomtabs: the inventory's custom filter tabs (plus/invcustomtabs, research/314; Firestorm's names) -->
+  <string name="FSInventoryCustomTabDefaultName">Custom</string>
+  <string name="FSInventoryCustomTabShowHidden">Show hidden tabs</string>
   <!-- Text to speech: the sample read by the Try button -->
   <string name="PlusTtsSampleMale">Hello, this is how the male voice sounds.</string>
   <string name="PlusTtsSampleFemale">Hello, this is how the female voice sounds.</string>

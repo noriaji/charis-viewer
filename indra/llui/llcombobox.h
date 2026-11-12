@@ -79,6 +79,13 @@ public:
 
         Optional<EPreferredPosition, PreferredPositionValues>   list_position;
 
+        // <plus> a key that moves the selection (the arrow keys, Home, End; Page Up / Page Down while the list is
+        // open) commits it as a click on the row does, and the list stays closed; a held arrow key goes on, a few
+        // rows a second (a held Page Up / Page Down moves once) (default false: the official way, the list opens and
+        // the choice waits for Return or a click)
+        Optional<bool>                      commit_on_arrow;
+        // </plus>
+
         // components
         Optional<LLButton::Params>          combo_button;
         Optional<LLScrollListCtrl::Params>  combo_list;
@@ -259,6 +266,13 @@ private:
     boost::signals2::connection mImageLoadedConnection;
     commit_signal_t     mOnReturnSignal;
     S32                 mLastSelectedIndex;
+
+    // <plus> commit_on_arrow
+    class ArrowList;            // the list made when it is on: it tells onListKeyMoved() of a move by a key
+    bool                mCommitOnArrow;
+    // before: the row chosen before the key (null: none), before_cell its cell
+    void                onListKeyMoved(LLScrollListItem* before, S32 before_cell);
+    // </plus>
 };
 
 // A combo box with icons for the list of items.

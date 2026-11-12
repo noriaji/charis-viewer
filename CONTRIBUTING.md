@@ -4,6 +4,8 @@ For now, outside contributions (pull requests or issues) are not accepted.
 You are welcome to fork the source under the LGPL 2.1 (see
 [LICENSE](LICENSE)).
 
+Contact: charisviewer@gmail.com
+
 Please do not report problems with Charis Viewer to Linden Lab: it is not
 their software.
 
@@ -13,6 +15,8 @@ their software.
 
 現在、外部からの貢献（プルリクエストや Issue）は受け付けていません。
 LGPL 2.1（[LICENSE](LICENSE)）のもとでフォークするのは自由です。
+
+連絡先: charisviewer@gmail.com
 
 Charis Viewer の不具合を Linden Lab に報告しないでください（Linden Lab の
 ソフトウェアではありません）。

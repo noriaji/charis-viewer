@@ -102,6 +102,7 @@ Learn about [https://community.secondlife.com/knowledgebase/joining-and-particip
              name="nearby_buttons_panel"
              right="-1"
              top="0">
+                <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was Black on the official light box, so the box's own colour name (research/239) -->
                 <filter_editor
                  follows="left|top|right"
                  height="23"
@@ -110,10 +111,11 @@ Learn about [https://community.secondlife.com/knowledgebase/joining-and-particip
                  label="Filter People"
                  max_length_chars="300"
                  name="nearby_filter_input"
-                 text_color="Black"
+                 text_color="TextFgColor"
                  text_pad_left="10"
                  top="4"
                  width="178" />
+                <!-- /plus -->
                 <button
                  commit_callback.function="People.Gear"
                  follows="right"
@@ -274,6 +276,7 @@ Learn about [https://community.secondlife.com/knowledgebase/joining-and-particip
              name="friends_buttons_panel"
              right="-1"
              top="0">
+                <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was Black on the official light box, so the box's own colour name (research/239) -->
                 <filter_editor
                  follows="left|top|right"
                  height="23"
@@ -282,10 +285,11 @@ Learn about [https://community.secondlife.com/knowledgebase/joining-and-particip
                  label="Filter People"
                  max_length_chars="300"
                  name="friends_filter_input"
-                 text_color="Black"
+                 text_color="TextFgColor"
                  text_pad_left="10"
                  top="4"
                  width="177" />
+                <!-- /plus -->
                 <button
                  commit_callback.function="People.Gear"
                  follows="right"
@@ -436,7 +440,8 @@ Learn about [https://community.secondlife.com/knowledgebase/joining-and-particip
              name="groups_buttons_panel"
              right="-1"
              top="0">
-                <!-- plus: grouptitles. width 144 (was 177): room for plus_group_titles_btn after minus_btn -->
+                <!-- plus: grouptitles. width 144 (was 177): room for plus_group_titles_btn after minus_btn.
+                     ui-old-recolor: text_color TextFgColor (was Black on the official light box; the box to type in is dark in the Charis skin, research/239) -->
                 <filter_editor
                  follows="left|top|right"
                  height="23"
@@ -445,7 +450,7 @@ Learn about [https://community.secondlife.com/knowledgebase/joining-and-particip
                  label="Filter Groups"
                  max_length_chars="300"
                  name="groups_filter_input"
-                 text_color="Black"
+                 text_color="TextFgColor"
                  text_pad_left="10"
                  top="4"
                  width="144" />
@@ -584,6 +589,7 @@ Learn about [https://community.secondlife.com/knowledgebase/joining-and-particip
              name="recent_buttons_panel"
              right="-1"
              top="0">
+                <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was Black on the official light box, so the box's own colour name (research/239) -->
                 <filter_editor
                  follows="left|top|right"
                  height="23"
@@ -592,10 +598,11 @@ Learn about [https://community.secondlife.com/knowledgebase/joining-and-particip
                  label="Filter People"
                  max_length_chars="300"
                  name="recent_filter_input"
-                 text_color="Black"
+                 text_color="TextFgColor"
                  text_pad_left="10"
                  top="4"
                  width="177" />
+                <!-- /plus -->
                 <button
                  commit_callback.function="People.Gear"
                  follows="right"

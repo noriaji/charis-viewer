@@ -23,15 +23,6 @@
 					<radio_item name="external_all" label="用內建瀏覽器開啟所有連結" tool_tip="使用內建的瀏覽器瀏覽幫助，開啟網頁。該瀏覽器將透過 [APP_NAME] 開啟新視窗。" />
 				</plus_ps_radio>
 				<plus_ps_check_compat name="browser_javascript_enabled" label="啟用 Javascript" />
-				<plus_ps_text name="Software updates:">
-					軟體更新：
-				</plus_ps_text>
-				<plus_ps_combo name="updater_service_combobox">
-					<plus_ps_combo.item name="Install_automatically" label="自動安裝每一次更新" />
-					<plus_ps_combo.item name="Install_ask" label="每當有可自由選擇的更新，讓我做決定" />
-					<plus_ps_combo.item name="Install_manual" label="僅安裝強制必要的更新" />
-				</plus_ps_combo>
-				<plus_ps_check_compat name="update_willing_to_test" label="願意在更新時搶先試用釋出候選版" />
 				<plus_ps_check_compat name="update_show_release_notes" label="更新後顯示發行記事" />
 				<plus_ps_text name="Proxy Settings:">
 					代理伺服器設定：

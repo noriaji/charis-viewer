@@ -5,7 +5,7 @@
      ranges) in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml).
      Height of the list (1080 base): 10 + 2 sliders x 31 + label 24 + 2 checks x 30 + 10 + heading 40
      + 3 checks x 30 + 10 + heading 40 + check 30 + sensitivity 31 + 10 + 3 drop-down rows x 33 + 10
-     + 2 checks x 30 + 6 + button 40 + 14 = 646 (scrolls in 515).
+     + 2 checks x 30 + 6 + button 40 + 14 + 1 check x 30 (camera constraints) = 676 (scrolls in 515).
      Rows at left 44 (the icons in the column at 14), 499 wide: label 257 | 12 | drop-down 230 (the
      longest ja choice is 15 characters); sensitivity: label 206 | 6 | slider 174 | 12 | Invert 101. -->
 <panel
@@ -41,7 +41,7 @@
              name="move_scroll_panel"
              background_visible="false"
              follows="left|top"
-             height="646"
+             height="676"
              layout="topleft"
              left="0"
              mouse_opaque="false"
@@ -90,6 +90,21 @@
                  min_val="0.5"
                  top="41"
                  width="499" />
+                <!-- camunlock (PlusDisableCameraConstraints): Firestorm's "Disable camera constraints" (Move & View > Movement, after the
+                     camera sliders and before "Automatic position for"). The same DisableCameraConstraints setting
+                     the Advanced menu and the photo tools use. Off by default, as in the official viewer and Firestorm:
+                     on, it also lifts the push-back out of walls and the floor at ground level (LLAgentCamera). -->
+                <plus_ps_check_compat
+                 name="DisableCameraConstraints"
+                 control_name="DisableCameraConstraints"
+                 follows="left|top|right"
+                 height="30"
+                 label="Disable camera constraints"
+                 layout="topleft"
+                 left="44"
+                 tool_tip="Set this to move your camera beyond its normal bounds and below land level. The camera is no longer pushed back out of walls or kept above the ground either: in a room it can end up outside the walls, where you cannot see yourself. If you are not good at moving the camera, more of your shots may be at bad angles."
+                 top="72"
+                 width="499" />
                 <plus_ps_text
                  name="heading2"
                  follows="left|top|right"
@@ -97,7 +112,7 @@
                  layout="topleft"
                  left="44"
                  length="1"
-                 top="72"
+                 top="102"
                  type="string"
                  width="499">
                     Automatic position for:
@@ -111,7 +126,7 @@
                  layout="topleft"
                  left="44"
                  tool_tip="Use automatic camera positioning when entering and exiting edit mode"
-                 top="96"
+                 top="126"
                  width="499" />
                 <plus_ps_check_compat
                  name="appearance_camera_movement"
@@ -122,7 +137,7 @@
                  layout="topleft"
                  left="44"
                  tool_tip="Use automatic camera positioning while in edit mode"
-                 top="126"
+                 top="156"
                  width="499" />
                 <icon
                  name="avatar_icon"
@@ -132,7 +147,7 @@
                  layout="topleft"
                  left="14"
                  mouse_opaque="false"
-                 top="177"
+                 top="207"
                  visible="true"
                  width="18" />
                 <plus_ps_text
@@ -143,7 +158,7 @@
                  layout="topleft"
                  left="44"
                  length="1"
-                 top="166"
+                 top="196"
                  type="string"
                  width="499">
                     Keyboard:
@@ -156,7 +171,7 @@
                  label="Arrow keys always move me while in chat"
                  layout="topleft"
                  left="44"
-                 top="206"
+                 top="236"
                  width="499" />
                 <plus_ps_check_compat
                  name="tap_tap_hold_to_run"
@@ -166,7 +181,7 @@
                  label="Tap-tap-hold to run"
                  layout="topleft"
                  left="44"
-                 top="236"
+                 top="266"
                  width="499" />
                 <plus_ps_check_compat
                  name="automatic_fly"
@@ -176,7 +191,7 @@
                  label="Hold jump or crouch key to start or stop flying"
                  layout="topleft"
                  left="44"
-                 top="266"
+                 top="296"
                  width="499" />
                 <plus_ps_text
                  name="mouse_lbl"
@@ -186,7 +201,7 @@
                  layout="topleft"
                  left="44"
                  length="1"
-                 top="306"
+                 top="336"
                  type="string"
                  width="499">
                     Mouse:
@@ -199,7 +214,7 @@
                  label="Show me in Mouselook"
                  layout="topleft"
                  left="44"
-                 top="346"
+                 top="376"
                  width="499" />
                 <plus_ps_text
                  name=" Mouse Sensitivity"
@@ -208,7 +223,7 @@
                  layout="topleft"
                  left="44"
                  length="1"
-                 top="376"
+                 top="406"
                  type="string"
                  width="206"
                  wrap="true">
@@ -224,7 +239,7 @@
                  left="256"
                  max_val="15"
                  show_text="false"
-                 top="376"
+                 top="406"
                  width="174" />
                 <plus_ps_check_compat
                  name="invert_mouse"
@@ -234,7 +249,7 @@
                  label="Invert"
                  layout="topleft"
                  left="442"
-                 top="376"
+                 top="406"
                  width="101" />
                 <plus_ps_text
                  name="mouse_warp_lbl"
@@ -243,7 +258,7 @@
                  layout="topleft"
                  left="44"
                  length="1"
-                 top="417"
+                 top="447"
                  type="string"
                  width="257">
                     Mouse Warp:
@@ -256,7 +271,7 @@
                  layout="topleft"
                  left="313"
                  tool_tip="Controls warping of the mouse to the center of the screen during alt-zoom and mouse look."
-                 top="417"
+                 top="447"
                  width="230">
                     <plus_ps_combo.item
                      name="0"
@@ -278,7 +293,7 @@
                  layout="topleft"
                  left="44"
                  length="1"
-                 top="450"
+                 top="480"
                  type="string"
                  width="257">
                     Single click on land:
@@ -289,7 +304,7 @@
                  height="33"
                  layout="topleft"
                  left="313"
-                 top="450"
+                 top="480"
                  width="230">
                     <plus_ps_combo.item
                      name="0"
@@ -309,7 +324,7 @@
                  layout="topleft"
                  left="44"
                  length="1"
-                 top="483"
+                 top="513"
                  type="string"
                  width="257">
                     Double click on land:
@@ -320,7 +335,7 @@
                  height="33"
                  layout="topleft"
                  left="313"
-                 top="483"
+                 top="513"
                  width="230">
                     <plus_ps_combo.item
                      name="0"
@@ -345,7 +360,7 @@
                  label="Play sound on collisions"
                  layout="topleft"
                  left="44"
-                 top="526"
+                 top="556"
                  width="499" />
                 <!-- tpscreen (plus/loginfast, PlusDisableTeleportScreens): Firestorm's "Disable Teleport Screens"
                      (Move & View > Teleports there; here at the end of the Move tab, as on the official panel) -->
@@ -358,7 +373,7 @@
                  layout="topleft"
                  left="44"
                  tool_tip="The dark teleport screen (the progress view) does not come down: the world stays in view while you teleport. What is still loading comes in with the materialize effect."
-                 top="556"
+                 top="586"
                  width="499" />
                 <plus_ps_button_compat
                  name="joystick_setup_button"
@@ -367,7 +382,7 @@
                  label="3Dconnexion devices"
                  layout="topleft"
                  left="44"
-                 top="592"
+                 top="622"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Floater.Show"

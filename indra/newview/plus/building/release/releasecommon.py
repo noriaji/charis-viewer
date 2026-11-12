@@ -7,8 +7,13 @@ import hashlib
 import http.client
 import importlib.util
 import os
+import random
 import re
+import socket
+import ssl
 import sys
+import time
+import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -341,11 +346,67 @@ def copy_checked(stream, part, size, digest, url):
                                % (url, got if got <= size else 'more than %d' % size, h.hexdigest(), size, digest))
 
 
-def download(url, path, size, digest, say=print, hosts=None, redirect_hosts=None):
+# download()'s retries: the waits (seconds) before the 2nd, 3rd and 4th try (so at most 4 tries), each plus up to
+# RETRY_JITTER of itself; a server's Retry-After counts up to RETRY_AFTER_MAX; the waits of one download add up to at
+# most RETRY_WAIT_TOTAL. Only a failure that can pass by itself is retried (transient_reason()).
+RETRY_WAITS = (5, 15, 45)
+RETRY_JITTER = 0.2
+RETRY_AFTER_MAX = 60
+RETRY_WAIT_TOTAL = 180
+RETRY_HTTP_CODES = (429, 500, 502, 503, 504)
+
+
+def transient_reason(e):
+    """Why the failure e of one fetch can pass by itself (a busy or slow server, a dropped connection), or None:
+    anything else (a 4xx, a certificate that does not verify, a full disk, a bad URL) is final."""
+    if isinstance(e, urllib.error.HTTPError):
+        return 'HTTP %d' % e.code if e.code in RETRY_HTTP_CODES else None
+    if isinstance(e, urllib.error.URLError):          # no answer at all: the reason is the socket's
+        r = e.reason
+        if isinstance(r, OSError) and not isinstance(r, ssl.SSLCertVerificationError):
+            return str(r) or type(r).__name__
+        return None
+    if isinstance(e, ssl.SSLCertVerificationError):
+        return None
+    if isinstance(e, (TimeoutError, socket.timeout, ConnectionError, ssl.SSLError, http.client.IncompleteRead,
+                      http.client.BadStatusLine)):
+        return str(e) or type(e).__name__
+    return None
+
+
+def retry_wait(wait, e, waited):
+    """Seconds to wait before the next try: the scheduled wait with its jitter, or the server's Retry-After (whole
+    seconds, at most RETRY_AFTER_MAX) when that is longer; never more than what is left of RETRY_WAIT_TOTAL."""
+    seconds = wait + random.uniform(0, RETRY_JITTER * wait)
+    headers = getattr(e, 'headers', None)
+    after = headers.get('Retry-After') if headers is not None else None
+    if after and after.strip().isdigit():
+        seconds = max(seconds, min(int(after.strip()), RETRY_AFTER_MAX))
+    return max(0, min(seconds, RETRY_WAIT_TOTAL - waited))
+
+
+def fetch_once(url, part, size, digest, redirect_hosts):
+    """One try: url into the file part (made new), the size and SHA-256 checked. The final file is not put in place.
+    A body that ended before the Content-Length the server announced was cut by the connection (IncompleteRead, which
+    download() tries again); a complete body that is not the pinned file stays a DownloadMismatch."""
+    opener = urllib.request.build_opener(HttpsOnlyRedirects(redirect_hosts))
+    with opener.open(url, timeout=120) as r:
+        try:
+            copy_checked(r, part, size, digest, url)
+        except DownloadMismatch:
+            if getattr(r, 'length', None) and os.path.getsize(part) < size:
+                raise http.client.IncompleteRead(b'', r.length)
+            raise
+
+
+def download(url, path, size, digest, say=print, hosts=None, redirect_hosts=None, retry_waits=None, sleep=None):
     """Fetches url to path unless a file with that size and SHA-256 is there (https only,
     the size and SHA-256 checked before the file is put in place). With hosts, url must be on
     one of them and every redirect on one of redirect_hosts (default: hosts). say(text) tells
-    progress; DownloadFailed when it fails (DownloadMismatch: fetched, but not that file)."""
+    progress; DownloadFailed when it fails (DownloadMismatch: fetched, but not that file).
+    A failure that can pass by itself (transient_reason(): HTTP 429/5xx, a timeout, a dropped connection) is tried
+    again from the start, after retry_waits seconds each (default RETRY_WAITS; () = no retry), and says so; a
+    refused host or redirect, a mismatch and every other failure stop at once. sleep is time.sleep's stand-in."""
     if hosts:
         why = url_host_problem(url, hosts)
         if why:
@@ -355,17 +416,27 @@ def download(url, path, size, digest, say=print, hosts=None, redirect_hosts=None
         return
     os.makedirs(os.path.dirname(path), exist_ok=True)
     part = path + '.part'
-    say('fetching %s' % url)
-    done = False
-    try:
-        opener = urllib.request.build_opener(HttpsOnlyRedirects(redirect_hosts or hosts))
-        with opener.open(url, timeout=120) as r:
-            copy_checked(r, part, size, digest, url)
-        os.replace(part, path)
-        done = True
-    except (OSError, http.client.HTTPException) as e:
-        raise DownloadFailed('fetching %s: %s' % (url, e))
-    finally:
-        if not done and os.path.exists(part):
-            os.remove(part)
-    say('fetched %s (sha256 %s)' % (path, digest))
+    waits = RETRY_WAITS if retry_waits is None else tuple(retry_waits)
+    sleep = sleep or time.sleep
+    tries, waited = len(waits) + 1, 0
+    for attempt in range(1, tries + 1):
+        say('fetching %s' % url if attempt == 1 else 'fetching %s (try %d of %d)' % (url, attempt, tries))
+        failure = None
+        try:
+            fetch_once(url, part, size, digest, redirect_hosts or hosts)
+            os.replace(part, path)
+            say('fetched %s (sha256 %s)' % (path, digest))
+            return
+        except (OSError, http.client.HTTPException) as e:
+            failure = e
+        finally:
+            if os.path.exists(part):
+                os.remove(part)          # a retry starts the file over; the SHA-256 is checked on a whole one only
+        reason = transient_reason(failure)
+        if reason is None or attempt == tries:
+            tried = ' (after %d tries)' % attempt if attempt > 1 else ''
+            raise DownloadFailed('fetching %s: %s%s' % (url, failure, tried))
+        seconds = retry_wait(waits[attempt - 1], failure, waited)
+        say('WARNING: try %d of %d for %s failed (%s); next try in %.0f s' % (attempt, tries, url, reason, seconds))
+        waited += seconds
+        sleep(seconds)

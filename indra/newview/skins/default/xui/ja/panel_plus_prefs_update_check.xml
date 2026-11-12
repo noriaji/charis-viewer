@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <panel name="plus_update_check">
-	<plus_ps_check_compat name="plus_update_check_enabled" label="Charis Viewer の新しい版を知らせる（起動時に 1 日 1 回確認）" tool_tip="既定はオフです。オンにすると、起動時に 1 日 1 回まで、更新の確認先（設定 PlusUpdateCheckURL。空の間は何も読みません）の小さなファイルを 1 つ読みます。ふつうのウェブページと同じく、サイトのログには IP アドレスとビューワの版が残ります。アカウントやアバターの情報は送りません。" />
+	<plus_ps_check_compat name="plus_update_check_enabled" label="Charis Viewer の新しい版を知らせる（起動時に 1 日 1 回確認）" tool_tip="既定はオンです。起動時に 1 日 1 回まで、更新の確認先（設定 PlusUpdateCheckURL。既定は GitHub の上のファイル。空の間は何も読みません）の小さなファイルを 1 つ読み、新しい版があればログイン画面でお知らせします。ふつうのウェブページと同じく、サイトのログには IP アドレスとビューワの版が残ります。アカウントやアバターの情報は送りません。オフにすると、何も読まず、何も出しません。" />
+	<plus_ps_combo name="plus_update_install" tool_tip="Setup.exe で入れたビューワの設定です。上の確認で新しい版が見つかった時に、知らせるだけにするか（zip と同じく、ボタンでダウンロードページを開きます）、ダウンロードの前に尋ねるか（既定。［ダウンロード］を押すまで何もダウンロードしません）、尋ねずにダウンロードするかを選びます。どれでも、入れ替えるのはビューワを終了した時か、［再起動して更新］を押した時だけです。">
+		<plus_ps_combo.item name="install_only_tell" label="知らせるだけ（ボタンでダウンロードページを開く）" />
+		<plus_ps_combo.item name="install_ask" label="ダウンロードの前に尋ねる" />
+		<plus_ps_combo.item name="install_automatic" label="自動でダウンロードし、次に終了した時に入れる" />
+	</plus_ps_combo>
 </panel>

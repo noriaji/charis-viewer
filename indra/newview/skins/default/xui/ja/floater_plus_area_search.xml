@@ -23,7 +23,9 @@
 	<floater.string name="tip_last_owner">一つ前の所有者</floater.string>
 	<tab_container name="area_search_tabs">
 		<panel label="一覧" name="list_panel">
-			<search_editor label="一覧を絞り込む: 名前・説明・所有者・グループ・作成者" name="quick_filter" tool_tip="どれかの欄にこの文字を含む行だけを残します（大文字・小文字は区別しません）。「検索」「絞り込み」タブの条件と合わせて効きます。"/>
+			<search_editor label="絞り込み（スペースで AND）" name="quick_filter" tool_tip="スペース（全角も可）で区切って AND 検索します。名前・説明・所有者・グループ・作成者・前の所有者のどれかに、すべての語が含まれる行だけを残します（語ごとに別の欄でもかまいません。英字は大文字・小文字を区別しません）。例: 椅子 太郎。「検索」「絞り込み」タブの条件と合わせて効きます。"/>
+			<text name="range_label" tool_tip="自分からこの距離以内の物だけを一覧に出します（「距離（m）」の条件は、その内側でさらに絞ります）。サーバーにも、この距離までの物を送ってもらいます（描画距離のほうが遠い時は描画距離まで。描画はされず、一覧に出るだけです）。0 なら描画距離です（最大 512 m。それより遠い物は、一覧に出しません）。広くするほどメモリと一覧が埋まるまでの時間が増えます。">範囲(m):</text>
+			<spinner name="search_range" tool_tip="自分からこの距離以内の物だけを一覧に出します（「距離（m）」の条件は、その内側でさらに絞ります）。サーバーにも、この距離までの物を送ってもらいます（描画距離のほうが遠い時は描画距離まで。描画はされず、一覧に出るだけです）。0 なら描画距離です（最大 512 m。それより遠い物は、一覧に出しません）。広くするほどメモリと一覧が埋まるまでの時間が増えます。"/>
 			<button label="更新" name="btn_refresh" tool_tip="覚えている内容を捨てて、すべてのオブジェクトをシミュレーターに問い合わせ直します"/>
 			<text name="counter">一覧 | 問い合わせ中 | 対象</text>
 			<check_box label="ビーコンを表示" name="beacons" tool_tip="一覧のオブジェクトにビーコンと名前を表示します"/>
@@ -96,7 +98,6 @@
 			<check_box label="触る" name="double_click_touch"/>
 			<check_box label="買う" name="double_click_buy"/>
 			<check_box label="座る" name="double_click_sit"/>
-			<text name="range_label" tool_tip="自分からこの距離以内の物だけを一覧に出します（「距離（m）」の条件は、その内側でさらに絞ります）。サーバーにも、この距離までの物を送ってもらいます（描画距離のほうが遠い時は描画距離まで。描画はされず、一覧に出るだけです）。0 なら距離で絞らず（無制限。読み込み済みとキャッシュにある物すべて）、サーバーへの要求は描画距離までです。広くするほどメモリと一覧が埋まるまでの時間が増えます。">探す範囲（m、0 は制限なし）:</text>
 		</panel>
 	</tab_container>
 </floater>

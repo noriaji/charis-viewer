@@ -98,6 +98,7 @@
 #include "plus/invguard/invguard.h"
 #include "plus/rlv/rlvhooks.h"
 // </plus>
+#include "plus/invcustomtabs/invcustomtabs.h" // <plus> invcustomtabs (research/314) </plus>
 
 bool LLInventoryState::sWearNewClothing = false;
 LLUUID LLInventoryState::sWearNewClothingTransactionID;
@@ -1050,6 +1051,13 @@ void reset_inventory_filter()
         LLPanelMainInventory* main_inventory = sidepanel_inventory->getMainInventoryPanel();
         if (main_inventory)
         {
+            // <plus> invcustomtabs: the search is cleared on My Inventory, as Firestorm does (showAllItemsPanel() first);
+            // on a custom tab it would clear and save that tab's words (plus/invcustomtabs, research/314)
+            if (PlusInvCustomTabs::activePanelIsCustom(main_inventory))
+            {
+                main_inventory->selectAllItemsPanel();
+            }
+            // </plus>
             main_inventory->onFilterEdit("");
         }
     }

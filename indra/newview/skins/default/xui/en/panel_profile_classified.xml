@@ -473,6 +473,7 @@
                 >
                     Title:
                 </text>
+                <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was black on the official light box, so the box's own colour name (research/239) -->
                 <line_editor
                  name="classified_name_edit"
                  top_pad="2"
@@ -485,8 +486,9 @@
                  max_length_bytes="30"
                  prevalidator="ascii"
                  commit_on_focus_lost="false"
-                 text_color="black"
+                 text_color="TextFgColor"
                 />
+                <!-- /plus -->
                 <text
                  name="description_label"
                  top_pad="10"
@@ -503,6 +505,7 @@
                 >
                     Description:
                 </text>
+                <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was black on the official light box, so the box's own colour name (research/239) -->
                 <text_editor
                  name="classified_desc_edit"
                  top_pad="2"
@@ -512,9 +515,10 @@
                  follows="left|top|right"
                  layout="topleft"
                  max_length="256"
-                 text_color="black"
+                 text_color="TextFgColor"
                  word_wrap="true"
                 />
+                <!-- /plus -->
                 <text
                  name="location_label"
                  top_pad="10"

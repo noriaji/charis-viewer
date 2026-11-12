@@ -62,7 +62,7 @@ namespace plus::version
     // and its number: "alpha 1". STAGE "" for a release (nothing shown);
     // STAGE_NUMBER 0 shows the stage without a number ("beta").
     inline constexpr char STAGE[] = "alpha";
-    inline constexpr int STAGE_NUMBER = 1;
+    inline constexpr int STAGE_NUMBER = 2;
 
     // ---------------------------------------------------------------------
 

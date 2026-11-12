@@ -2865,10 +2865,10 @@ bool LLAppViewer::initConfiguration()
 #ifndef LL_RELEASE_FOR_DOWNLOAD
     // provide developer build only overrides for these control variables that are not
     // persisted to settings.xml
-    if (LLControlVariable* c = gSavedSettings.getControl("AllowMultipleViewers"))
-    {
-        c->setValue(true, false);
-    }
+    // <plus> AllowMultipleViewers: set after the user settings are read (below, after "UserSession").
+    // Set here, a value of it in settings.xml replaced it: loadFromFile() sets the value read as
+    // the saved one, which drops an unsaved value (multi-viewer-fix)
+    // </plus>
 
     // <plus> not saved either (the comment above): a saved QAMode=1 also showed the
     // Develop menu in the downloadable build, which shares the settings folder. Not
@@ -2971,6 +2971,18 @@ bool LLAppViewer::initConfiguration()
 
     }
     loadSettingsFromDirectory("UserSession");
+
+    // <plus> multi-viewer-fix: the developer build's override of AllowMultipleViewers, after every
+    // settings file is read (moved from above): what Preferences shows is then what the check for a
+    // second instance reads. An unsaved value, as before: settings.xml (shared with the downloadable
+    // build) keeps the user's saved value. The command line (--multiple) still comes after it.
+#ifndef LL_RELEASE_FOR_DOWNLOAD
+    if (LLControlVariable* c = gSavedSettings.getControl("AllowMultipleViewers"))
+    {
+        c->setValue(true, false);
+    }
+#endif
+    // </plus>
 
     // - apply command line settings
     if (!clp.notify())
@@ -5572,7 +5584,10 @@ void LLAppViewer::idle()
     // Smoothly weight toward current frame
     gFPSClamped = (frame_rate_clamped + (4.f * gFPSClamped)) / 5.f;
 
-    F32 qas = gSavedSettings.getF32("QuitAfterSeconds");
+    // <plus> cpu-trim-safe: a cached control, not a name lookup each frame (was: gSavedSettings.getF32("QuitAfterSeconds"))
+    static LLCachedControl<F32> quit_after_seconds(gSavedSettings, "QuitAfterSeconds", 0.f);
+    F32 qas = quit_after_seconds;
+    // </plus>
     if (qas > 0.f)
     {
         if (gRenderStartTime.getElapsedTimeF32() > qas)
@@ -5617,7 +5632,10 @@ void LLAppViewer::idle()
         // Update simulator agent state
         //
 
-        if (gSavedSettings.getBOOL("RotateRight"))
+        // <plus> cpu-trim-safe: a cached control, not a name lookup each frame (was: gSavedSettings.getBOOL("RotateRight"))
+        static LLCachedControl<bool> rotate_right(gSavedSettings, "RotateRight", false);
+        // </plus>
+        if (rotate_right) // <plus> cpu-trim-safe </plus>
         {
             gAgent.moveYaw(-1.f);
         }

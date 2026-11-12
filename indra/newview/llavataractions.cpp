@@ -81,6 +81,10 @@
 // <plus> rlv: RLVa (plus/rlv) (research/248)
 #include "plus/rlv/rlvhooks.h"
 // </plus>
+// <plus> invcolumns: the center column's selection (research/318)
+#include "llpanelmaininventory.h"
+#include "plus/invexplorer/invcolumns.h"
+// </plus>
 
 // Flags for kick message
 const U32 KICK_FLAGS_DEFAULT    = 0x0;
@@ -768,6 +772,16 @@ namespace action_give_inventory
     static LLInventoryPanel* get_active_inventory_panel()
     {
         LLInventoryPanel* active_panel = LLInventoryPanel::getActiveInventoryPanel(false);
+        // <plus> invcolumns: in three columns, an object chosen in the center column is what the selection is
+        // (wear, add, take off, detach, share, new folder from the selection), not the folder on the left (research/318)
+        if (LLPanelMainInventory* owner = active_panel ? active_panel->getParentByType<LLPanelMainInventory>() : nullptr)
+        {
+            if (LLInventoryPanel* center = plus::invcolumns::chosenCenter(owner))
+            {
+                active_panel = center;
+            }
+        }
+        // </plus>
         LLFloater* floater_appearance = LLFloaterReg::findInstance("appearance");
         if (!active_panel || (floater_appearance && floater_appearance->hasFocus()))
         {

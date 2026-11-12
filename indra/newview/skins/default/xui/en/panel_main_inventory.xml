@@ -225,6 +225,7 @@
      right="-3"
      name="default_inventory_panel"
      top_pad="5">
+      <!-- plus: invcustomtabs. use_ellipses: a long custom tab name ends in "..." (plus/invcustomtabs, research/314; as Firestorm) -->
       <tab_container
        follows="all"
        halign="center"
@@ -236,7 +237,9 @@
        tab_position="top"
        tab_min_width="100"
        use_tab_offset="true"
-       top="0">
+       top="0"
+       use_ellipses="true">
+      <!-- /plus -->
         <inventory_panel
          bg_opaque_color="DkGray2"
          bg_alpha_color="DkGray2"

@@ -30,6 +30,7 @@
 #include "plus/photoscreen/photoscreen.h"
 #include "plus/photoscreen/psui/psstyle.h"
 
+#include "llagentcamera.h"
 #include "llcallbacklist.h"
 #include "llcontrol.h"
 #include "lldir.h"
@@ -737,6 +738,13 @@ namespace plus::shortcutbar
                     item->setEnabled(mAll[n].enabled);
                     menu->addChild(item);
                 }
+                // An LLContextMenu is made visible by show() only (its setVisible(true) does nothing), so
+                // showPopup() alone leaves it hidden. show() takes screen coordinates; showPopup() then
+                // places it (and in a detached window, plus/detach).
+                S32 screen_x = 0;
+                S32 screen_y = 0;
+                localPointToScreen(x, y, &screen_x, &screen_y);
+                menu->show(screen_x, screen_y, this);
                 LLMenuGL::showPopup(this, menu, x, y);
             }
 
@@ -982,7 +990,7 @@ namespace plus::shortcutbar
                 return;
             }
             const bool want = show && !sSuppressed && !plus::photoscreen::isActive()
-                              && gViewerWindow && gViewerWindow->getUIVisibility()
+                              && gViewerWindow && gViewerWindow->getUIVisibility() && !gAgentCamera.cameraMouselook()
                               && LLStartUp::getStartupState() == STATE_STARTED;
             if (panel->getVisible() != want)
             {

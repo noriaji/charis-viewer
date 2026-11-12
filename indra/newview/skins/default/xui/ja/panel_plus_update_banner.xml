@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="plus_update_banner">
+	<string name="body">新しい版 [VERSION] が出ています（今は [CURRENT]）</string>
+	<string name="body_required">今お使いの版 [CURRENT] はサポートが終わりました。[VERSION] に更新してください</string>
+	<string name="notes">更新内容: [URL]</string>
+	<string name="page">ダウンロードページ: [URL]</string>
+	<string name="btn_notes">更新内容を開く</string>
+	<string name="btn_notes_tip">更新内容のページをブラウザで開きます（ダウンロードページの指定がないため）</string>
+	<string name="btn_install">ダウンロードして更新</string>
+	<string name="btn_install_tip">新しい版を GitHub からダウンロードします（その間もビューワは使えます。進み具合は右下に出ます）。入れ替えるのは、ビューワを終了した時か［再起動して更新］を押した時です。</string>
+	<plus_ps_box name="banner_box">
+		<plus_ps_label name="banner_text" tool_tip="Charis Viewer の新しい版が出ています" />
+		<plus_ps_button name="banner_open" label="ダウンロードページを開く" tool_tip="ダウンロードページをブラウザで開きます" />
+		<plus_ps_button name="banner_skip" label="この版は通知しない" tool_tip="これより新しい版が出るまで、お知らせしません" />
+		<plus_ps_button name="banner_stop" label="通知を止める" tool_tip="新しい版の確認と、このお知らせを止めます（設定 → セットアップでまた入れられます）" />
+		<plus_ps_icon_button name="banner_close" tool_tip="閉じます（次の起動でまた出ます）" />
+	</plus_ps_box>
+</panel>

@@ -526,6 +526,12 @@ public:
     /// <returns>The rotation of the requested joint, if determinable, otherwise a default vector.</returns>
     LLVector3 getJointRotation(LLVOAvatar* avatar, const FSPoserJoint& joint, E_BoneAxisTranslation translation, S32 negation) const;
 
+    // <plus> hand tab "Easy": the joint's rotation as it is seen (public rotation x base rotation) as bone-frame Euler angles,
+    // and whether its base rotation is zero. getJointRotation() gives the public part only, which is not what is seen
+    // while a base rotation is left in (a Bento hand animation running when the posing began).
+    bool getJointSeenRotation(LLVOAvatar* avatar, const FSPoserJoint& joint, LLVector3* rotation, bool* baseRotationIsZero) const;
+    // </plus>
+
     /// <summary>
     /// Gets the rotation of a joint for the supplied avatar for export.
     /// </summary>

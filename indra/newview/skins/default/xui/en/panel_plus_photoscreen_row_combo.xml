@@ -24,6 +24,7 @@
         Name
     </text>
     <combo_box
+     commit_on_arrow="true"
      follows="left|right|top"
      height="20"
      layout="topleft"

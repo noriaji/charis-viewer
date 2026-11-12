@@ -55,14 +55,19 @@
 #include <map>
 
 #include "llagent.h"
+#include "llapp.h"
+#include "llassetstorage.h"
+#include "llcircuit.h"
 #include "lldir.h"
 #include "llenvironment.h"
 #include "llfile.h"
 #include "llinventorymodel.h"
+#include "llnotificationsutil.h"
 #include "llparcel.h"
 #include "llsdserialize.h"
 #include "llsdutil.h"
 #include "llsettingssky.h"
+#include "llsettingsvo.h"
 #include "llsettingswater.h"
 #include "llviewercamera.h"
 #include "llviewercontrol.h"
@@ -875,6 +880,205 @@ namespace plus::photomode
         }
     }
 
+    void fetchSettingsAsset(const LLUUID& asset, const void* owner, SettingsFetched done)
+    {
+        if (!gAssetStorage)
+        {
+            done(asset, LLSettingsBase::ptr_t(), LL_ERR_ASSET_REQUEST_FAILED);
+            return;
+        }
+        gAssetStorage->getAssetData(asset, LLAssetType::AT_SETTINGS,
+            [done](const LLUUID& asset_id, LLAssetType::EType, void*, S32 status, LLExtStat ext_status)
+            {
+                if (status)
+                {
+                    if (status != LL_ERR_CIRCUIT_GONE)  // not while quitting
+                    {
+                        // as LLSettingsVOBase::onAssetDownloadComplete() logs it (not reached on this way)
+                        LL_WARNS("SETTINGS") << "Error retrieving asset " << asset_id << ". Status code=" << status << "("
+                                             << LLAssetStorage::getErrorString(status) << ") ext_status=" << (U32)ext_status
+                                             << LL_ENDL;
+                    }
+                    done(asset_id, LLSettingsBase::ptr_t(), status);
+                    return;
+                }
+                // In the cache now: read as getSettingsAsset() reads it (from the cache, at once). When the cache cannot
+                // give it after all (not written, or gone), that call asks again with no user data, and the asset
+                // storage may drop it as a duplicate (another part asking for it): no answer would ever come. So the
+                // answer must come here and now; else it is a failure, and a late answer is dropped (done once).
+                auto answered = std::make_shared<bool>(false);
+                LLSettingsVOBase::getSettingsAsset(asset_id,
+                    [done, answered](LLUUID id, LLSettingsBase::ptr_t settings, S32 read_status, LLExtStat)
+                    {
+                        if (*answered)
+                        {
+                            return;
+                        }
+                        *answered = true;
+                        done(id, settings, read_status);
+                    });
+                if (!*answered)
+                {
+                    *answered = true;
+                    LL_WARNS("SETTINGS") << "Asset " << asset_id << " came but could not be read from the cache" << LL_ENDL;
+                    done(asset_id, LLSettingsBase::ptr_t(), LL_ERR_ASSET_REQUEST_FAILED);
+                }
+            },
+            const_cast<void*>(owner), true);
+    }
+
+    namespace
+    {
+        // What a layer (EnvLayer) of the personal environment wants. Main thread (the asset's callback comes there).
+        struct LayerWant
+        {
+            LLUUID        asset;                            // the asset wanted (null: none, or dropped)
+            EnvFetch      fetch      = EnvFetch::None;      // of that asset
+            EnvTransition transition = EnvTransition::Instant;
+            U32           order      = 0;                   // when it was asked for, of all the layers (sWantOrder)
+            U32           changes    = 0;                   // asked for or dropped: localEnvironmentChanges()
+        };
+        LayerWant sWant[static_cast<size_t>(EnvLayer::Count)];
+        U32       sWantOrder = 0;
+
+        LayerWant& want(EnvLayer layer)
+        {
+            return sWant[static_cast<size_t>(layer)];
+        }
+
+        void fetchWanted(EnvLayer layer);
+
+        boost::signals2::signal<void()>& failedSignal()
+        {
+            static boost::signals2::signal<void()> signal;
+            return signal;
+        }
+
+        // The kind of settings a layer takes.
+        bool layerTakes(EnvLayer layer, const LLSettingsBase& settings)
+        {
+            switch (layer)
+            {
+                case EnvLayer::Sky:   return settings.getSettingsTypeValue() == LLSettingsType::ST_SKY;
+                case EnvLayer::Water: return settings.getSettingsTypeValue() == LLSettingsType::ST_WATER;
+                case EnvLayer::Day:   return settings.getSettingsTypeValue() == LLSettingsType::ST_DAYCYCLE;
+                default:              return false;
+            }
+        }
+
+        // A layer's asset came, or could not be had. Put on only while it is still the one wanted and not come yet.
+        // Matched by the asset, not by the request: the asset storage drops a second request for an asset still
+        // coming, callback and all (LLAssetStorage::getAssetData), and only the first one's callback comes.
+        void onWantedAsset(EnvLayer layer, const LLUUID& asset_id, const LLSettingsBase::ptr_t& settings, S32 status)
+        {
+            LayerWant& wanted = want(layer);
+            if (LLApp::isQuitting() || wanted.fetch != EnvFetch::Pending || wanted.asset != asset_id)
+            {
+                return;     // another chosen since, or dropped, or put on already
+            }
+            // Not of the layer's kind (a sky asked for as a water by a wrong item): not put on, as one not had.
+            if (!settings || status || !layerTakes(layer, *settings))
+            {
+                if (settings && !status)
+                {
+                    LL_WARNS("SETTINGS") << "Asset " << asset_id << " is a " << settings->getSettingsType()
+                                         << ", not of the layer asked for" << LL_ENDL;
+                }
+                wanted.fetch = EnvFetch::Failed;
+                LLNotificationsUtil::add("FailedToFindSettings", LLSD().with("NAME", asset_id.asString()));
+                failedSignal()();
+                return;
+            }
+            wanted.fetch = EnvFetch::Arrived;
+            // As LLEnvironment::onSetEnvAssetLoaded().
+            LLEnvironment& environment = LLEnvironment::instance();
+            environment.setEnvironment(LLEnvironment::ENV_LOCAL, settings);
+            environment.updateEnvironment(wanted.transition == EnvTransition::Instant ? LLEnvironment::TRANSITION_INSTANT
+                                                                                     : LLEnvironment::TRANSITION_DEFAULT);
+            if (layer == EnvLayer::Day)
+            {
+                // A day cycle replaces the sky and the water: a sky or water chosen after it and come before it goes
+                // on it again (from the cache). One still coming goes on it when it comes.
+                for (EnvLayer over : { EnvLayer::Sky, EnvLayer::Water })
+                {
+                    const LayerWant& chosen = want(over);
+                    if (chosen.fetch == EnvFetch::Arrived && chosen.asset.notNull() && chosen.order > wanted.order)
+                    {
+                        fetchWanted(over);
+                    }
+                }
+            }
+        }
+
+        // Asks for the layer's wanted asset (again). The layer's own entry marks the request (fetchSettingsAsset()):
+        // another part asking for the same asset does not take the answer away, and the layer's own second request
+        // for an asset still coming is dropped (the first one's answer comes; matched by the asset).
+        void fetchWanted(EnvLayer layer)
+        {
+            LayerWant& wanted = want(layer);
+            wanted.fetch = EnvFetch::Pending;     // first: a cached asset comes at once
+            fetchSettingsAsset(wanted.asset, &wanted,
+                [layer](const LLUUID& asset_id, const LLSettingsBase::ptr_t& settings, S32 status)
+                {
+                    onWantedAsset(layer, asset_id, settings, status);
+                });
+        }
+
+        // The personal environment cleared, without dropping what is still coming (restoreLand*(): the other
+        // layer's choice still comes; clearEnvironment() drops all first).
+        void clearLocalEnvironment()
+        {
+            LLEnvironment& environment = LLEnvironment::instance();
+            environment.clearEnvironment(LLEnvironment::ENV_LOCAL);
+            environment.setSelectedEnvironment(LLEnvironment::ENV_LOCAL);
+            forgetSun();
+        }
+    }
+
+    void forgetLocalEnvironmentAsset(EnvLayer layer)
+    {
+        LayerWant& wanted = want(layer);
+        wanted.asset.setNull();
+        wanted.fetch = EnvFetch::None;
+        ++wanted.changes;
+    }
+
+    U32 localEnvironmentChanges(EnvLayer layer)
+    {
+        return want(layer).changes;
+    }
+
+    EnvFetch localEnvironmentFetch(EnvLayer layer)
+    {
+        return want(layer).fetch;
+    }
+
+    LLUUID localEnvironmentWanted(EnvLayer layer)
+    {
+        return want(layer).asset;
+    }
+
+    boost::signals2::connection setLocalEnvironmentFailedCallback(const std::function<void()>& cb)
+    {
+        return failedSignal().connect(cb);
+    }
+
+    void setLocalEnvironmentAsset(const LLUUID& asset, EnvLayer layer, EnvTransition transition)
+    {
+        if (layer == EnvLayer::Day)
+        {
+            // a day cycle replaces the sky and the water: those still coming would come over it
+            forgetLocalEnvironmentAsset(EnvLayer::Sky);
+            forgetLocalEnvironmentAsset(EnvLayer::Water);
+        }
+        LayerWant& wanted = want(layer);
+        wanted.asset      = asset;
+        wanted.transition = transition;
+        wanted.order      = ++sWantOrder;
+        ++wanted.changes;
+        fetchWanted(layer);
+    }
+
     bool applyEnvironmentItem(const LLUUID& item_id)
     {
         const LLViewerInventoryItem* item = gInventory.getItem(item_id);
@@ -904,7 +1108,7 @@ namespace plus::photomode
         // What the Apply Locally entry of the inventory does (LLSettingsBridge::performAction),
         // by the asset: an item of the library needs no copy. A sky replaces only the sky of the
         // personal environment and a water only its water (LLEnvironment::setEnvironment(env, settings)).
-        environment.setEnvironment(LLEnvironment::ENV_LOCAL, item->getAssetUUID(), LLEnvironment::TRANSITION_INSTANT);
+        setLocalEnvironmentAsset(item->getAssetUUID(), water ? EnvLayer::Water : EnvLayer::Sky, EnvTransition::Instant);
         environment.setSelectedEnvironment(LLEnvironment::ENV_LOCAL, LLEnvironment::TRANSITION_INSTANT);
         if (!water)
         {
@@ -915,27 +1119,40 @@ namespace plus::photomode
 
     void clearEnvironment()
     {
-        // As the Reset button of the official "Adjust Environment" window.
-        LLEnvironment& environment = LLEnvironment::instance();
-        environment.clearEnvironment(LLEnvironment::ENV_LOCAL);
-        environment.setSelectedEnvironment(LLEnvironment::ENV_LOCAL);
-        forgetSun();
+        // As the Reset button of the official "Adjust Environment" window: nothing still coming is put on after it.
+        for (EnvLayer layer : { EnvLayer::Sky, EnvLayer::Water, EnvLayer::Day })
+        {
+            forgetLocalEnvironmentAsset(layer);
+        }
+        clearLocalEnvironment();
     }
 
     void restoreLandSky()
     {
+        // this layer's choice, made now: the sky and the day cycle still coming are dropped (the water is not)
+        forgetLocalEnvironmentAsset(EnvLayer::Sky);
+        forgetLocalEnvironmentAsset(EnvLayer::Day);
         LLUUID                 unused;
         LLSettingsWater::ptr_t keep;
         if (environmentSource(true, unused) != EnvSource::Land)
         {
             keep = LLEnvironment::instance().getEnvironmentFixedWater(LLEnvironment::ENV_LOCAL);
         }
+        LLEnvironment& environment = LLEnvironment::instance();
         if (!keep)
         {
-            clearEnvironment(); // nothing of the water to keep: the land's as it was
+            // Nothing of the water to keep: the land's as it was. A water still coming (chosen while no personal
+            // environment was in use) gets the land's day under it, as applyEnvironmentItem() made it: cleared, the
+            // water would come into an empty personal environment and stop the sky where it is.
+            if (localEnvironmentFetch(EnvLayer::Water) == EnvFetch::Pending && copyLandDay())
+            {
+                environment.setSelectedEnvironment(LLEnvironment::ENV_LOCAL, LLEnvironment::TRANSITION_INSTANT);
+                forgetSun();
+                return;
+            }
+            clearLocalEnvironment();
             return;
         }
-        LLEnvironment& environment = LLEnvironment::instance();
         if (copyLandDay())
         {
             environment.setEnvironment(LLEnvironment::ENV_LOCAL, keep);
@@ -947,7 +1164,7 @@ namespace plus::photomode
             const LLSettingsSky::ptr_t copy = sky ? sky->buildClone() : LLSettingsSky::ptr_t();
             if (!copy)
             {
-                clearEnvironment();
+                clearLocalEnvironment();
                 return;
             }
             environment.setEnvironment(LLEnvironment::ENV_LOCAL, copy, keep);
@@ -958,6 +1175,9 @@ namespace plus::photomode
 
     void restoreLandWater()
     {
+        // as restoreLandSky(): the water and the day cycle still coming are dropped (the sky is not)
+        forgetLocalEnvironmentAsset(EnvLayer::Water);
+        forgetLocalEnvironmentAsset(EnvLayer::Day);
         if (!localInUse())
         {
             return; // the land's already
@@ -967,8 +1187,9 @@ namespace plus::photomode
         if (sky && sky == daySky())
         {
             // The personal environment is the land's day with a water over it, nothing else of the user's:
-            // the land's environment as it was (it also follows the land again, as before the water).
-            clearEnvironment();
+            // the land's environment as it was (it also follows the land again, as before the water). A sky
+            // still coming still comes.
+            clearLocalEnvironment();
             return;
         }
         const LLSettingsWater::ptr_t land = landWater();
@@ -1042,6 +1263,8 @@ namespace plus::photomode
         // sky put on since, or changes made in one of the official editors, are the user's choice and stay.
         if (sunChanged() && sLiveSky->getHash() == sSunUndo.liveHash)
         {
+            // A sky or water still coming is not dropped: chosen since, it comes over what is set back here (the
+            // contract above: nothing is put back when a sky was chosen since).
             LLEnvironment& environment = LLEnvironment::instance();
             const SunUndo  undo        = sSunUndo;
             // A water put on since the sun was turned (the water list: it leaves the sky, and the sun, as
@@ -1053,7 +1276,15 @@ namespace plus::photomode
             {
                 if (!water_chosen)
                 {
-                    environment.clearEnvironment(LLEnvironment::ENV_LOCAL);
+                    // a water still coming: the land's day under it (as restoreLandSky())
+                    if (localEnvironmentFetch(EnvLayer::Water) == EnvFetch::Pending && copyLandDay())
+                    {
+                        selected = LLEnvironment::ENV_LOCAL;
+                    }
+                    else
+                    {
+                        environment.clearEnvironment(LLEnvironment::ENV_LOCAL);
+                    }
                 }
                 else
                 {

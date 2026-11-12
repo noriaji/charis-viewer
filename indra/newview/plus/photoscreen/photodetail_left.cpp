@@ -422,9 +422,9 @@ namespace plus::photoscreen::detail
 
         void setTimeOfDay(int index)
         {
-            // as the official World > Environment > Sunrise ... (llviewermenu.cpp LLWorldEnvSettings)
-            LLEnvironment::instance().setEnvironment(LLEnvironment::ENV_LOCAL, knownSky(llclamp(index, 0, 3)),
-                                                     LLEnvironment::TRANSITION_INSTANT);
+            // as the official World > Environment > Sunrise ... (llviewermenu.cpp LLWorldEnvSettings); the last sky
+            // chosen wins (a sky of the list still coming is dropped, and this one is if another comes after it)
+            pm::setLocalEnvironmentAsset(knownSky(llclamp(index, 0, 3)), pm::EnvLayer::Sky, pm::EnvTransition::Instant);
             LLEnvironment::instance().setSelectedEnvironment(LLEnvironment::ENV_LOCAL, LLEnvironment::TRANSITION_INSTANT);
             pm::forgetSun();
         }

@@ -219,6 +219,14 @@ public:
     void        setRightTabBtnOffset( S32 offset );
     void        setPanelTitle(S32 index, const std::string& title);
 
+    // <plus> invcustomtabs: Firestorm's custom inventory tabs (FIRE-35598, FIRE-36831) (newview/plus/invcustomtabs, research/314)
+    S32         getTabContainedAtPoint(S32 x, S32 y) const;         // index of the visible tab button under (x, y), else -1
+    void        setTabPadding(S32 index, S32 padding);              // extra width of a tab button (room for a close icon)
+    void        setTabButtonVisible(const LLPanel* panel, bool visible); // hide a tab's button without selecting another tab
+    void        moveTabPanel(const LLPanel* panel, S32 index);       // put a tab at this index (insert_at has no index here)
+    void        setTabButtonWidth(const LLPanel* panel, S32 width);  // a tab button's width, the tab strip's total kept right
+    // </plus>
+
     TabPosition getTabPosition() const { return mTabPosition; }
     void        setMinTabWidth(S32 width) { mMinTabWidth = width; }
     void        setMaxTabWidth(S32 width) { mMaxTabWidth = width; }

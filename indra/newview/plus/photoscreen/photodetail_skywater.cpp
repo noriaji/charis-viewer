@@ -51,11 +51,13 @@
 
 #include "llenvironment.h"
 #include "llfocusmgr.h"
+#include "llkeyboard.h"
 #include "llnotificationsutil.h"
 #include "llscrollcontainer.h"
 #include "lltextbox.h"
 #include "lltimer.h"
 #include "lluictrlfactory.h"
+#include "llviewerinput.h"
 
 namespace plus::photoscreen::detail::skywater
 {
@@ -71,6 +73,16 @@ namespace plus::photoscreen::detail::skywater
         constexpr S32    TABS_H       = 34;
         constexpr F64    LIST_SECONDS = 3.0;        // the inventory looked at again (All), as the simple view does
         constexpr size_t LIST_MAX     = 1000;
+        constexpr F64    STEP_REPEAT_SECONDS = 0.12;    // a held arrow key: about 8 rows a second (as the drop-downs)
+
+        enum class CursorAt { None, Land, Item };   // the row of the arrow keys (State::cursorAt)
+
+        // A row the arrow keys go through: the land's or an item that can be put on.
+        struct Stop
+        {
+            bool   land = false;
+            LLUUID item, asset;
+        };
 
         // What a row shows. The rows are made again only when the order changed (sameRow); a star alone is
         // set on the row that is there.
@@ -132,6 +144,19 @@ namespace plus::photoscreen::detail::skywater
             F64         nextCollect = 0.0;
             int         chosenSource = -1;          // the row in use was marked for this source and asset
             LLUUID      chosenAsset;
+
+            // the row the arrow keys are on: the last one put on with the keys or a click (combo-arrow). Not the
+            // one in use: that changes only when the sky has come, and the next key must not wait for it.
+            CursorAt    cursorAt   = CursorAt::None;
+            pm::EnvKind cursorKind = pm::EnvKind::Sky;
+            LLUUID      cursorItem;                 // CursorAt::Item
+            U32         cursorChanges = 0;          // the layer's count of changes just after it was put on
+            // what the layer showed just after it was put on (the one before, while it comes): a failed one counts
+            // while it still shows that (nothing outside, an official editor, changed it since)
+            pm::EnvSource cursorSource = pm::EnvSource::Other;
+            LLUUID      cursorSourceAsset;
+            bool        steppedByKeys = false;      // the last row was put on with an arrow key (not a click)
+            F64         lastStepSeconds = 0.0;      // LLTimer::getTotalSeconds() when the last arrow key's step ended
         };
         State sW;
 
@@ -177,9 +202,9 @@ namespace plus::photoscreen::detail::skywater
             pm::noteApplied(item);
         }
 
-        void backToLand()
+        void backToLand(pm::EnvKind kind)
         {
-            if (isWater())
+            if (kind == pm::EnvKind::Water)
             {
                 pm::restoreLandWater();
             }
@@ -217,6 +242,20 @@ namespace plus::photoscreen::detail::skywater
 
         // ---- the cards ----------------------------------------------------------------------------
 
+        // The column made again (later: not from a widget's own callback, the refill deletes it), then the card of
+        // the kind takes the keyboard.
+        void refillAndFocusCard(pm::EnvKind kind)
+        {
+            later([kind]() {
+                fillLeft();
+                const LLHandle<LLView>& made = kind == pm::EnvKind::Water ? sW.waterCard : sW.skyCard;
+                if (LLUICtrl* card = live<LLUICtrl>(made))
+                {
+                    card->setFocus(true);
+                }
+            });
+        }
+
         // The card of a kind: choosing the other kind shows its list; the same kind again opens or
         // closes the list.
         void onCard(pm::EnvKind kind)
@@ -230,21 +269,12 @@ namespace plus::photoscreen::detail::skywater
                 sW.open = true;
                 sW.kind = kind;
             }
-            // Chosen with the keyboard (Tab, then Return or Space): the new card takes the focus back.
-            const LLHandle<LLView>& own = kind == pm::EnvKind::Water ? sW.waterCard : sW.skyCard;
-            LLView* card = own.get();
-            const bool had_focus = card && gFocusMgr.childHasKeyboardFocus(card);
-            later([kind, had_focus]() {     // not from the card's own click: it is deleted by the refill
-                fillLeft();
-                if (had_focus)
-                {
-                    const LLHandle<LLView>& made = kind == pm::EnvKind::Water ? sW.waterCard : sW.skyCard;
-                    if (LLUICtrl* again = live<LLUICtrl>(made))
-                    {
-                        again->setFocus(true);
-                    }
-                }
-            });
+            // The arrow keys start again from the row in use (the list opened or closed by the user).
+            sW.cursorAt = CursorAt::None;
+            sW.steppedByKeys = false;
+            // With the keyboard (Tab, then Return or Space) or a click: the new card takes the keyboard, so the
+            // arrow keys go through the list from it (onListKey()).
+            refillAndFocusCard(kind);
         }
 
         std::string nameOf(bool water, pm::EnvSource source)
@@ -288,6 +318,236 @@ namespace plus::photoscreen::detail::skywater
                 }
             }
             sW.namesSet = true;
+        }
+
+        // ---- the arrow keys (combo-arrow) ---------------------------------------------------------
+        // On a card or a row of the list: Up / Down put on the row before / after, as a click on it does; Esc
+        // closes the list. The keyboard is there after a click on a card or a row (or Tab); Left / Right and the
+        // other keys go on as before (the world's).
+
+        // The keyboard is on a card or a row of the list.
+        bool keysInList()
+        {
+            for (const LLHandle<LLView>* handle : { &sW.skyCard, &sW.waterCard, &sW.content })
+            {
+                LLView* view = handle->get();
+                if (view && gFocusMgr.childHasKeyboardFocus(view))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        bool listShown(pm::EnvKind kind)
+        {
+            return sW.open && sW.kind == kind && sW.listBuilt;
+        }
+
+        // The rows the keys go through, in their order: the land's first (the All tab), then the items that can be
+        // put on (a gone one is passed over). The list shown goes as it is shown, in its tab; a card whose list is
+        // closed goes through the All tab of its kind.
+        void collectStops(pm::EnvKind kind, std::vector<Stop>& out)
+        {
+            out.clear();
+            const bool shown = listShown(kind);
+            if (!shown || sW.tab == ListTab::All)
+            {
+                Stop land;
+                land.land = true;
+                out.push_back(land);
+            }
+            auto add = [&out](bool exists, const LLUUID& item, const LLUUID& asset) {
+                if (exists)
+                {
+                    Stop stop;
+                    stop.item  = item;
+                    stop.asset = asset;
+                    out.push_back(stop);
+                }
+            };
+            if (shown)
+            {
+                for (const Shown& row : sW.shown)
+                {
+                    add(row.exists, row.item, row.asset);
+                }
+                return;
+            }
+            std::vector<pm::SkyEntry> entries;
+            pm::environmentItems(kind, entries, LIST_MAX);
+            for (const pm::SkyEntry& entry : entries)
+            {
+                add(entry.exists, entry.item, entry.asset);
+            }
+        }
+
+        pm::EnvLayer layerOf(pm::EnvKind kind)
+        {
+            return kind == pm::EnvKind::Water ? pm::EnvLayer::Water : pm::EnvLayer::Sky;
+        }
+
+        // Puts on a row (the land's or an item), as a click on it does, and sets the cursor on it.
+        void putOnRow(pm::EnvKind kind, CursorAt at, const LLUUID& item)
+        {
+            if (at == CursorAt::Land)
+            {
+                backToLand(kind);
+            }
+            else
+            {
+                putOn(item);
+            }
+            sW.cursorKind    = kind;
+            sW.cursorAt      = at;
+            sW.cursorItem    = at == CursorAt::Item ? item : LLUUID::null;
+            sW.cursorChanges = pm::localEnvironmentChanges(layerOf(kind));   // after it: the count it made
+            sW.cursorSource  = pm::environmentSource(kind == pm::EnvKind::Water, sW.cursorSourceAsset);
+        }
+
+        // The stop the keys go on from: the cursor, else the row in use; -1: none (a sky of no row). The cursor counts
+        // while nothing changed the layer since (its number) and its sky is still coming, could not be had while the
+        // layer still shows what it showed when it was asked for (the keys go on past it), or is in use (the row
+        // itself: another row of the same sky is not it); else (the time slider, the photo tools, the quick
+        // preferences, an official editor) it is forgotten and the row in use counts.
+        int currentStop(pm::EnvKind kind, const std::vector<Stop>& stops)
+        {
+            LLUUID asset;
+            const pm::EnvSource source = pm::environmentSource(kind == pm::EnvKind::Water, asset);
+            auto in_use = [&](const Stop& stop) {
+                return stop.land ? source == pm::EnvSource::Land : source == pm::EnvSource::Asset && stop.asset == asset;
+            };
+            if (sW.cursorAt != CursorAt::None && sW.cursorKind == kind)
+            {
+                const pm::EnvLayer layer = layerOf(kind);
+                const pm::EnvFetch fetch = pm::localEnvironmentFetch(layer);
+                const bool failed_here = fetch == pm::EnvFetch::Failed && source == sW.cursorSource
+                                         && asset == sW.cursorSourceAsset;
+                for (size_t i = 0; i < stops.size(); ++i)
+                {
+                    const bool here = stops[i].land ? sW.cursorAt == CursorAt::Land
+                                                    : sW.cursorAt == CursorAt::Item && stops[i].item == sW.cursorItem;
+                    if (here)
+                    {
+                        if (sW.cursorChanges == pm::localEnvironmentChanges(layer)
+                            && (fetch == pm::EnvFetch::Pending || failed_here || in_use(stops[i])))
+                        {
+                            return (int)i;
+                        }
+                        break;
+                    }
+                }
+                sW.cursorAt = CursorAt::None;
+            }
+            for (size_t i = 0; i < stops.size(); ++i)
+            {
+                if (in_use(stops[i]))
+                {
+                    return (int)i;
+                }
+            }
+            return -1;
+        }
+
+        // The keyboard and the view to the cursor's row of the list shown; false: it has no row there.
+        bool focusCursorRow()
+        {
+            LLScrollContainer* scroll = live<LLScrollContainer>(sW.scroll);
+            if (!scroll || sW.cursorKind != sW.kind)
+            {
+                return false;
+            }
+            LLUICtrl* row = nullptr;
+            if (sW.cursorAt == CursorAt::Land)
+            {
+                row = live<LLUICtrl>(sW.landRow);
+            }
+            else if (sW.cursorAt == CursorAt::Item)
+            {
+                for (size_t i = 0; i < sW.shown.size() && i < sW.rows.size() && !row; ++i)
+                {
+                    if (sW.shown[i].item == sW.cursorItem)
+                    {
+                        row = live<LLUICtrl>(sW.rows[i]);
+                    }
+                }
+            }
+            if (!row)
+            {
+                return false;
+            }
+            row->setFocus(true);
+            scroll->scrollToShowRect(row->getRect());
+            return true;
+        }
+
+        // Up (-1) or Down (+1): puts on the row before or after the cursor; at either end it stays (no wrap). In
+        // the list shown the keyboard follows the row. A held key goes on, a row STEP_REPEAT_SECONDS at the soonest
+        // after the last one was put on (each row put on fetches its sky and writes the recent list: not at the
+        // keyboard's repeat rate); the repeats in between are taken and do nothing. A press always steps.
+        bool step(pm::EnvKind kind, int dir)
+        {
+            const F64 now_seconds = LLTimer::getTotalSeconds();
+            if (gKeyboard && gKeyboard->getKeyRepeated(dir > 0 ? KEY_DOWN : KEY_UP)
+                && now_seconds - sW.lastStepSeconds < STEP_REPEAT_SECONDS)
+            {
+                return true;
+            }
+            sW.lastStepSeconds = now_seconds;
+            std::vector<Stop> stops;
+            collectStops(kind, stops);
+            const int current = currentStop(kind, stops);
+            const int next = current < 0 ? (dir > 0 ? 0 : (int)stops.size() - 1) : current + dir;
+            if (next < 0 || next >= (int)stops.size())
+            {
+                return true;
+            }
+            const Stop stop = stops[next];
+            putOnRow(kind, stop.land ? CursorAt::Land : CursorAt::Item, stop.item);
+            sW.lastStepSeconds = LLTimer::getTotalSeconds();    // after putting on: a slow one counts in the wait
+            sW.steppedByKeys = true;
+            if (listShown(kind))
+            {
+                focusCursorRow();
+            }
+            return true;
+        }
+
+        // The keys of a card and of the rows of its kind's list. Return / Space are the widget's own (a click; with
+        // Shift on a row: the star).
+        bool onListKey(pm::EnvKind kind, KEY key, MASK mask)
+        {
+            if (mask == MASK_NONE)
+            {
+                switch (key)
+                {
+                    case KEY_UP:   return step(kind, -1);
+                    case KEY_DOWN: return step(kind, 1);
+                    case KEY_ESCAPE:
+                        if (!sW.open || sW.kind != kind)
+                        {
+                            return false;
+                        }
+                        sW.open = false;
+                        sW.cursorAt = CursorAt::None;   // as a close by the card (onCard)
+                        sW.steppedByKeys = false;
+                        refillAndFocusCard(kind);
+                        return true;
+                    case KEY_RETURN:
+                    case ' ':
+                        return false;
+                    default:
+                        break;
+                }
+            }
+            // The keyboard came with a click, not to keep the world's keys (WASD, Left / Right, the photo keys): a key
+            // bound in the mode now lets it go and goes on to the world, as before the click. Not with Ctrl or Alt
+            // (the menus' and the floaters' shortcuts; as flycammouse::releaseFocusForKey()).
+            if (!(mask & (MASK_CONTROL | MASK_ALT)) && gViewerInput.isKeyBound((S32)gViewerInput.getMode(), key, mask))
+            {
+                gFocusMgr.setKeyboardFocus(nullptr);
+            }
+            return false;
         }
 
         // ---- the list -----------------------------------------------------------------------------
@@ -351,6 +611,7 @@ namespace plus::photoscreen::detail::skywater
             const bool same_view = sW.listBuilt && sW.builtKind == sW.kind && sW.builtTab == sW.tab;
             const S32  doc_pos   = scroll->getDocPosVertical();
             const S32  visible   = scroll->getRect().getHeight();
+            const bool had_keys  = gFocusMgr.childHasKeyboardFocus(content);   // a row had the keyboard (it is deleted)
 
             content->deleteAllChildren();
             sW.rows.clear();
@@ -362,6 +623,7 @@ namespace plus::photoscreen::detail::skywater
 
             const S32 width = content->getRect().getWidth();
             const bool land = sW.tab == ListTab::All;
+            const pm::EnvKind kind = sW.kind;
             const bool more = land && sW.more > 0;   // a last line: how many were left out
             const S32 count = (S32)sW.shown.size() + (land ? 1 : 0) + (more ? 1 : 0);
             const S32 height = llmax(visible, count * psui::style::LIST_ROW_HEIGHT);
@@ -372,7 +634,12 @@ namespace plus::photoscreen::detail::skywater
             {
                 if (psui::PsListRow* row = makeRow(ls(isWater() ? "WaterBackLand" : "SkyBackLand"), ls("LandTip"), false, top, width))
                 {
-                    row->setCommitCallback([](LLUICtrl*, const LLSD&) { backToLand(); });
+                    row->setCommitCallback([kind](LLUICtrl* ctrl, const LLSD&) {
+                        putOnRow(kind, CursorAt::Land, LLUUID::null);
+                        sW.steppedByKeys = false;
+                        ctrl->setFocus(true);   // the arrow keys go on from here
+                    });
+                    row->setKeyCallback([kind](KEY key, MASK mask) { return onListKey(kind, key, mask); });
                     content->addChild(row);
                     sW.landRow = row->getHandle();
                 }
@@ -396,7 +663,12 @@ namespace plus::photoscreen::detail::skywater
                 row->setStarred(shown.starred);
                 row->setMissing(!shown.exists);
                 const LLUUID item = shown.item;
-                row->setCommitCallback([item](LLUICtrl*, const LLSD&) { putOn(item); });
+                row->setCommitCallback([kind, item](LLUICtrl* ctrl, const LLSD&) {
+                    putOnRow(kind, CursorAt::Item, item);
+                    sW.steppedByKeys = false;
+                    ctrl->setFocus(true);       // the arrow keys go on from here
+                });
+                row->setKeyCallback([kind](KEY key, MASK mask) { return onListKey(kind, key, mask); });
                 row->setStarCallback([item, same = shown.same](psui::PsListRow*) { toggleFavorite(item, same); });
                 content->addChild(row);
                 sW.rows.push_back(row->getHandle());
@@ -426,6 +698,16 @@ namespace plus::photoscreen::detail::skywater
             {
                 scroll->goToTop();
             }
+
+            // Made again under the keys (the inventory changed): the keyboard stays on the cursor's row, or goes to
+            // the card when that row is gone (not later: the card is not made again here).
+            if (had_keys && !focusCursorRow())
+            {
+                if (LLUICtrl* card = live<LLUICtrl>(isWater() ? sW.waterCard : sW.skyCard))
+                {
+                    card->setFocus(true);
+                }
+            }
         }
 
         // Marks the row in use (only when the sky or water in use changed, or the rows were made again).
@@ -453,6 +735,45 @@ namespace plus::photoscreen::detail::skywater
             }
         }
 
+        enum class StarMatch { ByIndex, ByItem };
+
+        // The stars of the rows shown, from those read again (sW.next) where they changed: by index when the rows
+        // are the same, by item when they are the same ones in another order (the Recent tab kept).
+        void copyStars(StarMatch match)
+        {
+            for (size_t i = 0; i < sW.shown.size(); ++i)
+            {
+                const Shown* fresh = nullptr;
+                if (match == StarMatch::ByIndex)
+                {
+                    fresh = i < sW.next.size() ? &sW.next[i] : nullptr;
+                }
+                else
+                {
+                    for (const Shown& row : sW.next)
+                    {
+                        if (row.item == sW.shown[i].item)
+                        {
+                            fresh = &row;
+                            break;
+                        }
+                    }
+                }
+                if (!fresh || fresh->starred == sW.shown[i].starred)
+                {
+                    continue;
+                }
+                sW.shown[i].starred = fresh->starred;
+                if (i < sW.rows.size())
+                {
+                    if (psui::PsListRow* row = live<psui::PsListRow>(sW.rows[i]))
+                    {
+                        row->setStarred(sW.shown[i].starred);
+                    }
+                }
+            }
+        }
+
         void refreshList()
         {
             if (!live<LLPanel>(sW.content))
@@ -467,7 +788,15 @@ namespace plus::photoscreen::detail::skywater
                 collect();
                 sW.generation  = pm::favoritesGeneration();
                 sW.nextCollect = now + LIST_SECONDS;
-                if (view_changed || !sameOrder(sW.next, sW.shown) || sW.nextMore != sW.more)
+                // The Recent tab keeps its order while the arrow keys go through it: the one put on goes to its top,
+                // and the next key would go back to the one before. Made again at the next look (LIST_SECONDS, or a
+                // change of the favourites) after a click or once the keyboard has left; the stars still change.
+                const bool keep_order = !view_changed && sW.tab == ListTab::Recent && sW.steppedByKeys && keysInList();
+                if (keep_order)
+                {
+                    copyStars(StarMatch::ByItem);
+                }
+                else if (view_changed || !sameOrder(sW.next, sW.shown) || sW.nextMore != sW.more)
                 {
                     sW.more = sW.nextMore;
                     sW.shown.swap(sW.next);
@@ -475,22 +804,7 @@ namespace plus::photoscreen::detail::skywater
                 }
                 else
                 {
-                    // the same rows: only the stars that changed (a click on a star, the photo tools)
-                    for (size_t i = 0; i < sW.shown.size(); ++i)
-                    {
-                        if (sW.shown[i].starred == sW.next[i].starred)
-                        {
-                            continue;
-                        }
-                        sW.shown[i].starred = sW.next[i].starred;
-                        if (i < sW.rows.size())
-                        {
-                            if (psui::PsListRow* row = live<psui::PsListRow>(sW.rows[i]))
-                            {
-                                row->setStarred(sW.shown[i].starred);
-                            }
-                        }
-                    }
+                    copyStars(StarMatch::ByIndex);  // the same rows (a click on a star, the photo tools)
                 }
             }
             refreshChosen();
@@ -515,6 +829,7 @@ namespace plus::photoscreen::detail::skywater
                                             []() { onCard(pm::EnvKind::Sky); }))
         {
             card->setChosen(sW.open && !isWater());
+            card->setKeyCallback([](KEY key, MASK mask) { return onListKey(pm::EnvKind::Sky, key, mask); });
             sW.skyCard = card->getHandle();
         }
         stack.label(ls("Water"));
@@ -522,6 +837,7 @@ namespace plus::photoscreen::detail::skywater
                                             []() { onCard(pm::EnvKind::Water); }))
         {
             card->setChosen(sW.open && isWater());
+            card->setKeyCallback([](KEY key, MASK mask) { return onListKey(pm::EnvKind::Water, key, mask); });
             sW.waterCard = card->getHandle();
         }
         if (!sW.open)
@@ -572,6 +888,9 @@ namespace plus::photoscreen::detail::skywater
             p.is_opaque             = false;
             p.reserve_scroll_corner = false;
             p.tab_stop              = false;
+            // the rows move with the keys themselves (onListKey, scrollToShowRect); a key let go to the world
+            // (Home, Shift+Up, Page Down) goes up through here and must not scroll the list on its way
+            p.ignore_arrow_keys     = true;
             LLScrollContainer* scroll = LLUICtrlFactory::create<LLScrollContainer>(p);
             if (scroll)
             {

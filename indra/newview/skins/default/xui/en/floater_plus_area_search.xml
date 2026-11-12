@@ -65,16 +65,41 @@
             <search_editor
              follows="left|top|right"
              height="22"
-             label="Narrow the list: name, description, owner, group or creator"
+             label="Filter (space = AND)"
              layout="topleft"
              left="4"
-             right="-4"
+             right="-170"
              top="4"
              search_button_visible="false"
              select_on_focus="true"
              max_length_chars="256"
              name="quick_filter"
-             tool_tip="Rows with these letters in any of their texts stay (upper or lower case alike). The Find and Filter tabs add more conditions." />
+             tool_tip="Separate words with spaces (full width too) to search for all of them (AND): each word must be in the name, description, owner, group, creator or last owner (not all in the same one); English letters are matched in upper or lower case alike. Example: chair taro. The Find and Filter tabs add more conditions." />
+            <text
+             follows="right|top"
+             halign="right"
+             height="16"
+             layout="topleft"
+             right="-78"
+             top="8"
+             width="84"
+             name="range_label"
+             tool_tip="Only objects within this distance of you are listed (the Distance filter narrows it further). The simulator is also asked to send objects from this far, or from the draw distance when that is farther (they are not drawn, only listed). 0 is the draw distance, up to 512 m (objects farther than that are not listed). More takes more memory and time to fill the list.">Range (m):</text>
+            <spinner
+             control_name="PlusAreaSearchRange"
+             decimal_digits="0"
+             follows="right|top"
+             height="22"
+             increment="32"
+             initial_value="0"
+             layout="topleft"
+             right="-4"
+             top="4"
+             max_val="512"
+             min_val="0"
+             width="70"
+             name="search_range"
+             tool_tip="Only objects within this distance of you are listed (the Distance filter narrows it further). The simulator is also asked to send objects from this far, or from the draw distance when that is farther (they are not drawn, only listed). 0 is the draw distance, up to 512 m (objects farther than that are not listed). More takes more memory and time to fill the list." />
             <plus_area_search_list
              follows="all"
              layout="topleft"
@@ -250,8 +275,6 @@
             <check_box follows="left|top" height="16" label="Touches it" layout="topleft" left="284" top="50" width="250" name="double_click_touch" />
             <check_box follows="left|top" height="16" label="Buys it" layout="topleft" left="284" top="72" width="250" name="double_click_buy" />
             <check_box follows="left|top" height="16" label="Sits on it" layout="topleft" left="284" top="94" width="250" name="double_click_sit" />
-            <text follows="left|top" height="32" layout="topleft" left="280" top="130" width="320" word_wrap="true" name="range_label" tool_tip="Only objects within this distance of you are listed (the Distance filter narrows it further). The simulator is also asked to send objects from this far, or from the draw distance when that is farther (they are not drawn, only listed). 0: no distance limit to the list (everything the viewer has, loaded or in its cache), and the simulator is asked only up to the draw distance. More takes more memory and time to fill the list.">Search range (m, 0 = no limit):</text>
-            <spinner control_name="PlusAreaSearchRange" decimal_digits="0" follows="left|top" height="20" increment="32" initial_value="0" layout="topleft" left="284" top="164" max_val="512" min_val="0" width="90" name="search_range" />
         </panel>
     </tab_container>
 </floater>

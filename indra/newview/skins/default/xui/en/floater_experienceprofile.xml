@@ -472,6 +472,7 @@
             use_ellipses="true"
             value="Name:"
             right="-10"/>
+          <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was black on the official light box, so the box's own colour name (research/239) -->
           <line_editor
             follows="left|top|right"
             height="19"
@@ -479,8 +480,9 @@
             left="10"
             name="edit_experience_title"
             max_length_bytes="63"
-            text_color="black"
+            text_color="TextFgColor"
             right="-10"/>
+          <!-- /plus -->
           <text
             follows="left|top|right"
             height="14"
@@ -491,6 +493,7 @@
             use_ellipses="true"
             value="Description:"
             right="-10"/>
+          <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was black on the official light box, so the box's own colour name (research/239) -->
           <text_editor
             follows="left|top|right"
             height="57"
@@ -499,9 +502,10 @@
             name="edit_experience_description"
             spellcheck="true"
             max_length="2048"
-            text_color="black"
+            text_color="TextFgColor"
             right="-11"
             word_wrap="true"/>
+          <!-- /plus -->
           <button
             top_pad="10"
             left="10"

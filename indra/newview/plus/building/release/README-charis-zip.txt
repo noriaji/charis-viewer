@@ -8,8 +8,10 @@ release build (charis-build.sh, profiler off), checked ${checked}
 
 カリス ビューワは Second Life 用のビューワです（アルファ版＝試験版）。
 これは zip 版です。インストールせず、展開するだけで使えます。
-自動では更新されません。新しい版は配布ページから入手して、新しいフォルダに展開してください
-（自動で更新したい時はインストーラー版 Setup.exe を使ってください）。
+自動では更新されません。新しい版が出ると、ログイン画面（ログインを始めた後に分かった時は
+ワールドに入ってから小さな窓）でお知らせします。お知らせは環境設定 > セットアップでオフにできます。
+新しい版は配布ページから入手して、新しいフォルダに展開してください
+（ビューワの中から更新したい時はインストーラー版 Setup.exe を使ってください）。
 
 ■ 必要な物
 - Windows 10 / 11（64 ビット）
@@ -90,8 +92,10 @@ English
 
 Charis Viewer is a viewer for Second Life (alpha: a test release).
 This is the zip: no installer, unpack it and run it.
-It does not update itself: get a new version from the download page and unpack it to a new
-folder (for automatic updates, use the installer, Setup.exe, instead).
+It does not update itself. It tells you when a new version is out, on the login screen (or in a small
+window after you enter the world, if it only finds out then); you can turn this off in Preferences >
+Setup. Get the new version from the download page and unpack it to a new folder (to update from
+inside the viewer, use the installer, Setup.exe, instead).
 
 * Requirements
 - Windows 10 / 11 (64-bit)

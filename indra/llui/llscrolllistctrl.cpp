@@ -1157,8 +1157,12 @@ void LLScrollListCtrl::selectNextItem( bool extend_selection)
     {
         updateSort();
 
-        for (LLScrollListItem* cur_item : mItemList)
+        // <plus> from the end, as before the official 26.5 (16002ec0c8 made it a forward loop: the item before the
+        // selected one was chosen, so Down went up in every list)
+        for (auto iter = mItemList.rbegin(); iter != mItemList.rend(); ++iter)
         {
+            LLScrollListItem* cur_item = *iter;
+        // </plus>
             if (cur_item->getSelected())
             {
                 if (next_item)

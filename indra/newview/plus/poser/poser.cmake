@@ -12,6 +12,7 @@ list(APPEND plus_SOURCE_FILES
     plus/poser/fsposingmotion.cpp
     plus/poser/fstoolcomppose.cpp
     plus/poser/fsvirtualtrackpad.cpp
+    plus/poser/handcurl.cpp
     plus/poser/poser.cpp
     )
 
@@ -26,6 +27,8 @@ list(APPEND plus_HEADER_FILES
     plus/poser/fsposingmotion.h
     plus/poser/fstoolcomppose.h
     plus/poser/fsvirtualtrackpad.h
+    plus/poser/handcurl.h
     )
 
+# handcurl_test.cpp is a stand-alone test (cl /EHsc /std:c++17 handcurl_test.cpp handcurl.cpp), not built here.
 # Feature-local headers (fsposingmotion.h etc.) are found next to the sources.

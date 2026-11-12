@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="plus_update_chip">
+	<string name="checking">更新の取得元を確認中…</string>
+	<string name="downloading">更新を取得中 [PERCENT]%（[DONE]/[TOTAL] MB）</string>
+	<string name="downloading_size_unknown">更新を取得中（[DONE] MB）</string>
+	<string name="cancelling">中止しています…</string>
+	<string name="quitting">終了して入れ替えます…</string>
+	<string name="ready">更新の準備ができました</string>
+	<string name="failed">更新に失敗しました</string>
+	<string name="tip_checking">Charis Viewer [VERSION]：GitHub の更新の一覧を読んでいます。［中止］で止められます。</string>
+	<string name="tip_downloading">Charis Viewer [VERSION] を GitHub からダウンロードしています（[PERCENT]%、[TOTAL] MB のうち [DONE] MB）。その間もビューワは使えます。［中止］で止められます（途中まで取った分は捨てます）。</string>
+	<string name="tip_downloading_size_unknown">Charis Viewer [VERSION] を GitHub からダウンロードしています（今 [DONE] MB）。その間もビューワは使えます。［中止］で止められます（途中まで取った分は捨てます）。</string>
+	<string name="tip_ready">Charis Viewer [VERSION] のダウンロードが済みました。ビューワを終了した時に入ります。［再起動して更新］なら今すぐ入れます（ビューワを終了して、もう一度起動します）。× はこの表示を隠すだけで、終了した時に入るのは変わりません。</string>
+	<string name="tip_failed">Charis Viewer [VERSION] を入れられませんでした：[WHY]。［再試行］で最初からやり直します。詳しくはログ（Velopack の行）にあります。</string>
+	<string name="why_no_update">GitHub の更新の一覧に、まだ新しい版がありません</string>
+	<string name="why_feed">更新の一覧を読めませんでした</string>
+	<string name="why_download">ダウンロードが最後まで済みませんでした</string>
+	<string name="why_package">ダウンロードした物が、更新の一覧にあるファイルと違いました</string>
+	<string name="why_install">ダウンロードした物を、インストーラーが受け取りませんでした</string>
+	<string name="why_version">GitHub の更新の一覧の版（[OFFERED]）が、お知らせの版（[AGREED]）と違いました（何もダウンロードしていません）</string>
+	<string name="btn_cancel">中止</string>
+	<string name="btn_cancel_tip">ダウンロードを止めます</string>
+	<string name="btn_restart">再起動して更新</string>
+	<string name="btn_restart_tip">ビューワを終了し、新しい版を入れて、もう一度起動します</string>
+	<string name="btn_retry">再試行</string>
+	<string name="btn_retry_tip">ダウンロードを最初からやり直します</string>
+	<plus_ps_box name="chip_box">
+		<plus_ps_label name="chip_text" tool_tip="Charis Viewer の更新" />
+		<plus_ps_button name="chip_action" label="中止" tool_tip="ダウンロードを止めます" />
+		<plus_ps_icon_button name="chip_close" tool_tip="この表示を隠します" />
+	</plus_ps_box>
+</panel>

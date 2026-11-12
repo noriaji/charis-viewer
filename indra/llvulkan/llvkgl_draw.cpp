@@ -674,7 +674,10 @@ namespace
             // The alpha census (research/54): a query around the draw the viewer named.
             const U32 census = census_tag() ? LLVKMirror::instance().censusBegin(cmd, census_tag()) : U32_MAX;
             vkCmdDrawIndexed(cmd, (U32)count, (U32)instances, first_index, 0, 0);
-            LLVKMirror::instance().censusEnd(cmd, census);
+            if (census != U32_MAX)
+            {
+                LLVKMirror::instance().censusEnd(cmd, census);     // no call when no query was begun (the usual draw)
+            }
         }
         else
         {
@@ -682,7 +685,10 @@ namespace
             LLVKDevice::instance().checkpoint(cmd, ((U64)sCurrentProgram << 32) | sDrawsReplayed);
             const U32 census = census_tag() ? LLVKMirror::instance().censusBegin(cmd, census_tag()) : U32_MAX;
             vkCmdDraw(cmd, (U32)count, (U32)instances, (U32)first, 0);
-            LLVKMirror::instance().censusEnd(cmd, census);
+            if (census != U32_MAX)
+            {
+                LLVKMirror::instance().censusEnd(cmd, census);     // no call when no query was begun (the usual draw)
+            }
         }
         ++sDrawsReplayed;
     }

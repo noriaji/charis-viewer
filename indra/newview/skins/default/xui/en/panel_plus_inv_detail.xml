@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
-<!-- The detail pane of the inventory window (plus/invexplorer, research/220): what the selected item is.
-     Shown on the right of the inventory while the window is wide enough. -->
+<!-- The detail pane of the inventory window (plus/invexplorer, research/220, 318 7): what the selected item is.
+     Made by plus/invexplorer the first time a window is wide enough (PlusInvExplorerMinWidth), as a child of the
+     inventory view, and placed by invlayout on the right of the tab's contents, between the tab row and the
+     received items (its width: PlusInvExplorerDetailWidth). Its rectangle is set there; the size here is only
+     where it starts. A low pane drops the picture, then the text (invexplorer.cpp, updateLayout). -->
 <panel
  background_visible="true"
  bg_alpha_color="DkGray2"
  border="false"
- follows="all"
+ follows="left|top|bottom"
  height="560"
  layout="topleft"
  left="0"
  name="plus_inv_detail"
  top="0"
+ visible="false"
  width="260">
     <panel.string name="acquired_24h">[wkday,datetime,slt] [mth,datetime,slt] [day,datetime,slt] [hour,datetime,slt]:[min,datetime,slt] [year,datetime,slt]</panel.string>
     <panel.string name="acquired_12h">[wkday,datetime,slt] [mth,datetime,slt] [day,datetime,slt] [hour12,datetime,slt]:[min,datetime,slt] [ampm,datetime,slt] [year,datetime,slt]</panel.string>

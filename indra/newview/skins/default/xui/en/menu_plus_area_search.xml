@@ -34,7 +34,7 @@
          parameter="teleport" />
         <menu_item_call.on_enable
          function="Plus.AreaSearch.Enable"
-         parameter="one" />
+         parameter="one_in_world" />
     </menu_item_call>
     <menu_item_call
      label="Zoom In"
@@ -45,7 +45,7 @@
          parameter="zoom" />
         <menu_item_call.on_enable
          function="Plus.AreaSearch.Enable"
-         parameter="zoom" />
+         parameter="one_in_world" />
     </menu_item_call>
     <menu_item_separator layout="topleft" />
     <menu_item_call

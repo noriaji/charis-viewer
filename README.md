@@ -41,14 +41,18 @@ What it adds:
 |---|---|---|
 | Speech recognition model download from huggingface.co (subtitles, Whisper) | when you press Download | off |
 | Translation model download from the project's GitHub releases | when you press Download | off |
-| Update check (an address you set) | at start, once a day | off (no address) |
+| Update check (one small file, `latest.json`, from raw.githubusercontent.com; see [PRIVACY.md](PRIVACY.md)) | at start, once a day | on (a notice only; turn it off in Preferences > Setup) |
+| Update download (Setup.exe version only, from the project's GitHub releases) | after you press Download (or without asking, if you chose that) | ask first |
 | Online translation (Azure, DeepL or Google; an official feature) | subtitles with online translation | off |
 | Statistics to the region (the official ViewerStats) | once just after login, then every 5 minutes, at logout and at quit (as the official viewer) | on, as in the official viewer, without secrets, free text or Charis settings |
 | Local MCP server on 127.0.0.1 (a local remote control for the poser) | when you turn it on | off |
 
-There is no crash reporter, no telemetry of its own, no automatic update
-download, and nothing is sent to other residents. Downloaded models are
-checked against a fixed SHA-256.
+There is no crash reporter, no telemetry of its own, and nothing is sent to
+other residents. An update is downloaded only in the Setup.exe version (the zip
+version never downloads one), and by default only after you press Download;
+you can choose to only be told, or to download without asking. Downloaded
+models are checked against a fixed SHA-256, and updates against the size
+and SHA-256 in the release.
 
 ## Building
 
@@ -105,11 +109,15 @@ Inc. の商標です。
 
 公式ビューワと同じ Second Life のサービス（ログイン、リージョン、アセット、
 地図、ボイス、ビューワ内の Web ページ）につなぎます。Charis が足す通信は
-上の英語の表のとおりです（どれも既定オフか、公式と同じ統計のみ）。統計は
-公式と同じく、ログイン直後に 1 回、その後 5 分ごと、ログアウト時と終了時に
-送ります。
-クラッシュレポーター、独自の利用状況の送信、更新の自動ダウンロードはなく、
-他の住人へ何かを送ることもありません。
+上の英語の表のとおりです（更新確認は既定オンで、新しい版を知らせるだけです。更新のダウンロードは
+既定で「尋ねる」。そのほかは既定オフか、公式と同じ統計のみ）。詳しくは [PRIVACY.md](PRIVACY.md)。
+統計は公式と同じく、ログイン直後に 1 回、その後 5 分ごと、ログアウト時と
+終了時に送ります。
+クラッシュレポーターと独自の利用状況の送信はなく、他の住人へ何かを送ることも
+ありません。更新をダウンロードするのは Setup.exe 版だけで（zip 版は取りません）、
+既定では［ダウンロード］を押してからです。「知らせるだけ」や、尋ねずに自動で
+ダウンロードする設定にも変えられます。ダウンロードしたモデルは固定の SHA-256 で、
+更新はリリースに書かれた大きさと SHA-256 で確かめます。
 
 ## ビルド
 

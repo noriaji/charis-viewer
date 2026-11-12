@@ -261,6 +261,7 @@
          border_visible="false"
          follows="all"
          height="772"
+         ignore_arrow_keys="true"
          layout="topleft"
          left="0"
          name="scroll"

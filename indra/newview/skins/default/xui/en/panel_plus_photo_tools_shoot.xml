@@ -60,6 +60,7 @@
                     Photo
                 </text>
                 <combo_box
+                 commit_on_arrow="true"
                  follows="left|top"
                  height="22"
                  layout="topleft"
@@ -69,6 +70,7 @@
                  name="shot_size"
                  tool_tip="How big the photo is (the long side)" />
                 <combo_box
+                 commit_on_arrow="true"
                  follows="left|top"
                  height="22"
                  layout="topleft"

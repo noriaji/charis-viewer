@@ -135,6 +135,7 @@ namespace plus::safemode
         { L"PlusVolumetricClouds", L"0" },      // plus/volclouds
         { L"PlusSkyStars", L"0" },              // plus/starfield: the official stars
         { L"PlusJ2CDecoder", L"0" },            // plus/j2cdecoder: OpenJPEG decodes (slj2k is on by default)
+        { L"PlusImpostorCapturesPerFrame", L"0" }, // llvoavatar.cpp updateImpostors: no cap on the impostor pictures per frame (the official way, research/319)
     };
 
     // The environment variable that marks a safe start (the child), with its

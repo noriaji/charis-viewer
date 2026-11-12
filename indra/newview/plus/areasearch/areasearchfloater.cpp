@@ -39,10 +39,11 @@
 //                              (bits: 1 touch, 2 buy, 4 sit, 8 zoom the camera in)
 //   PlusAreaSearchIncludeAttached  list what avatars wear too, the agent's and everyone's (off:
 //                              left out; the filter tab's check box, Criteria::exceptAttached)
-//   PlusAreaSearchRange        the Options tab's spinner (control_name): only what is this near is
-//                              listed, and the simulator is asked to send it (0: no limit to the
-//                              list, the draw distance for the simulator); read by the engine
-//                              (Engine::withinRange(), farRange())
+//   PlusAreaSearchRange        the List tab's spinner (control_name): only what is this near is
+//                              listed, and the simulator is asked to send it (0: the draw
+//                              distance, for both; never more than the engine's MAX_RANGE);
+//                              read by the engine (searchRange() in areasearch.cpp, for
+//                              Engine::withinRange() and farRange())
 //
 // Changed from Firestorm's, to make it easier to use: the list is made as the window opens
 // (with the saved filters; Firestorm shows an empty Find tab until Search is pressed), a quick
@@ -92,6 +93,7 @@
 #include "llviewermenu.h"
 #include "llviewerobjectlist.h"
 #include "llviewerregion.h"
+#include "llworld.h"
 #include "llviewerwindow.h"
 
 namespace plus::areasearch
@@ -479,7 +481,11 @@ namespace plus::areasearch
                     const Entry* entry     = mEngine.find(item->getUUID());
                     if (object && entry)
                     {
-                        gObjectList.addDebugBeacon(object->getPositionAgent(), entry->name, beacon_color, text_color, beacon_width);
+                        // Not for a HUD attachment: it is on the screen, and its place (positionOf()) is the agent's own.
+                        if (!object->isHUDAttachment())
+                        {
+                            gObjectList.addDebugBeacon(gAgent.getPosAgentFromGlobal(positionOf(object)), entry->name, beacon_color, text_color, beacon_width);
+                        }
                     }
                     else if (entry && entry->cacheOnly)
                     {
@@ -961,14 +967,17 @@ namespace plus::areasearch
                 return object && entry;
             }
 
-            // Shows it on the map (the tracking beacon), and touches, buys or sits as chosen.
-            void onDoubleClick()
+            // Shows the one selected row on the map (the tracking beacon). True when the viewer has
+            // the object (then object and entry are set): the rest of a double click and the menu's
+            // zoom need it. False when it has not (an object beyond what the viewer made,
+            // research/218): the beacon, from the cache record, is all there is to do.
+            // No beacon for a HUD attachment: it is where the agent is (positionOf()), and a place
+            // the agent has reached is not shown; LLTracker only drops what was tracked before
+            // (trackLocation() replaces it, render3D() stops it the next frame).
+            bool trackSelected(LLViewerObject*& object, const Entry*& entry)
             {
-                LLViewerObject* object = nullptr;
-                const Entry* entry     = nullptr;
                 if (!selectedObject(object, entry))
                 {
-                    // An object the viewer has not made (research/218): the map beacon is all there is to do.
                     if (mList->getNumSelected() == 1)
                     {
                         const Entry* known = mEngine.find(mList->getFirstSelected()->getUUID());
@@ -977,9 +986,67 @@ namespace plus::areasearch
                             LLTracker::trackLocation(known->position, known->name, "", LLTracker::LOCATION_ITEM);
                         }
                     }
+                    return false;
+                }
+                if (!object->isHUDAttachment())
+                {
+                    LLTracker::trackLocation(positionOf(object), entry->name, "", LLTracker::LOCATION_ITEM);
+                }
+                return true;
+            }
+
+            // The camera is held within the draw distance of the agent unless the constraints are off
+            // (DisableCameraConstraints), the agent is a god, or the object is in a region the agent
+            // manages as an estate manager (LLAgentCamera::calcCameraPositionTargetGlobal()): further
+            // than that the camera would stop short and look at nothing.
+            // Never to a HUD attachment: it is on the screen, not in the world (positionOf(),
+            // areasearch.h). Its box (getBoundingBoxAgent()) is measured from the avatar's HUD joint,
+            // which stays at the region's origin, so the camera would go to the region's corner.
+            // Nor to an attachment that has no drawable (yet): its box is its offset on the
+            // attachment point taken as a place in the region, the corner again.
+            static bool cameraCanReach(LLViewerObject* object)
+            {
+                if (object->isHUDAttachment() || (object->isAttachment() && object->mDrawable.isNull()))
+                {
+                    return false;
+                }
+                static LLCachedControl<bool> disable_constraints(gSavedSettings, "DisableCameraConstraints", false);
+                if (disable_constraints() || gAgent.isGodlike())
+                {
+                    return true;
+                }
+                const LLVector3d position = positionOf(object);
+                if (dist_vec(gAgent.getPositionGlobal(), position) <= gAgentCamera.mDrawDistance)
+                {
+                    return true;
+                }
+                LLViewerRegion* region = LLWorld::getInstance()->getRegionFromPosGlobal(position);
+                return region && region->canManageEstate();
+            }
+
+            // What the double click's "zoom" does, and the menu's "Zoom In": the map beacon, and the
+            // camera on the object when the viewer has it and the camera can get there (beyond the draw
+            // distance only without the camera constraints: otherwise the beacon is all there is). For a
+            // HUD attachment neither: nothing is shown.
+            void showSelected()
+            {
+                LLViewerObject* object = nullptr;
+                const Entry* entry     = nullptr;
+                if (trackSelected(object, entry) && cameraCanReach(object))
+                {
+                    zoomTo(object);
+                }
+            }
+
+            // Shows it on the map (the tracking beacon), and touches, buys or sits as chosen.
+            void onDoubleClick()
+            {
+                LLViewerObject* object = nullptr;
+                const Entry* entry     = nullptr;
+                if (!trackSelected(object, entry))
+                {
                     return;
                 }
-                LLTracker::trackLocation(object->getPositionGlobal(), entry->name, "", LLTracker::LOCATION_ITEM);
                 const U32 double_click = gSavedSettings.getU32(SETTING_DOUBLE_CLICK);
                 if (double_click & DOUBLE_CLICK_BUY)
                 {
@@ -993,7 +1060,7 @@ namespace plus::areasearch
                 {
                     sitOn(object);
                 }
-                if (double_click & DOUBLE_CLICK_ZOOM)
+                if ((double_click & DOUBLE_CLICK_ZOOM) && cameraCanReach(object))
                 {
                     zoomTo(object);
                 }
@@ -1030,13 +1097,18 @@ namespace plus::areasearch
                 {
                     return mList->getNumSelected() == 1;
                 }
-                if (what == "zoom")
+                if (what == "one_in_world")
                 {
-                    // Within the draw distance, or there is nothing to look at.
-                    LLViewerObject* object = nullptr;
-                    const Entry* entry     = nullptr;
-                    return selectedObject(object, entry)
-                        && dist_vec(gAgent.getPositionGlobal(), object->getPositionGlobal()) < gAgentCamera.mDrawDistance;
+                    // "Teleport To" and "Zoom In": one row, and not a HUD attachment (it is on the screen,
+                    // where the agent is already: there is nowhere to go or to look). A row without an
+                    // object in the viewer stays as before: enabled (the zoom shows its beacon, the
+                    // teleport does nothing).
+                    if (mList->getNumSelected() != 1)
+                    {
+                        return false;
+                    }
+                    const LLViewerObject* object = gObjectList.findObject(mList->getFirstSelected()->getUUID());
+                    return !(object && object->isHUDAttachment());
                 }
                 return mList->getNumSelected() > 0;
             }
@@ -1081,7 +1153,11 @@ namespace plus::areasearch
                         delay += TOUCH_INTERVAL;
                     }
                 }
-                else if (action == "sit" || action == "teleport" || action == "zoom" || action == "buy")
+                else if (action == "zoom")
+                {
+                    showSelected();
+                }
+                else if (action == "sit" || action == "teleport" || action == "buy")
                 {
                     LLViewerObject* object = nullptr;
                     const Entry* entry     = nullptr;
@@ -1095,11 +1171,10 @@ namespace plus::areasearch
                     }
                     else if (action == "teleport")
                     {
-                        gAgent.teleportViaLocation(object->getPositionGlobal());
-                    }
-                    else if (action == "zoom")
-                    {
-                        zoomTo(object);
+                        if (!object->isHUDAttachment())  // (the menu item is disabled for it: menuEnabled("one_in_world"))
+                        {
+                            gAgent.teleportViaLocation(positionOf(object));
+                        }
                     }
                     else
                     {

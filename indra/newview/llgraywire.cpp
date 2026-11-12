@@ -1374,14 +1374,9 @@ namespace
         {
             return false;
         }
-        const LLVector4a* extents = drawable->getSpatialExtents();
-        LLVector4a center;
-        center.setAdd(extents[0], extents[1]);
-        center.mul(0.5f);
-        LLVector4a size;
-        size.setSub(extents[1], extents[0]);
-        size.mul(0.5f);
-        return LLViewerCamera::getInstance()->AABBInFrustum(center, size) != 0;
+        // <plus> research/319: the one box test (also used for the impostor pictures; was the same lines here)
+        return avatar->extentsInCameraFrustum();
+        // </plus>
     }
 
     // research/289 (the integration check's L5): TAA's jitter waits for a wireframe (drawnLately) only when it is

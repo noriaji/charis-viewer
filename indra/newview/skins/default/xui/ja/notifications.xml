@@ -7342,4 +7342,20 @@ UDP：3478, 3479, 5060, 5062, 6250, 12000-32000
 		</form>
 	</notification>
 	<!-- /plus -->
+	<!-- plus: invcustomtabs。カスタムタブの名前変更と閉じる確認（plus/invcustomtabs、research/314） -->
+	<notification label="フィルタータブの名前変更" name="FSInventoryCustomTabRename">
+		新しいタブ名：
+		<form name="form">
+			<input name="new_name">
+				[NAME]
+			</input>
+			<button name="OK" text="OK"/>
+			<button name="Cancel" text="キャンセル"/>
+		</form>
+	</notification>
+	<notification label="フィルタータブを閉じる" name="FSInventoryCustomTabClose">
+		フィルタータブ「[NAME]」を閉じますか？ このタブに保存した絞り込みも消えます。
+		<usetemplate ignoretext="カスタムのフィルタータブを閉じる前に確認する" name="okcancelignore" notext="キャンセル" yestext="閉じる"/>
+	</notification>
+	<!-- /plus -->
 </notifications>

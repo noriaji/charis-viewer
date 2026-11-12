@@ -3022,7 +3022,10 @@ void LLViewerWindow::draw()
     gGL.color4f(1, 1, 1, 1);
 
     // HACK for timecode debugging
-    if (gSavedSettings.getBOOL("DisplayTimecode"))
+    // <plus> cpu-trim-safe: the setting read through a cached control, not by name each frame (was: gSavedSettings.getBOOL("DisplayTimecode"))
+    static LLCachedControl<bool> display_timecode(gSavedSettings, "DisplayTimecode", false);
+    // </plus>
+    if (display_timecode) // <plus> cpu-trim-safe </plus>
     {
         // draw timecode block
         std::string text;
@@ -4205,13 +4208,16 @@ void LLViewerWindow::updateUI()
 void LLViewerWindow::updateLayout()
 {
     LL_PROFILE_ZONE_SCOPED_CATEGORY_UI;
+    // <plus> cpu-trim-safe: a cached control, not a name lookup each frame (was: gSavedSettings.getBOOL("FreezeTime") below)
+    static LLCachedControl<bool> freeze_time(gSavedSettings, "FreezeTime", false);
+    // </plus>
     LLTool* tool = LLToolMgr::getInstance()->getCurrentTool();
     if (gFloaterTools != NULL
         && tool != NULL
         && tool != gToolNull
         && tool != LLToolCompInspect::getInstance()
         && tool != LLToolDragAndDrop::getInstance()
-        && !gSavedSettings.getBOOL("FreezeTime"))
+        && !freeze_time) // <plus> cpu-trim-safe </plus>
     {
         // Suppress the toolbox view if our source tool was the pie tool,
         // and we've overridden to something else.
@@ -4288,7 +4294,10 @@ void LLViewerWindow::updateMouseDelta()
 
     LLVector2 mouse_vel;
 
-    if (gSavedSettings.getBOOL("MouseSmooth"))
+    // <plus> cpu-trim-safe: a cached control, not a name lookup each frame (updateUI calls this) (was: gSavedSettings.getBOOL("MouseSmooth"))
+    static LLCachedControl<bool> mouse_smooth(gSavedSettings, "MouseSmooth", false);
+    // </plus>
+    if (mouse_smooth) // <plus> cpu-trim-safe </plus>
     {
         static F32 fdx = 0.f;
         static F32 fdy = 0.f;

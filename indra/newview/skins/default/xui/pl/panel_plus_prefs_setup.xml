@@ -20,14 +20,6 @@
 					<radio_item name="external_all" label="Wbudowana dla wszystkich linków" tool_tip="Używa wbudowanej przeglądarki internetowej do przeglądania plików pomocy, otwierania linków itp. Ta przeglądarka otwiera nowe okienko wewnątrz [APP_NAME]." />
 				</plus_ps_radio>
 				<plus_ps_check_compat name="browser_javascript_enabled" label="Włącz Javascript" />
-				<plus_ps_text name="Software updates:">
-					Aktualizacje:
-				</plus_ps_text>
-				<plus_ps_combo name="updater_service_combobox">
-					<plus_ps_combo.item name="Install_automatically" label="Instaluj automatycznie" />
-					<plus_ps_combo.item name="Install_manual" label="Pobieraj i instaluj łatki ręcznie" />
-				</plus_ps_combo>
-				<plus_ps_check_compat name="update_willing_to_test" label="Chcę aktualizować do wersji testowych" />
 				<plus_ps_text name="Proxy Settings:">
 					Ustawienia proxy:
 				</plus_ps_text>

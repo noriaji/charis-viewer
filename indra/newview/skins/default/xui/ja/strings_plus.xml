@@ -225,6 +225,8 @@
 	<string name="PlusInvCacheNotWritten">
 		インベントリのキャッシュを消す印を付けられませんでした（キャッシュのフォルダに書き込めません）。
 	</string>
+	<string name="FSInventoryCustomTabDefaultName">カスタム</string>
+	<string name="FSInventoryCustomTabShowHidden">隠したタブを表示</string>
 	<string name="PlusTtsSampleMale">
 		こんにちは、男性の声の試し読みです。
 	</string>

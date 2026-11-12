@@ -83,11 +83,12 @@
       Name
     </text>
 
+    <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_readonly_color was DkGray on the official light box, so the box's own colour name (research/239) -->
     <search_editor
        follows="left|top"
        search_button_visible="false"
        height="20"
-       text_readonly_color="DkGray"
+       text_readonly_color="TextFgReadOnlyColor"
        label="Objects by Name"
        layout="topleft"
        left_pad="0"
@@ -96,6 +97,7 @@
        select_on_focus="true"
        width="161">
     </search_editor>
+    <!-- /plus -->
     <text
         name="linksets_desc_label"
         height="13"
@@ -111,11 +113,12 @@
         width="88">
       Description
     </text>
+    <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_readonly_color was DkGray on the official light box, so the box's own colour name (research/239) -->
     <search_editor
        follows="left|top"
        search_button_visible="false"
        height="20"
-       text_readonly_color="DkGray"
+       text_readonly_color="TextFgReadOnlyColor"
        label="Objects by Description"
        layout="topleft"
        left_pad="0"
@@ -124,6 +127,7 @@
        select_on_focus="true"
        width="162">
     </search_editor>
+    <!-- /plus -->
     <combo_box
         height="20"
         layout="topleft"

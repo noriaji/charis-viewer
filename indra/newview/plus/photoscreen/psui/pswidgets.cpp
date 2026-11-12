@@ -127,6 +127,10 @@ namespace plus::psui
 
     bool PsCtrl::handleKeyHere(KEY key, MASK mask)
     {
+        if (getEnabled() && mOnKey && mOnKey(key, mask))
+        {
+            return true;
+        }
         if (getEnabled() && mask == MASK_NONE && ((key == KEY_RETURN && clicksOnReturn()) || key == ' '))
         {
             // one press, one click (as LLButton): a held key's repeats are taken but do nothing

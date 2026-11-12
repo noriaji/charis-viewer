@@ -49,6 +49,8 @@
 #include "llclipboard.h"
 #include "lltrans.h"
 
+#include <tuple> // <plus> invexplorer: plus_filter_ops_fields (research/318) </plus>
+
 LLInventoryFilter::FilterOps::FilterOps(const Params& p)
 :   mFilterObjectTypes(p.object_types),
     mFilterCategoryTypes(p.category_types),
@@ -1246,7 +1248,12 @@ void LLInventoryFilter::setDateRangeLastLogoff(bool sl)
 
 bool LLInventoryFilter::isSinceLogoff() const
 {
-    static LLCachedControl<U32> s_last_logoff(gSavedSettings, "LastLogoff", 0);
+    // <plus> invcustomtabs: LastLogoff is a per-account setting, as setDateRangeLastLogoff() names it. The cache of an
+    // LLCachedControl is shared by name and bound to the group of the first one made, which is normally
+    // setDateRangeLastLogoff()'s (the Recent tab calls it first), so this worked; named per account here too, it
+    // no longer depends on which runs first (no visible change) (research/314)
+    static LLCachedControl<U32> s_last_logoff(gSavedPerAccountSettings, "LastLogoff", 0);
+    // </plus>
 
     return (mFilterOps.mMinDate == (time_t)s_last_logoff()) &&
         (mFilterOps.mMaxDate == time_max()) &&
@@ -1634,6 +1641,68 @@ LLInventoryFilter& LLInventoryFilter::operator =(const LLInventoryFilter& other)
     setDateRangeLastLogoff(other.isSinceLogoff());
     return *this;
 }
+
+// <plus> invexplorer: the center column of the inventory window follows the tab's filter (plus/invexplorer/invcolumns,
+// research/318). Field by field: FilterOps has no comparison, and its padding rules out memcmp.
+namespace
+{
+    // Every field of FilterOps, as a tuple of references. The structured binding names them all: a field added to
+    // or taken from FilterOps (an official update) does not compile here, whatever its size (the struct ends in
+    // padding, so its size alone would not tell). Then change the binding and the tuple: both in the struct's order.
+    auto plus_filter_ops_fields(const LLInventoryFilter::FilterOps& ops)
+    {
+        const auto& [types, search_visibility, object_types, wearable_types, settings_types, thumbnails, favorites,
+                     links, category_types, uuid, min_date, max_date, hours_ago, date_search_direction,
+                     show_folder_state, permissions, creator_type] = ops;
+        return std::tie(types, search_visibility, object_types, wearable_types, settings_types, thumbnails, favorites,
+                        links, category_types, uuid, min_date, max_date, hours_ago, date_search_direction,
+                        show_folder_state, permissions, creator_type);
+    }
+
+    bool plus_same_filter_ops(const LLInventoryFilter::FilterOps& a, const LLInventoryFilter::FilterOps& b)
+    {
+        return plus_filter_ops_fields(a) == plus_filter_ops_fields(b);
+    }
+}
+
+bool LLInventoryFilter::plusCopyFrom(const LLInventoryFilter& other)
+{
+    bool changed = false;
+    // The words first: setFilterSubString() also leaves the links-only and UUID modes, which the ops below then
+    // set back to the other filter's.
+    if (mFilterSubStringOrig != other.mFilterSubStringOrig)
+    {
+        setFilterSubString(other.mFilterSubStringOrig);
+        changed = true;
+    }
+    if (!plus_same_filter_ops(mFilterOps, other.mFilterOps))
+    {
+        mFilterOps = other.mFilterOps;
+        changed = true;
+    }
+    if (!plus_same_filter_ops(mDefaultFilterOps, other.mDefaultFilterOps))
+    {
+        mDefaultFilterOps = other.mDefaultFilterOps; // isDefault() answers as for the other filter (the empty message)
+        changed = true;
+    }
+    mBackupFilterOps = other.mBackupFilterOps; // where leaving the links-only mode returns to; decides nothing now
+    if (mPlusIdSet != other.mPlusIdSet)
+    {
+        mPlusIdSet = other.mPlusIdSet; // shared, read only
+        changed = true;
+    }
+    if (mSearchType != other.mSearchType)
+    {
+        mSearchType = other.mSearchType;
+        changed = true;
+    }
+    if (changed)
+    {
+        setModified(FILTER_RESTART);
+    }
+    return changed;
+}
+// </plus>
 
 void LLInventoryFilter::toParams(Params& params) const
 {

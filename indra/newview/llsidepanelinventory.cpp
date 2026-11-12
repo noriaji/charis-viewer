@@ -214,11 +214,7 @@ bool LLSidepanelInventory::postBuild()
 
     gSavedSettings.getControl("InventoryDisplayInbox")->getCommitSignal()->connect(boost::bind(&handleInventoryDisplayInboxChanged));
 
-    // <plus> the floater above, not only a direct parent: plus/invexplorer puts this panel in a layout_stack
-    // (floater_my_inventory.xml), and LLPanelMainInventory::onVisibilityChange() does not pass the visibility
-    // on, so without this prefill the primary window's tabs are never built ("Searching..." for good)
-    LLFloater *floater = getParentByType<LLFloater>(); // (was dynamic_cast<LLFloater*>(getParent()))
-    // </plus>
+    LLFloater *floater = dynamic_cast<LLFloater*>(getParent());
     if (floater && floater->getKey().isUndefined() && !sLoginCompleted)
     {
         // Prefill inventory for primary inventory floater

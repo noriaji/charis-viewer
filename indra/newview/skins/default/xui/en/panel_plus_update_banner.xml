@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Update check (plus/updatecheck, research/325 4.1): the band at the bottom of the login screen while a newer
+  Charis Viewer is out. updatecheck.cpp makes it, puts it in login_panel_holder (main_view.xml) over the
+  login panel, 24 from the left and right and 12 from the bottom (it follows the window's width), and takes it
+  away when the login starts. panel_login.xml (official) is not changed.
+  The band and its box are not mouse_opaque. The buttons take clicks, and so do the words with the left
+  button (plus_ps_label is a PsCtrl, which takes the mouse down whatever its mouse_opaque; nothing of the login
+  column is under them). Only a click in the gaps between the buttons and in the margins at the ends goes
+  through to the login panel under the band. The tool tip shows over the whole band.
+  In a low window, where the band at the bottom would come within 8 of the bottom of panel_login's version
+  line (version_text, 608 from the top: windows under 668 high), the code puts it at the top instead, 12 from
+  the window's top (it then covers the top 13 of the logo, 39 from the top; the name field is lower).
+  To be checked in the viewer: login_panel_holder may start under status_bar_container (19 high), which would
+  move these numbers (the 668 and the 13) by that much; the code measures version_text itself, so the band
+  still keeps clear of it.
+  The text is plain: no links in it (research/130 M1). The tool tip of the band (and of its words) holds the
+  sentence, the update file's message and the page addresses; pages open only from the button, after
+  updatecheck.cpp has checked the address.
+  Size (1080 base): 976 x 40 here (the code gives it the window's width less 48). From the right, the code lays
+  out the buttons that are shown, 8 apart: x 28 (6 from the edge), "Stop notices" 140, "Skip this version" 184,
+  "Open download page" 232, all 28 high at 6 from the top; the words take the rest, from 14 to 12 before the
+  first button (336 at this width; cut with an ellipsis, the whole text in the tool tip). With the version
+  below min_version, "Skip this version" and x are hidden and the words get their room. When the words would
+  get less than 160 (windows under 848 wide), "Stop notices" and "Skip this version" are hidden too and x and
+  Open stay: at 640 wide (the band 592), x at 558-586, Open at 318-550, the words 14-306. A button that does
+  not fit at all is hidden (nothing goes left of the words' start).
+  ja: the longest button words, "ダウンロードページを開く" (12 characters, about 204 at 17 px), fit in 232 with the
+  button's 12 at each side; "この版は通知しない" (9, about 153) in 184; "通知を止める" (6, about 102) in 140.
+  The band is above panel_login's column at window heights of 668 and more (the column ends at 608 from the top,
+  the band starts 52 above the bottom).
+-->
+<panel
+ background_visible="false"
+ follows="left|right|bottom"
+ height="40"
+ layout="topleft"
+ mouse_opaque="false"
+ name="plus_update_banner"
+ width="976">
+    <!-- [VERSION] and [CURRENT] are versions ("0.1.0 alpha 2 (rev 1970)") -->
+    <string name="body">Charis Viewer [VERSION] is out (you have [CURRENT]).</string>
+    <string name="body_required">Charis Viewer [CURRENT] is no longer supported. Please update to [VERSION].</string>
+    <string name="notes">What's new: [URL]</string>
+    <string name="page">Download page: [URL]</string>
+    <!-- banner_open when the update file names only the notes (no download page) -->
+    <string name="btn_notes">Open what's new</string>
+    <string name="btn_notes_tip">Opens the page of what's new in your web browser (the update file names no download page)</string>
+    <!-- banner_open where updates can be installed (Setup.exe; plus/update, research/326): the user agrees here -->
+    <string name="btn_install">Download and update</string>
+    <string name="btn_install_tip">Downloads the new version from GitHub (you can go on using the viewer; the bottom right shows how far it is). It is put in when you quit, or with "Restart and update".</string>
+    <plus_ps_box
+     follows="all"
+     height="40"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     mouse_opaque="false"
+     name="banner_box"
+     top="0"
+     width="976">
+        <!-- the tool tip here is replaced with the whole text when the band is filled -->
+        <plus_ps_label
+         follows="left|top|right"
+         height="40"
+         kind="white"
+         layout="topleft"
+         left="14"
+         name="banner_text"
+         tool_tip="A newer Charis Viewer is out"
+         top="0"
+         width="336" />
+        <plus_ps_button
+         follows="right|top"
+         height="28"
+         label="Open download page"
+         layout="topleft"
+         left="362"
+         name="banner_open"
+         tool_tip="Opens the download page in your web browser"
+         top="6"
+         width="232" />
+        <plus_ps_button
+         follows="right|top"
+         height="28"
+         label="Skip this version"
+         layout="topleft"
+         left="602"
+         name="banner_skip"
+         tool_tip="You are told again only when a version newer than this one is out"
+         top="6"
+         width="184" />
+        <plus_ps_button
+         follows="right|top"
+         height="28"
+         label="Stop notices"
+         layout="topleft"
+         left="794"
+         name="banner_stop"
+         tool_tip="Stops the update check and these notices (Preferences > Setup turns them on again)"
+         top="6"
+         width="140" />
+        <plus_ps_icon_button
+         follows="right|top"
+         height="28"
+         icon="close"
+         layout="topleft"
+         left="942"
+         name="banner_close"
+         tool_tip="Closes this until the next start"
+         top="6"
+         width="28" />
+    </plus_ps_box>
+</panel>

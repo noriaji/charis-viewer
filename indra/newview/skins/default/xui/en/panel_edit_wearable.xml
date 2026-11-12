@@ -253,6 +253,7 @@
          tool_tip="Female"
          top="7"
          width="16" />
+        <!-- plus ui-old-recolor: the box to type in is dark in the Charis skin; text_color was Black on the official light box, so the box's own colour name (research/239) -->
         <line_editor
          follows="all"
          height="23"
@@ -262,9 +263,10 @@
          name="description"
          prevalidator="ascii"
          select_on_focus="true"
-         text_color="Black"
+         text_color="TextFgColor"
          top_pad="3"
          width="290" />
+        <!-- /plus -->
     </panel>
     <panel
      follows="all"

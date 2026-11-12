@@ -42,6 +42,10 @@ namespace plus::safemode::badge
     // Once, when the UI is there (the login screen), in a safe start only: a normal start
     // makes no view at all. Main thread.
     void attach();
+
+    // How much of the bottom right corner of the world the badge takes from the bottom (its height and its
+    // margin), 0 while there is none (a normal start). For another chip there (plus/update) to go above it.
+    S32 cornerHeight();
 }
 
 #endif // PLUS_SAFEMODE_BADGE_H

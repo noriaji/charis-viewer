@@ -5,8 +5,11 @@
 #   skins/charis/colors.xml            every colour as Ps<Name> for the XUI windows, and the official colour
 #                                      names the Charis look changes (the "official" / "palette" lines)
 #   skins/charis/textures/textures.xml and skins/charis/textures/charis/*.png
-#                                      the window frame, buttons, tooltips, toasts and scroll bars, drawn
-#                                      from these values (make_ui_tokens.py says which token each part uses)
+#                                      the window frame, buttons, tooltips, toasts and scroll bars, and the
+#                                      official small parts (drop-downs, text fields, check boxes, radio
+#                                      buttons, spinners, sliders, tabs, list rows, accordions, segmented and
+#                                      bottom-bar buttons, badges ...: old_parts) at their official sizes,
+#                                      drawn from these values (make_ui_tokens.py says which token each part uses)
 # After a change: python -I make_ui_tokens.py   (tools/predeliver.py (u) fails while the made files differ)
 #
 # Lines
@@ -336,8 +339,9 @@ FONT_READOUT       font   Large          # the exposure read-out (18 px)
 
 # ---- the official colour names (skins/charis/colors.xml) ---------------------------------------------------------
 # The official skin's greys become the panels' blues; its cyan the accent. The text stays light on the dark ground
-# (the official skin is dark too), so the labels need no other colour. The text fields and editors keep their light
-# boxes and dark text in this stage (the psui parts that replace them are dark: research/239 (3)).
+# (the official skin is dark too), so the labels need no other colour. The text fields and editors are psui's dark
+# box to type in (FIELD_BG; the images in make_ui_tokens.py old_parts, branch ui-old-recolor), so their words are
+# light; the official windows that set dark words on them were set back to these names (OFFICIAL-FILE-CHANGES.md).
 
 palette   DkGray            =GROUND
 palette   DkGray_66         =GROUND/0.66
@@ -374,9 +378,20 @@ official  ToolTipBorderColor       =TOOLTIP_BORDER
 official  ToolTipTextColor         =TEXT_WHITE     # the official tooltip is light with dark text; this one is dark
 official  SearchableControlHighlightBgColor   =SEARCH_HIT_FILL    # the preferences' search on the official widgets not replaced yet (red there)
 official  SearchableControlHighlightFontColor =ACCENT_LINE
+official  TextFgColor              =TEXT_WHITE     # the words typed in a text field or editor (dark on the official light box)
+official  TextFgTentativeColor     =TEXT_DIM       # a field's hint ("Name") and words not taken yet
+official  TextCursorColor          =TEXT_WHITE
+official  TextBgWriteableColor     =FIELD_BG       # a box of many lines to type in (text_editor, the chat input): the one-line fields' fill (their images add the border; a text editor has none without C++ in llui). SEG_OFF was tried and not seen either (2026-11-12); a lighter one (COMBO_FILL) is the handoff's 1b'
+official  TextBgFocusColor         =FIELD_BG
+official  SelectionColor           =ACCENT_LINE    # chosen words: lllineeditor.cpp draws them black, so a light blue (black on it 11:1)
+official  TextEmbeddedItemColor    =LINK_TEXT      # an inventory item in a notecard being edited (dark navy on the official light box)
+official  TextFgReadOnlyColor      =TEXT_LABEL     # read-only words (a field that cannot be changed, and every read-only editor: profiles, classifieds, notices ...): as bright as the labels (TEXT_DIM made the text darker than its labels; TEXT_SUB still 8.5:1 under the labels' 9.7:1); a field that cannot be changed is told by its box at 40%
+official  OutfitGalleryItemUnselected =CARD_BORDER # the outfit gallery's card frame (grey 0.4), as psui's cards
+official  OutfitGalleryItemSelected   =RAIL_SEL_LEFT   # the chosen card's frame and the back of its name (panel_outfit_gallery_item.xml text_bg_panel; white words 8.0:1, the favourite's Yellow 7.5:1), as the rail's chosen tab; also the voice settings' lit input level (llpanelvoicedevicesettings.cpp; 2.2:1 over the unlit PanelFocusBackgroundColor)
+official  BadgeImageColor          =BADGE_FILL     # the official badges (new items on a button; orange): the accent as psui's badges
 
 keep      ColorPaletteEntry*       # the colour picker's swatches
-keep      Text*                    # the text fields and editors (light boxes, dark text) stay as they are
+keep      Text*                    # the other text colours (read-only words, embedded items) stay as they are
 keep      Script*
 keep      Syntax*
 keep      *ChatColor               # the chat colours (the preferences' Colors tab)

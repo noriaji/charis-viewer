@@ -868,6 +868,26 @@ LLVector3 FSPoserAnimator::getJointRotation(LLVOAvatar* avatar, const FSPoserJoi
     return translateRotationFromQuaternion(jointPose, translation, negation, jointPose->getPublicRotation());
 }
 
+// <plus> see the declaration
+bool FSPoserAnimator::getJointSeenRotation(LLVOAvatar* avatar, const FSPoserJoint& joint, LLVector3* rotation, bool* baseRotationIsZero) const
+{
+    if (!rotation || !baseRotationIsZero || !isAvatarSafeToUse(avatar))
+        return false;
+
+    FSPosingMotion* posingMotion = getPosingMotion(avatar);
+    if (!posingMotion)
+        return false;
+
+    FSJointPose* jointPose = posingMotion->getJointPoseByJointName(joint.jointName());
+    if (!jointPose)
+        return false;
+
+    jointPose->getTargetRotation().getEulerAngles(&rotation->mV[VX], &rotation->mV[VY], &rotation->mV[VZ]);
+    *baseRotationIsZero = jointPose->isBaseRotationZero();
+    return true;
+}
+// </plus>
+
 void FSPoserAnimator::setJointRotation(LLVOAvatar* avatar, const FSPoserJoint* joint, const LLVector3& absRotation,
                                        const LLVector3& deltaRotation, E_BoneDeflectionStyles style, E_PoserReferenceFrame frame,
                                        E_BoneAxisTranslation translation, S32 negation, bool resetBaseRotationToZero,

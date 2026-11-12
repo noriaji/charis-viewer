@@ -1761,6 +1761,29 @@ function="World.EnvPreset"
                      function="Floater.ToggleOrBringToFront"
                      parameter="perms_default" />
                 </menu_item_call>
+                <!-- plus: the Develop > Render Metadata items used often, here too (the same functions) -->
+                <menu_item_separator/>
+                <menu_item_check
+                 label="Show Lights"
+                 name="Build Show Lights">
+                  <menu_item_check.on_check
+                   function="Advanced.CheckInfoDisplay"
+                   parameter="lights" />
+                  <menu_item_check.on_click
+                   function="Advanced.ToggleInfoDisplay"
+                   parameter="lights" />
+                </menu_item_check>
+                <menu_item_check
+                 label="Show Physics Shapes"
+                 name="Build Show Physics Shapes">
+                  <menu_item_check.on_check
+                   function="Advanced.CheckInfoDisplay"
+                   parameter="physics shapes" />
+                  <menu_item_check.on_click
+                   function="Advanced.ToggleInfoDisplay"
+                   parameter="physics shapes" />
+                </menu_item_check>
+                <!-- /plus -->
         </menu>
         <menu
          create_jump_keys="true"

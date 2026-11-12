@@ -23,15 +23,6 @@
 					<radio_item name="external_all" label="Tüm bağlantılar için yerleşik tarayıcıyı kullan" tool_tip="Yardım, web bağlantıları vs. için dahili web tarayıcısını kullanın. Bu tarayıcı [APP_NAME] içerisinde yeni bir pencere olarak açılır." />
 				</plus_ps_radio>
 				<plus_ps_check_compat name="browser_javascript_enabled" label="Javascript'i etkinleştir" />
-				<plus_ps_text name="Software updates:">
-					Yazılım güncelleştirmeleri:
-				</plus_ps_text>
-				<plus_ps_combo name="updater_service_combobox">
-					<plus_ps_combo.item name="Install_automatically" label="Her bir güncellemeyi otomatik olarak yükle" />
-					<plus_ps_combo.item name="Install_ask" label="İsteğe bağlı bir güncelleme yüklenmeye hazır olduğunda bana sor" />
-					<plus_ps_combo.item name="Install_manual" label="Yalnızca zorunlu güncellemeleri yükle" />
-				</plus_ps_combo>
-				<plus_ps_check_compat name="update_willing_to_test" label="Sürüm adaylarına güncelleme yapmaya gönüllü" />
 				<plus_ps_check_compat name="update_show_release_notes" label="Güncellemeden sonra Sürüm Notlarını göster" />
 				<plus_ps_text name="Proxy Settings:">
 					Proxy Ayarları:

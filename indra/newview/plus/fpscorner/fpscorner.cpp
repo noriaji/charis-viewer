@@ -66,6 +66,7 @@
 #include "plus/presets/presets.h"
 #include "plus/uiframe/uiframe.h"
 
+#include "llagentcamera.h"
 #include "llcallbacklist.h"
 #include "llfloaterreg.h"
 #include "llfontgl.h"
@@ -229,7 +230,8 @@ namespace plus::fpscorner
             void draw() override
             {
                 const Position position = currentPosition();
-                if (!displayOn() || !isCorner(position) || plus::presets::snapshotInProgress() || !inWorld())
+                if (!displayOn() || !isCorner(position) || plus::presets::snapshotInProgress() || !inWorld()
+                    || gAgentCamera.cameraMouselook()) // first person: the UI is hidden, as the official one does
                 {
                     mText.forget();
                     return;

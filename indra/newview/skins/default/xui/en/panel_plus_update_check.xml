@@ -20,7 +20,7 @@
      layout="topleft"
      left="0"
      name="plus_update_check_enabled"
-     tool_tip="Off by default. When on, reads one small file from the update site (setting PlusUpdateCheckURL; nothing is read while it is empty) at most once a day, at start. As with any web page, the site keeps your IP address and the viewer's version in its log. Nothing about your account or avatar is sent."
+     tool_tip="On by default. Reads one small file from the update site (setting PlusUpdateCheckURL, a file on GitHub by default; nothing is read while it is empty) at most once a day, at start, and tells of a newer version at the login screen. As with any web page, the site keeps your IP address and the viewer's version in its log. Nothing about your account or avatar is sent. Off: nothing is read or shown."
      top="0"
      width="420" />
 </panel>

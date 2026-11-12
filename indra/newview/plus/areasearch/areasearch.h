@@ -92,8 +92,9 @@ namespace plus::areasearch
         // Only what this avatar owns itself (not through a group), by id; null: no condition.
         // The "mine only" of the list's menu (names on the rows may carry a display name).
         LLUUID ownerId;
-        // The list's quick filter: in any of the texts above (name ... last owner), in part and
-        // without regard to case, never a regular expression.
+        // The list's quick filter: words split at spaces (half width, ideographic or tab). Each word is
+        // in any of the texts above (name ... last owner), in part and without regard to case,
+        // never a regular expression; all the words must be (AND, the words need not be in the same text).
         std::string anyText;
 
         // Only these objects ...
@@ -288,7 +289,8 @@ namespace plus::areasearch
         // owner, group, creator, last owner)
         std::string mNeedle[6];
         boost::regex mPattern[6];
-        std::string mAnyNeedle;
+        // The words of Criteria::anyText (split and lower-cased once a search): all of them must be found.
+        std::vector<std::string> mAnyNeedles;
 
         // The objects that exist (an entry goes with its object, scan()).
         std::map<LLUUID, Entry> mEntries;
@@ -306,7 +308,8 @@ namespace plus::areasearch
         S32 mSearchable = 0;
         bool mRescan = false;
         // PlusAreaSearchRange as the search uses it, metres: only what is this near the agent is
-        // asked about and listed; 0: no limit. Read by start() and, when it changes, by tick().
+        // asked about and listed; 0 in the setting is the draw distance, at most MAX_RANGE like any other value
+        // (searchRange()). Read by start() and, when it changes, by tick().
         F32 mRange = 0.f;
         // Where the agent is, for withinRange(): taken once at each way in (tick(), scan(), an
         // answer), not again for every object a pass looks at.
@@ -337,6 +340,18 @@ namespace plus::areasearch
     // True while a search runs: objects out of view are kept (the hook in LLViewerRegion::
     // killInvisibleObjects()).
     bool keepObjects();
+
+    // Where an object is in the world, for everything the search does with a place: the distance and
+    // the range, the parcel filter, the beacons, the map's beacon, the teleport, how far the camera
+    // may go. LLViewerObject's own answers are wrong for what is worn:
+    //  - a HUD attachment is on the screen. Its drawable hangs from the avatar's HUD joint, which
+    //    stays at the region's origin, so getPositionGlobal() is the region's corner. It is where the
+    //    agent is: distance 0 and in the agent's parcel. The window shows no beacon of either kind
+    //    for it and does not teleport or move the camera to it (areasearchfloater.cpp).
+    //  - getPositionAgent() of an attachment's root is its offset on the attachment point taken as a
+    //    place in the region (the corner again). getPositionGlobal() is where it is drawn, which is
+    //    right while it has a drawable; without one it is where its wearer is.
+    LLVector3d positionOf(LLViewerObject* object);
 
     // While a search runs: the distance in metres the simulator is asked to send objects from
     // (PlusAreaSearchRange, at most MAX_RANGE), apart from the draw distance; 0: no wish (the

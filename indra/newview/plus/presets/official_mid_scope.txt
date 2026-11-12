@@ -67,6 +67,7 @@ sub       PlusSsgiThickness PlusSsgi
 diag      PlusSsgiDebug
 diag      PlusSkinSssDebug
 render    PlusSkinFill
+backend   PlusImpostorCapturesPerFrame        # インポスター撮影の上限。画質ではなく処理の仕組みで、公式と比べる段（MidHigh）でも効かせたまま（research/319）
 taste     PlusWetLook
 sub       PlusWetPuddles PlusWetLook
 sub       PlusWetAvatars PlusWetLook
@@ -215,6 +216,11 @@ diag      PlusAOLogTiming
 ui        PlusNudgeTurnStep
 ui        PlusInvExplorerDetail
 ui        PlusInvExplorerMinWidth
+ui        PlusInvExplorerDetailWidth
+ui        PlusInvExplorerColumns
+ui        PlusInvExplorerColumnsWidth
+ui        PlusInvExplorerLeftWidth
+ui        FSInventoryCustomTabs
 ui        PlusPhotoPins
 ui        PlusPhotoMyPresets
 ui        PlusPhotoShotSize
@@ -259,6 +265,9 @@ ui        PlusUpdateCheckSkipped
 ui        PlusUpdateCheckLastTime
 ui        PlusUpdateCheckLastTry
 ui        PlusUpdateCheckAllowedHosts
+ui        PlusUpdateCheckOffer
+ui        PlusUpdateInstall                 # Setup.exe 版で新しい版が見つかった時（research/326、2026-11-12）
+diag      PlusUpdateDummy                   # 試験用の偽の更新（保存しない。research/326 §5）
 backend   PlusSelfFirst
 backend   PlusTexViewPriority               # 画面内のテクスチャを先に読む（research/285 tex-view-priority、2026-11-06）
 backend   PlusTexFetchRetryUnknownTries     # 403 など「不明」の失敗を再要求する回数（既定 1。research/305）

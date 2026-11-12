@@ -767,6 +767,16 @@ void LLInventoryPanel::itemChanged(const LLUUID& item_id, U32 mask, const LLInve
         }
         }
 
+        // <plus> invcolumns: the root of a list whose folder plus/invexplorer chooses is not processed when its folder
+        // is removed, as the root is not in the STRUCTURE branch above. Destroying it below would leave a list that
+        // the next idle() takes apart for good (clearFolderRoot: its idle, observers and scroller, which nothing
+        // puts back) and a null root for a drag over it (handleDragAndDrop). plus/invexplorer moves the list to a
+        // folder that exists (plusSetRootOutlivesFolder, research/318 9)
+        else if (!model_item && mPlusRootOutlivesFolder && view_item && view_item == mFolderRoot.get())
+        {
+        }
+        // </plus>
+
         //////////////////////////////
         // REMOVE Operation
         // This item has been removed from memory, but its associated UI element still exists.
@@ -1749,8 +1759,16 @@ void LLInventoryPanel::updateFolderLabel(const LLUUID& folder_id)
 
 void LLInventoryPanel::doCreate(const LLSD& userdata)
 {
+    // <plus> invcustomtabs: reset_inventory_filter() leaves a custom tab shown in the "inventory" window for My
+    // Inventory; the new item is selected there, not in the custom tab no longer shown. Compared with that window
+    // itself (findPanel: nothing is opened or restored from minimized) (research/314)
+    LLSidepanelInventory* sidepanel = LLFloaterSidePanelContainer::findPanel<LLSidepanelInventory>("inventory");
+    LLPanelMainInventory* main_inventory = sidepanel ? sidepanel->getMainInventoryPanel() : nullptr;
+    const bool was_active = main_inventory && main_inventory->getActivePanel() == this;
     reset_inventory_filter();
-    menu_create_inventory_item(this, LLFolderBridge::sSelf.get(), userdata);
+    LLInventoryPanel* select_in = (was_active && main_inventory->getActivePanel()) ? main_inventory->getActivePanel() : this;
+    menu_create_inventory_item(select_in, LLFolderBridge::sSelf.get(), userdata);
+    // </plus>
 }
 
 bool LLInventoryPanel::beginIMSession()
@@ -2063,7 +2081,16 @@ void LLInventoryPanel::openInventoryPanelAndSetSelection(bool auto_open, const L
 
         if (reset_filter)
         {
+            // <plus> invcustomtabs: reset_inventory_filter() leaves a custom tab shown in this "inventory" window for
+            // My Inventory: select there. Compared with that window itself, not the topmost one (research/314)
+            LLPanelMainInventory* main_inventory = sidepanel_inventory ? sidepanel_inventory->getMainInventoryPanel() : nullptr;
+            const bool was_active = main_inventory && main_inventory->getActivePanel() == active_panel;
             reset_inventory_filter();
+            if (was_active && main_inventory->getActivePanel())
+            {
+                active_panel = main_inventory->getActivePanel();
+            }
+            // </plus>
         }
 
         if (in_inbox)
@@ -2805,6 +2832,13 @@ void LLInventorySingleFolderPanel::updateSingleFolderRoot()
         buildNewViews(mFolderID);
 
         LLFloater* root_floater = gFloaterView->getParentFloater(this);
+        // <plus> invcolumns: the window does not take the keyboard focus or come to the front while plus/invexplorer
+        // changes the center column's folder (plusSetRootChangeTakesFocus, research/318 9)
+        if (!mPlusRootChangeTakesFocus)
+        {
+            root_floater = nullptr;
+        }
+        // </plus>
         if(root_floater)
         {
             root_floater->setFocus(true);

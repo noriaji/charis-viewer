@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <!-- Charis window (from: panel_plus_update_check.xml; research/266 4. prefs-w-setup). The update check's on/off box
-     (plus/updatecheck), in Preferences > Setup under "Software updates:" (panel_plus_prefs_setup.xml).
+     (plus/updatecheck), in Preferences > Setup, after the release-notes check (panel_plus_prefs_setup.xml).
      plus/updatecheck's UpdateCheckPanel shows the box only while PlusUpdateCheckURL is not empty (research/123);
-     hidden, the rows below move up into its place. 529 x 30: one check row. -->
+     hidden, the rows below move up into its place. 529 x 67: the check row (30), 4, and how a new version goes in
+     (PlusUpdateInstall, plus/update, research/326; 33), shown only where updates can be installed (Setup.exe, or
+     the test PlusUpdateDummy); without, the rows below move up by 37.
+     ja: the longest choice, "自動でダウンロードし、次に終了した時に入れる" (22, about 290), fits in the 529 drop-down. -->
 <panel
  name="plus_update_check"
  background_visible="false"
  border="false"
  follows="left|top"
- height="30"
+ height="67"
  layout="topleft"
  mouse_opaque="false"
  width="529">
@@ -20,7 +23,30 @@
      label="Tell me when a new Charis Viewer is out (checked at start, once a day)"
      layout="topleft"
      left="0"
-     tool_tip="Off by default. When on, reads one small file from the update site (setting PlusUpdateCheckURL; nothing is read while it is empty) at most once a day, at start. As with any web page, the site keeps your IP address and the viewer's version in its log. Nothing about your account or avatar is sent."
+     tool_tip="On by default. Reads one small file from the update site (setting PlusUpdateCheckURL, a file on GitHub by default; nothing is read while it is empty) at most once a day, at start, and tells of a newer version at the login screen. As with any web page, the site keeps your IP address and the viewer's version in its log. Nothing about your account or avatar is sent. Off: nothing is read or shown."
      top="0"
      width="529" />
+    <plus_ps_combo
+     name="plus_update_install"
+     control_name="PlusUpdateInstall"
+     follows="left|top"
+     height="33"
+     layout="topleft"
+     left="0"
+     tool_tip="For the viewer installed with Setup.exe. A new version is found by the check above; what then: only tell (as the zip: the button opens the download page), ask first (the default: nothing is downloaded until you press Download), or download it without asking. Either way it is put in only when you quit the viewer or press Restart and update."
+     top="34"
+     width="529">
+        <plus_ps_combo.item
+         name="install_only_tell"
+         label="Only tell me (the button opens the download page)"
+         value="0" />
+        <plus_ps_combo.item
+         name="install_ask"
+         label="Ask me before downloading a new version"
+         value="1" />
+        <plus_ps_combo.item
+         name="install_automatic"
+         label="Download a new version without asking; put it in when I quit"
+         value="2" />
+    </plus_ps_combo>
 </panel>

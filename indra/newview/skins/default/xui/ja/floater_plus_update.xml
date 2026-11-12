@@ -6,7 +6,9 @@
 	<floater.string name="page">ダウンロードページ: [URL]</floater.string>
 	<floater.string name="btn_notes">更新内容を開く</floater.string>
 	<floater.string name="btn_notes_tip">更新内容のページをブラウザで開きます（ダウンロードページの指定がないため）</floater.string>
+	<floater.string name="btn_install">ダウンロード</floater.string>
+	<floater.string name="btn_install_tip">新しい版を GitHub からダウンロードします（その間もビューワは使えます。進み具合は右下に出ます）。入れ替えるのは、ビューワを終了した時か［再起動して更新］を押した時です。</floater.string>
 	<button name="btn_download" label="ダウンロードページへ" tool_tip="ダウンロードページをブラウザで開きます" />
-	<button name="btn_later" label="あとで" tool_tip="閉じます。1 日以上たった後の起動で、もう一度お知らせします。" />
+	<button name="btn_later" label="あとで" tool_tip="閉じます。次の起動時に、ログイン画面でもう一度お知らせします。" />
 	<button name="btn_skip" label="この版は通知しない" tool_tip="これより新しい版が出るまで、お知らせしません" />
 </floater>

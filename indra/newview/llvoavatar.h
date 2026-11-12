@@ -730,6 +730,9 @@ public:
     static void updateImpostors();
     LLRenderTarget mImpostor;
     bool        mNeedsImpostorUpdate;
+    bool        mImpostorUnusable = false; // <plus> research/319: the picture shows something else (cloud, new look, reset): taken first </plus>
+    F32         mImpostorWaitSince = 0.f; // <plus> research/319: when its picture was first left to a later frame; 0: not waiting </plus>
+    bool        extentsInCameraFrustum() const; // <plus> research/319: its drawable's extents (with its attachments) in the camera's frustum </plus>
     S32         mLastImpostorUpdateReason;
     F32SecondsImplicit mLastImpostorUpdateFrameTime;
     const LLVector3*  getLastAnimExtents() const { return mLastAnimExtents; }

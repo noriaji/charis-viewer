@@ -109,6 +109,9 @@ namespace plus::psui
         const std::string& getLabelText() const { return mLabel; }
         void setLabelText(const std::string& label);
         void setIcon(const std::string& name);
+        // A key, asked before the widget's own (Space / Return): true when it was taken (the arrow keys of a list
+        // made of rows). It must not delete the widget then and there (later() it).
+        void setKeyCallback(std::function<bool(KEY, MASK)> cb) { mOnKey = std::move(cb); }
 
     protected:
         explicit PsCtrl(const Params& p);
@@ -143,6 +146,9 @@ namespace plus::psui
         LLWString   mLabelW;
         bool mHover = false;
         bool mPressed = false;
+
+    private:
+        std::function<bool(KEY, MASK)> mOnKey;
     };
 
     // ---- boxes ---------------------------------------------------------------------------

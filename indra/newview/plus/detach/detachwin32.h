@@ -103,6 +103,15 @@ namespace plus::detach
         // screen): every few seconds at most.
         std::string describe() const;
 
+        // The windows' corners are round, as the floater's background drawn
+        // in them. Windows 11 and later: DWM rounds them (anti-aliased, with
+        // its own radius; no border of its own, the floater has one). Before:
+        // each window's shape is cut to a rounded region of this radius, the
+        // floaters' corner radius in pixels at the UI's scale, kept through
+        // every resize (and the corners' outside no longer takes the mouse).
+        // Main thread; nothing when unchanged (cheap: call it every idle).
+        static void setCornerRadius(S32 pixels);
+
         // Sets the <plus> hooks of llwindowwin32.cpp (which windows are these,
         // where the IME's windows go). Once, before the main window exists.
         static void installHooks();
