@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Charis Viewer（カリス ビューワ）</title>
-<meta name="description" content="Second Life 向けの非公式ビューワ。描画を Vulkan に置き換えて、重い場所でも滑らかに。">
+<meta name="description" content="Second Life 向けの非公式ビューワ。混んだ場所でもテクスチャが早く揃い、撮影ツールも充実。">
 <link rel="icon" href="logo.png">
 <style>
 :root{--bg:#0f1626;--panel:#18223a;--text:#e8edf7;--sub:#9fb0cc;--accent:#4a9eff}
@@ -32,7 +32,7 @@ a{color:var(--accent)}
 <header>
   <img src="logo.png" alt="Charis Viewer">
   <h1>Charis Viewer</h1>
-  <p class="lead">Second Life 向けの非公式ビューワ。描画を Vulkan にして、重い場所でも滑らかに。</p>
+  <p class="lead">Second Life 向けの非公式ビューワ。混んだイベントでも画面が灰色になりにくく、写真も撮りやすい。</p>
   <a class="btn sub" href="https://github.com/noriaji/charis-viewer">GitHub</a>
 </header>
 
@@ -45,12 +45,12 @@ a{color:var(--accent)}
 
 <h2>特長</h2>
 <div class="grid">
-  <div class="card"><b>Vulkan 描画</b><span>公式の OpenGL の代わりに Vulkan で描画。混んだ場所・描画距離が長い場所で、公式より滑らかです。</span></div>
-  <div class="card"><b>画面内を最優先で読み込み</b><span>ビデオメモリが足りなくても、見えている物から先に読み込み。画面内が灰色のまま残りにくくなります。</span></div>
-  <div class="card"><b>テクスチャの省メモリ</b><span>GPU 圧縮（BC7）と自作の高速 JPEG2000 デコーダで、メモリと待ち時間を減らします。</span></div>
+  <div class="card"><b>画面に見えている物から読み込み</b><span>ビデオメモリが足りない混んだ場所でも、近くの物 → 画面内 → 画面の外の順。見えている所が灰色のまま残りにくくなります。</span></div>
+  <div class="card"><b>混んだ場所で重くなりにくい</b><span>影・反射・半透明の描画を見直し、人の多いイベントや描画距離の長い場所でも滑らかに動きます。</span></div>
+  <div class="card"><b>テクスチャの省メモリ</b><span>GPU 圧縮（BC7）で、ビデオメモリの使用量を約 4 分の 1 に。ぼやけやメモリあふれを防ぎます。</span></div>
   <div class="card"><b>撮影ツール</b><span>光芒・影・空と水面の調整など、写真を撮るための機能をまとめています。</span></div>
-  <div class="card"><b>起動・テレポートが速い</b><span>変換済みシェーダーを保存し、到着後は近くの物から読み込みます。</span></div>
-  <div class="card"><b>公式に追従</b><span>グラフィック以外は公式の更新を取り込む方針です。</span></div>
+  <div class="card"><b>起動・テレポートが速い</b><span>2 回目以降の起動を短縮。到着後は近くの物から先に読み込みます。</span></div>
+  <div class="card"><b>複数起動でも快適</b><span>2 つ以上同時に動かしても、操作中の方を優先。キャッシュや設定も壊れにくくしています。</span></div>
 </div>
 
 <h2>動作環境</h2>
