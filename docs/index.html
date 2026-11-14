@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Charis Viewer（カリス ビューワ）</title>
-<meta name="description" content="Second Life 向けの非公式ビューワ。混んだ場所でもテクスチャが早く揃い、撮影ツールも充実。">
+<meta name="description" content="Second Life 向けの非公式ビューワ。写真・動画撮影とポーズ作りに強い、多機能な撮影ツール付き。">
 <link rel="icon" href="logo.png">
 <style>
 :root{--bg:#0f1626;--panel:#18223a;--text:#e8edf7;--sub:#9fb0cc;--accent:#4a9eff}
@@ -32,26 +32,32 @@ a{color:var(--accent)}
 <header>
   <img src="logo.png" alt="Charis Viewer">
   <h1>Charis Viewer</h1>
-  <p class="lead">Second Life 向けの非公式ビューワ。混んだイベントでも画面が灰色になりにくく、写真も撮りやすい。</p>
+  <p class="lead">Second Life 向けの非公式ビューワ。写真・動画撮影とポーズ作りに強い。</p>
   <a class="btn sub" href="https://github.com/noriaji/charis-viewer">GitHub</a>
 </header>
 
 <h2 id="download">ダウンロード（最新版 0.1.0 alpha2）</h2>
 <div class="grid">
-  <div class="card"><b>インストーラー（おすすめ）</b><span>ダブルクリックで入れるだけ。更新の確認にも対応します。（約 372 MB）</span><br><a class="btn" href="https://github.com/noriaji/charis-viewer/releases/download/v0.1.0-alpha2/CharisViewer-0.1.0-alpha2-win64-Setup.exe">Setup.exe をダウンロード</a></div>
+  <div class="card"><b>インストーラー（おすすめ）</b><span>ダブルクリックで入れるだけ。新しい版が出ると知らせます。（約 372 MB）</span><br><a class="btn" href="https://github.com/noriaji/charis-viewer/releases/download/v0.1.0-alpha2/CharisViewer-0.1.0-alpha2-win64-Setup.exe">Setup.exe をダウンロード</a></div>
   <div class="card"><b>ZIP 版</b><span>展開して好きな場所に置くだけ。インストールしたくない人向けです。（約 356 MB）</span><br><a class="btn sub" href="https://github.com/noriaji/charis-viewer/releases/download/v0.1.0-alpha2/CharisViewer-0.1.0-alpha2-win64.zip">ZIP をダウンロード</a></div>
 </div>
-<p style="text-align:center;color:var(--sub);font-size:.9rem">過去の版や確認用ファイルは <a href="https://github.com/noriaji/charis-viewer/releases">リリース一覧</a> にあります。</p>
+<p style="text-align:center;color:var(--sub);font-size:.9rem">alpha1 をお使いの方は、alpha2 のインストーラーを 1 回だけ手で入れてください（alpha1 からは自動で更新されません）。<br>過去の版や確認用ファイルは <a href="https://github.com/noriaji/charis-viewer/releases">リリース一覧</a> にあります。</p>
 
 <h2>特長</h2>
 <div class="grid">
-  <div class="card"><b>画面に見えている物から読み込み</b><span>ビデオメモリが足りない混んだ場所でも、近くの物 → 画面内 → 画面の外の順。見えている所が灰色のまま残りにくくなります。</span></div>
-  <div class="card"><b>混んだ場所で重くなりにくい</b><span>影・反射・半透明の描画を見直し、人の多いイベントや描画距離の長い場所でも滑らかに動きます。</span></div>
-  <div class="card"><b>テクスチャの省メモリ</b><span>GPU 圧縮（BC7）で、ビデオメモリの使用量を約 4 分の 1 に。ぼやけやメモリあふれを防ぎます。</span></div>
-  <div class="card"><b>撮影ツール</b><span>光芒・影・空と水面の調整など、写真を撮るための機能をまとめています。</span></div>
-  <div class="card"><b>起動・テレポートが速い</b><span>2 回目以降の起動を短縮。到着後は近くの物から先に読み込みます。</span></div>
-  <div class="card"><b>複数起動でも快適</b><span>2 つ以上同時に動かしても、操作中の方を優先。キャッシュや設定も壊れにくくしています。</span></div>
+  <div class="card"><b>① 多機能な撮影ツール</b><span>画質・空と水・光と色・カメラ・アバターの設定を、検索・お気に入り・「比べる」・プリセット付きで 1 か所に。ピント固定、構図ガイド、光芒やグレア、世界を止めて何度も試す、2K〜8K で撮る、といった写真づくりの道具がそろっています。</span></div>
+  <div class="card"><b>② 動画撮影に便利なツール</b><span>ドリー・ズーム・回り込みを自動で撮るカメラワーク、複数の点を滑らかに巡る演出（手振れ・タイムライン・連番撮影）、WASD とマウスで飛ぶフライカム、カメラ位置の記憶や傾きにも対応。</span></div>
+  <div class="card"><b>③ MCP 対応</b><span>AI アシスタントから、ポーザーの操作や撮影ツールの設定、インベントリ検索ができます。既定はオフ。自分の PC の中から、合言葉付きでだけ受け付けます。</span></div>
+  <div class="card"><b>④ 直感的に作れるポーザー</b><span>関節を直接つかんで動かす IK ドラッグで、アバターのポーズを自分の画面の中で作れます。手の形は「簡単」タブのスライダーで。保存・読み込み、BVH への書き出しにも対応。</span></div>
 </div>
+
+<h2>そのほか</h2>
+<ul>
+  <li>混んだ場所でも、見えている物から先に読み込み（画面内が灰色のまま残りにくい）</li>
+  <li>テクスチャの GPU 圧縮（BC7）で、ビデオメモリを約 4 分の 1 に</li>
+  <li>2 回目以降の起動が速い。テレポート後は近くの物から読み込み</li>
+  <li>グラフィック以外は、公式ビューワの更新を取り込む方針</li>
+</ul>
 
 <h2>動作環境</h2>
 <ul>
