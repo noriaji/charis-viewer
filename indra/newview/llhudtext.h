@@ -125,6 +125,7 @@ public:
     static void renderAllHUD();
     static void reshape();
     static void setDisplayText(bool flag) { sDisplayText = flag ; }
+    static bool getDisplayText() { return sDisplayText; }    // <plus> plus/uiscope: what to put back after hiding the tags </plus>
 
 protected:
     LLHUDText(const U8 type);

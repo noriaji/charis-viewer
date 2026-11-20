@@ -281,11 +281,22 @@ public:
     // as the given type.
     U32 loadFromFileLegacy(const std::string& filename, bool require_declaration = true, eControlType declare_as = TYPE_STRING);
     U32 saveToFile(const std::string& filename, bool nondefault_only);
+    // <plus> research/337 (E): saveToFile() written to a temporary file and moved over filename, as saveToFile() does,
+    // but when no temporary file can be made or the move is refused each time, filename is left as it was and 0 is
+    // returned (saveToFile() writes it in place then, as the quit always did). For plus::saveSettingsFile().
+    U32 saveToFileReplacing(const std::string& filename, bool nondefault_only);
+    // </plus>
     U32 loadFromFile(const std::string& filename, bool default_values = false, bool save_values = true, bool error_when_no_comment = true);
     void    resetToDefaults();
     void    incrCount(std::string_view name);
 
     bool    mSettingsProfile;
+
+    // <plus> research/337 (E): saveToFile()'s work; what to do when the file cannot be replaced
+private:
+    enum class PlusWhenRefused { write_in_place, keep_old };
+    U32 plusSaveToFile(const std::string& filename, bool nondefault_only, PlusWhenRefused when_refused);
+    // </plus>
 };
 
 

@@ -99,6 +99,17 @@ public:
     void startReset(const LLVector3d& target_position, const LLQuaternion& target_rotation, F32 duration);
     bool isResetting() const { return mResetTimeRemaining > 0.0f; }
 
+    // <plus> plus/flycamsens (flycam-level, the 0 key): turns the flycam level in place over 'duration' seconds,
+    // starting from 'from' (the attitude the picture shows, a tilt on top folded in) with startReset(): the forward
+    // axis stays and the up axis goes into the plane of it and the world's up, so only the roll goes. Also without
+    // "Allow Roll" (a 3D mouse rolls the flycam without it). Looking straight up or down (no horizon to level to) the
+    // flycam only takes 'from', a reset in progress ends there, and it returns false.
+    bool startLevel(const LLQuaternion& from, F32 duration);
+    // A reset in progress ends where it is: a flycam that goes on again starts from the camera
+    // (LLAgentCamera::toggleFlycam()), not from the target of a reset it was left in.
+    void cancelReset() { mResetTimeRemaining = 0.0f; }
+    // </plus>
+
     void integrate(F32 delta_time);
 
     // Applies one frame of already-tuned deltas directly to the transform,

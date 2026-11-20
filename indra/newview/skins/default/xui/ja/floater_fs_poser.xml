@@ -206,6 +206,56 @@
 	<string name="hand_preset_name_Rock">ロック</string>
 	<string name="hand_preset_name_Gun">銃の形</string>
 	<!-- /plus -->
+	<!-- plus: other people's avatars with their consent (research/336) -->
+	<string name="hand_save_not_others">手のプリセットは、自分のアバターか自分のアニメッシュからだけ保存できます。他の人からは保存できません。</string>
+	<string name="other_status_ask">未依頼</string>
+	<string name="other_status_pending">返事待ち</string>
+	<string name="other_status_accepted">許可済み</string>
+	<string name="other_status_refused">拒否</string>
+	<string name="other_status_no_answer">返事なし</string>
+	<string name="consent_ask">ポーズを依頼</string>
+	<string name="consent_ask_tip">この人に、アバターにポーズを付けてよいか尋ねます。相手に依頼が届き、許可されるまでは何も動きません。</string>
+	<string name="consent_cancel">依頼を取り消す</string>
+	<string name="consent_cancel_tip">この人に送った依頼を取り消します。</string>
+	<string name="consent_end">終了</string>
+	<string name="consent_end_tip">この人のアバターを元の姿勢に戻し、許可を終わらせます。もう一度ポーズを付けるには、改めて依頼してください。</string>
+	<string name="consent_block_not_in_view">相手が見えません</string>
+	<string name="consent_block_not_in_view_tip">相手が描画距離の外にいるか、いま離れたところです。依頼の取り消しや許可の終了はできます。</string>
+	<string name="consent_block_muted">ミュート中の相手です</string>
+	<string name="consent_block_muted_tip">ミュートしている相手には依頼できません。依頼するにはミュートを解除してください。</string>
+	<string name="consent_block_far">遠すぎます（50 m 超）</string>
+	<string name="consent_block_far_tip">依頼もポーズも、50 m 以内で同じリージョンにいる相手だけです。</string>
+	<string name="consent_block_cooldown">10 分たつまで依頼できません</string>
+	<string name="consent_block_cooldown_tip">断られた相手や返事がなかった相手には、10 分間は依頼し直せません。</string>
+	<string name="consent_block_bridge">ブリッジが未接続です</string>
+	<string name="consent_block_bridge_tip">依頼は、身に着ける Charis ブリッジを通して送ります。ブリッジがオフか、まだつながっていないか、装着の枠の空きを待っています（何か外すと着けます）。</string>
+	<string name="consent_block_bridge_failed">ブリッジを作れませんでした</string>
+	<string name="consent_block_bridge_failed_tip">ポーズ用ブリッジを作れませんでした（自動ではもう試しません）。環境設定 &gt; プライバシーでオフ→オンにすると、もう一度試して理由を表示します。</string>
+	<string name="consent_block_leaving">ログアウト中です</string>
+	<string name="consent_block_leaving_tip">ログアウトの間は依頼を送りません。</string>
+	<string name="consent_block_busy">今は依頼できません</string>
+	<string name="consent_block_busy_tip">同時に出せる依頼と許可の数（64）に達しています。どれかを終えてから依頼してください。</string>
+	<string name="consent_someone">相手</string>
+	<!-- the reflect button and the line under it (research/374b) -->
+	<string name="reflect_ask">反映</string>
+	<string name="reflect_ask_tip">あなたが付けたポーズを、このフレンド自身の画面にも出してよいか尋ねます。許可された場合、相手の近くの Charis ビューワにも見せてよいかは相手が選びます（相手が自分のポーズを共有している時だけ）。相手に依頼が届き、許可されるまで相手側は何も変わりません。フレンドだけです。</string>
+	<string name="reflect_pending">返事待ち</string>
+	<string name="reflect_pending_tip">この人に送った依頼を取り消します。</string>
+	<string name="reflect_on">反映中</string>
+	<string name="reflect_on_tip">あなたが付けたポーズが、この人自身の画面にも出ています。押すと止めます。相手が自分でポーザーを使っている間は、相手の操作が優先され、あなたのポーズは出ません。</string>
+	<string name="own_screen_text_only">自分の画面だけに見えます</string>
+	<string name="own_screen_text_reflect">相手の画面にも出せます</string>
+	<string name="own_screen_tip_only">他の人に付けたポーズは、自分の画面にだけ見えます（相手が「反映」を許可した場合を除く）。相手にも周りの人にも、相手のアバターはいつもどおりに見えます。保存もアップロードもされず、終了した時・ポーザーを閉じた時・相手が離れた時や許可を取り下げた時に元に戻ります。</string>
+	<string name="own_screen_tip_reflect">相手は、あなたのポーズを相手自身の画面にも出すことを許可しています。出るのは、相手が自分でポーズ中でなく、近くにいて、ほかの人がこの方法で相手をポーズしていない間だけです。相手の近くの Charis ビューワにも見えるかは相手の選択です（相手が共有をオンにしている時だけ）。あなたが終了した時・相手が取り下げた時・フレンドでなくなった時・相手が離れた時・あなたがテレポした時に終わります。</string>
+	<string name="reflect_cooldown_tip">相手が少し前に断ったか、返事がありませんでした。しばらくたてば、もう一度依頼できます。</string>
+	<string name="reflect_friends_tip">反映はフレンドの間だけ使えます（フレンドでなくなると終わります）。</string>
+	<string name="reflect_cannot_tip">今は依頼できません。相手が遠い（50 m 超）かミュート中、ポーズ用ブリッジが未接続、または同時の依頼が多すぎます。</string>
+	<!-- pose sharing (research/374) -->
+	<string name="other_status_sharing">共有中</string>
+	<string name="share_label_off">ポーズの共有：オフ</string>
+	<string name="share_label_friends">ポーズの共有：フレンド</string>
+	<string name="share_label_everyone">ポーズの共有：全員</string>
+	<!-- /plus -->
 
 	<!-- The layout is a vertical stack of 3 rows, and each row a horizontal stack of panels -->
 	<layout_stack name="poser_stack">
@@ -307,10 +357,17 @@
 							<scroll_list.columns label="ポーズをとる人を選択…" name="name"/>
 							<scroll_list.columns label="ＵＵＩＤ" name="uuid"/>
 							<scroll_list.columns label="保存ファイル名" name="saveFileName"/>
+							<!-- plus research/336 --><scroll_list.columns label="許可" name="status"/><!-- /plus -->
 						</scroll_list>
 						<button name="refresh_avatars" tool_tip="アバターとアニメッシュのリストを更新します。"/>
 						<button label="ポージング開始" label_selected="ポージング停止" tool_tip="許可されている場合は、選択したアバターまたはアニメッシュのポーズを開始します。" name="start_stop_posing_button"/>
 						<button label="Ｔポーズにセット" name="set_t_pose_button" tool_tip="ダブルクリックすると、選択したアバターが「Ｔポーズ」に設定されます。"/>
+						<!-- plus research/336 -->
+						<button label="ポーズを依頼" name="consent_button"/>
+						<button label="反映" name="reflect_button"/>
+						<button label="ポーズの共有：オフ" name="share_button" tool_tip="ポーザーで自分のアバターにポーズを付けている間、そのポーズを近く（100 m）の Charis ビューワの画面にも見せます。クリックすると、誰に見せるか、誰の共有ポーズを見るかを選べます。ポーズ用ブリッジを通して送ります。選ぶまではオフです。"/>
+						<text name="own_screen_only_text" tool_tip="他の人に付けたポーズは、自分の画面にだけ見えます（相手が「反映」を許可した場合を除く）。相手にも周りの人にも、相手のアバターはいつもどおりに見えます。保存もアップロードもされず、終了した時・ポーザーを閉じた時・相手が離れた時や許可を取り下げた時に元に戻ります。">自分の画面だけに見えます</text>
+						<!-- /plus -->
 					</panel>
 					<panel title="設定" name="settings_panel">
 						<scroll_container name="settings_scroll">
@@ -408,6 +465,7 @@
 		</layout_panel>
 		<layout_panel name="button_controls_layout">
 			<panel name="button_controls_panel">
+				<!-- plus --><button name="plus_motion_between_poses" tool_tip="ポーズ間モーション生成: 自分のアバターの 2 つのポーズの間の短い動き（0.6〜1.9 秒）を作り、その場で再生して BVH のアニメーションとして保存します"/><!-- /plus -->
 				<button name="FlipPose_avatar" tool_tip="ポーズ全体を左右反転します。"/>
 				<button name="FlipJoint_avatar" tool_tip="選択した身体部位を左右に反転します。"/>
 				<button label="再取得" name="button_RecaptureParts" tool_tip="選択した身体部位がオフになっている場合、これにより、その身体部位に現在行っている動作が再現されます。"/>

@@ -182,6 +182,7 @@
 #include "lltoolmgr.h"
 #include "lltpfaillog.h"
 #include "llrhi.h"
+#include <cmath>     // <plus> research/371 (std::isfinite) </plus>
 #include "llassetstorage.h"
 #include "llpolymesh.h"
 #include "llproxy.h"
@@ -291,10 +292,12 @@ using namespace LL;
 #include "plus/release/release.h"
 #include "plus/shaderbake/shaderbake.h"
 #include "plus/idlecheap/idlecensus.h"
+#include "plus/attachdiag/attachdiag.h"
 #include "plus/plus.h"
 #include "plus/rlv/rlvhooks.h"
 #include "plus/fastexit/exittime.h"
 #include "plus/fastexit/exitwatch.h" // exit-hang (research/292)
+#include "plus/multiinstance/multiinstance.h" // research/337: Charis viewers on one GPU make room for the one in front
 // </plus>
 
 #ifdef LL_DISCORD
@@ -1026,8 +1029,33 @@ bool LLAppViewer::init()
     // Initialize the window
     //
     gGLActive = true;
+    // <plus> research/371 (vram-core): the VRAM to pretend, read before the window makes the Vulkan device (a restart applies it)
+    if (gSavedSettings.getBOOL("FSOverrideVRAMDetection"))
+    {
+        const F32 forced_gb = gSavedSettings.getF32("FSForcedVideoMemory");
+        constexpr F32 MIN_GB = 0.5f, MAX_GB = 256.f;    // as llvkgl_glquery's vram_override_mb (512 MB to 256 GB)
+        if (std::isfinite(forced_gb) && forced_gb >= MIN_GB && forced_gb <= MAX_GB)
+        {
+            LLRHI::sVRAMOverrideMB = (U32)(forced_gb * 1024.f);
+            LL_INFOS("AppInit") << "Overriding VRAM to " << LLRHI::sVRAMOverrideMB << " MB (FSOverrideVRAMDetection, FSForcedVideoMemory "
+                                << forced_gb << " GB)" << LL_ENDL;
+        }
+        else
+        {
+            LL_WARNS("AppInit") << "FSForcedVideoMemory " << forced_gb << " GB is outside " << MIN_GB << " to " << MAX_GB
+                                << " GB: VRAM not overridden" << LL_ENDL;
+        }
+    }
+    // </plus>
     initWindow();
     LL_INFOS("InitInfo") << "Window is initialized." << LL_ENDL ;
+
+    // <plus> research/337 (plus/multiinstance): the registry of this user's Charis viewers (the GPU and the cache are known now)
+    if (!gGPUBenchmarkMode)
+    {
+        plus::multiinstance::init();
+    }
+    // </plus>
 
     // writeSystemInfo can be called after window is initialized (gViewerWindow non-null)
     writeSystemInfo();
@@ -1656,7 +1684,9 @@ bool LLAppViewer::doFrame()
             pauseMainloopTimeout();
         }
 
-        // <plus> frame rate limit (plus/fpslimit): the frame ends when 1/PlusFpsLimit seconds have passed
+        // <plus> frame rate limit (plus/fpslimit): the frame ends when 1/PlusFpsLimit seconds have passed; research/337
+        // (plus/multiinstance): first the registry of Charis viewers once a second, whose cap the limit takes while another is in front
+        plus::multiinstance::update();
         plus::fpslimit::wait();
         // </plus>
 
@@ -1854,6 +1884,7 @@ bool LLAppViewer::cleanup()
     plus::exittime::begin("cleanup: start"); // <plus> exit-measure (research/276): an exit that came by no quit request starts its clock here </plus>
     plus::exitwatch::prepare(); // <plus> exit-hang (research/292): read the watchdog setting before gSavedSettings is emptied </plus>
     plus::rlv::cleanup(); // <plus> rlv: let go of the observers and signals while the singletons they use are alive (plus/rlv) </plus>
+    plus::multiinstance::shutdown(); // <plus> research/337: the priority as it was, the registry slot given back (plus/multiinstance) </plus>
 
 #if LL_VELOPACK
     // Apply any pending Velopack update before shutdown
@@ -3277,7 +3308,7 @@ bool LLAppViewer::initConfiguration()
     //
     // Set the name of the window
     //
-    // <plus> name and version ("Charis Viewer 0.1.0 alpha 1 (rev N) based on Second Life Release 26.5.0")
+    // <plus> name and version ("Charis Viewer 0.1.0 alpha 1 (rev N)")
     gWindowTitle = plus::version::displayVersion(LLTrans::getString("APP_NAME"));
     // </plus>
 #if LL_DEBUG
@@ -3806,10 +3837,8 @@ LLSD LLAppViewer::getViewerInfo() const
                                          versionInfo.getPatch(), stringize(versionInfo.getBuild()));
     info["VIEWER_VERSION_STR"] = versionInfo.getVersion();
     info["CHANNEL"] = versionInfo.getChannel();
-    // <plus> the shown version ("Charis Viewer 0.1.0 alpha 1 (rev N) based on
-    // Second Life Release 26.5.0", AboutHeader) and the official one it is based on
+    // <plus> the shown version ("Charis Viewer 0.1.0 alpha 1 (rev N)", AboutHeader); the official version it is based on is not given out here
     info["CHARIS_VERSION"] = plus::version::displayVersion();
-    info["BASE_VERSION"] = plus::version::baseVersion();
     // </plus>
     info["ADDRESS_SIZE"] = ADDRESS_SIZE;
 #if LL_ARM64
@@ -3926,7 +3955,7 @@ LLSD LLAppViewer::getViewerInfo() const
     info["NET_BANDWITH"] = LLViewerThrottle::getMaxBandwidthKbps();
     info["LOD_FACTOR"] = gSavedSettings.getF32("RenderVolumeLODFactor");
     info["RENDER_QUALITY"] = (F32)gSavedSettings.getU32("RenderQualityPerformance");
-    info["TEXTURE_MEMORY"] = LLSD::Integer(gGLManager.mVRAM);
+    info["TEXTURE_MEMORY"] = LLSD::Integer(gGLManager.getReportedVRAM());     // <plus> research/371: the detected, not a test override </plus>
 
 #if LL_DARWIN || LL_SDL_WINDOW
     info["HIDPI"] = gHiDPISupport;
@@ -4195,9 +4224,6 @@ void LLAppViewer::writeSystemInfo()
     gDebugInfo["ClientInfo"]["PatchVersion"] = LLVersionInfo::instance().getPatch();
     gDebugInfo["ClientInfo"]["BuildVersion"] = std::to_string(LLVersionInfo::instance().getBuild());
     gDebugInfo["ClientInfo"]["AddressSize"] = LLVersionInfo::instance().getAddressSize();
-    // <plus> the version numbers above are Charis numbers; the official one it is based on
-    gDebugInfo["ClientInfo"]["BaseVersion"] = plus::version::baseVersion();
-    // </plus>
 
     gDebugInfo["CAFilename"] = gDirUtilp->getCAFile();
 
@@ -5674,6 +5700,7 @@ void LLAppViewer::idle()
             S32 pixel_x = llclamp(cursor_pos.mX, 0, rect_width);
             S32 pixel_y = llclamp(rect_height - cursor_pos.mY, 0, rect_height);
             LLGameControl::setMouseCursorPosition(pixel_x, pixel_y, rect_width, rect_height);
+            LLGameControl::setMouseCursorButtons(gViewerWindow->getLeftMouseDown(), gViewerWindow->getRightMouseDown());
         }
 
         if (LLPanelPreferenceGameControl::isWaitingForInputChannel())
@@ -5893,6 +5920,7 @@ void LLAppViewer::idle()
     plus_census.stop();
     plus::idlecensus::endFrame();
     // </plus>
+    plus::attachdiag::endFrame(); // <plus> research/355 attach-diag (LLRHI_ATTACH_DIAG=1; off: a flag test) </plus>
 
     //////////////////////////////////////
     //

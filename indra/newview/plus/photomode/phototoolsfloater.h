@@ -33,8 +33,8 @@ namespace plus::photomode
     // widgets the window uses (the sky list, the Compare button) register themselves.
     void registerFloater();
 
-    // The photo tools window is open and in use: shown and not minimized (in its detached window too). Part
-    // of inPhotoMode, which is what features ask.
+    // The photo tools window is open and in use: shown and not minimized (in its detached window too), or hidden only
+    // as part of a group by plus/uiscope (the camera path's hidden UI). Part of inPhotoMode, which is what features ask.
     bool photoToolsShown();
 
     // The photo mode: the photo screen is on, or the photo tools are shown (photoToolsShown). The photo tools

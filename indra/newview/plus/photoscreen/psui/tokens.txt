@@ -101,12 +101,15 @@ SLIDER_LABEL_WIDTH s32    124
 SLIDER_GAP         s32    12             # label - track - value box
 SLIDER_TRACK       f32    4
 SLIDER_KNOB        f32    16
-SLIDER_KNOB_PRESSED f32   18
+SLIDER_KNOB_PRESSED f32   18             # the XUI slider's knob while dragging. Not used by RmlUi (the knob's travel is track - knob, so a bigger knob makes it shift): there only KNOB_*_PRESSED
 SLIDER_FILL_LEFT   color  #7d879e
 SLIDER_FILL_RIGHT  color  #b3bccf
 SLIDER_EMPTY       color  #363e4d
 KNOB_TOP           color  #d0daf0
 KNOB_BOTTOM        color  #aab6d0
+KNOB_TOP_PRESSED   color  #ffffff            # RmlUi's slider: the knob keeps its size while pressed (its travel is track - knob), only the colour changes
+KNOB_BOTTOM_PRESSED color #d3dcf0
+SLIDER_TRACK_TOP   f32    6              # RmlUi's slider: (SLIDER_KNOB - SLIDER_TRACK) / 2, the track's and the fill's offset from the top
 SLIDER_TICK        color  =CHECK_BORDER_HOVER
 VALUE_WIDTH        s32    62
 VALUE_HEIGHT       s32    26
@@ -232,6 +235,12 @@ ADD_FILL           color  #0b121e
 ADD_BORDER         color  #242b36
 ADD_ICON           s32    31
 
+[18b. words-only cards (the preset strip's; not in the picture, in its style)]
+PRESET_COMPACT_PAD s32    8              # the words' margin in the card; the "x" from the card's corner
+PRESET_COMPACT_GAP s32    2              # between the name and the "x" on its line
+ADD_COMPACT_ICON_X s32    14             # the low "+" card: the icon's left margin
+ADD_COMPACT_GAP    s32    6              # ... and the gap between the icon and the words
+
 [19. list rows (the sky and water lists of the scene tab; not in the picture, in its style)]
 LIST_ROW_HEIGHT    s32    30
 LIST_ROW_PAD       s32    10             # left of the text, right of the star
@@ -326,6 +335,23 @@ SHORTCUT_EDGE      s32    6              # the window's left edge to the first b
 SHORTCUT_FILL      color  =CHIP_FILL     # a button over the world: the world button's translucent navy
 SHORTCUT_ON_LEFT   color  =SEG_ON_LEFT/0.9   # a menu item that is on (a check mark in the menu): blue, as the chosen segment
 SHORTCUT_ON_RIGHT  color  =SEG_ON_RIGHT/0.9
+
+[29. the timeline strip (research/357, plus/posermotion/motiontimelineview.cpp: the band of the keys and segments in the motion window; not in the picture, in its style)]
+TL_RADIUS          f32    7
+TL_FILL            color  =CHIP_FILL/1   # the strip's ground (the chip's, opaque: it sits on a panel, not over the world)
+TL_BORDER          color  #2a3446
+TL_RULER           color  =TEXT_DIM/0.45  # the ruler's line
+TL_TICK            color  =TEXT_DIM/0.7   # the ruler's marks
+TL_HOLD            color  =TEXT_DIM/0.35  # a hold's bar
+TL_SCROLL          color  =TEXT_DIM/0.5   # the scroll mark under the strip
+TL_SMOOTH          color  #6594c6        # a Smooth segment (ACCENT and TEXT_DIM half and half); a Generate one is ACCENT
+TL_LINEAR          color  #606972        # a Linear segment (TEXT_DIM towards GROUND)
+TL_FAIL            color  =HIST_R/1      # a failed segment, a length refused (the histogram's red, opaque)
+TL_SEG_RADIUS      f32    5
+TL_HOLD_RADIUS     f32    3
+TL_HANDLE_RADIUS   f32    3              # the playhead's handle on the ruler
+TL_LABEL_PAD       f32    6
+TL_DOT_RADIUS      f32    3.5            # the "regenerating is advised" dot
 
 [fonts (the official sizes nearest to the picture's: research/221 "文字")]
 FONT_TITLE         font   Huge           # headings of the left panel (20 px)

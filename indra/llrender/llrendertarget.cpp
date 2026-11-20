@@ -88,6 +88,7 @@ static void clear_buffers(GLbitfield mask)
 // </plus>
 
 bool LLRenderTarget::sUseFBO = false;
+U32 LLRenderTarget::sPaddedDrawBuffers = 0; // <plus> tu-motion-v1 </plus>
 U32 LLRenderTarget::sCurFBO = 0;
 
 
@@ -247,12 +248,14 @@ bool LLRenderTarget::addColorAttachment(U32 color_fmt)
 
     U32 offset = static_cast<U32>(mTex.size());
 
-    if( offset >= 4 )
+    // <plus> tu-motion-v1 (research/373): a fifth, the G-buffer's motion vectors (was: offset >= 4, offset < 4)
+    if( offset >= MAX_COLOR_ATTACHMENTS )
     {
         LL_WARNS() << "Too many color attachments" << LL_ENDL;
-        llassert( offset < 4 );
+        llassert( offset < MAX_COLOR_ATTACHMENTS );
         return false;
     }
+    // </plus>
     if( offset > 0 && (mFBO == 0) )
     {
         llassert(  mFBO != 0 );
@@ -460,6 +463,7 @@ void LLRenderTarget::release()
 
     mTex.clear();
     mInternalFormat.clear();
+    mPadDrawBuffers = false; // <plus> tu-motion-v1 </plus>
 
     mResX = mResY = 0;
 }
@@ -470,10 +474,19 @@ void LLRenderTarget::bindTarget()
     llassert(mFBO);
     llassert(!isBoundInStack());
 
+    // <plus> tu-motion-v1 (research/373): a G-buffer's draw buffers padded while its programs write more (sPaddedDrawBuffers)
+    U32 draw_count = static_cast<U32>(mTex.size());
+    if (mPadDrawBuffers && draw_count && sPaddedDrawBuffers > draw_count)
+    {
+        draw_count = llmin(sPaddedDrawBuffers, MAX_COLOR_ATTACHMENTS);
+    }
+    // </plus>
     // <plus> research/156 N12c (LLRHI_BIND_TARGET=1): the framebuffer, its buffers and the viewport in one call
     if (LLRHI::sBindTarget)
     {
-        LLRHI::sBindTarget(mFBO, static_cast<U32>(mTex.size()), 0, 0, mResX, mResY);
+        // tu-motion-v1: draw_count (was: mTex.size()). The backend takes GL_COLOR_ATTACHMENT0.. up to it; a name with
+        // nothing attached is an empty slot, as GL_NONE
+        LLRHI::sBindTarget(mFBO, draw_count, 0, 0, mResX, mResY);
         sCurFBO = mFBO;
     }
     else
@@ -486,7 +499,11 @@ void LLRenderTarget::bindTarget()
     GLenum drawbuffers[] = {GL_COLOR_ATTACHMENT0,
                             GL_COLOR_ATTACHMENT1,
                             GL_COLOR_ATTACHMENT2,
-                            GL_COLOR_ATTACHMENT3};
+                            // <plus> tu-motion-v1: up to MAX_COLOR_ATTACHMENTS (was: GL_COLOR_ATTACHMENT3 the last)
+                            GL_COLOR_ATTACHMENT3,
+                            GL_COLOR_ATTACHMENT4};
+    static_assert(sizeof(drawbuffers) / sizeof(drawbuffers[0]) == MAX_COLOR_ATTACHMENTS, "a draw buffer per colour attachment");
+    // </plus>
 
     if (mTex.empty())
     { //no color buffer to draw to
@@ -495,7 +512,13 @@ void LLRenderTarget::bindTarget()
     }
     else
     {
-        draw_buffers(static_cast<GLsizei>(mTex.size()), drawbuffers);
+        // <plus> tu-motion-v1: the padded ones GL_NONE (was: draw_buffers(mTex.size(), drawbuffers))
+        for (U32 i = static_cast<U32>(mTex.size()); i < draw_count; ++i)
+        {
+            drawbuffers[i] = GL_NONE;
+        }
+        draw_buffers(static_cast<GLsizei>(draw_count), drawbuffers);
+        // </plus>
         read_buffer(GL_COLOR_ATTACHMENT0);
     }
     check_framebuffer_status();

@@ -47,7 +47,9 @@
 // in its settings_per_account.xml, which it reads at its next login.
 //
 // Files (account files, transcripts, poses, environments, ...): copied only
-// where we have no file of that name (not toolbars.xml: our toolbars stay). Ours are never replaced. The accounts'
+// where we have no file of that name (not toolbars.xml: our toolbars stay). Ours are never replaced, but for
+// one: an account's contact sets (settings_friends_groups.xml, plus/contactsets) with nothing in them give way
+// to the source's (ours kept as settings_friends_groups_before_import_<date>.xml; importContactSets()). The accounts'
 // own files at once; the chat logs and user_settings' folders (thousands of
 // files, for some) a few each frame, up to MAX_TOTAL_FILES / MAX_TOTAL_BYTES.
 // Graphics presets only with the graphics: they are the source's renderer's.
@@ -67,6 +69,7 @@
 
 #include "importsettings.h"
 #include "plus.h"
+#include "contactsets/contactsets.h"
 #include "photomode/photokeys.h"
 #include "presets/presets.h"
 
@@ -129,6 +132,12 @@ namespace
         "LastRunVersion", "LastFeatureVersion", "LastUIFeatureVersion", "LastGPUClass", "LastGPUString",
         "FirstRunThisInstall", "FirstLoginThisInstall", "VersionChannelName", "CrashSubmitBehavior",
         "SkipBenchmark", "PlusReleaseQAModeCleared",
+        // research/371: the VRAM override is a test setting for this viewer (Firestorm's FSForcedVideoMemory is a whole number of GB
+        // and ours a fraction; one without the other would start pretending 4 GB)
+        "FSOverrideVRAMDetection", "FSForcedVideoMemory",
+        // plus/presets (research/352): what this install's move of the quality levels wrote, for its notice's Undo
+        // (PlusLevelsRevision goes with the graphics: kindOf, and importGeneral sets it when theirs has none)
+        "PlusLevelsMigrationWrites",
         // the state of that install (2026-10-22, fix-round9a): a GL start that failed there
         // (RenderInitError: graphics at 0 and a warning at our next start), a hardware probe it
         // still had to make (ProbeHardwareOnStartup: the recommended settings over the ones
@@ -173,6 +182,10 @@ namespace
         "PlusPoserMcp",                     // a server for other programs: switched on in this viewer, not brought
         "QAMode", "Stats", "Force",         // test modes, statistics runs, forced failures and addresses
         "RestrainedLove", "RLVa",           // RLVa (plus/rlv): remote scripted viewer controls are switched on in this viewer, never by a file brought over
+        // plus/lslbridge and plus/poseconsent (research/336): the pose bridge (PlusPoseBridgeEnable, PlusPoseBridgeItem)
+        // makes and wears a scripted object as soon as it is on, and its item record belongs to this viewer's copy;
+        // who may ask to pose the avatar (PlusPoseAskPolicy) is a consent given in this viewer. None is brought over.
+        "PlusPoseBridge", "PlusPoseAskPolicy",
     };
     // Anywhere in the name: development switches (DebugShow*, ...Debug), diagnostics, forced
     // failures, logging.
@@ -181,6 +194,10 @@ namespace
     const char* const ADDRESS_PARTS[] = { "URL", "Url", "URI", "Uri" };
     // Only from another Charis Viewer.
     const char* const SKIN[] = { "SkinCurrent", "SkinCurrentTheme" };
+    // plus/presets (research/352): the revision of the quality levels' values the settings have, so a value of
+    // theirs: brought with the graphics, 0 (none moved yet) when their settings.xml has none (not another Charis
+    // Viewer, or one at revision 0). The next start then moves their values of an older level table too.
+    constexpr char LEVELS_REVISION_SETTING[] = "PlusLevelsRevision";
     // Graphics: what the picture looks like, and the window. The Charis Viewer's own picture
     // settings (only another Charis Viewer has them) are graphics too.
     const char* const GRAPHICS_PREFIXES[] = {
@@ -191,7 +208,7 @@ namespace
         "PlusWaterMirror", "PlusSSR", "PlusHairSway", "PlusGpuDrivenDGC", "PlusGPUBenchmark",
     };
     const char* const GRAPHICS[] = { "VertexShaderEnable", "WindLightUseAtmosShaders", "PresetGraphicActive",
-                                     "FramePerSecondLimit", "UseOcclusion", "TextureMemory" };
+                                     "FramePerSecondLimit", "UseOcclusion", "TextureMemory", LEVELS_REVISION_SETTING };
     // Of those prefixes, the user's own lists (what hair to sway, favorite looks): general.
     // (The accounts' settings are brought over as general only: PlusHairSwayManual is one.)
     const char* const NOT_GRAPHICS[] = { "PlusHairSwayManual", "PlusLookFavorites", "PlusLookRecent" };
@@ -223,8 +240,14 @@ namespace
     // plus_outfit_backup (fix-round52 2): plus/outfitbackup's copy of what was worn
     // ("plus_outfit_backup.xml", ".<grid>.xml" off the main grid). Another install's would
     // offer to put back an outfit from its own sessions, not this viewer's.
+    // The contact sets' backups (settings_friends_groups_before_import_<date>.xml) and the files of them that
+    // could not be read (settings_friends_groups.xml.bad, plus/contactsets): ours, not the user's sets.
+    // plus_pose_consent (plus/poseconsent, research/336): who this viewer drops pose requests from, with the
+    // account's id inside; also its copies put aside (.bad). Kept by the viewer that wrote it, not carried over.
     const char* const SKIPPED_ACCOUNT_PREFIXES[] = { "screen_", "texture_list_", "open_notifications_",
-                                                     "settings_per_account_before_import", "plus_outfit_backup" };
+                                                     "settings_per_account_before_import", "plus_outfit_backup",
+                                                     "settings_friends_groups_before_import", "settings_friends_groups.xml.bad",
+                                                     "plus_pose_consent" };
     // toolbars.xml (import-no-toolbar, 2026-11-09): the source's toolbar layout. It names buttons
     // this viewer has not, and brought over it left our toolbars nearly empty. Ours are not touched.
     // bin_conf.dat (import-no-logins, 2026-11-09): the saved logins (user names and passwords). They
@@ -240,6 +263,7 @@ namespace
     constexpr char BACKUP_KEYS[] = "key_bindings_before_import";
     constexpr char BACKUP_WARNINGS[] = "ignorable_dialogs_before_import";  // fix-round68 2
     constexpr char BACKUP_COLORS[] = "colors_before_import";               // fix-round68 2
+    constexpr char BACKUP_CONTACT_SETS[] = "settings_friends_groups_before_import";  // research/333 3
 
     constexpr char CHAT_LOG_SETTING[] = "InstantMessageLogPath";    // per account
     constexpr char ACCOUNT_SETTINGS_FILE[] = "settings_per_account.xml";
@@ -293,10 +317,15 @@ namespace
         // The source's settings.xml has PresetGraphicActive (a settings file leaves out the
         // values at their default: none means no preset was in use there).
         bool source_names_active_preset = false;
+        // The source's settings.xml has PlusLevelsRevision (none: revision 0, plus/presets moves their values).
+        bool source_has_levels_revision = false;
         bool graphics_changed = false;      // a graphics setting of ours changed
         // The name kept because that preset is being copied (or was there before the login):
         // looked at again when the copies are done (finishJob()).
         std::string active_preset_kept;
+        // The contact sets file of the account logged in was copied or replaced: read again once the accounts
+        // are done (plus/contactsets, research/333 3).
+        bool contact_sets_changed = false;
 
         void note(const std::string& line)
         {
@@ -652,6 +681,10 @@ namespace
             if (&group == &gSavedSettings && it->first == ACTIVE_PRESET_SETTING)
             {
                 c.source_names_active_preset = true;
+            }
+            if (&group == &gSavedSettings && it->first == LEVELS_REVISION_SETTING)
+            {
+                c.source_has_levels_revision = true;
             }
             const std::optional<LLSD> value = wanted(group, it->first, it->second, general, graphics, c);
             if (!value)
@@ -1090,6 +1123,16 @@ namespace
         {
             reloadShaders();
         }
+        // research/352: their graphics without a revision of the levels' values are of revision 0 (see LEVELS_REVISION_SETTING)
+        if (c.choice.graphics && !c.source_has_levels_revision && fs::is_regular_file(settings, ec))
+        {
+            if (LLControlVariable* revision = gSavedSettings.getControl(LEVELS_REVISION_SETTING).get();
+                revision && revision->getValue().asInteger() != 0)
+            {
+                revision->setValue(LLSD((LLSD::Integer)0));
+                ++changed;
+            }
+        }
         c.result.settings += changed;
         if (c.choice.general)
         {
@@ -1256,6 +1299,64 @@ namespace
         return !logged_in.empty() && folderKey(utf8(our_account)) == folderKey(utf8(logged_in));
     }
 
+    // An account's contact sets (plus/contactsets, research/333 3): copied where we have none, as the other
+    // files of the account. Ours is also replaced when it holds nothing (no set, no one, no alias) and the
+    // source's has something: this viewer writes an empty one at the first login, which would otherwise keep
+    // the source's sets out for good. Ours is moved to settings_friends_groups_before_import_<date>.xml first
+    // (put back if the copy fails); a file of ours that cannot be read is left as it is (the viewer moves it
+    // aside to .bad when it reads it).
+    void importContactSets(const fs::path& from, const fs::path& to, Context& c)
+    {
+        using plus::contactsets::FileContent;
+        const U32 files_before = c.result.files;
+        std::error_code ec;
+        if (!fs::exists(to, ec) && !ec)
+        {
+            copyIfMissing(from, to, c);
+        }
+        else if (plus::contactsets::fileContent(utf8(to)) != FileContent::empty
+                 || plus::contactsets::fileContent(utf8(from)) != FileContent::has_data)
+        {
+            ++c.result.kept;
+            return;
+        }
+        else
+        {
+            const fs::path backup = backupPath(to.parent_path(), BACKUP_CONTACT_SETS);
+            if (fs::exists(backup, ec) || ec)
+            {
+                ++c.result.errors;
+                c.note("cannot back up the contact sets of an account (left as they were)");
+                return;
+            }
+            fs::rename(to, backup, ec);
+            if (ec)
+            {
+                ++c.result.errors;
+                c.note("cannot back up the contact sets of an account: " + ec.message() + " (left as they were)");
+                return;
+            }
+            copyIfMissing(from, to, c);
+            if (c.result.files == files_before)
+            {
+                fs::rename(backup, to, ec);     // ours back (the copy failed, or was over the limit: counted there)
+                if (ec)
+                {
+                    ++c.result.errors;
+                    c.note("the contact sets of an account were not copied, and ours stay as "
+                           + utf8(backup.filename()) + ": " + ec.message());
+                }
+                return;
+            }
+            pruneBackups(to.parent_path(), BACKUP_CONTACT_SETS, backup);
+            c.note("contact sets: ours had none, the source's are in (ours kept as " + utf8(backup.filename()) + ")");
+        }
+        if (c.result.files != files_before && isLoggedIn(to.parent_path()))
+        {
+            c.contact_sets_changed = true;
+        }
+    }
+
     void importAccounts(Context& c)
     {
         for (const fs::path& account : accountFolders(c.from))
@@ -1288,6 +1389,10 @@ namespace
                 if (fs::is_directory(status) && name == PRESETS)
                 {
                     copyPresetsIfMissing(it->path(), ours / PRESETS, c);
+                }
+                else if (fs::is_regular_file(status) && name == plus::contactsets::FILE_NAME)
+                {
+                    importContactSets(it->path(), ours / it->path().filename(), c);
                 }
                 else if (fs::is_regular_file(status) && name != ACCOUNT_SETTINGS_FILE && isAccountFile(name))
                 {
@@ -1757,6 +1862,10 @@ bool plus::importsettings::start(const Source& source, const Choice& choice,
         if (choice.accounts)
         {
             importAccounts(c);
+            if (c.contact_sets_changed)
+            {
+                plus::contactsets::reloadAfterImport();     // the account logged in: its new sets shown now
+            }
         }
         if (choice.chat)
         {

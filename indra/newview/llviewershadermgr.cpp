@@ -55,6 +55,7 @@
 #include "plus/avatarrefl/avatarrefl.h"
 #include "plus/derez/derez.h" // research/257: gDeferredDerezProgram
 #include "plus/ssr/ssr.h"
+#include "plus/temporal/motion.h"
 #include "plus/shaderreload/shaderreload.h"
 // </plus>
 
@@ -148,6 +149,7 @@ LLGLSLShader            gPostScreenSpaceReflectionProgram;
 
 // Deferred rendering shaders
 LLGLSLShader            gDeferredImpostorProgram;
+LLGLSLShader            gDeferredImpostorFlatProgram; // <plus> research/344 </plus>
 LLGLSLShader            gDeferredDiffuseProgram;
 LLGLSLShader            gDeferredDiffuseAlphaMaskProgram;
 LLGLSLShader            gDeferredSkinnedDiffuseAlphaMaskProgram;
@@ -969,6 +971,8 @@ std::string LLViewerShaderMgr::loadBasicShaders()
     plus::ssr::addShaderDefines(attribs);
     // </plus>
 
+    plus::temporal::addShaderDefines(attribs); // <plus> tu-motion-v1 (research/373): HAS_MOTION, the G-buffer's programs write the motion vectors </plus>
+
     { // PBR terrain
         const S32 mapping = clamp_terrain_mapping(gSavedSettings.getS32("RenderTerrainPBRPlanarSampleCount"));
         attribs["TERRAIN_PLANAR_TEXTURE_SAMPLE_COUNT"] = llformat("%d", mapping);
@@ -1210,6 +1214,7 @@ bool LLViewerShaderMgr::loadShadersDeferred()
         gDeferredBumpProgram.unload();
         gDeferredSkinnedBumpProgram.unload();
         gDeferredImpostorProgram.unload();
+        gDeferredImpostorFlatProgram.unload(); // <plus> research/344 </plus>
         gDeferredTerrainProgram.unload();
         gDeferredLightProgram.unload();
         for (U32 i = 0; i < LL_DEFERRED_MULTI_LIGHT_COUNT; ++i)
@@ -1743,6 +1748,24 @@ bool LLViewerShaderMgr::loadShadersDeferred()
         success = gDeferredImpostorProgram.createShader();
         llassert(success);
     }
+
+    // <plus> research/344: the plate of a flat silhouette (PlusJellyDollFlat): the colour picture only, a constant normal
+    if (success)
+    {
+        gDeferredImpostorFlatProgram.mName = "Deferred Impostor Flat Shader";
+        gDeferredImpostorFlatProgram.mFeatures.hasSrgb = true;
+        gDeferredImpostorFlatProgram.mShaderFiles.clear();
+        gDeferredImpostorFlatProgram.mShaderFiles.push_back(make_pair("deferred/impostorV.glsl", GL_VERTEX_SHADER));
+        gDeferredImpostorFlatProgram.mShaderFiles.push_back(make_pair("deferred/impostorF.glsl", GL_FRAGMENT_SHADER));
+        gDeferredImpostorFlatProgram.mShaderLevel = mShaderLevel[SHADER_DEFERRED];
+
+        add_common_permutations(&gDeferredImpostorFlatProgram);
+        gDeferredImpostorFlatProgram.addPermutation("IMPOSTOR_FLAT", "1");
+
+        success = gDeferredImpostorFlatProgram.createShader();
+        llassert(success);
+    }
+    // </plus>
 
     if (success)
     {

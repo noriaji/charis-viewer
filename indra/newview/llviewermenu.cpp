@@ -156,6 +156,7 @@
 #include "plus/lostattach/lostattach.h"
 #include "plus/flycammouse/flycammouse.h"
 #include "plus/rlv/rlvhooks.h"
+#include "plus/contactsets/peoplehooks.h"
 // </plus>
 
 using namespace LLAvatarAppearanceDefines;
@@ -4578,6 +4579,21 @@ class LLAvatarEnableAddFriend : public view_listener_t
         return new_value;
     }
 };
+
+// <plus> contactsets: Firestorm's FSAddToContactSet - "Add to Set" of the avatar menus; not while
+// @shownames hides the avatar's name (plus/contactsets/peopletab) (research/333)
+static void handle_avatar_add_to_contact_set()
+{
+    if (const LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject()))
+        plus::contactsets::showAddToSet(uuid_vec_t{ avatar->getID() });
+}
+
+static bool enable_avatar_add_to_contact_set()
+{
+    const LLVOAvatar* avatar = find_avatar_from_object(LLSelectMgr::getInstance()->getSelection()->getPrimaryObject());
+    return avatar && plus::contactsets::namesShown(uuid_vec_t{ avatar->getID() });
+}
+// </plus>
 
 void request_friendship(const LLUUID& dest_id)
 {
@@ -10576,6 +10592,10 @@ void initialize_menus()
     commit.add("Avatar.OpenMarketplace", boost::bind(&LLWeb::loadURLExternal, gSavedSettings.getString("MarketplaceURL")));
 
     view_listener_t::addMenu(new LLAvatarEnableAddFriend(), "Avatar.EnableAddFriend");
+    // <plus> contactsets: (plus/contactsets/peopletab) (research/333)
+    commit.add("Avatar.AddToContactSet", boost::bind(&handle_avatar_add_to_contact_set));
+    enable.add("Avatar.EnableAddToContactSet", boost::bind(&enable_avatar_add_to_contact_set));
+    // </plus>
     enable.add("Avatar.EnableFreezeEject", boost::bind(&enable_freeze_eject, _2));
 
     // Object pie menu

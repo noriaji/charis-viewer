@@ -50,6 +50,7 @@
 #include "plus/photomode/photoguide.h"
 #include "plus/photomode/photomode.h"
 #include "plus/photomode/photoshot.h"
+#include "plus/uiscope/uiscope.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -136,6 +137,15 @@ namespace plus::camerapath
         bool sShowRoute  = true;
         bool sEditorOpen = false;
 
+        // --- Hiding the viewer's UI while something plays (research/365) ---------
+        // plus/uiscope does the hiding (the photo screen and the camera shots use it too): what was shown is remembered
+        // one by one and only that is put back; View > Hide UI, the mouselook and RLV's locked HUD are followed, not
+        // fought. beginChrome() makes it and endChrome() lets go of it (the Scope is never deleted at the end of the
+        // process on purpose: its handles).
+
+        bool sHideUIWhilePlaying = true;   // the window's check box; process lifetime only, as sShowRoute above
+        uiscope::PlaybackHide sHide;
+
         // One turn of the picture on its own (spinOnce): the tilt goes from 'from' to 'to' (a full turn away) and
         // is put back at 'from' (the same picture) when it ends.
         struct Spin
@@ -151,10 +161,12 @@ namespace plus::camerapath
         bool sKeepShakeRoll = false;   // the last picture of a path: its shake tilt goes into the setting, so it does not vanish
 
         void tick(void*);
+        void beginChrome();
+        void endChrome();
 
         void updateTicking()
         {
-            const bool want = sState != State::Idle || sFovHeld || sSpin.active || sLeftover.shooting;
+            const bool want = sState != State::Idle || sFovHeld || sSpin.active || sLeftover.shooting || sHide.active();
             if (want == sTicking)
             {
                 return;
@@ -200,10 +212,12 @@ namespace plus::camerapath
             return LLViewerJoystick::getInstance()->getOverrideCamera();
         }
 
-        // Esc, or the camera controls' reset, puts the camera back on the avatar.
+        // Esc, or the camera controls' reset, puts the camera back on the avatar; a disconnect (research/365
+        // low-5) ends it the same way, so the idle callbacks that keep running for a while after one
+        // (llappviewer.cpp) put the UI and HUD back rather than leave them hidden.
         bool cameraBack()
         {
-            return !gAgent.getRegion() || gAgentCamera.getFocusOnAvatar() || gAgentCamera.cameraMouselook();
+            return !gAgent.getRegion() || gAgentCamera.getFocusOnAvatar() || gAgentCamera.cameraMouselook() || gDisconnected;
         }
 
         // The user's angle (CameraAngle, never written here) on the camera again once it is back.
@@ -431,6 +445,11 @@ namespace plus::camerapath
             {
                 sLeftover = sExport;   // its picture is on the way: tickLeftover() files it
             }
+            if (!sLeftover.shooting)
+            {
+                endChrome();   // every way back to Idle shows the UI and HUD again
+            }
+            // else the HUD stays off until that last picture is taken (tickLeftover() ends it): it is a picture of the run
             sExport = Export();
             updateTicking();
         }
@@ -445,6 +464,30 @@ namespace plus::camerapath
             LLStringUtil::format_map_t args;
             args["[NUMBER]"] = number;
             plus::photomode::showGuideMessage(LLTrans::getString(string_name, args));
+        }
+
+        // Hides the UI and the HUD attachments for as long as something plays (plus/uiscope); nothing is done to the
+        // camera or the avatar. A no-op when the check box is off or it already runs.
+        void beginChrome()
+        {
+            if (!sHideUIWhilePlaying || sHide.active())
+            {
+                return;
+            }
+            sHide.begin(true);
+            ++sRevision;
+        }
+
+        // Puts back what beginChrome() hid. Safe to call any number of times (finish() calls it from every way out
+        // of a run: the path's own end, Esc, a stopped export, stop(), the flycam, a disconnect).
+        void endChrome()
+        {
+            if (!sHide.active())
+            {
+                return;
+            }
+            sHide.end();
+            ++sRevision;
         }
 
         void tickPlaying()
@@ -486,7 +529,8 @@ namespace plus::camerapath
             if (number != sCountShown)
             {
                 sCountShown = number;
-                say("PlusCameraPathCount", std::to_string(number));
+                // the way to stop goes with the number (the band is replaced by the next one; a plain "Go!" has none)
+                say(sHide.hiding() ? "PlusCameraPathCountHidden" : "PlusCameraPathCount", std::to_string(number));
                 make_ui_sound("UISndAlert");
                 ++sRevision;
             }
@@ -547,6 +591,10 @@ namespace plus::camerapath
                 LL_WARNS("PlusCameraPath") << "The last frame of a stopped run stays at " << shot.path << LL_ENDL;
             }
             sLeftover = Export();
+            if (sState == State::Idle || !sHideUIWhilePlaying)
+            {
+                endChrome();    // no run took over meanwhile (or one that must not hide): the UI and HUD come back now
+            }
             updateTicking();
         }
 
@@ -602,6 +650,12 @@ namespace plus::camerapath
 
         void tick(void*)
         {
+            // View > Hide UI, a bar shown again, RLV's HUD lock: before anything below ends the run. A quit that was
+            // asked for and cancelled (plus/uiscope let go first): the run goes on, with the UI.
+            if (sHide.tick())
+            {
+                ++sRevision;
+            }
             if (sLeftover.shooting)
             {
                 tickLeftover();
@@ -1099,6 +1153,7 @@ namespace plus::camerapath
             sStartTime = LLTimer::getTotalSeconds();
             applyAt(0.0, 0.0);   // the first picture at once; a path starts with a cut
         }
+        beginChrome();
         updateTicking();
         return true;
     }
@@ -1172,6 +1227,7 @@ namespace plus::camerapath
         sStartTime = LLTimer::getTotalSeconds();
         ++sRevision;
         applyAt(0.0, 0.0);
+        beginChrome();
         updateTicking();
         return true;
     }
@@ -1287,6 +1343,7 @@ namespace plus::camerapath
         sState = State::Exporting;
         ++sRevision;
         applyAt(0.0, 0.0);
+        beginChrome();
         updateTicking();
         return true;
     }
@@ -1322,6 +1379,16 @@ namespace plus::camerapath
         return sShowRoute;
     }
 
+    void setHideUIWhilePlaying(bool on)
+    {
+        sHideUIWhilePlaying = on;
+    }
+
+    bool hideUIWhilePlaying()
+    {
+        return sHideUIWhilePlaying;
+    }
+
     void setEditorOpen(bool open)
     {
         sEditorOpen = open;
@@ -1329,7 +1396,8 @@ namespace plus::camerapath
 
     bool routeVisible()
     {
-        return sEditorOpen && sShowRoute && sState == State::Idle && !sPath.points.empty();
+        return sEditorOpen && sShowRoute && sState == State::Idle && !sPath.points.empty()
+            && !uiscope::hidingForPlayback();   // not in a picture whose UI is hidden (a shot, or a run whose last picture is awaited)
     }
 
     std::vector<std::string> savedNames()
@@ -1497,7 +1565,7 @@ namespace plus::camerapath
         {
             if (sState == State::Playing)
             {
-                say("PlusCameraPathPlaying");
+                say(sHide.hiding() ? "PlusCameraPathPlayingHidden" : "PlusCameraPathPlaying");
             }
         }
         else

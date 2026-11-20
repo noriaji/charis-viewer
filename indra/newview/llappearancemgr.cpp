@@ -55,6 +55,7 @@
 #include "llviewerregion.h"
 #include "llwearablelist.h"
 #include "plus/rlv/rlvhooks.h" // <plus> rlv: outfit / attachment locks (research/248 W8) </plus>
+#include "plus/lslbridge/lslbridgehooks.h" // <plus> lslbridge: the pose bridge is not a part of an outfit (research/353) </plus>
 #include "llsdutil.h"
 #include "llsdserialize.h"
 #include "llhttpretrypolicy.h"
@@ -1803,6 +1804,12 @@ void LLAppearanceMgr::slamCategoryLinks(const LLUUID& src_id, const LLUUID& dst_
          ++iter)
     {
         const LLViewerInventoryItem* item = (*iter);
+        // <plus> lslbridge: the pose bridge is not saved into an outfit (Save, Save As; Firestorm leaves its bridge out) (research/353)
+        if (plus::lslbridge::isBridgeItem(item->getLinkedUUID()))
+        {
+            continue;
+        }
+        // </plus>
         switch (item->getActualType())
         {
             case LLAssetType::AT_LINK:
@@ -2232,6 +2239,9 @@ void LLAppearanceMgr::updateCOF(const LLUUID& category, bool append)
     getDescendentsOfAssetType(category, obj_items, LLAssetType::AT_OBJECT);
     // <plus> rlv
     if (plus::rlv::enabled()) plus::rlv::dropUnwearableItems(obj_items, rlv_obj_old, LLAssetType::AT_OBJECT);
+    // </plus>
+    // <plus> lslbridge: the worn pose bridge stays on through a replace or an add while it has a place, the person's attachments first (research/353)
+    plus::lslbridge::placeBridgeInNewCof(obj_items, append);
     // </plus>
     removeDuplicateItems(obj_items);
 
@@ -3382,6 +3392,10 @@ void LLAppearanceMgr::updateIsDirty()
                 break;
             }
         }
+        // <plus> lslbridge: the worn pose bridge is no change of the outfit (Firestorm's FIRE-3018) (research/353)
+        plus::lslbridge::dropBridgeLinks(cof_items);
+        plus::lslbridge::dropBridgeLinks(outfit_items);
+        // </plus>
 
         if(outfit_items.size() != cof_items.size())
         {

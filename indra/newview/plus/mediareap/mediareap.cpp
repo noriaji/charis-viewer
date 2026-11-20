@@ -57,6 +57,7 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "plus.h"
+#include "plus/uiscope/uiscope.h"
 #include "plus/mediareap/mediareap.h"
 #include "plus/photoscreen/photoscreen.h"
 
@@ -135,7 +136,7 @@ namespace plus::mediareap
         struct Context
         {
             LLUUID controlsId;      // media whose controls are shown (hover or focus)
-            bool uiUnknown;         // floaters hidden as a group: an open one looks closed
+            bool uiUnknown;         // floaters hidden as a group (mouselook, Hide UI, the photo screen, the camera path's hidden UI): an open one looks closed
             LLVector3d agentPos;
             LLVector3d earPos;      // where media sound is heard from (MediaSoundsEarLocation)
             F64 farM2;
@@ -183,7 +184,8 @@ namespace plus::mediareap
             ctx.uiUnknown = gAgentCamera.cameraMouselook()
                 || gAgentCamera.getCameraMode() == CAMERA_MODE_MOUSELOOK
                 || !gViewerWindow->getUIVisibility()
-                || plus::photoscreen::isActive();
+                || plus::photoscreen::isActive()
+                || plus::uiscope::hidingForPlayback();
             ctx.agentPos = gAgent.getPositionGlobal();
             // As LLViewerMediaImpl::calculateInterest(): 1 is the avatar, anything else the camera.
             ctx.earPos = (ear_location() == 1) ? ctx.agentPos : gAgentCamera.getCameraPositionGlobal();
@@ -242,7 +244,7 @@ namespace plus::mediareap
             if (LLFloater* floater = ctrl->getParentByType<LLFloater>())
             {
                 // The floater's own flag: a minimized floater stays visible (its page may play
-                // sound). Floaters hidden as a group (mouselook, Hide UI, the photo screen) lose
+                // sound). Floaters hidden as a group (mouselook, Hide UI, the photo screen, the camera path's hidden UI) lose
                 // it too, so the caller does not ask then (Context::uiUnknown). A floater in a tab of
                 // a host (conversations, the profiles' window) is hidden while another tab is chosen:
                 // it is open while its host is (else every change of tab loads the page again).

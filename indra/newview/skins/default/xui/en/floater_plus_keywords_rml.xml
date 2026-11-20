@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Chat keywords window, RmlUi version (plus/keywords/keywordsrml.cpp, research/380): the frame and the words. The
+  content is app_settings/plus/rmlui/keywords.rml in a plus_rml_view filling the floater under its 18 px header; the
+  words are the document's "[[name]]". The old XUI window (floater_plus_keywords.xml, frozen) is used in safe mode and
+  when PlusRmlUiWindows is off. reuse_instance="false": a closed window is destroyed (an RmlUi window costs
+  nothing while it is closed).
+-->
+<floater
+ positioning="specified"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="442"
+ width="440"
+ layout="topleft"
+ name="plus_keywords"
+ title="CHAT KEYWORDS">
+    <string name="try_hint">Type a line here to see whether the list catches it.</string>
+    <string name="try_hit">Caught: [WORD]</string>
+    <string name="try_miss">Not caught.</string>
+    <string name="on">Keyword alerts on</string>
+    <string name="in_chat">Look in nearby chat</string>
+    <string name="in_im">Look in IMs and group chat</string>
+    <string name="list_label">Words (separated by commas):</string>
+    <string name="own_name">Add my own names (display name, user name, first name)</string>
+    <string name="speaker">Look in the speaker's name too</string>
+    <string name="case">Match case</string>
+    <string name="whole">Whole words only (Japanese is always found anywhere)</string>
+    <string name="fold">Ignore full / half width and hiragana / katakana</string>
+    <string name="change_color">Color the line</string>
+    <string name="play_sound">Play a sound</string>
+    <string name="sound_label">Sound UUID:</string>
+    <string name="sound_play">Play</string>
+    <string name="sound_reset">Reset</string>
+    <string name="tip_preview">Play this sound.</string>
+    <string name="tip_reset">Back to the standard sound.</string>
+    <string name="toast">Show a notice on the screen</string>
+    <string name="try_label">Try a line:</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="keywords.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="440"
+     height="424" />
+</floater>

@@ -225,6 +225,59 @@
               width="150" />
           </scroll_list>
         </panel>
+        <!-- plus contactsets: Firestorm's Contact Sets tab, after Near Me (FIRE-34809); Charis lists the people of the
+             chosen set like the other tabs, all of them selected when more than one can be picked
+             (plus/contactsets/peopletab, research/333). Laid out as NearMePanel (list from y 52). -->
+        <panel
+         height="150"
+         label="Contact Sets"
+         layout="topleft"
+         left="6"
+         help_topic="avatarpicker"
+         name="ContactSetsPanel"
+         top="150"
+         width="132">
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             height="16"
+             layout="topleft"
+             left="10"
+             name="SelectContactSetLabel"
+             top="8"
+             width="220">
+                Select a contact set:
+            </text>
+            <combo_box
+             follows="left|top"
+             height="23"
+             layout="topleft"
+             left="10"
+             name="ContactSetSelector"
+             top_pad="2"
+             width="220" />
+            <scroll_list
+             draw_heading="true"
+             follows="all"
+             height="98"
+             layout="topleft"
+             left="0"
+             name="ContactSetMembers"
+             sort_column="0"
+             top="52"
+             width="132">
+                <columns
+                 label="Name"
+                 name="name"
+                 width="150" />
+                <columns
+                 label="Username"
+                 name="username"
+                 width="150" />
+            </scroll_list>
+        </panel>
+        <!-- /plus -->
     </tab_container>
     <button
      follows="left|bottom"

@@ -10,7 +10,7 @@
      Size (1080 base; a preferences page, research/266 3. and plus/prefscharis/prefs_tab_template.xml): 574 x 515;
      the sub-tabs' strip 36 at the top 4, the pages under it 475 high, each a scroll_container (574) with a panel 557
      wide (574 less the scroll bar 15 and the border 2) and as high as its rows. Headings 40, checks 30, buttons 40,
-     drop-down rows 33, notes 18, 10 between sections, 6 before buttons, 10 above and 14 below. The pages: display 241, graphics 285, controls 302, ai 130, rlva 266, other 282,
+     drop-down rows 33, notes 18, 10 between sections, 6 before buttons, 10 above and 14 below. The pages: display 271, graphics 285, controls 302, people 342, ai 130, rlva 266, other 282,
      so none scrolls at the default size (they do in a window made shorter). Rows are 529 wide; ja lines are at
      most 38 characters (529 less the check box, / 13). -->
 <panel
@@ -68,7 +68,7 @@
             name="list_display"
             background_visible="false"
             follows="left|top"
-            height="241"
+            height="271"
             layout="topleft"
             left="0"
             mouse_opaque="false"
@@ -86,6 +86,17 @@
               top="10"
               width="529" />
             <plus_ps_check
+              name="c_chat_bar"
+              control_name="PlusShowChatBar"
+              follows="left|top|right"
+              height="30"
+              label="Chat bar at the bottom left (Nearby Chat button and a line to type in)"
+              layout="topleft"
+              left="14"
+              tool_tip="A Nearby Chat button and a one-line chat field beside the bottom toolbar, as in Firestorm. Enter says, Shift+Enter whispers, Ctrl+Enter shouts. The channel is 0; another channel with /number."
+              top="40"
+              width="529" />
+            <plus_ps_check
               name="c_inv_folder_icons"
               control_name="PlusInvFolderIcons"
               follows="left|top|right"
@@ -94,7 +105,7 @@
               layout="topleft"
               left="14"
               tool_tip="One colour and emblem for each kind of inventory folder."
-              top="40"
+              top="70"
               width="529" />
             <plus_ps_check
               name="c_borderless"
@@ -105,7 +116,7 @@
               layout="topleft"
               left="14"
               tool_tip="The window fills the screen without a frame. It changes at once."
-              top="70"
+              top="100"
               width="529" />
             <plus_ps_check
               name="c_shortcut_bar"
@@ -116,7 +127,7 @@
               layout="topleft"
               left="14"
               tool_tip="A row under the navigation bar with the menu items you picked. Right-click an item of the menu bar to add it."
-              top="100"
+              top="130"
               width="529" />
             <plus_ps_check
               name="c_fps"
@@ -127,7 +138,7 @@
               layout="topleft"
               left="14"
               tool_tip="The frame rate in the status bar or a corner of the screen. It takes effect at once: Cancel does not undo it."
-              top="130"
+              top="160"
               width="529" />
             <plus_ps_label
               name="l_fps_position"
@@ -135,7 +146,7 @@
               label="Where to show it"
               layout="topleft"
               left="44"
-              top="160"
+              top="190"
               width="287" />
             <plus_ps_combo
               name="cb_fps_position"
@@ -144,7 +155,7 @@
               layout="topleft"
               left="343"
               tool_tip="Picking a place also turns the display on. It takes effect at once: Cancel does not undo it."
-              top="160"
+              top="190"
               width="200">
               <plus_ps_combo.item
                 name="status_bar"
@@ -178,7 +189,7 @@
               layout="topleft"
               left="14"
               tool_tip="While you use the UI on a slow PC, the world is drawn less often so that the UI keeps up. On by default: turn it off if it misbehaves."
-              top="197"
+              top="227"
               width="529" />
           </panel>
         </scroll_container>
@@ -467,6 +478,152 @@
               <plus_ps_check.commit_callback
                 function="Plus.AO.ToggleStands" />
             </plus_ps_check>
+          </panel>
+        </scroll_container>
+      </panel>
+      <!-- The contact sets (research/333 cs-color): Firestorm's seven contact set settings (its contact set settings window,
+           Global Settings); the sets themselves are in People > Contact Sets. -->
+      <panel
+        name="page_people"
+        background_visible="false"
+        follows="all"
+        height="475"
+        label="People"
+        layout="topleft"
+        left="0"
+        mouse_opaque="false"
+        tool_tip="Where your contact sets show: their online notices and colours."
+        top="36"
+        width="574">
+        <scroll_container
+          name="scroll_people"
+          follows="all"
+          height="475"
+          layout="topleft"
+          left="0"
+          opaque="false"
+          reserve_scroll_corner="false"
+          top="0"
+          width="574">
+          <panel
+            name="list_people"
+            background_visible="false"
+            follows="left|top"
+            height="342"
+            layout="topleft"
+            left="0"
+            mouse_opaque="false"
+            top="0"
+            width="557">
+            <plus_ps_header
+              name="h_cs_notices"
+              divider="none"
+              follows="left|top|right"
+              height="40"
+              label="Contact Set Online Notices"
+              layout="topleft"
+              left="14"
+              size="sub"
+              top="10"
+              width="529" />
+            <plus_ps_check
+              name="c_cs_notice_toast"
+              control_name="FSContactSetsNotificationToast"
+              disabled_control="ChatOnlineNotification"
+              follows="left|top|right"
+              height="30"
+              label="Show the notices of a set as toasts"
+              layout="topleft"
+              left="14"
+              tool_tip="When friends in a set with Show notifications on log in or out. Greyed out while all friends' notices are on (Preferences &gt; Popups: When my friends log in or out)."
+              top="50"
+              width="529" />
+            <plus_ps_check
+              name="c_cs_notice_chat"
+              control_name="FSContactSetsNotificationNearbyChat"
+              follows="left|top|right"
+              height="30"
+              label="Show the notices of a set in nearby chat"
+              layout="topleft"
+              left="14"
+              tool_tip="When friends in a set with Show notifications on log in or out, a line in the nearby chat history."
+              top="80"
+              width="529" />
+            <plus_ps_header
+              name="h_cs_colors"
+              divider="top"
+              follows="left|top|right"
+              height="40"
+              label="Contact Set Colors"
+              layout="topleft"
+              left="14"
+              size="sub"
+              top="120"
+              width="529" />
+            <plus_ps_check
+              name="c_cs_color_tag"
+              control_name="FSContactSetsColorizeNameTag"
+              follows="left|top|right"
+              height="30"
+              label="Color name tags by contact set"
+              layout="topleft"
+              left="14"
+              tool_tip="The name tag of someone in a set is in the set's color (the smallest set's, when in several)."
+              top="160"
+              width="529" />
+            <plus_ps_check
+              name="c_cs_color_minimap"
+              control_name="FSContactSetsColorizeMiniMap"
+              follows="left|top|right"
+              height="30"
+              label="Color mini-map dots by contact set"
+              layout="topleft"
+              left="14"
+              tool_tip="The dot of someone in a set, on the mini-map, is in the set's color."
+              top="190"
+              width="529" />
+            <plus_ps_check
+              name="c_cs_color_radar"
+              control_name="FSContactSetsColorizeRadar"
+              follows="left|top|right"
+              height="30"
+              label="Color names in the radar by contact set"
+              layout="topleft"
+              left="14"
+              tool_tip="The name of someone in a set, in the radar window, is in the set's color."
+              top="220"
+              width="529" />
+            <plus_ps_check
+              name="c_cs_color_chat"
+              control_name="FSContactSetsColorizeChat"
+              follows="left|top|right"
+              height="30"
+              label="Color chat by contact set (and chat bubbles)"
+              layout="topleft"
+              left="14"
+              tool_tip="What someone in a set says, in the chat windows and in the bubble above them, is in the set's color."
+              top="250"
+              width="529" />
+            <plus_ps_check
+              name="c_cs_color_friends"
+              control_name="FSContactSetsColorizeFriends"
+              follows="left|top|right"
+              height="30"
+              label="Color the friends list by contact set"
+              layout="topleft"
+              left="14"
+              tool_tip="Names in People &gt; Friends are in their set's color."
+              top="280"
+              width="529" />
+            <plus_ps_label
+              name="note_cs_where"
+              height="18"
+              kind="dim"
+              label="Sets, their colors and members: People &gt; Contact Sets."
+              layout="topleft"
+              left="14"
+              top="310"
+              width="529" />
           </panel>
         </scroll_container>
       </panel>
@@ -765,7 +922,7 @@
               label="Comparison: Official Mid-High"
               layout="topleft"
               left="14"
-              tool_tip="For comparing the speed with the official viewer: the Mid-High level with no Charis feature, partial OIT, the official LOD and anisotropic filtering, and a 256 m draw distance."
+              tool_tip="For comparing the speed with the official viewer: the Mid-High level with every Charis feature off, partial OIT, the official LOD and anisotropic filtering, a 256 m draw distance, the official night sky, and textures still loading drawn grey as in the official viewer (no wireframe). Choosing a quality level again brings the loading look back (not the night sky)."
               top="206"
               width="260">
               <plus_ps_button.commit_callback

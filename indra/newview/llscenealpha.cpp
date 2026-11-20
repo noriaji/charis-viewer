@@ -222,14 +222,24 @@ namespace
 }
 
 const bool LLSceneAlpha::sCensus = LLRHI::envSet("LLRHI_SCENE_ALPHA_CENSUS");
-const bool LLSceneAlpha::sVerify = LLRHI::sceneAlphaMode() != LLRHI::SceneMode::Off;
-const bool LLSceneAlpha::sActive = LLSceneAlpha::sCensus || LLSceneAlpha::sVerify;
+
+// research/218 vk-s2f-2: read each time, not copied at the static initialization (before the
+// device is chosen: sceneOffForDevice turns LLRHI_SCENE_ALPHA off after it).
+bool LLSceneAlpha::verifying()
+{
+    return LLRHI::sceneAlphaMode() != LLRHI::SceneMode::Off;
+}
+
+bool LLSceneAlpha::active()
+{
+    return sCensus || verifying();
+}
 
 // --- events ----------------------------------------------------------------------
 
 void LLSceneAlpha::onCreated(LLDrawInfo& info, LLSpatialGroup* group, U32 pass)
 {
-    if (!sVerify || pass != LLRenderPass::PASS_ALPHA || !group)
+    if (!verifying() || pass != LLRenderPass::PASS_ALPHA || !group)
     {
         return;
     }
@@ -249,7 +259,7 @@ void LLSceneAlpha::onCreated(LLDrawInfo& info, LLSpatialGroup* group, U32 pass)
 
 void LLSceneAlpha::onDestroyed(const LLDrawInfo& info)
 {
-    if (!sVerify)
+    if (!verifying())
     {
         return;
     }
@@ -264,7 +274,7 @@ void LLSceneAlpha::onDestroyed(const LLDrawInfo& info)
 
 void LLSceneAlpha::onGroupCleared(LLSpatialGroup* group)
 {
-    if (!sVerify)
+    if (!verifying())
     {
         return;
     }
@@ -379,7 +389,7 @@ void LLSceneAlpha::writePending()
 
 LLSceneAlpha::PassScope::PassScope(bool post_water, bool depth_only, bool rigged, U32 groups, bool oit)
 {
-    if (sActive)
+    if (active())
     {
         gSceneAlpha.beginPass(post_water, depth_only, rigged, groups, oit);
         mOpen = gSceneAlpha.mPass;
@@ -427,7 +437,7 @@ void LLSceneAlpha::beginPass(bool post_water, bool depth_only, bool rigged, U32 
             mReportAt = LLTimer::getTotalSeconds() + REPORT_SECONDS;
         }
     }
-    if (sVerify)
+    if (verifying())
     {
         writePending();
     }
@@ -441,7 +451,7 @@ void LLSceneAlpha::beginPass(bool post_water, bool depth_only, bool rigged, U32 
             groups == LLDrawPoolAlpha::GROUPS_WORLD ? KIND_HYBRID_WORLD : KIND_OIT_ALL;
     mCensusPass = sCensus;
     // research/218 vk-s2f: not after its auto went off (nothing of the alpha is the scene's then).
-    mVerifyPass = sVerify && mVerifyFrame && post_water && !rigged && gSceneRecords.alphaMode() != LLRHI::SceneMode::Off;
+    mVerifyPass = verifying() && mVerifyFrame && post_water && !rigged && gSceneRecords.alphaMode() != LLRHI::SceneMode::Off;
     mCheckPriority = mVerifyPass && oit;
     // Every batch of a drawn group is drawn (no hybrid half picks some).
     mCheckStale = mVerifyPass && groups == LLDrawPoolAlpha::GROUPS_ALL;
@@ -658,7 +668,7 @@ void LLSceneAlpha::report()
             LL_INFOS("SceneAlpha") << line.str() << LL_ENDL;
         }
     }
-    if (sVerify)
+    if (verifying())
     {
         std::ostringstream line;
         line << "verify (" << LLRHI::sceneModeName(LLRHI::sceneAlphaMode()) << "), " << mReportFrames << " frames: records "
@@ -675,7 +685,7 @@ void LLSceneAlpha::report()
         {
             LL_WARNS("SceneAlpha") << line.str() << LL_ENDL;
         }
-        else
+        else if (LLRHI::sPeriodicLogs)  // research/218 vk-s2f-2: a clean summary only in development starts
         {
             LL_INFOS("SceneAlpha") << line.str() << LL_ENDL;
         }

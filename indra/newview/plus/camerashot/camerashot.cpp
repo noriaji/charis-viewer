@@ -45,6 +45,9 @@
 // shot (the camera is on the avatar again); touching the camera controls during a
 // shot makes the two fight, so stop the shot first (the floater's Stop button).
 //
+// While a shot runs the UI and HUD are hidden (the window's check box, on at first; plus/uiscope, as the camera
+// path's): the window hides too, so Esc is how it is stopped. research/367.
+//
 // The angle of view of a shot is the camera's own (LLViewerCamera::setDefaultFOV), not the
 // saved CameraAngle: the setting is never written, so it does not carry a shot's angle into
 // the next session or mark the camera preset as changed (llpresetsmanager.cpp watches it).
@@ -63,6 +66,7 @@
 
 #include "plus/camerapath/camerapath.h"
 #include "plus/rlv/rlvhooks.h"
+#include "plus/uiscope/uiscope.h"
 
 #include <algorithm>
 #include <cmath>
@@ -177,6 +181,12 @@ namespace plus::camerashot
         bool sFovHeld  = false; // the camera may show a shot's angle, not CameraAngle
         bool sTicking  = false;
 
+        // While a shot runs the UI and HUD are hidden (plus/uiscope, the same part the camera path and the photo
+        // screen use; research/367). start() calls sHide.begin() when a shot starts, finish() calls sHide.end(),
+        // i.e. every way a shot ends. The Scope is never deleted at the end of the process on purpose (its handles).
+        bool                  sHideUI = true;   // the window's check box; process lifetime only
+        uiscope::PlaybackHide sHide;
+
         void tick(void*);
 
         // The idle callback runs while a shot runs or the camera shows a shot's angle.
@@ -202,6 +212,7 @@ namespace plus::camerashot
         {
             sRunning  = false;
             sProgress = 1.f;
+            sHide.end();   // every way a shot ends shows the UI and HUD again
             updateTicking();
         }
 
@@ -215,7 +226,7 @@ namespace plus::camerashot
         // Esc, or the camera controls' reset, puts the camera back on the avatar.
         bool cameraBack()
         {
-            return !gAgent.getRegion() || gAgentCamera.getFocusOnAvatar() || gAgentCamera.cameraMouselook();
+            return !gAgent.getRegion() || gAgentCamera.getFocusOnAvatar() || gAgentCamera.cameraMouselook() || gDisconnected;
         }
 
         // The user's angle (CameraAngle, never written here) on the camera again once it is back.
@@ -244,6 +255,7 @@ namespace plus::camerashot
 
         void tick(void*)
         {
+            sHide.tick();   // View > Hide UI, a bar shown again, RLV's HUD lock: before anything below ends the shot
             if (!sRunning)
             {
                 watchFov();
@@ -441,6 +453,7 @@ namespace plus::camerashot
         sShot     = shot;
         sRunning  = true;
         sProgress = 0.f;
+        sHide.begin(sHideUI);   // after finish() above: a shot replaced shows the UI for an instant, before any frame is drawn
         updateTicking();
         return true;
     }
@@ -498,6 +511,16 @@ namespace plus::camerashot
     bool running()
     {
         return sRunning;
+    }
+
+    void setHideUIWhileRunning(bool on)
+    {
+        sHideUI = on;
+    }
+
+    bool hideUIWhileRunning()
+    {
+        return sHideUI;
     }
 
     float progress()

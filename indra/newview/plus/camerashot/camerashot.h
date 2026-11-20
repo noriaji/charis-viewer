@@ -84,6 +84,10 @@ namespace plus::camerashot
     bool hasStart();
     bool goToStart();
     bool running();
+    // Hide the UI and the HUD attachments while a shot runs (plus/uiscope; the window's check box, on at first).
+    // Read when a shot starts: a running shot is not changed.
+    void setHideUIWhileRunning(bool on);
+    bool hideUIWhileRunning();
     // 0..1 of the time of the shot running (1 when none runs).
     float progress();
 

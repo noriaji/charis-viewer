@@ -35,8 +35,7 @@
 #include "llversioninfovars.h"
 
 // <plus> Charis Viewer's own major.minor.patch in place of the official ones
-// (plus/version/version.h). The build number and the channel stay as they are;
-// the official number is plus::version::baseVersion().
+// (plus/version/version.h). The build number and the channel stay as they are.
 #include "plus/version/version.h"
 #include "plus/independence/independence.h" // channel name (fix-round106)
 // </plus>

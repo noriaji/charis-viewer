@@ -50,6 +50,7 @@
 #include "llvoavatar.h"
 #include "llavataractions.h"
 #include "lluiusage.h"
+#include "plus/contactsethooks/cshooks.h" // <plus> contactsets: online notices of a set (research/333) </plus>
 
 ///----------------------------------------------------------------------------
 /// Local function declarations, constants, enums, and typedefs
@@ -737,7 +738,11 @@ void LLAvatarTracker::processNotify(LLMessageSystem* msg, bool online)
                 deleteTrackingData();
             }
 
-            if(chat_notify)
+            // <plus> contactsets: also for a friend whose contact set asks for notices (as a toast or in the nearby chat,
+            // llnotificationtiphandler.cpp) (Firestorm FIRE-3522) (research/333)
+            //if(chat_notify)
+            if (chat_notify || plus::cshooks::notifyToast(agent_id) || plus::cshooks::notifyNearbyChat(agent_id))
+            // </plus>
             {
                 // Look up the name of this agent for the notification
                 LLAvatarNameCache::get(agent_id,boost::bind(&on_avatar_name_cache_notify,_1, _2, online, payload));

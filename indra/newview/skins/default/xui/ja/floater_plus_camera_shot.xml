@@ -8,8 +8,8 @@
 	<floater.string name="shot_err_subject">そのアバターは今は見えません。「更新」を押して選び直してください。</floater.string>
 	<floater.string name="shot_err_flycam">今はフライカム（3D マウス）がカメラを動かしています。先にフライカムを切ってください。</floater.string>
 	<floater.string name="shot_err_mouselook">マウスルック中です。先にマウスルックを解除してください。</floater.string>
-	<floater.string name="shot_idle">待機中。Esc で撮影を止めて、カメラをアバターの後ろに戻します。</floater.string>
-	<floater.string name="shot_running">撮影中… [PERCENT]%</floater.string>
+	<floater.string name="shot_idle">待機中。Esc でカメラワークを止めて、カメラをアバターの後ろに戻します。</floater.string>
+	<floater.string name="shot_running">実行中… [PERCENT]%</floater.string>
 	<text name="lbl_subject">狙う相手</text>
 	<combo_box name="subject" tool_tip="アバターを選ぶと、動いてもカメラが追いかけます。一番上は、今カメラが向いている所のままです。" />
 	<button name="btn_refresh" label="更新" tool_tip="カメラの近くにいるアバターを探し直します" />
@@ -36,7 +36,8 @@
 	<slider name="orbit_degrees" label="回る角度" tool_tip="被写体の周りをどれだけ回るか。360 で一周です" />
 	<button name="btn_orbit_right" label="右へ回り込む" tool_tip="見ている先（アバターを選んでいればその人）の周りを、カメラから見て右へ回ります（真上から見て左回り）。距離と高さは保ちます。" />
 	<button name="btn_orbit_left" label="左へ回り込む" tool_tip="同じことを、カメラから見て左へ（真上から見て右回り）行います。" />
-	<button name="btn_stop" label="止める" tool_tip="今の位置で撮影を止めます" />
-	<button name="btn_back" label="始めに戻る" tool_tip="直前の撮影を始めた時のカメラの位置・向き・画角に戻します（撮り直し用）" />
+	<button name="btn_stop" label="止める" tool_tip="今の位置でカメラワークを止めます" />
+	<button name="btn_back" label="始めに戻る" tool_tip="直前のカメラワークを始めた時のカメラの位置・向き・画角に戻します（撮り直し用）" />
+	<check_box name="hide_ui" label="実行中は UI と HUD を隠す" tool_tip="カメラワークの実行中、メニュー・ツールバー・フローター・ナビゲーションバー・ステータスバー・HUD アタッチメントを隠し、終わったら元に戻します。カメラやアバターは動かしません。この窓自体も隠れます。止めるには Esc。" />
 	<text name="status">待機中。</text>
 </floater>

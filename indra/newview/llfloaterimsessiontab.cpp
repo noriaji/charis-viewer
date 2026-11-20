@@ -94,6 +94,10 @@ LLFloaterIMSessionTab::LLFloaterIMSessionTab(const LLSD& session_id)
             boost::bind(&LLFloaterIMSessionTab::onIMShowModesMenuItemCheck,   this, _2));
     mEnableCallbackRegistrar.add("IMSession.Menu.ShowModes.Enable",
             boost::bind(&LLFloaterIMSessionTab::onIMShowModesMenuItemEnable,  this, _2));
+    // <plus> chat-channel-select: items of the show-modes menu that exist only in nearby chat
+    mEnableCallbackRegistrar.add("IMSession.Menu.ShowModes.Visible",
+            [this](LLUICtrl*, const LLSD&) { return mIsNearbyChat; });
+    // </plus>
 
     // Right click menu handling
     mEnableCallbackRegistrar.add("Avatar.CheckItem",  boost::bind(&LLFloaterIMSessionTab::checkContextMenuItem, this, _2));
@@ -636,7 +640,7 @@ void LLFloaterIMSessionTab::deleteAllChildren()
     mVoiceButton = NULL;
 }
 
-std::string LLFloaterIMSessionTab::appendTime()
+std::string LLFloaterIMSessionTab::appendTime(time_t when)
 {
     std::string timeStr;
     static bool use_24h = gSavedSettings.getBOOL("Use24HourClock");
@@ -652,8 +656,16 @@ std::string LLFloaterIMSessionTab::appendTime()
             + LLTrans::getString("TimeAMPM") + "]";
     }
 
+    // <plus> chat-time-local: switch the SLT fields to the PC's local time
+    static LLCachedControl<bool> use_local(gSavedSettings, "PlusChatTimeLocal", false);
+    if (use_local)
+    {
+        LLStringUtil::replaceString(timeStr, ",slt]", ",local]");
+    }
+    // </plus>
+
     LLSD substitution;
-    substitution["datetime"] = (S32)time_corrected();
+    substitution["datetime"] = (S32)(when ? when : time_corrected());
     LLStringUtil::format(timeStr, substitution);
 
     return timeStr;

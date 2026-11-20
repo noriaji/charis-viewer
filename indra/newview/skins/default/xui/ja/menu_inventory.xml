@@ -93,13 +93,16 @@
 	<menu_item_call name="open_in_new_window" label="新しいウィンドウで開く"/>
 	<menu_item_call label="カット" name="Cut"/>
 	<menu_item_call label="コピー" name="Copy"/>
+	<!-- plus invctxfs --><menu_item_call label="名前をコピー" name="Copy Name"/><!-- /plus -->
 	<menu_item_call label="ペースト" name="Paste"/>
 	<menu_item_call label="リンクとしてペースト" name="Paste As Link"/>
+	<!-- plus invctxfs --><menu_item_call label="すべてのリンクを探す" name="Find Links"/><!-- /plus -->
 	<menu_item_call label="リンクを置き換える" name="Replace Links"/>
 	<menu_item_separator name="Paste Separator"/>
 	<menu_item_call label="削除" name="Delete"/>
 	<menu_item_call label="保護する（削除・移動を禁止）" name="PlusProtectFolder"/>
 	<menu_item_call label="保護を外す" name="PlusUnprotectFolder"/>
+	<!-- plus invctxfs --><menu_item_call label="フォルダを再読み込み" name="ReloadFolder"/><!-- /plus -->
 	<menu_item_call name="Add to Favorites" label="お気に入りに追加"/>
 	<menu_item_call name="Remove from Favorites" label="お気に入りから削除"/>
 	<menu name="upload_options" label="このフォルダにアップロード">

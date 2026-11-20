@@ -218,6 +218,9 @@
 // <plus> the photo screen's key goes before the gestures (plus/photomode, f12-no-gesture)
 #include "plus/photomode/photokeys.h"
 // </plus>
+// <plus> chat-bar: ArrowKeysAlwaysMove while typing in the chat bar (plus/chatbar, research/334)
+#include "plus/chatbar/chatbarlayout.h"
+// </plus>
 // <plus> the flycam on the keyboard and mouse (plus/flycammouse)
 #include "plus/flycammouse/flycammouse.h"
 // </plus>
@@ -1271,6 +1274,13 @@ bool LLViewerWindow::handleAnyMouseClick(LLWindow *window, LLCoordGL pos, MASK m
 
     // <plus> plus/flycammouse: a right button pressed on the world looks around while it is held (flycam)
     if (clicktype == CLICK_RIGHT && down && plus::flycammouse::pressRight(window, pos, mask, x, y))
+    {
+        return true;
+    }
+    // </plus>
+
+    // <plus> plus/flycammouse: the wheel's press (the middle button) levels the flycam
+    if (clicktype == CLICK_MIDDLE && plus::flycammouse::onMiddleClick(down, mask))
     {
         return true;
     }
@@ -3357,7 +3367,10 @@ bool LLViewerWindow::handleKey(KEY key, MASK mask)
 
     if( keyboard_focus )
     {
-        if ((focusedFloaterName == "nearby_chat") || (focusedFloaterName == "im_container") || (focusedFloaterName == "impanel"))
+        // <plus> chat-bar: the chat bar too, as the nearby chat floater's field (plus/chatbar); was the first line with ")" at its end
+        if ((focusedFloaterName == "nearby_chat") || (focusedFloaterName == "im_container") || (focusedFloaterName == "impanel")
+            || plus::chatbar::hasFocus())
+        // </plus>
         {
             static LLCachedControl<bool> key_move(gSavedSettings, "ArrowKeysAlwaysMove");
             if (key_move())
@@ -3450,6 +3463,12 @@ bool LLViewerWindow::handleKey(KEY key, MASK mask)
         !gAgentCamera.isUsingFlycam() && // <plus> plus/flycammouse: the letter keys fly the flycam, as in the mouselook </plus>
         !keyboard_focus && key < 0x80 && (mask == MASK_NONE || mask == MASK_SHIFT) )
     {
+        // <plus> chat-bar: the chat bar takes the letter while it is shown, without opening the conversations (plus/chatbar)
+        if (plus::chatbar::startChat(nullptr))
+        {
+            return true;
+        }
+        // </plus>
         // Initialize nearby chat if it's missing
         LLFloaterIMNearbyChat* nearby_chat = LLFloaterReg::findTypedInstance<LLFloaterIMNearbyChat>("nearby_chat");
         if (!nearby_chat)
@@ -5476,7 +5495,11 @@ bool LLViewerWindow::thumbnailSnapshot(LLImageRaw *raw, S32 preview_width, S32 p
 // Since the required size might be bigger than the available screen, this method rerenders the scene in parts (called subimages) and copy
 // the results over to the final raw image.
 bool LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_height,
-    bool keep_window_aspect, bool is_texture, bool show_ui, bool show_hud, bool do_rebuild, bool no_post, bool show_balance, LLSnapshotModel::ESnapshotLayerType type, S32 max_size)
+    bool keep_window_aspect, bool is_texture, bool show_ui, bool show_hud, bool do_rebuild, bool no_post, bool show_balance, LLSnapshotModel::ESnapshotLayerType type, S32 max_size,
+    // <plus> photomode (research/372)
+    bool force_tiles
+    // </plus>
+    )
 {
     if (!raw)
     {
@@ -5565,7 +5588,11 @@ bool LLViewerWindow::rawSnapshot(LLImageRaw *raw, S32 image_width, S32 image_hei
     if (!keep_window_aspect || (image_width > window_width) || (image_height > window_height))
     {
         if ((image_width <= gGLManager.mGLMaxTextureSize && image_height <= gGLManager.mGLMaxTextureSize) &&
-            (image_width > window_width || image_height > window_height) && LLPipeline::sRenderDeferred && !show_ui)
+            (image_width > window_width || image_height > window_height) && LLPipeline::sRenderDeferred && !show_ui
+            // <plus> photomode (research/372): the tile way below, no big targets
+            && !force_tiles
+            // </plus>
+            )
         {
             U32 color_fmt = type == LLSnapshotModel::SNAPSHOT_TYPE_DEPTH ? GL_DEPTH_COMPONENT : GL_RGBA;
             if (scratch_space.allocate(image_width, image_height, color_fmt, true))

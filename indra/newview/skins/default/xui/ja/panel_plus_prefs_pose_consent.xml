@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel name="plus_pose_consent">
+	<plus_ps_check_compat name="pose_bridge_enable" label="ポーズの依頼に使うブリッジを作って装着する" tool_tip="ブリッジは、スクリプトの入った小さな装着物です。近くの人との間でポーズの依頼を受け渡します（Aurora と互換）。ほかには何も送りません。" />
+	<plus_ps_text name="pose_bridge_enable_note">
+		（既定でオンです。インベントリの #Charis フォルダにブリッジを作って HUD に着けます（装着の枠 1 つとスクリプト 1 つ、Mono の 64 KB を使います）。オフにすると外れ（物は #Charis に残ります）、依頼を受けられません（実質「誰も受けない」）。この欄はログインした後に変えられます。）
+	</plus_ps_text>
+	<plus_ps_text name="pose_ask_policy_label">
+		自分のアバターをポーズする依頼を受ける相手：
+	</plus_ps_text>
+	<plus_ps_combo name="pose_ask_policy" tool_tip="近く（50 m 以内）の人が、写真のためにあなたのアバターをポーズしたいと依頼できます。ポーズは相手の画面の中だけで、このセッションの間だけ有効です。依頼のたびに確認が出ます。対象外の人の依頼は、返事をせずに捨てます。">
+		<plus_ps_combo.item name="Everyone" label="全員" />
+		<plus_ps_combo.item name="Friends" label="フレンド" />
+		<plus_ps_combo.item name="Nobody" label="誰も受けない" />
+	</plus_ps_combo>
+	<plus_ps_text name="pose_ask_policy_note">
+		（依頼が届くのは、双方のポーズ用のブリッジが動いている間だけです。自分のブリッジがオフか止まっている間は「誰も受けない」と同じです。ここの 2 つの設定はアカウントごとで、別のアカウントでは改めて選びます。）
+	</plus_ps_text>
+	<plus_ps_button_compat name="pose_granted_btn" label="ポーズできる人" tool_tip="このセッションでアバターのポーズを許可した人の一覧（取り下げもここから）" />
+	<plus_ps_button_compat name="pose_unblock_btn" label="ブロックを全部解除" tool_tip="ポーズの依頼をブロックした人が、また依頼できるようにします" />
+</panel>

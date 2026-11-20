@@ -40,6 +40,8 @@
 #include "poser/fsfloaterposer.h"
 #include "poser/fsposeranimator.h"
 #include "poser/fsposingmotion.h"
+#include "posermotion/motionbvh.h"
+#include "posermotion/motionposer.h"
 #include "version/version.h"
 #include "plus.h"
 #include "plus/rlv/rlvhooks.h"
@@ -55,6 +57,9 @@
 #include "v4coloru.h"
 #include "llmutelist.h"
 #include "llrender.h"
+#include "llscrolllistcell.h"
+#include "llscrolllistctrl.h"
+#include "llscrolllistitem.h"
 #include "llstartup.h"
 #include "llviewercamera.h"
 #include "llviewercontrol.h"
@@ -202,12 +207,29 @@ public:
 
     // solve_pose and nudge (posesolvetools.cpp) read the skeleton and apply here.
     static void          captureForSolve(const json::object& args, const std::vector<std::string>& wanted,
-                                         plus::posermcp::SolveCapture& out);
-    static std::uint64_t fingerprintOf(const json::object& args);
+                                         plus::posermcp::SolveCapture& out, bool allow_other = false);
+    static std::uint64_t fingerprintOf(const json::object& args, bool allow_other = false);
     static bool          settledNow();
     static void          applySolved(const json::object& args, const std::vector<std::pair<std::string, LLQuaternion>>& rotations,
-                                     const std::optional<LLVector3>& pelvisPosition);
+                                     const std::optional<LLVector3>& pelvisPosition, bool allow_other = false);
     static std::vector<std::pair<std::string, LLVector3>> drawnAt(const json::object& args, const std::vector<std::string>& names);
+
+    // Motion Between Poses (plus/posermotion/motionposer.h): the own avatar's joints, resolved once and written
+    // every frame of a played clip, and the clip saved as BVH with the poser's hierarchy.
+    static bool            selfAvatarThere();
+    static FSPosingMotion* selfPosingMotion();
+    static plus::posermotion::SelfPoseState motionSelfState();
+    static bool            resolveSelfJoints(const plus::posermotion::TrackLayout& layout, plus::posermotion::ResolvedJoints& out);
+    static FSPosingMotion* resolvedMotion(const plus::posermotion::ResolvedJoints& joints);
+    static bool            resolvedJointsHold(const plus::posermotion::ResolvedJoints& joints,
+                                              const plus::posermotion::TrackLayout& layout);
+    static plus::posermotion::WriteResult writeSelfFrame(plus::posermotion::ResolvedJoints& joints,
+                                                         const plus::posermotion::TrackLayout& layout,
+                                                         const plus::posermotion::KeyPose& frame,
+                                                         plus::posermotion::WriteCheck check);
+    static void            refreshSelfWindow();
+    static plus::posermotion::BvhSaveResult saveClipBvh(const std::string& name, const plus::posermotion::MotionClip& clip,
+                                                        const plus::posermotion::TrackLayout& layout);
 
 private:
     static bool          waitForSettle(const JobProgress& progress, bool& settled);
@@ -219,9 +241,12 @@ private:
     static bool          isLoggedIn();
     static void          requireLoggedIn();
     static FSFloaterPoser* poser();
-    static LLVOAvatar*   findAvatar(const LLUUID& id);
-    static LLVOAvatar*   resolveAvatar(const json::object& args);
-    static bool          canPose(FSFloaterPoser* floater, LLVOAvatar* avatar);
+    // allow_other: another person who accepted a pose request (research/336). Only the poser window's own IK drag
+    // passes it; the MCP tools never do, so they stay off other people.
+    static LLVOAvatar*   findAvatar(const LLUUID& id, bool allow_other = false);
+    static LLVOAvatar*   resolveAvatar(const json::object& args, bool allow_other = false);
+    static bool          canPose(FSFloaterPoser* floater, LLVOAvatar* avatar, bool allow_other = false);
+    static std::string   canPoseMessage(bool allow_other);
     static void          requirePosing(FSFloaterPoser* floater, LLVOAvatar* avatar);
     static const FSPoserAnimator::FSPoserJoint& requireJoint(FSFloaterPoser* floater, const std::string& name);
     static FSJointPose*  jointPose(FSFloaterPoser* floater, LLVOAvatar* avatar, const FSPoserAnimator::FSPoserJoint& joint);

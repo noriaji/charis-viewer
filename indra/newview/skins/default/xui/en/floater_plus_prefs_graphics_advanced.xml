@@ -1058,7 +1058,7 @@
                  name="hardware_scroll_panel"
                  background_visible="false"
                  follows="left|top"
-                 height="231"
+                 height="464"
                  layout="topleft"
                  left="0"
                  mouse_opaque="false"
@@ -1120,6 +1120,37 @@
                      tool_tip="Compresses textures in video memory, allowing for higher resolution textures to be loaded at the cost of some color quality."
                      top="43"
                      width="439" />
+                    <plus_ps_check_compat
+                     name="FSLimitTextureVRAMUsage"
+                     control_name="FSLimitTextureVRAMUsage"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="Limit VRAM texture usage (MB)"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="Limits the video memory the textures may take. Textures off screen go down first; if that is not enough, what is on screen goes down too, but not below its floor level, so a limit set too low is not reached. Other uses of video memory (shadows, buffers) are not limited, so the total may be higher. Off: the budget follows the GPU's video memory. To try a GPU with less video memory, use the video memory override below."
+                     top="73"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="RenderMaxVRAMBudget"
+                     control_name="RenderMaxVRAMBudget"
+                     enabled_control="FSLimitTextureVRAMUsage"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="64"
+                     initial_value="2048"
+                     label="Texture VRAM limit (MB):"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="16384"
+                     min_val="768"
+                     text_width="58"
+                     tool_tip="The most video memory, in MB, the textures may take."
+                     top="103"
+                     width="439" />
                     <plus_ps_text
                      name="antialiasing label"
                      follows="left|top"
@@ -1127,7 +1158,7 @@
                      layout="topleft"
                      left="14"
                      length="1"
-                     top="73"
+                     top="134"
                      type="string"
                      use_ellipses="true"
                      width="196">
@@ -1142,7 +1173,7 @@
                      label="Antialiasing"
                      layout="topleft"
                      left="222"
-                     top="73"
+                     top="134"
                      width="231">
                         <plus_ps_combo.item
                          name="FSAADisabled"
@@ -1165,7 +1196,7 @@
                      layout="topleft"
                      left="222"
                      length="1"
-                     top="106"
+                     top="167"
                      type="string"
                      width="231">
                         (requires restart)
@@ -1177,7 +1208,7 @@
                      layout="topleft"
                      left="14"
                      length="1"
-                     top="124"
+                     top="185"
                      type="string"
                      use_ellipses="true"
                      width="196">
@@ -1192,7 +1223,7 @@
                      label="Antialiasing"
                      layout="topleft"
                      left="222"
-                     top="124"
+                     top="185"
                      width="231">
                         <plus_ps_combo.item
                          name="Low"
@@ -1221,7 +1252,101 @@
                      layout="topleft"
                      left="14"
                      tool_tip="Temporal anti-aliasing: mixes the last few frames into this one, so thin lines and edges that stay jagged or flicker smooth out where the view is still. It comes after the anti-aliasing above, which stays as it is set (FXAA or SMAA and TAA are both used). Moving things may leave a faint trail. Saved snapshots are taken without it. Light; takes effect at once, no restart."
-                     top="157"
+                     top="218"
+                     width="439" />
+                    <!-- vram-ui (research/371): the video memory settings. The limit is after the texture compression, before the antialiasing
+                         (Firestorm's order); the test settings that need a restart and the automatic texture downscaling follow TAA.
+                         Each top is the one before's top plus its height -->
+                    <plus_ps_text
+                     name="vram_test_label"
+                     follows="left|top"
+                     height="18"
+                     kind="hint"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="258"
+                     type="string"
+                     width="439">
+                        Video memory override (requires restart):
+                    </plus_ps_text>
+                    <plus_ps_check_compat
+                     name="FSOverrideVRAMDetection"
+                     control_name="FSOverrideVRAMDetection"
+                     follows="left|top"
+                     height="30"
+                     initial_value="false"
+                     label="Override VRAM detection"
+                     layout="topleft"
+                     left="14"
+                     tool_tip="Makes the viewer behave as if the GPU had less (or more) video memory: to give the right amount when it is not detected correctly, or to test how it runs with little of it, for example on an integrated GPU. The recommended quality, the shadow map size and the texture budget follow it. The GPU is not really limited, so it does not run short of memory as a small one would. More than the GPU has only works for a GPU with video memory of its own (it changes the recommended Ultra quality and the sun shadow map size); an integrated GPU can only be set lower."
+                     top="276"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="FSForcedVideoMemory"
+                     control_name="FSForcedVideoMemory"
+                     enabled_control="FSOverrideVRAMDetection"
+                     decimal_digits="1"
+                     follows="left|top"
+                     height="31"
+                     increment="0.5"
+                     initial_value="4"
+                     label="Video memory to pretend (GB):"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="32"
+                     min_val="0.5"
+                     text_width="58"
+                     tool_tip="The dedicated video memory the viewer pretends the GPU has. Not the PC's shared memory."
+                     top="306"
+                     width="439" />
+                    <plus_ps_text
+                     name="texture_downscale_label"
+                     follows="left|top"
+                     height="18"
+                     kind="hint"
+                     layout="topleft"
+                     left="14"
+                     length="1"
+                     top="344"
+                     type="string"
+                     width="439">
+                        Automatic texture downscaling (0: never):
+                    </plus_ps_text>
+                    <plus_ps_slider_compat
+                     name="TextureDiscardBackgroundedTime"
+                     control_name="TextureDiscardBackgroundedTime"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="10"
+                     initial_value="60"
+                     label="In the background (s):"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="600"
+                     text_width="58"
+                     tool_tip="After this many seconds without the viewer in front, the textures go down to free video memory. 0: never."
+                     top="364"
+                     width="439" />
+                    <plus_ps_slider_compat
+                     name="TextureDiscardMinimizedTime"
+                     control_name="TextureDiscardMinimizedTime"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="1"
+                     label="Minimized (s):"
+                     label_width="200"
+                     layout="topleft"
+                     left="14"
+                     max_val="60"
+                     text_width="58"
+                     tool_tip="After this many seconds minimized, the textures go down to free video memory. 0: never."
+                     top="395"
                      width="439" />
                     <!-- HiDPI last: it is hidden on Windows, so it leaves no gap -->
                     <plus_ps_check_compat
@@ -1234,7 +1359,7 @@
                      layout="topleft"
                      left="14"
                      tool_tip="Enable OpenGL for High-Resolution Drawing."
-                     top="187"
+                     top="426"
                      width="439" />
                 </panel>
             </scroll_container>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="floater_fs_add_contact" title="コンタクトセットに追加">
+	<floater.string name="no_sets">コンタクトセットがありません（＋で作ります）</floater.string>
+	<floater.string name="text_add_single">[NAME] を追加するコンタクトセット：</floater.string>
+	<floater.string name="text_add_multiple">[COUNT] 人を追加するコンタクトセット：</floater.string>
+	<plus_ps_box name="body">
+		<plus_ps_button_compat name="add_set_btn" tool_tip="新しいコンタクトセットを作る"/>
+		<plus_ps_button_compat name="add_btn" label="セットに追加"/>
+		<plus_ps_button_compat name="cancel_btn" label="キャンセル"/>
+	</plus_ps_box>
+</floater>

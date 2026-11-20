@@ -147,7 +147,10 @@ LLPassScope::LLPassScope(const char* name, const LLRenderTarget* target, std::in
         pass.has_target = true;
         // Opened right after bindTarget: the bound framebuffer is the target's.
         t.framebuffer = LLRenderTarget::getCurrentBoundTarget() == target ? LLRenderTarget::sCurFBO : 0;
-        t.color_count = llmin(target->getNumTextures(), 4u);
+        // <plus> tu-motion-v1 (research/373): up to the G-buffer's five (was: llmin(target->getNumTextures(), 4u))
+        static_assert(LLRenderTarget::MAX_COLOR_ATTACHMENTS == LLRHI::PASS_MAX_COLORS, "a pass names every colour attachment");
+        t.color_count = llmin(target->getNumTextures(), LLRHI::PASS_MAX_COLORS);
+        // </plus>
         for (U32 i = 0; i < t.color_count; ++i)
         {
             t.colors[i] = target->getTexture(i);

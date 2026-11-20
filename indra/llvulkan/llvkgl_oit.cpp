@@ -44,7 +44,7 @@ namespace llvkgl
     // check (oit_harvest, once the frame slot comes round again).
     //
     // Resources: the heads image (r32ui), the copy (the target's format) and
-    // the rest image (r32ui x OIT_REST_LAYERS, made after a first overflow)
+    // the rest image (r32ui x OIT_REST_LAYERS, made when a session first ran out of nodes at that size: oit_resources)
     // follow the target's size; the node buffer grows. They are used by the
     // GPU in submission order only (no CPU access): one set serves every
     // frame in flight, the barriers at each begin and resolve order a session
@@ -85,6 +85,94 @@ namespace
     // from where that is less than LLRHI_OIT_TOLERANCE_REL of the distance
     // (0.0005: 8 m on), that. A surface is at most LLRHI_OIT_SPAN (4) such
     // gaps deep, so a long run of leaves is not reordered by priority.
+    // Inside a surface, layers of the same priority nearly as deep as each
+    // other go by the tie key (oit_coplanar, oit_tiekey: research/370).
+    // LLRHI_OIT_COPLANAR: how close (a share of the tolerance, at most 1) such
+    // layers are, 0.05 (about 0.2 mm near the eye) unset, empty or not a
+    // number (bad: oit_tiekey logs it, there being no log yet); 0: only layers
+    // of equal depth bits; below 0 (-inf too): no tie key. Read at startup,
+    // like the others.
+    // LLRHI_OIT_SKIP_ALPHA (research/381 A): the alpha up to which a fragment
+    // of an inert blend (oit_blend_inert) makes no node: 0 unset, empty or not
+    // a number (bad: oit_init logs it); up to 1/256 (0.0039, the alpha
+    // pool's minimum_alpha: more is cut to it); below 0 (-inf too): off, every
+    // fragment makes a node as before.
+    struct OITEnvFloat
+    {
+        F32 value;
+        bool bad = false;
+    };
+    // The number of a variable (strtod: the C locale): unset or empty, or bad
+    // (not a number, junk after it, NaN): fallback; below 0: -1; else at most high.
+    OITEnvFloat oit_env_float(const char* name, F32 fallback, F32 high)
+    {
+        OITEnvFloat setting;
+        setting.value = fallback;
+        const char* env = std::getenv(name);
+        if (!env || !*env)
+        {
+            return setting;
+        }
+        char* end = nullptr;
+        const double value = strtod(env, &end);
+        const bool parsed = end != env;
+        while (*end == ' ' || *end == '\t')
+        {
+            ++end;
+        }
+        if (!parsed || *end != '\0' || std::isnan(value))
+        {
+            setting.bad = true;
+            return setting;
+        }
+        setting.value = value < 0.0 ? -1.f : (F32)llmin(value, (double)high);
+        return setting;
+    }
+    const OITEnvFloat sOITCoplanar = oit_env_float("LLRHI_OIT_COPLANAR", 0.05f, 1.f);
+    const OITEnvFloat sOITSkipAlpha = oit_env_float("LLRHI_OIT_SKIP_ALPHA", 0.f, 1.f / 256.f);
+    // LLRHI_OIT_SKIP_ALPHA as the log and the report say it.
+    std::string oit_skip_text()
+    {
+        return sOITSkipAlpha.value < 0.f ? "off" : std::to_string(sOITSkipAlpha.value);
+    }
+    // LLRHI_OIT_REST (research/381 B'): when the rest image is made. Unset, empty or anything else: sticky, the
+    // first time a session ran out of nodes at that size, and kept (what is lost is that first session's fragments
+    // and those of the one or two sessions made before the count was read back);
+    // "lazy": the rule before, only once the node buffer cannot grow to what was needed; "eager": with the lists,
+    // before any overflow (no fragment lost; 90 MiB of images at 1920x1028, of which 45 MiB are cleared in each
+    // full session, all 90 in a hybrid one). Read at startup.
+    enum class OITRestMode { Sticky, Lazy, Eager };
+    struct OITRestSetting
+    {
+        OITRestMode mode = OITRestMode::Sticky;
+        bool bad = false;
+    };
+    const OITRestSetting sOITRest = []()
+    {
+        OITRestSetting setting;
+        const char* env = std::getenv("LLRHI_OIT_REST");
+        if (!env || !*env || std::strcmp(env, "sticky") == 0)
+        {
+            return setting;
+        }
+        if (std::strcmp(env, "lazy") == 0)
+        {
+            setting.mode = OITRestMode::Lazy;
+        }
+        else if (std::strcmp(env, "eager") == 0)
+        {
+            setting.mode = OITRestMode::Eager;
+        }
+        else
+        {
+            setting.bad = true;
+        }
+        return setting;
+    }();
+    const char* oit_rest_text()
+    {
+        return sOITRest.mode == OITRestMode::Lazy ? "lazy" : sOITRest.mode == OITRestMode::Eager ? "eager" : "sticky";
+    }
     const F32 sOITTolerance = []()
     {
         const char* env = std::getenv("LLRHI_OIT_TOLERANCE_MM");
@@ -100,7 +188,8 @@ namespace
         const char* env = std::getenv("LLRHI_OIT_SPAN");
         return env && *env ? llclamp((F32)atof(env), 1.f, 100.f) : 4.f;
     }();
-    // The resolve pass's push constants (OIT_RESOLVE_FRAGMENT).
+    // The resolve pass's push constants (OIT_RESOLVE_FRAGMENT; the same
+    // fields in the same order as both stages' Resolve blocks).
     struct OITResolveConstants
     {
         U32 clamp_colors = 0;
@@ -113,6 +202,7 @@ namespace
         F32 span = 4.f;
         F32 width = 1.f;                // the vertex stage's (OIT_RESOLVE_VERTEX)
         F32 height = 1.f;
+        F32 coplanar = -1.f;            // research/370: below 0, no tie key
     };
     // A readback entry: the header as the resolve leaves it, then the count
     // as the avatar half of a hybrid session left it (oit_world).
@@ -381,8 +471,28 @@ namespace
         const U64 max_bytes = llmin((U64)sOITMaxMB << 20, (U64)device.getLimits().maxStorageBufferRange);
         sOIT.max_nodes = (U32)llmin((max_bytes - OIT_HEADER_BYTES) / (OIT_NODE_WORDS * 4), (U64)0x7fffffffu / OIT_NODE_WORDS);
         sOIT.ready = true;
-        LL_INFOS("VKGL") << "OIT ready: " << sOITLayers << " nodes per pixel to start with, at most " << sOIT.max_nodes << " nodes" << LL_ENDL;
+        LL_INFOS("VKGL") << "OIT ready: " << sOITLayers << " nodes per pixel to start with, at most " << sOIT.max_nodes << " nodes"
+                         << ", skip alpha " << oit_skip_text() << (sOITSkipAlpha.bad ? " (LLRHI_OIT_SKIP_ALPHA not a number: the default)" : "")
+                         << ", rest image " << oit_rest_text() << (sOITRest.bad ? " (LLRHI_OIT_REST not lazy, sticky or eager: sticky)" : "")
+                         << LL_ENDL;
         return true;
+    }
+
+    U64 oit_target_pixels()
+    {
+        return (U64)sOIT.width * sOIT.height;
+    }
+
+    // A session at this many pixels ran out of nodes (oit_harvest, oit_snapshot_check): it wanted this many.
+    // The rest image is asked for at that size (oit_resources makes it); lazy: oit_resources' own rule
+    // (overflow_need beyond what the buffer can grow to) decides, so the size is left out.
+    void oit_want_rest(U64 pixels, U32 need)
+    {
+        sOIT.overflow_need = llmax(sOIT.overflow_need, need);
+        if (sOITRest.mode != OITRestMode::Lazy)
+        {
+            sOIT.rest_wanted_pixels = llmax(sOIT.rest_wanted_pixels, pixels);
+        }
     }
 
     // The counts a frame slot's last sessions wrote: how many nodes they
@@ -426,7 +536,7 @@ namespace
             if (count > capacity)
             {
                 ++sOIT.overflows;           // fragments were summed into the rest, or lost
-                sOIT.overflow_need = llmax(sOIT.overflow_need, count);
+                oit_want_rest(rb.pixels[i], count);
             }
         }
         rb.sessions = 0;
@@ -440,6 +550,59 @@ namespace
         }
     }
 
+    // After a failure to make the rest image at a size, it is not tried again at that size for this many frames
+    // (a try is a 90 MiB vmaCreateImage; sFrame counts frames, no clock).
+    constexpr U32 OIT_REST_RETRY_FRAMES = 300;
+    // How many makes of the rest image are logged one by one (then one in OIT_REST_LOG_EVERY): a snapshot or a window
+    // dragged to new sizes makes it at every size.
+    constexpr U32 OIT_REST_LOG_FIRST = 4;
+    constexpr U32 OIT_REST_LOG_EVERY = 16;
+
+    // The rest image (research/381 B'): where a session has run out of nodes the fragments past the end are
+    // summed into it instead of being lost. Made as soon as a session at this size (or a larger one: it is made
+    // for targets of at most rest_wanted_pixels) ran out, whether or not the buffer grows for the next one, and
+    // kept until the size changes. Lazy (LLRHI_OIT_REST=lazy, the rule before): only when the buffer cannot
+    // grow to what was needed, for any size from then on. A failure at a size is warned once, and not tried
+    // again there until OIT_REST_RETRY_FRAMES frames have passed (or the size changes).
+    void oit_ensure_rest(U32 width, U32 height)
+    {
+        const U64 pixels = (U64)width * height;
+        if (sOITRest.mode == OITRestMode::Lazy && sOIT.overflow_need > sOIT.capacity)
+        {
+            sOIT.rest_wanted_pixels = ~(U64)0;
+        }
+        sOIT.overflow_need = 0;
+        if (sOIT.rest_wanted_pixels < pixels || sOIT.rest.image)
+        {
+            return;
+        }
+        if (sOIT.rest_failed_pixels == pixels && sFrame - sOIT.rest_failed_frame < OIT_REST_RETRY_FRAMES)
+        {
+            return;
+        }
+        if (oit_make_image(sOIT.rest, VK_FORMAT_R32_UINT, width, height, OIT_REST_LAYERS,
+                           VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT))
+        {
+            sOIT.rest_failed_pixels = 0;
+            ++sOIT.rest_makes;
+            if (sOIT.rest_makes <= OIT_REST_LOG_FIRST || sOIT.rest_makes % OIT_REST_LOG_EVERY == 0)
+            {
+                LL_INFOS("VKGL") << "OIT: rest image " << width << "x" << height << " (" << (pixels * OIT_REST_LAYERS * 4 >> 20) << " MiB), "
+                                 << "what the node buffer cannot hold is summed into it (made " << sOIT.rest_makes << " times)" << LL_ENDL;
+            }
+        }
+        else
+        {
+            sOIT.rest_wanted_pixels = 0;    // fragments past the end stay lost; a later overflow read asks again
+            sOIT.rest_failed_frame = sFrame;
+            if (sOIT.rest_failed_pixels != pixels)
+            {
+                sOIT.rest_failed_pixels = pixels;   // warned once at this size
+                LL_WARNS("VKGL") << "OIT: no rest image " << width << "x" << height << LL_ENDL;
+            }
+        }
+    }
+
     // The sized resources for a target of width x height with this color format.
     bool oit_resources(U32 width, U32 height, VkFormat color_format)
     {
@@ -449,6 +612,7 @@ namespace
             oit_destroy_image(sOIT.heads);
             oit_destroy_image(sOIT.copy);
             oit_destroy_image(sOIT.rest);
+            sOIT.rest_failed_pixels = 0;    // a failure at the other size says nothing about this one
             sOIT.width = sOIT.height = 0;
             if (!oit_make_image(sOIT.heads, VK_FORMAT_R32_UINT, width, height, 1, VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT))
             {
@@ -457,6 +621,10 @@ namespace
             }
             sOIT.width = width;
             sOIT.height = height;
+            if (sOITRest.mode == OITRestMode::Eager)
+            {
+                sOIT.rest_wanted_pixels = llmax(sOIT.rest_wanted_pixels, pixels);
+            }
             const U32 start = (U32)llmin(pixels * sOITLayers, (U64)sOIT.max_nodes);
             if (sOIT.nodes && sOIT.capacity / 2 > start)
             {
@@ -537,27 +705,7 @@ namespace
                 return false;
             }
         }
-        // Running out once only makes the buffer grow (the next frames fit);
-        // when it cannot grow to that, fragments past the end are summed into
-        // the rest image from then on instead of being lost.
-        if (sOIT.overflow_need > sOIT.capacity)
-        {
-            sOIT.rest_wanted = true;
-        }
-        sOIT.overflow_need = 0;
-        if (sOIT.rest_wanted && !sOIT.rest.image)
-        {
-            if (oit_make_image(sOIT.rest, VK_FORMAT_R32_UINT, width, height, OIT_REST_LAYERS,
-                               VK_IMAGE_USAGE_STORAGE_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT))
-            {
-                LL_INFOS("VKGL") << "OIT: the node buffer cannot hold every fragment, the rest are summed" << LL_ENDL;
-            }
-            else
-            {
-                sOIT.rest_wanted = false;   // fragments past the end stay lost
-                LL_WARNS("VKGL") << "OIT: no rest image" << LL_ENDL;
-            }
-        }
+        oit_ensure_rest(width, height);
         return true;
     }
 
@@ -807,7 +955,8 @@ namespace
         }
         const OITImage& rest = sOIT.rest.image ? sOIT.rest : sOIT.dummy_rest;
         // The bounds start empty (min past max).
-        const U32 header[OIT_HEADER_WORDS] = { 0, sOIT.capacity, sOIT.rest.image ? OIT_FLAG_REST : 0u, 0, U32_MAX, U32_MAX, 0, 0 };
+        const U32 flags = (sOIT.rest.image ? OIT_FLAG_REST : 0u) | (hybrid ? OIT_FLAG_FRONT : 0u);
+        const U32 header[OIT_HEADER_WORDS] = { 0, sOIT.capacity, flags, 0, U32_MAX, U32_MAX, 0, 0 };
         memcpy(header_data, header, sizeof(header));
 
         // The session's set (the frame that used it last is done).
@@ -888,8 +1037,10 @@ namespace
         vkCmdClearColorImage(cmd, sOIT.heads.image, VK_IMAGE_LAYOUT_GENERAL, &empty, 1, &range);
         if (sOIT.rest.image)
         {
+            // The front (layers 6-11) only a hybrid session writes and reads (flags bit 1): a full session clears half.
             const VkClearColorValue zero = {};
-            vkCmdClearColorImage(cmd, sOIT.rest.image, VK_IMAGE_LAYOUT_GENERAL, &zero, 1, &range);
+            const VkImageSubresourceRange rest_range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, hybrid ? OIT_REST_LAYERS : OIT_FRONT_FIRST_LAYER };
+            vkCmdClearColorImage(cmd, sOIT.rest.image, VK_IMAGE_LAYOUT_GENERAL, &zero, 1, &rest_range);
         }
         const VkBufferCopy header_copy = { ring_offset, 0, OIT_HEADER_BYTES };
         vkCmdCopyBuffer(cmd, ring, sOIT.nodes, 1, &header_copy);
@@ -908,6 +1059,7 @@ namespace
         rb.copied[entry] = false;       // until its resolve copies the count
         rb.avatar_copied[entry] = false;
         rb.avatar_draws[entry] = 0;
+        rb.pixels[entry] = oit_target_pixels();   // what an overflow of this session asks the rest image for (oit_harvest)
         rb.frame_begin = mirror.frameBegins();
         sOIT.active = true;
         sOIT.hybrid = hybrid;
@@ -942,7 +1094,9 @@ namespace
     // variant, or when the last OIT_EMPTY_STREAK sessions read back appended
     // no avatar node and this avatar half draws no more than those did (an
     // avatar that comes into view with no new draw is ordered over the
-    // world alpha for the frames until the count comes back). The resolve
+    // world alpha for the frames until the count comes back; research/381 A
+    // makes it likelier: an avatar whose alpha is 0 everywhere makes no node,
+    // and its alpha showing later (llSetAlpha) adds no draw). The resolve
     // still runs when there were avatar draws (its bounds pass finds the
     // nodes, if any).
     void oit_world()
@@ -1121,6 +1275,7 @@ namespace
         constants.span = sOITSpan;
         constants.width = (F32)sOIT.width;
         constants.height = (F32)sOIT.height;
+        constants.coplanar = oit_tiekey() ? oit_coplanar() : -1.f;
         vkCmdPushConstants(draw, sOIT.resolve_layout, OIT_RESOLVE_STAGES, 0, sizeof(constants), &constants);
         const VkViewport viewport = { 0.f, 0.f, (F32)sOIT.width, (F32)sOIT.height, 0.f, 1.f };
         const VkRect2D scissor = { { 0, 0 }, { sOIT.width, sOIT.height } };
@@ -1214,10 +1369,10 @@ namespace
                 return true;
             }
         }
-        // As large as it gets: the fragments past the end go to the rest image.
+        // As large as it gets: the fragments past the end go to the rest image (also for this size from now on).
         if (!sOIT.rest.image)
         {
-            sOIT.overflow_need = llmax(sOIT.overflow_need, need);
+            oit_want_rest(oit_target_pixels(), need);
             oit_resources(sOIT.width, sOIT.height, sOIT.copy.format);
             return sOIT.rest.image != VK_NULL_HANDLE;
         }
@@ -1367,12 +1522,54 @@ namespace
             << sOIT.draws / frames << " (split " << sOIT.split_draws / frames << ", set binds " << sOIT.set_binds / frames
             << "), drawn as before " << sOIT.classic_draws / frames
             << ", nodes peak " << sOIT.peak << " of "
-            << sOIT.capacity << ", overflows " << sOIT.overflows << ", grows " << sOIT.grows << ", rest " << (sOIT.rest.image ? "on" : "off")
+            << sOIT.capacity << ", overflows " << sOIT.overflows << ", grows " << sOIT.grows << ", rest " << (sOIT.rest.image ? "on" : "off") << " (" << oit_rest_text() << ", wanted up to "
+            << (sOIT.rest_wanted_pixels == ~(U64)0 ? std::string("any size") : std::to_string(sOIT.rest_wanted_pixels) + " pixels") << ")"
+            << ", skip alpha " << oit_skip_text()
             << ", variants " << sOIT.variants << " (none " << sOIT.variants_failed << ")";
         sOIT.sessions = sOIT.refused = sOIT.dropped = sOIT.draws = sOIT.classic_draws = 0;
         sOIT.hybrid_sessions = sOIT.avatarless = sOIT.split_draws = sOIT.set_binds = 0;
         sOIT.peak = sOIT.overflows = sOIT.grows = 0;
         return out.str();
+    }
+
+    // research/381 A: LLRHI_OIT_SKIP_ALPHA (sOITSkipAlpha): -1 for off, else 0 to 1/256.
+    F32 oit_skip_alpha()
+    {
+        return sOITSkipAlpha.value;
+    }
+
+    // research/370: LLRHI_OIT_COPLANAR (sOITCoplanar): -1 for no tie key, else 0 to 1.
+    F32 oit_coplanar()
+    {
+        return sOITCoplanar.value;
+    }
+
+    // Whether the variants read the tie key (oit_rewrite: llrhi_oit_tie_read) and
+    // the resolve orders by it. The device enables geometryShader whenever
+    // the GPU has it (llvkdevice.cpp, hasGeometryShader); decided once there
+    // is a device.
+    bool oit_tiekey()
+    {
+        static std::atomic<S32> sTieKey{ -1 };      // -1: not decided yet
+        const S32 known = sTieKey.load(std::memory_order_relaxed);
+        if (known >= 0)
+        {
+            return known != 0;
+        }
+        const LLVKDevice& device = LLVKDevice::instance();
+        if (!device.isReady())
+        {
+            return false;   // no variant is built nor resolved without one
+        }
+        const bool on = oit_coplanar() >= 0.f && device.hasGeometryShader();
+        S32 expected = -1;
+        if (sTieKey.compare_exchange_strong(expected, on ? 1 : 0, std::memory_order_relaxed))
+        {
+            LL_INFOS("VKGL") << "OIT: coplanar tie key " << (on ? "on" : "off") << " (LLRHI_OIT_COPLANAR " << oit_coplanar()
+                             << (sOITCoplanar.bad ? ", not a number: the default" : "")
+                             << (on || oit_coplanar() < 0.f ? ")" : ", no geometryShader)") << LL_ENDL;
+        }
+        return on;
     }
 
     bool bake_oit_shaders()

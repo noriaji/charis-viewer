@@ -28,6 +28,7 @@ list(APPEND plus_HEADER_FILES
     plus/poser/fstoolcomppose.h
     plus/poser/fsvirtualtrackpad.h
     plus/poser/handcurl.h
+    plus/poser/poser.h
     )
 
 # handcurl_test.cpp is a stand-alone test (cl /EHsc /std:c++17 handcurl_test.cpp handcurl.cpp), not built here.

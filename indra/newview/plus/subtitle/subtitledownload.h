@@ -75,6 +75,8 @@ namespace plus
         {
         public:
             enum class State { Idle, Running, Verifying, Done, Failed };
+            // What kind of failure it was, for a window that names it (failure() is the log's sentence).
+            enum class FailureKind { None, Network, Size, Hash, Disk };
 
             ModelDownload();
             ~ModelDownload();   // cancels
@@ -89,6 +91,8 @@ namespace plus
             double fraction() const;
             // Why it is Failed (English, for the log; the window has its own words).
             std::string failure() const;
+            // Its kind (None unless Failed).
+            FailureKind failureKind() const;
 
         private:
             struct Impl;

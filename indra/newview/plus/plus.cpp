@@ -33,6 +33,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llapp.h"
+#include "llappviewer.h"
 #include "llcallbacklist.h"
 #include "llcontrol.h"
 #include "lldir.h"
@@ -42,12 +43,16 @@
 #include "llfloatertools.h"
 #include "llfocusmgr.h"
 #include "llframetimer.h"
+#include "llaisapi.h"
+#include "llinventorymodel.h"
+#include "llviewerinventory.h"
 #include "llmenugl.h"
 #include "llsettingssky.h"
 #include "llsdserialize.h"
 #include "llsdutil.h"
 #include "llstartup.h"
 #include "llthread.h"
+#include "workqueue.h"
 #include "lluictrl.h"
 #include "lluictrlfactory.h"
 #include "llviewercontrol.h"
@@ -70,6 +75,7 @@
 #if LL_WINDOWS
 #include "llwin32headers.h"
 #include <objbase.h>  // CoInitializeEx (left out by WIN32_LEAN_AND_MEAN)
+#include <sddl.h>     // ConvertSidToStringSidW
 #include <shellapi.h>
 #else
 #include "llprocess.h"
@@ -532,11 +538,41 @@ namespace plus
         }
     }
 
+    // research/337 (E): the quit saves these three with LLControlGroup::saveToFile(), which writes
+    // "<file>.<pid>.tmp" and moves it over; a crash between leaves it, and only a later
+    // saveSettingsFile() of the same file would tidy it. Once in-world (the account's file is named
+    // by then): removeStaleTemps() reads each file's folder once a session and removes only the
+    // names of other processes written over an hour ago (never this process's own, so a save of
+    // ours meanwhile is safe). The names are made here on the main thread (settings, the app);
+    // the folders are read on the "General" thread pool (removeStaleTemps() is for any thread):
+    // the account's folder holds the chat logs too, and may be long. A pool already closed (the
+    // viewer ending) takes nothing, and nothing is tidied then.
+    static void tidySettingsTemps()
+    {
+        std::vector<std::string> paths;
+        paths.push_back(gSavedSettings.getString("ClientSettingsFile"));
+        paths.push_back(gSavedSettings.getString("PerAccountSettingsFile"));
+        paths.push_back(gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS,
+                                                       LLAppViewer::instance()->getSettingsFilename("Default", "Warnings")));
+        LL::WorkQueue::postMaybe(LL::WorkQueue::getInstance("General"), [paths = std::move(paths)]()
+        {
+            for (const std::string& path : paths)
+            {
+                if (!LLApp::isRunning())
+                {
+                    return;
+                }
+                removeStaleTemps(path);
+            }
+        });
+    }
+
     void onStartupStateChanged(int from, int to, const std::string& to_name)
     {
         if (to == STATE_STARTED)
         {
             releaseAutoTune();
+            tidySettingsTemps();
         }
         loginfast::onStartupState(from, to, to_name);
         rlv::onStartupState(from, to);
@@ -679,6 +715,83 @@ namespace plus
         return focus && focus->acceptsTextInput();
     }
 
+    bool findChildFolder(const LLUUID& parent, const std::string& name, LLUUID& found)
+    {
+        LLInventoryModel::cat_array_t*  cats  = nullptr;
+        LLInventoryModel::item_array_t* items = nullptr;
+        gInventory.getDirectDescendentsOf(parent, cats, items);
+        if (cats)
+        {
+            for (const LLPointer<LLViewerInventoryCategory>& cat : *cats)
+            {
+                if (cat->getName() == name)
+                {
+                    found = cat->getUUID();
+                    return true;
+                }
+            }
+        }
+
+        // Not there: certain only once the parent's contents are all known.
+        if (gInventory.isCategoryComplete(parent))
+        {
+            found.setNull();
+            return true;
+        }
+        gInventory.fetchDescendentsOf(parent);
+        return false;
+    }
+
+    namespace
+    {
+        using folder_done_t = std::function<void(const LLUUID&)>;
+
+        // Who waits for makeCharisFolder() (empty: it is not being made).
+        std::vector<folder_done_t>& charisFolderWaiters()
+        {
+            static std::vector<folder_done_t> waiters;
+            return waiters;
+        }
+    }
+
+    void makeCharisFolder(folder_done_t done)
+    {
+        const LLUUID root = gInventory.getRootFolderID();
+        LLUUID       found;
+        if (findChildFolder(root, CHARIS_FOLDER_NAME, found) && found.notNull())
+        {
+            done(found);
+            return;
+        }
+        std::vector<folder_done_t>& waiters = charisFolderWaiters();
+        waiters.push_back(std::move(done));
+        if (waiters.size() > 1)
+        {
+            return; // being made: the answer comes to every caller
+        }
+        auto answer = [](const LLUUID& id)
+        {
+            std::vector<folder_done_t> called;
+            called.swap(charisFolderWaiters());
+            for (folder_done_t& fn : called)
+            {
+                fn(id);
+            }
+        };
+        if (!AISAPI::isAvailable())
+        {
+            gInventory.createNewCategory(root, LLFolderType::FT_NONE, CHARIS_FOLDER_NAME, answer);
+            return;
+        }
+        // As plus/ao made it before (one AIS request).
+        LLSD body;
+        body["categories"] = LLSD::emptyArray();
+        LLPointer<LLViewerInventoryCategory> cat =
+            new LLViewerInventoryCategory(LLUUID::null, root, LLFolderType::FT_NONE, CHARIS_FOLDER_NAME, gAgent.getID());
+        body["categories"].append(cat->asAISCreateCatLLSD());
+        AISAPI::CreateInventory(root, body, answer);
+    }
+
 #if LL_WINDOWS
     std::wstring ownExePath()
     {
@@ -700,6 +813,29 @@ namespace plus
             }
             path.resize(path.size() * 2);
         }
+    }
+
+    std::wstring userSidText()
+    {
+        HANDLE token = nullptr;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+        {
+            return std::wstring();
+        }
+        DWORD size = 0;
+        GetTokenInformation(token, TokenUser, nullptr, 0, &size);
+        std::vector<BYTE> user(size);
+        LPWSTR text = nullptr;
+        const bool got = size && GetTokenInformation(token, TokenUser, user.data(), size, &size) &&
+                         ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(user.data())->User.Sid, &text);
+        CloseHandle(token);
+        if (!got)
+        {
+            return std::wstring();
+        }
+        std::wstring sid(text);
+        LocalFree(text);
+        return sid;
     }
 #endif
 
@@ -977,33 +1113,17 @@ namespace plus
             // changes; ending it puts the user's back (nothing when not comparing).
             plus::photomode::compareEnd();
         }
-        U32 saved = 0;
-        const FileWrite wrote = replaceFile(path, [&](const std::string& temp)
+        // saveToFileReplacing() writes "<path>.<pid>.tmp" (tempPathFor()'s name) and moves it over path
+        // (research/337 E). A full disk, no temporary file, or a move refused each time leaves path as
+        // it was and gives 0 (as an empty group does); it never writes path in place. It used to be
+        // wrapped in replaceFile() here, which gave the temporary file a temporary file of its own
+        // ("<path>.<pid>.tmp.<pid>.tmp", a name removeStaleTemps() does not take).
+        const U32 saved = group.saveToFileReplacing(path, nondefault_only);
+        if (saved > 0)
         {
-            LLFile::remove(temp, ENOENT);   // one left by a crash must not pass for this save
-            saved = group.saveToFile(temp, nondefault_only);  // its own format, as at quit
-            // saveToFile() does not tell a failed write (a full disk) from a good one,
-            // and returns 0 for an empty group too: the file decides.
-            bool whole = false;
-            {
-                llifstream in(temp.c_str());
-                LLSD check;
-                // (Nothing to save writes an undefined value, not a map.)
-                whole = in.is_open() && LLSDSerialize::fromXML(check, in) != LLSDParser::PARSE_FAILURE
-                     && (saved == 0 || (check.isMap() && check.size() == (S32)saved));
-            }
-            if (!whole)
-            {
-                LL_WARNS("Plus") << "Settings not saved to " << path << ": " << temp << " could not be written whole" << LL_ENDL;
-                return FileWrite::cannot_write;
-            }
-            return FileWrite::written;
-        });
-        if (wrote == FileWrite::cannot_replace)
-        {
-            LL_WARNS("Plus") << "Settings not saved: cannot replace " << path << LL_ENDL;
+            removeStaleTemps(path);   // what a crash while saving this file left (once a session)
         }
-        return wrote == FileWrite::written ? saved : 0;
+        return saved;
     }
 
     namespace

@@ -179,9 +179,7 @@ namespace plus::ao
         };
 
         void stepLoading();
-        // Finds a direct subfolder by name (null if there is none). Returns false
-        // while the parent is not fetched far enough to tell.
-        bool findChildFolder(const LLUUID& parent, const std::string& name, LLUUID& found);
+        // (A direct subfolder by name: plus::findChildFolder().)
         bool isFetched(const LLUUID& folder, S32 depth);
         // False when #Charis or #AO went away during the session (purged, or in the trash: another
         // viewer, the inventory window). Then their ids are forgotten and the folders are looked for

@@ -315,6 +315,18 @@
    tool_tip="The dark teleport screen (the progress view) does not come down: the world stays in view while you teleport. What is still loading comes in with the materialize effect."
    top_pad="0"
    width="300" />
+  <!-- worldmapinfo: Firestorm's "Show additional region information on World Map" (FSAdvancedWorldmapRegionInfo) -->
+  <check_box
+   control_name="PlusWorldMapRegionInfo"
+   follows="left|top"
+   height="16"
+   label="Show avatar count and maturity under region names on the World Map"
+   layout="topleft"
+   left="83"
+   name="world_map_region_info"
+   tool_tip="Shows (avatar count - maturity) under each region name on the World Map."
+   top_pad="0"
+   width="400" />
   <!-- /plus -->
   <button
    height="23"

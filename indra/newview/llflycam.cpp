@@ -138,6 +138,33 @@ void LLFlycam::startReset(const LLVector3d& target_position, const LLQuaternion&
     mPitchRate = mYawRate = mRollRate = mZoomRate = 0.0f;
 }
 
+// <plus> plus/flycamsens (flycam-level): see llflycam.h
+bool LLFlycam::startLevel(const LLQuaternion& from, F32 duration)
+{
+    mRotation = from;
+    mRotation.normalize();
+
+    // As the official unroll (LLAgentCamera::updateFlycam()), from 'from' rather than from the flycam alone
+    LLMatrix3 level(mRotation);
+    LLVector3 forward(level.getFwdRow());
+    forward.normVec();
+    LLVector3 world_up = LLVector3::z_axis;
+    LLVector3 new_up = world_up - (world_up * forward) * forward;
+    constexpr F32 MIN_LEVEL_SIN = 0.01f; // ~0.6 degrees off vertical
+    if (new_up.lengthSquared() <= MIN_LEVEL_SIN * MIN_LEVEL_SIN)
+    {
+        cancelReset(); // a reset in progress would put back the attitude before 'from'
+        return false;
+    }
+    new_up.normVec();
+    LLVector3 new_left = new_up % forward; // right-handed (forward, left, up), as the official unroll
+    level.setRows(forward, new_left, new_up);
+    // The lerp turns about the forward axis only (start and target share it), so the view's direction stays put
+    startReset(mPosition, LLQuaternion(level), duration);
+    return true;
+}
+// </plus>
+
 
 void LLFlycam::integrate(F32 delta_time)
 {

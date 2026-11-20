@@ -11,5 +11,6 @@
     <key>lut</key><string>lut.cube</string>
     <key>strength</key><real>1.0</real>
     <key>order</key><integer>35</integer>
+    <key>group</key><string>portrait</string>
   </map>
 </llsd>

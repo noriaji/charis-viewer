@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Adding avatars to a contact set, or moving them to another one (plus/contactsets/fsfloateraddtocontactset.cpp,
+     research/333; from Firestorm's floater_fs_contact_add.xml, its names kept). Opened as fs_add_contact
+     (plus::contactsets::showAddToSet / showMoveToSet). Not resizable.
+     Size (1080 base): 320 x 178, the body 160 high under the title bar (18). From the top: 12 + the text 40
+     (two lines) + 4 + the set 33 (the "+" 40 at 56) + 12 + the buttons 40 + 12 = 160 (the "+" ends at 96, the
+     buttons start at 108). Widths: 14 + the pulldown 244 + 8 + "+" 40 + 14 = 320; the buttons 142 + 8 + 142.
+     ja: the text (about 22 characters with a name) wraps to two lines in 292. -->
+<floater
+ name="floater_fs_add_contact"
+ title="Add to Contact Set"
+ width="320"
+ height="178"
+ layout="topleft"
+ legacy_header_height="18"
+ positioning="centered"
+ can_resize="false"
+ can_minimize="false"
+ can_close="true">
+    <floater.string name="no_sets">No contact sets yet (make one with +)</floater.string>
+    <floater.string name="text_add_single">The contact set to add [NAME] to:</floater.string>
+    <floater.string name="text_add_multiple">The contact set to add [COUNT] avatars to:</floater.string>
+
+    <plus_ps_box
+     name="body"
+     kind="panel"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="320"
+     height="160">
+        <plus_ps_text
+         name="textfield"
+         type="string"
+         length="1"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         parse_urls="true"
+         top="12"
+         width="292"
+         height="40"
+         word_wrap="true" />
+        <plus_ps_combo
+         name="contact_sets"
+         allow_text_entry="false"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="60"
+         width="244"
+         height="33" />
+        <plus_ps_button_compat
+         name="add_set_btn"
+         icon="plus"
+         label=""
+         tool_tip="Make a new contact set"
+         follows="left|top"
+         layout="topleft"
+         left="266"
+         top="56"
+         width="40"
+         height="40" />
+        <plus_ps_button_compat
+         name="add_btn"
+         label="Add to set"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="108"
+         width="142"
+         height="40" />
+        <plus_ps_button_compat
+         name="cancel_btn"
+         label="Cancel"
+         follows="left|top"
+         layout="topleft"
+         left="164"
+         top="108"
+         width="142"
+         height="40" />
+    </plus_ps_box>
+</floater>

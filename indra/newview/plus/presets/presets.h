@@ -40,8 +40,9 @@ namespace plus::presets
     // the fallback when neither has it.
     F32 graphicsLevelValue(const std::string& name, F32 fallback);
 
-    // The comparison with the official viewer (Preferences > Charis > Development: Mid-High with its far clip, LOD,
-    // anisotropy, OIT, the official night sky and no TAA) is what the settings are: then no level is shown in use.
+    // The comparison with the official viewer (Preferences > Charis > Development: Mid-High with featuretable.txt's
+    // hidden list Official over it, and the official night sky; research/352) is what the settings are: then no
+    // level is shown in use. Applying any level ends it (it puts the loading wireframe back).
     bool comparisonInUse();
 
     // Applies one of the official levels (0 Low .. 6 Ultra; higher is Ultra) as the photo
@@ -97,7 +98,9 @@ namespace plus::presets
     void noteTextureBudget(float used_mb, float limit_mb, float discard_bias, int pressure);
     // plus/shadowdist, each time the screen's and shadows' targets are made: how
     // many sets a snapshot made (two are right: its size, then the window's
-    // again; each extra one stays in VRAM until the snapshot ends).
+    // again; each extra one stays in VRAM until the snapshot ends). A running
+    // total since the outermost snapshot began: the lines of the snapshots
+    // inside an enclosing one (and its "(scope)" line) carry the sum so far.
     void noteScreenTargets();
 
     // The quality level a feature uses while the boost is on (its highest;
@@ -132,7 +135,9 @@ namespace plus::presets
     class SnapshotBoost
     {
     public:
-        SnapshotBoost();
+        // enclosing: only holds a group of snapshots together (the VRAM base of the budget's wait is then the one
+        // before the first; photomode's retry takes two), without a boost of its own. Its log lines say "(scope)".
+        explicit SnapshotBoost(bool enclosing = false);
         ~SnapshotBoost();
 
         SnapshotBoost(const SnapshotBoost&) = delete;
@@ -140,6 +145,7 @@ namespace plus::presets
 
     private:
         bool mActive;
+        bool mEnclosing;
         // research/109: when it began and the VRAM in use then (MB, 0: unknown), for its log line.
         double mStart = 0.0;
         unsigned long long mVRAMBefore = 0;

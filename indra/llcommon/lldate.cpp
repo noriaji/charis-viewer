@@ -311,7 +311,9 @@ void LLDate::secondsSinceEpoch(F64 seconds)
 /* static */ LLDate LLDate::now()
 {
     // time() returns seconds, we want fractions of a second, which LLTimer provides --RN
-    return LLDate(LLTimer::getTotalSeconds());
+    // <plus> mono-clock: a date is the real (wall) time; getTotalSeconds() is monotonic now
+    return LLDate(LLTimer::getWallSeconds());
+    // </plus>
 }
 
 bool LLDate::operator<(const LLDate& rhs) const

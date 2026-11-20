@@ -50,6 +50,8 @@
 #include "plus/texprio/texprio.h"       // research/285 (tex-view-priority): textures on screen first
 #include "plus/texprio/fetchflow.h"     // research/294 (tex-fetch-flow): where a texture waits
 #include "plus/texprio/fetchretry.h"    // research/299 (tex-fetch-retry): a failed fetch is asked for again
+#include "plus/multiinstance/multiinstance.h"   // research/337: the VRAM share among Charis viewers on one GPU
+#include "plus/vramdiag/vramdiag.h"   // research/354 (vram-stall-diag): the census of the images over 8 MB
 // </plus>
 #include "llimagetga.h"
 #include "llstl.h"
@@ -497,6 +499,15 @@ void LLViewerTexture::initClass()
 
 S32Megabytes get_render_free_main_memory_treshold();    // <plus> research/296: defined below, for the diagnostics </plus>
 
+// <plus> research/371: ", pretended VRAM X MB (detected Y)" while FSOverrideVRAMDetection is in force, else nothing (the logs of updateClass)
+static std::string pretended_vram_text()
+{
+    return gGLManager.mVRAM != gGLManager.getReportedVRAM()
+        ? llformat(", pretended VRAM %u MB (detected %u)", (unsigned)gGLManager.mVRAM, (unsigned)gGLManager.getReportedVRAM())
+        : std::string();
+}
+// </plus>
+
 //static
 void LLViewerTexture::updateClass()
 {
@@ -517,7 +528,16 @@ void LLViewerTexture::updateClass()
     // If you set 1024MB of VRAM, this will, by default, use 512.
     // -Geenz 2025-03-03
     static LLCachedControl<U32> tex_vram_divisor(gSavedSettings, "RenderTextureVRAMDivisor", 2);
-    static LLCachedControl<U32> max_vram_budget(gSavedSettings, "RenderMaxVRAMBudget", 0);
+    static LLCachedControl<U32> max_vram_budget_setting(gSavedSettings, "RenderMaxVRAMBudget", 0);     // <plus> research/371: was max_vram_budget </plus>
+    // <plus> research/371 (vram-limit): as Firestorm, the limit counts only with FSLimitTextureVRAMUsage on (at least
+    // MIN_VRAM_BUDGET, the slider's lowest); off: the automatic budget, whatever RenderMaxVRAMBudget holds
+    static LLCachedControl<bool> limit_texture_vram(gSavedSettings, "FSLimitTextureVRAMUsage", false);
+    // (the lower of the saved value and the detected VRAM, as the slider shows it: the saved value is never rewritten for it)
+    const U32 detected_vram_mb = gGLManager.getReportedVRAM();
+    const U32 max_vram_budget = limit_texture_vram
+        ? llmax(detected_vram_mb ? llmin((U32)max_vram_budget_setting, detected_vram_mb) : (U32)max_vram_budget_setting, (U32)MIN_VRAM_BUDGET)
+        : 0;
+    // </plus>
 
     F64 texture_bytes_alloc = LLImageGL::getTextureBytesAllocated() / 1024.0 / 512.0;
     F64 vertex_bytes_alloc = LLVertexBuffer::getBytesAllocated() / 1024.0 / 512.0;
@@ -558,6 +578,7 @@ void LLViewerTexture::updateClass()
     U64 vk_texture_bytes = 0, vk_usage = 0, vk_budget = 0;
     const bool real_budget = LLRHI::sVRAMBudgetReal && LLRHI::sVRAMBudget && LLRHI::sVRAMBudget(vk_texture_bytes, vk_usage, vk_budget);
     F32 real_textures = 0.f, real_usage = 0.f, real_budget_mb = 0.f, real_headroom = 0.f, real_target = 0.f;
+    plus::multiinstance::VRAMShare vram_share;  // <plus> research/337: this viewer's share among Charis viewers (limit 0: none) </plus>
     if (real_budget)
     {
         constexpr F32 MB = 1024.f * 1024.f;
@@ -569,6 +590,16 @@ void LLViewerTexture::updateClass()
         real_headroom = headroom_setting > 0.f ? headroom_setting : llclamp(real_budget_mb * 0.05f, 256.f, 512.f);
         real_target = llmax(real_budget_mb - other - real_headroom, 256.f);
         target = llmin(target, real_target);
+        // <plus> research/337 (plus/multiinstance, PlusMultiShareVRAM, off by default): with other Charis viewers on this GPU, the
+        // bias's target is this one's share of the driver's budget (by who is in front) less its other VRAM. The pressure stages
+        // keep the driver's limit
+        vram_share = plus::multiinstance::vramShare(
+            { .budget_mb = real_budget_mb, .margin_mb = real_headroom, .textures_mb = used, .usage_mb = real_usage });
+        if (vram_share.limit_mb > 0.f)
+        {
+            target = llmin(target, vram_share.limit_mb);
+        }
+        // </plus>
     }
     sFreeVRAMMegabytes = target - used;
 
@@ -599,6 +630,16 @@ void LLViewerTexture::updateClass()
     }
     // </plus>
 
+    // <plus> research/371 (review): whether the texture limit (FSLimitTextureVRAMUsage) is what holds the textures now: it is the lowest of
+    // the limits (the settings' one, here, against the driver's and this viewer's share of it). It only says so, in the logs and for
+    // plus/tplag: no decision reads it. The limit is a budget like the driver's: off screen goes down first and what is on screen keeps
+    // plus/texprio's floor (a limit that cannot be reached that way shows in the VKPerf line, "limit not reached"). A 5% band keeps
+    // the word from flipping while real_target moves with every allocation
+    static bool limit_binds_state = false;
+    const F32 other_limit = real_budget ? llmin(real_target, vram_share.limit_mb > 0.f ? vram_share.limit_mb : F32_MAX) : F32_MAX;
+    limit_binds_state = max_vram_budget != 0 && diag_settings_target <= other_limit * (limit_binds_state ? 1.05f : 1.f) + 0.5f;
+    const bool limit_binds = limit_binds_state;
+    // </plus>
     F32 over_pct = (used - target) / target;
 
     // <plus> igpu-safe: plus/memguard's line (none on a discrete GPU unless set). research/309 (PlusMemGuardSoftOnly): under
@@ -773,6 +814,8 @@ void LLViewerTexture::updateClass()
     }
 
     sDesiredDiscardBias = llclamp(sDesiredDiscardBias, 1.f, 4.f);
+    bool limit_fill_logged = false;   // <plus> research/371: limit_fill, for the VKPerf line (set in the pressure block below) </plus>
+    bool bias_all_logged = false;   // <plus> research/371: the VKPerf line's reading of bias_all (set in the pressure block below) </plus>
 
     // LLRHI (research/79): texture pressure, with the real budget only (Vulkan
     // with VK_EXT_memory_budget; elsewhere none, as upstream). Each stage adds
@@ -860,8 +903,8 @@ void LLViewerTexture::updateClass()
         // </plus>
         // <plus> research/285 (tex-view-priority): its switches, grace and divisors for this frame, its log line.
         // The textures against the limit (0: not known). bias_all: the bias may have risen for a reason other
-        // than VRAM (system memory short, plus/memguard's raise, the window in the background, a VRAM budget the
-        // user set): then it lowers what is on screen too, as upstream. System memory short counts while the bias
+        // than VRAM (system memory short, plus/memguard's raise, the window in the background; not the texture limit (research/371),
+        // a budget like the driver's): then it lowers what is on screen too, as upstream. System memory short counts while the bias
         // is up until SYS_LOW_HOLD after it was last short (the bias stays up after it; and no flip each frame
         // while free memory hovers at the line)
         constexpr F32 SYS_LOW_HOLD = 60.f;
@@ -872,8 +915,41 @@ void LLViewerTexture::updateClass()
             sys_low_seen = frame_seconds;
         }
         const bool sys_raised = sDesiredDiscardBias > 1.f && frame_seconds - sys_low_seen < SYS_LOW_HOLD;
-        const bool bias_all = sys_raised || plus::memguard::biasHeldHard() || was_backgrounded || max_vram_budget() != 0;   // research/309: biasHeldHard
-        plus::texprio::updateClass(real_budget && !budget_held && real_target > 0.f ? used / real_target : 0.f, bias_all);
+        const bool bias_all = sys_raised || plus::memguard::biasHeldHard() || was_backgrounded;   // research/309: biasHeldHard
+        // research/371 (review 3, inside the research/285 block above): while the settings' texture limit is the lowest against the driver's,
+        // the textures against it (used / limit) drive plus/texprio's last resort: off screen goes down first (the bias), then what is on
+        // screen too, never below its floor, and without waiting for the pools' free room (the limit counts the images alone). Otherwise
+        // (no limit, or the driver's is lower) as before.
+        // The settings' limit against the driver's alone (the share, as the official fill, is not in it: the driver's limit, or the
+        // share, deciding is the way it has always been): on after LIMIT_FILL_WAIT s of the settings' being the lowest, off at once
+        // when the driver's is (real_target moves with every allocation: no flip each frame, and where it is close the old way holds)
+        constexpr F32 LIMIT_FILL_WAIT = 3.f;
+        static LLFrameTimer limit_fill_timer;
+        static bool limit_fill_on = false;
+        const bool settings_lowest = max_vram_budget != 0 && !budget_held && diag_settings_target > 0.f
+                                     && (!real_budget || diag_settings_target <= real_target);
+        if (!settings_lowest)
+        {
+            limit_fill_on = false;
+            limit_fill_timer.reset();
+        }
+        else
+        {
+            if (resumed_after_gap)
+            {
+                limit_fill_timer.reset();   // a gap (a teleport, a heavy load) is not 3 s of it seen: the wait starts again
+            }
+            else if (!limit_fill_on && limit_fill_timer.getElapsedTimeF32() > LIMIT_FILL_WAIT)
+            {
+                limit_fill_on = true;
+            }
+        }
+        limit_fill_logged = limit_fill_on;
+        const bool limit_fill = limit_fill_on;
+        const F32 texprio_fill = limit_fill ? used / diag_settings_target
+                                            : (real_budget && !budget_held && real_target > 0.f ? used / real_target : 0.f);
+        plus::texprio::updateClass(texprio_fill, bias_all, limit_fill);
+        bias_all_logged = bias_all;     // research/371 (inside the research/285 block above)
         // </plus>
         // <plus> research/296 (tp-release, diagnostics): why the bias does not come down, for TPLag's lines (while a
         // timeline or a bias watch is open, or the bias is over 1.5: research/309; nothing here changes a decision)
@@ -885,12 +961,13 @@ void LLViewerTexture::updateClass()
             diag.used_mb = used;
             diag.settings_target_mb = diag_settings_target;
             diag.real_target_mb = real_budget ? real_target : 0.f;
+            diag.share_target_mb = vram_share.limit_mb;     // research/337: plus/multiinstance's share (0: none)
             diag.vertex_mb = (F32)(vertex_bytes_alloc * 0.5);
             diag.sys_free_mb = (F32)getFreeSystemMemory().value();
             constexpr F32 FALL_SYS_MEM_MARGIN_MB = 100.f;   // FREE_SYS_MEM_TRESHOLD, in the fall's condition above
             diag.fall_free_mb = (F32)get_render_free_main_memory_treshold().value() + FALL_SYS_MEM_MARGIN_MB;
             diag.room_s = room_timer.getElapsedTimeF32();
-            diag.max_vram_budget_mb = (U32)max_vram_budget;
+            diag.max_vram_budget_mb = limit_binds ? (U32)max_vram_budget : 0;     // research/371: the limit holding the textures
             diag.pressure = sRhiTexPressure;
             diag.real_budget = real_budget;
             diag.is_low = is_low;
@@ -916,18 +993,26 @@ void LLViewerTexture::updateClass()
         // backend's GL buffer and texture compactions: they run on down to under it. 0 while neither is up, without
         // the driver's budget, while a snapshot holds the budget, while the bias is up for another reason (bias_all)
         // or the settings' budget is the limit (less VRAM in use would not bring it down then).
+        // research/337 (multi-coord, re-review low-2): while this viewer's VRAM share (plus/multiinstance) is the limit and
+        // not at its floor, the same with its part of the budget less the margin in place of budget - headroom (share =
+        // part - other: usage < part - used / 9), so the space freed inside blocks goes back and the bias is not held at 4.
+        // At its floor the share does not move with the other VRAM: 0 then, as for the settings' budget. Without a share
+        // (PlusMultiShareVRAM off, alone): as before.
+        const bool share_limits = vram_share.limit_mb > 0.f && !vram_share.floored && vram_share.limit_mb <= target + 0.5f;
+        const F64 limit_part_mb = share_limits ? (F64)vram_share.part_mb : (F64)real_budget_mb - (F64)real_headroom;
         U64 fall_bytes = 0;
-        if (real_budget && !budget_held && !bias_all && !plus::memguard::biasHeld() && real_target <= target + 0.5f &&
+        if (real_budget && !budget_held && !bias_all && !plus::memguard::biasHeld() && (real_target <= target + 0.5f || share_limits) &&
             (sDesiredDiscardBias > 1.f || sRhiTexPressure > 0))
         {
             constexpr F64 MB = 1024.0 * 1024.0;
-            const F64 fall_mb = (F64)real_budget_mb - (F64)real_headroom - (F64)used / 9.0;
+            const F64 fall_mb = limit_part_mb - (F64)used / 9.0;
             fall_bytes = fall_mb > 1.0 ? (U64)(fall_mb * MB) : 1;   // 1: known, at the bottom (0 is "not known")
         }
         LLRHI::sVRAMBiasFallBytes.store(fall_bytes, std::memory_order_relaxed);
-        // ... and the use over which the bias rises (used > real_target: usage > budget - headroom), for the
-        // texture compaction's large image moves (their new memory comes frames before the old block goes)
-        const F64 rise_mb = real_budget ? (F64)real_budget_mb - (F64)real_headroom : 0.0;
+        // ... and the use over which the bias rises (used > real_target: usage > budget - headroom; with the share as the
+        // limit, usage > its part), for the texture compaction's large image moves (their new memory comes frames before
+        // the old block goes)
+        const F64 rise_mb = real_budget ? limit_part_mb : 0.0;
         LLRHI::sVRAMBiasRiseBytes.store(rise_mb > 1.0 ? (U64)(rise_mb * 1024.0 * 1024.0) : 0, std::memory_order_relaxed);
         // </plus>
     }
@@ -975,7 +1060,13 @@ void LLViewerTexture::updateClass()
         }
         LL_INFOS("TextureMemory") << "textures " << (LLImageGL::getTextureBytesAllocated() >> 20) << " MB, vertex buffers "
                                   << (LLVertexBuffer::getBytesAllocated() >> 20) << " MB; " << budget_text.str() << ", discard bias "
-                                  << sDesiredDiscardBias << ", texture pressure " << sRhiTexPressure << (LLRHI::sMemoryReport ? "; " + LLRHI::sMemoryReport() : std::string())
+                                  << sDesiredDiscardBias << ", texture pressure " << sRhiTexPressure
+                                  // <plus> research/371: the texture limit and the pretended VRAM
+                                  << (max_vram_budget ? llformat(", texture limit set %u MB (FSLimitTextureVRAMUsage, %s)", (unsigned)max_vram_budget,
+                                                                 limit_binds ? "holds the textures" : "over the other limits: not what holds them") : std::string())
+                                  << pretended_vram_text()
+                                  // </plus>
+                                  << (LLRHI::sMemoryReport ? "; " + LLRHI::sMemoryReport() : std::string())
                                   << LL_ENDL;
 
         // LLRHI_VMA_DUMP (research/75): every live Vulkan allocation, named and
@@ -990,6 +1081,40 @@ void LLViewerTexture::updateClass()
             LL_INFOS("TextureMemory") << "VMA dump: " << path << LL_ENDL;
         }
     }
+
+    // <plus> research/371 (vram-limit): the budget against the VRAM in use, in the periodic VKPerf lines (LLRHI::sPeriodicLogs;
+    // every 5 s, with the frame time's line): "this number of MB of the textures' limit, the VRAM in use of the driver's budget,
+    // the bias and the pressure" shows how a VRAM override or a texture limit holds the viewer. Nothing else runs while it is off
+    if (LLRHI::sPeriodicLogs)
+    {
+        static LLFrameTimer vkperf_timer;
+        if (vkperf_timer.getElapsedTimeF32() > 5.f)
+        {
+            vkperf_timer.reset();
+            // (budget: the driver's, held to the pretended VRAM when one is set: LLVKDevice::vramBudget; limit: the lowest of the
+            // settings', the driver's and this viewer's share of it, which is what the bias works to)
+            LL_INFOS("VKPerf") << "VRAM budget: " << (real_budget ? llformat("in use %d of %d MB", (S32)real_usage, (S32)real_budget_mb)
+                                                                  : std::string("driver budget not known"))
+                               << "; textures " << (S32)used << " MB of limit " << (S32)target << " (settings " << (S32)diag_settings_target
+                               << ", driver side " << (S32)(real_budget ? real_target : 0.f) << ", share " << (S32)vram_share.limit_mb << ")"
+                               << (max_vram_budget ? llformat(", texture limit set %u MB", (unsigned)max_vram_budget) : std::string())
+                               << ", bias " << sDesiredDiscardBias << ", pressure " << sRhiTexPressure << ", bias_all "
+                               << (bias_all_logged ? 1 : 0) << ", limit_fill " << (limit_fill_logged ? 1 : 0)
+                               // the limit holds the textures, the bias is at its top and they are still over it: off screen is as low as it
+                               // goes, and the last resort (after a wait) lowers what is on screen, no lower than plus/texprio's floor
+                               << (limit_fill_logged && used > diag_settings_target && sDesiredDiscardBias >= 3.99f
+                                       ? ", limit not reached (off screen is at its lowest; the screen goes down to its floor, no further)" : "")
+                               << pretended_vram_text() << LL_ENDL;
+        }
+    }
+    // </plus>
+
+    // <plus> research/354 vram-stall-diag: a census of the images over 8 MB every 10 s, counting only (LLRHI_VRAM_DIAG)
+    if (plus::vramdiag::sOn)
+    {
+        plus::vramdiag::frame({ real_budget, vk_usage, vk_budget, used, target });
+    }
+    // </plus>
 
     LLViewerTexture::sFreezeImageUpdates = false;
 }

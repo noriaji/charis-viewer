@@ -175,6 +175,7 @@
 #include "plus/ssr/ssr.h"
 #include "plus/upscale/upscale.h"
 #include "plus/taa/taa.h"
+#include "plus/temporal/motion.h"
 #include "plus/version/version.h"
 #include "plus/volumetric/volumetric.h"
 #include "plus/wetlook/wetlook.h"
@@ -492,6 +493,7 @@ bool addDeferredAttachments(LLRenderTarget& target, bool for_impostor = false)
     {
         valid = valid && target.addColorAttachment(emissive); // frag_data[3] PBR emissive OR material env intensity
     }
+    target.padDrawBuffers(true); // <plus> tu-motion-v1 (research/373): drawn with the G-buffer's programs (LLRenderTarget::sPaddedDrawBuffers) </plus>
 
     return valid;
 }
@@ -760,6 +762,7 @@ void LLPipeline::cleanup()
     assertInitialized();
 
     mGroupQ1.clear() ;
+    mGroupCaptureWait.clear();      // <plus> research/340 </plus>
 
     for(pool_set_t::iterator iter = mPools.begin();
         iter != mPools.end(); )
@@ -1007,6 +1010,12 @@ bool LLPipeline::allocateScreenBufferInternal(U32 resX, U32 resY)
     //allocate deferred rendering color buffers
     if (!mRT->deferredScreen.allocate(resX, resY, GL_RGBA, true)) return false;
     if (!addDeferredAttachments(mRT->deferredScreen)) return false;
+    // <plus> tu-motion-v1 (research/373): the main view's motion vectors, a fifth attachment, while a temporal pass wants them
+    if (plus_main_view)
+    {
+        plus::temporal::addMotionAttachment(mRT->deferredScreen);
+    }
+    // </plus>
 
     GLuint screenFormat = hdr ? GL_RGBA16F : GL_RGBA;
 
@@ -1424,6 +1433,7 @@ void LLPipeline::releaseScreenBuffers()
 {
     plus::upscale::releaseTargets(); // <plus> plus/upscale: its window-sized targets go with the screen's </plus>
     plus::taa::releaseTargets(); // <plus> plus/taa (research/185): its history goes with the screen's </plus>
+    plus::temporal::releaseMotion(); // <plus> tu-motion-v1 (research/373): the G-buffer's motion vectors go with it </plus>
     plus::volclouds::releaseTargets(); // <plus> plus/volclouds (research/186): the clouds' shadow map </plus>
     releaseProbeStatic(); // LLRHI: the probe faces' static G-buffers follow the probe G-buffer
     mRT->screen.release();
@@ -3947,8 +3957,98 @@ static bool may_wait_for_rebuild(LLSpatialGroup* group)
            !group->mRHIRebuildNow && !group->mRHIRiggedBatches;
 }
 
+// <plus> research/340: the avatar a bridge group's attachment is on (null: not an attachment's bridge group)
+static LLVOAvatar* bridge_avatar(LLSpatialBridge* bridge)
+{
+    LLDrawable* root = bridge ? bridge->mDrawable : nullptr;
+    if (!root || !root->getVObj() || !root->getVObj()->isAttachment())
+    {
+        return nullptr;
+    }
+    LLDrawable* parent = root->getParent();
+    LLViewerObject* vobj = parent ? parent->getVObj() : nullptr;
+    return vobj ? vobj->asAvatar() : nullptr;
+}
+
+static LLVOAvatar* bridge_group_avatar(LLSpatialGroup* group)
+{
+    LLSpatialPartition* partition = group->getSpatialPartition();
+    return bridge_avatar(partition ? partition->asBridge() : nullptr);
+}
+
+// A bridge group of an impostor avatar's attachment (the avatar not being captured now) may wait. Nothing draws it:
+// markVisible and LLSpatialBridge::setVisible leave an impostor's attachments out of every camera but the impostor
+// pass (its own picture). It waits in mGroupCaptureWait (still IN_BUILD_Q1) until the avatar is captured (its groups
+// build in that pass) or drawn in full (impostor off: the first queue loop of the next frame builds them before
+// anything draws). Without this, the first capture of a frame built the geometry of every attachment of the whole
+// arriving crowd (1100 groups, seconds per frame, research/340). A group whose GL state was destroyed
+// (mRHIRebuildNow) does not wait.
+// Returns the avatar the group waits for, null when it does not wait.
+LLVOAvatar* LLPipeline::captureWaitOwner(LLSpatialGroup* group) const
+{
+    if (!mImpostorBridgeDefer || group->isDead() || group->mRHIRebuildNow)
+    {
+        return nullptr;
+    }
+    LLVOAvatar* avatar = bridge_group_avatar(group);
+    return avatar && avatar != mImpostorCapture && avatar->isImpostor() ? avatar : nullptr;
+}
+
+// Puts the waiting groups that no longer wait back into the priority queue, where the loop builds them.
+// All of them once a frame (the first call: an avatar's impostor flag changes in idle, before display);
+// during a capture only the captured avatar's (the others' flags did not change since).
+void LLPipeline::releaseCaptureWaits()
+{
+    if (mGroupCaptureWait.empty())
+    {
+        return;
+    }
+    const bool all = !sImpostorRender;
+    if (all)
+    {
+        if (mCaptureWaitScanFrame == gFrameCount && mImpostorBridgeDefer)
+        {
+            return;
+        }
+        mCaptureWaitScanFrame = gFrameCount;
+    }
+    size_t kept = 0;
+    for (CaptureWait& wait : mGroupCaptureWait)
+    {
+        LLSpatialGroup* group = wait.group;
+        bool release = !mImpostorBridgeDefer || group->isDead() || group->mRHIRebuildNow;
+        if (!release)
+        {
+            if (all)
+            {
+                // the owner is read again (an attachment may have moved to another avatar); never dereferenced after this frame's scan
+                wait.owner = bridge_group_avatar(group);
+                release = !wait.owner || wait.owner == mImpostorCapture || !wait.owner->isImpostor();
+            }
+            else
+            {
+                release = wait.owner == mImpostorCapture;   // a pointer compare only
+            }
+        }
+        if (release)
+        {
+            mGroupQ1.push_back(group);
+        }
+        else
+        {
+            mGroupCaptureWait[kept++] = wait;
+        }
+    }
+    mGroupCaptureWait.resize(kept);
+}
+// </plus>
+
 void LLPipeline::setPriorityRebuildBudget(F32 seconds)
 {
+    static LLCachedControl<bool> bridge_defer(gSavedSettings, "PlusImpostorBridgeDefer", true);   // <plus> research/340 </plus>
+    // <plus> research/340
+    mImpostorBridgeDefer = bridge_defer;
+    // </plus>
     // Counters of the frame that ended, logged every 10 s.
     struct Stats
     {
@@ -3959,6 +4059,8 @@ void LLPipeline::setPriorityRebuildBudget(F32 seconds)
         U64 built = 0;
         U64 waiting = 0;
         U32 waiting_max = 0;
+        U64 capture_wait = 0;       // <plus> research/340: groups that wait for a capture, summed over the frames </plus>
+        U32 capture_wait_max = 0;
         F32 logged_at = 0.f;
         LLPipeline::RebuildCauses causes;       // <plus> research/295: summed over the frames </plus>
     };
@@ -3972,6 +4074,8 @@ void LLPipeline::setPriorityRebuildBudget(F32 seconds)
         stats.built += mPriorityBuiltWaiting;
         stats.waiting += mPriorityWaiting;
         stats.waiting_max = llmax(stats.waiting_max, mPriorityWaiting);
+        stats.capture_wait += (U64)mGroupCaptureWait.size();
+        stats.capture_wait_max = llmax(stats.capture_wait_max, (U32)mGroupCaptureWait.size());
         // <plus> research/295: add this frame's causes, then start the next frame's (only with the periodic logs)
         if (LLRHI::sPeriodicLogs)
         {
@@ -4013,10 +4117,10 @@ void LLPipeline::setPriorityRebuildBudget(F32 seconds)
             const F64 frames = (F64)stats.frames;
             LL_INFOS("RHIProfile") << llformat("priority rebuilds over %u frames: %.2f ms per frame (max %.2f), "
                                                "built that could wait %.1f per frame, left waiting %.1f per frame "
-                                               "(max %u, in %u frames)",
+                                               "(max %u, in %u frames), impostors' attachment groups waiting for a capture %.1f per frame (max %u)",
                                                stats.frames, stats.spent * 1000.0 / frames, stats.spent_max * 1000.f,
                                                (F64)stats.built / frames, (F64)stats.waiting / frames, stats.waiting_max,
-                                               stats.frames_waiting)
+                                               stats.frames_waiting, (F64)stats.capture_wait / frames, stats.capture_wait_max)
                                    << LL_ENDL;
             // <plus> research/295: what was built, by cause, camera pass and partition (ms per frame / groups per frame), and the
             // slowest single group (ms). Counted: the groups of the priority queue's first loop (why each had to build now; the
@@ -4272,13 +4376,15 @@ void LLPipeline::rebuildPriorityGroups()
 
     gMeshRepo.notifyLoadedMeshes();
 
+    releaseCaptureWaits();      // <plus> research/340 </plus>
+
     mGroupQ1Locked = true;
     // Groups that must build do so now; never-built ones (waits_for_build_time)
     // build nearest the camera first within the frame's time, the rest stay queued.
     // LLRHI: built groups that may wait (may_wait_for_rebuild) build in queue order
     // while the queue's loop is within the frame's priority time; the rest keep their
     // place and draw their old batches meanwhile.
-    LLSpatialGroup::sg_vector_t later;
+    LLSpatialGroup::sg_vector_t& later = mGroupLater;       // <plus> research/340: reused, no allocation per call </plus>
     std::vector<std::pair<F32, LLSpatialGroup*>> waiting;
     LLVector4a eye;
     eye.load3(LLViewerCamera::getInstance()->getOrigin().mV);
@@ -4299,6 +4405,13 @@ void LLPipeline::rebuildPriorityGroups()
             waiting.emplace_back(offset.getLength3().getF32(), group);
             continue;
         }
+        // <plus> research/340: an impostor's attachments are built when it is captured, not before
+        if (LLVOAvatar* owner = captureWaitOwner(group))
+        {
+            mGroupCaptureWait.push_back({ group, owner });  // keeps IN_BUILD_Q1; releaseCaptureWaits brings it back
+            continue;
+        }
+        // </plus>
         bool waitable = false;      // <plus> research/295 </plus>
         if (priority_budget && may_wait_for_rebuild(group))
         {
@@ -4361,8 +4474,11 @@ void LLPipeline::rebuildPriorityGroups()
         mLoadWaitingInside = waiting_inside;
     }
 
-    mGroupSaveQ1 = mGroupQ1;
+    // <plus> research/340: no copy and no allocation (the references of the queue before the previous call end in later.clear())
+    mGroupSaveQ1.swap(mGroupQ1);    // keeps the references until it is safe to unref (clearReferences)
     mGroupQ1.swap(later);
+    later.clear();
+    // </plus>
     mGroupQ1Locked = false;
 
 }
@@ -4419,29 +4535,13 @@ void LLPipeline::markVisible(LLDrawable *drawablep, LLCamera& camera)
     {
         if (drawablep->isSpatialBridge())
         {
-            const LLDrawable* root = ((LLSpatialBridge*) drawablep)->mDrawable;
-            llassert(root); // trying to catch a bad assumption
-
-            if (root && //  // this test may not be needed, see above
-                    root->getVObj()->isAttachment())
+            LLVOAvatar* av = bridge_avatar((LLSpatialBridge*) drawablep);   // <plus> research/340: the shared walk root -> parent -> avatar </plus>
+            if (av &&
+                ((!sImpostorRender && av->isImpostor()) //ignore impostor flag during impostor pass
+                 || av->isInMuteList()
+                 || (LLVOAvatar::AOA_JELLYDOLL == av->getOverallAppearance() && !av->needsImpostorUpdate()) ))
             {
-                LLDrawable* rootparent = root->getParent();
-                if (rootparent) // this IS sometimes NULL
-                {
-                    LLViewerObject *vobj = rootparent->getVObj();
-                    llassert(vobj); // trying to catch a bad assumption
-                    if (vobj) // this test may not be needed, see above
-                    {
-                        LLVOAvatar* av = vobj->asAvatar();
-                        if (av &&
-                            ((!sImpostorRender && av->isImpostor()) //ignore impostor flag during impostor pass
-                             || av->isInMuteList()
-                             || (LLVOAvatar::AOA_JELLYDOLL == av->getOverallAppearance() && !av->needsImpostorUpdate()) ))
-                        {
-                            return;
-                        }
-                    }
-                }
+                return;
             }
             sCull->pushBridge((LLSpatialBridge*) drawablep);
         }
@@ -4676,10 +4776,23 @@ void LLPipeline::stateSort(LLCamera& camera, LLCullResult &result)
     stateSortVisible(camera);
 }
 
+// <plus> research/319 cpu-census: finer FrameCost sections of the main view's stateSort. The names start with the
+// section they cut ("pre-gbuffer state sort"), then a space and the part, as "cull ..." and "idle ..." are: the tools read the sum.
+bool gPlusStateSortMarks = false;
+static inline void plus_state_sort_mark(const char* name)
+{
+    if (gPlusStateSortMarks)
+    {
+        LLRHI::cpuDetailMark(name);
+    }
+}
+// </plus>
+
 // LLRHI: first half of stateSort. Marks what the drawable groups hold as
 // visible (spatial bridges cull their own contents with this camera).
 void LLPipeline::stateSortDrawableGroups(LLCamera& camera)
 {
+    plus_state_sort_mark("pre-gbuffer state sort drawable groups"); // <plus> research/319 (the first part of the next one: resetDrawOrders is in stateSortVisible's head) </plus>
     for (LLCullResult::sg_iterator iter = sCull->beginDrawableGroups(); iter != sCull->endDrawableGroups(); ++iter)
     {
         LLSpatialGroup* group = *iter;
@@ -4731,6 +4844,7 @@ void LLPipeline::stateSortVisible(LLCamera& camera)
         gPipeline.resetDrawOrders();
     }
 
+    plus_state_sort_mark("pre-gbuffer state sort bridges"); // <plus> research/319 </plus>
     if (LLViewerCamera::sCurCameraID == LLViewerCamera::CAMERA_WORLD && !gCubeSnapshot)
     {
         LLSpatialGroup* last_group = NULL;
@@ -4767,6 +4881,7 @@ void LLPipeline::stateSortVisible(LLCamera& camera)
         }
     }
 
+    plus_state_sort_mark("pre-gbuffer state sort visible groups"); // <plus> research/319 </plus>
     for (LLCullResult::sg_iterator iter = sCull->beginVisibleGroups(); iter != sCull->endVisibleGroups(); ++iter)
     {
         LLSpatialGroup* group = *iter;
@@ -4790,6 +4905,7 @@ void LLPipeline::stateSortVisible(LLCamera& camera)
         }
     }
 
+    plus_state_sort_mark("pre-gbuffer state sort visible list"); // <plus> research/319 (the avatars and moving objects) </plus>
     {
         LL_PROFILE_ZONE_NAMED_CATEGORY_DRAWABLE("stateSort"); // LL_RECORD_BLOCK_TIME(FTM_STATESORT_DRAWABLE);
         for (LLCullResult::drawable_iterator iter = sCull->beginVisibleList();
@@ -4803,6 +4919,7 @@ void LLPipeline::stateSortVisible(LLCamera& camera)
         }
     }
 
+    plus_state_sort_mark("pre-gbuffer state sort post sort"); // <plus> research/319 </plus>
     postSort(camera);
 }
 
@@ -7785,7 +7902,7 @@ void LLPipeline::calcNearbyLights(LLCamera& camera)
             const LLViewerObject *vobj = record ? nullptr : light->drawable->getVObj();
             // </plus>
             if(vobj && vobj->getAvatar()
-               && (vobj->getAvatar()->isTooComplex() || vobj->getAvatar()->isInMuteList() || vobj->getAvatar()->isTooSlow())
+               && (vobj->getAvatar()->isTooComplex() || vobj->getAvatar()->isInMuteList() || vobj->getAvatar()->isTooSlow() || vobj->getAvatar()->beyondSilhouetteDistance() /* <plus> research/344: a jelly doll by distance carries no light </plus> */)
                )
             {
                 drawable->clearState(LLDrawable::NEARBY_LIGHT);
@@ -7890,7 +8007,7 @@ void LLPipeline::calcNearbyLights(LLCamera& camera)
                 continue;
             }
             LLVOAvatar * av = record ? nullptr : light->getAvatar(); // <plus> research/203: a record is no avatar's </plus>
-            if (av && (av->isTooComplex() || av->isInMuteList() || av->isTooSlow()))
+            if (av && (av->isTooComplex() || av->isInMuteList() || av->isTooSlow() || av->beyondSilhouetteDistance())) // <plus> research/344 </plus>
             {
                 // avatars that are already in the list will be removed by removeMutedAVsLights
                 continue;
@@ -10478,6 +10595,7 @@ void LLPipeline::renderFinalize()
         mScreenTriangleVB->setBuffer();
         mScreenTriangleVB->drawArrays(LLRender::TRIANGLES, 0, 3);
     }
+    plus::temporal::viewMotion(); // <plus> tu-motion-v1 (research/373): LLRHI_MOTION_VIEW, the motion vectors over the presented picture (the HUD and UI come after) </plus>
 
     gDeferredPostNoDoFNoiseProgram.unbind();
 
@@ -11003,6 +11121,7 @@ void LLPipeline::renderDeferredLighting()
         // <plus> wet look (plus/wetlook): the G-buffer made wet before anything reads it
         plus::wetlook::render();
         // </plus>
+        plus::temporal::renderMotion(); // <plus> tu-motion-v1 (research/373): the camera's motion where nothing wrote its own (the G-buffer is done) </plus>
 
         plus::volclouds::updateShadowMap(); // <plus> plus/volclouds (research/186): the volumetric clouds' shadow map, a pass of its own, before the sun pass </plus>
 
@@ -13632,6 +13751,23 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar, bool preview_avatar, bool 
                               << " is " << ( too_complex ? "" : "not ") << "too complex"
                               << LL_ENDL;
 
+    // <plus> research/340: this avatar's attachments build now (rebuildPriorityGroups), the others' may wait
+    // research/344: a jelly doll's shot draws no attachment: its attachment groups keep waiting (no capture owner)
+    struct CaptureMark
+    {
+        LLPipeline& pipeline;
+        LLVOAvatar* previous;
+        CaptureMark(LLPipeline& p, LLVOAvatar* avatar) : pipeline(p), previous(p.mImpostorCapture) { p.mImpostorCapture = avatar; }
+        ~CaptureMark() { pipeline.mImpostorCapture = previous; }
+    } capture_mark(*this, (visually_muted || too_complex) ? nullptr
+        : avatar->getAttachedAvatar() ? avatar->getAttachedAvatar() : avatar);   // an animesh is captured as its avatar's attachment (bridge_avatar gives that avatar)
+    // </plus>
+
+    // <plus> research/344: a jelly doll is shot as a flat silhouette (PlusJellyDollFlat): one colour target at half the size, no
+    // normals, no alpha passes. Decided once here; the shot keeps it even if the setting changes meanwhile.
+    const bool flat = (visually_muted || too_complex) && LLVOAvatar::plusFlatImpostorEnabled();
+    // </plus>
+
     pushRenderTypeMask();
 
     if (visually_muted || too_complex)
@@ -13728,7 +13864,7 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar, bool preview_avatar, bool 
             {
                 markVisible(specific_attachment->mDrawable->getSpatialBridge(), *viewer_camera);
             }
-            else
+            else if (!(visually_muted || too_complex)) // <plus> research/344 J0: a jelly doll shot never draws attachments (the type mask is AVATAR|CONTROL_AV only), so do not queue their bridges </plus>
             {
                 LLVOAvatar::attachment_map_t::iterator iter;
                 LLVOAvatar::attachment_map_t::iterator begin = avatar->mAttachmentPoints.begin();
@@ -13819,17 +13955,29 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar, bool preview_avatar, bool 
 
         if (!for_profile)
         {
-            if (!avatar->mImpostor.isComplete())
+            // <plus> research/344: a flat picture is half the size (at most FLAT_IMPOSTOR_MAX_RES) and only its outline is read
+            static constexpr U32 FLAT_IMPOSTOR_MAX_RES = 128;
+            static constexpr U32 FLAT_IMPOSTOR_MIN_RES = 8;
+            if (flat)
+            {
+                resX = llmin(llmax(resX / 2, FLAT_IMPOSTOR_MIN_RES), FLAT_IMPOSTOR_MAX_RES);
+                resY = llmin(llmax(resY / 2, FLAT_IMPOSTOR_MIN_RES), FLAT_IMPOSTOR_MAX_RES);
+            }
+            // the target's kind: a flat one has the colour only, the deferred one the G-buffer's targets too; another
+            // kind than this shot's is made again (resize cannot add or take away a target)
+            const bool target_is_flat = LLPipeline::sRenderDeferred && avatar->mImpostor.getNumTextures() == 1;
+            // </plus>
+            if (!avatar->mImpostor.isComplete() || target_is_flat != flat) // <plus> research/344 (was: if (!avatar->mImpostor.isComplete())) </plus>
             {
                 avatar->mImpostor.allocate(resX, resY, GL_RGBA, true);
 
-                if (LLPipeline::sRenderDeferred)
+                if (LLPipeline::sRenderDeferred && !flat) // <plus> research/344: not for a flat one </plus>
                 {
                     addDeferredAttachments(avatar->mImpostor, true);
                 }
 
                 gGL.getTexUnit(0)->bind(&avatar->mImpostor);
-                gGL.getTexUnit(0)->setTextureFilteringOption(LLTexUnit::TFO_POINT);
+                gGL.getTexUnit(0)->setTextureFilteringOption(flat ? LLTexUnit::TFO_BILINEAR : LLTexUnit::TFO_POINT); // <plus> research/344: a small silhouette is smoothed </plus>
                 gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
             }
             else if (resX != avatar->mImpostor.getWidth() || resY != avatar->mImpostor.getHeight())
@@ -13859,6 +14007,10 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar, bool preview_avatar, bool 
         avatar->mImpostor.clear();
         renderGeomDeferred(camera);
 
+        // <plus> research/344: a flat picture is the outline of the opaque body: no alpha pass, no depth pass of it
+        if (!flat)
+        {
+        // </plus>
         renderGeomPostDeferred(camera);
 
         // Shameless hack time: render it all again,
@@ -13874,6 +14026,7 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar, bool preview_avatar, bool 
         renderGeomPostDeferred(camera);
 
         sImpostorRenderAlphaDepthPass = false;
+        } // <plus> research/344: if (!flat) </plus>
 
     }
 
@@ -13969,8 +14122,10 @@ void LLPipeline::generateImpostor(LLVOAvatar* avatar, bool preview_avatar, bool 
     if (!preview_avatar && !for_profile)
     {
         avatar->mNeedsImpostorUpdate = false;
+        avatar->mImpostorIsFlat = flat; // <plus> research/344: the kind of the picture now on the plate </plus>
         avatar->mImpostorUnusable = false; // <plus> research/319 </plus>
         avatar->mImpostorWaitSince = 0.f; // <plus> research/319 </plus>
+        ++avatar->mPlusImpostorShots; // <plus> research/338 </plus>
         avatar->cacheImpostorValues();
         avatar->mLastImpostorUpdateFrameTime = gFrameTimeSeconds;
     }

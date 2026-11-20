@@ -1061,7 +1061,7 @@ namespace llvkgl
     struct ResolvedTarget
     {
         LLVKMirror::Target target;
-        Texture* colors[4] = {};        // FBO attachments to keep in attachment layout
+        Texture* colors[LLVKMirror::MAX_COLORS] = {};   // FBO attachments to keep in attachment layout
         U32 color_textures = 0;
         Texture* depth = nullptr;
         bool is_default = false;
@@ -1072,9 +1072,10 @@ namespace llvkgl
 
     struct Framebuffer
     {
-        GLuint color[4] = { 0, 0, 0, 0 };
+        // GL_COLOR_ATTACHMENT0.. up to LLVKMirror::MAX_COLORS (the G-buffer with its motion vectors, research/373).
+        GLuint color[LLVKMirror::MAX_COLORS] = {};
         GLuint depth = 0;
-        GLenum draw_buffers[4] = { GL_COLOR_ATTACHMENT0, GL_NONE, GL_NONE, GL_NONE };
+        GLenum draw_buffers[LLVKMirror::MAX_COLORS] = { GL_COLOR_ATTACHMENT0 };    // the rest GL_NONE (0)
         U32 draw_count = 1;
         GLenum read_buffer = GL_COLOR_ATTACHMENT0;
         // resolve_draw_target's last resolution of it (research/154 W1): made
@@ -1812,15 +1813,49 @@ namespace llvkgl
     // within the tolerance (LLRHI_OIT_TOLERANCE_MM, _REL) behind the one in
     // front of it joins its surface, up to LLRHI_OIT_SPAN tolerances deep;
     // inside a surface the priority (the higher on top), then a node that
-    // leaves the color as it is (the glow pass) on top, then the exact depth.
-    // Where surfaces start depends on the depths only.
+    // leaves the color as it is (the glow pass) on top, then, for nodes at
+    // nearly the same depth (equal depth bits, or within LLRHI_OIT_COPLANAR
+    // of the tolerance: oit_coplanar, 0.05 unset; only when the key is on,
+    // pc.coplanar >= 0), the tie key (the higher on top; equal keys: the
+    // order stays), else the exact depth. Where surfaces start depends on
+    // the depths only.
+    //
+    // The tie key (research/370): gl_PrimitiveID & 127 of the fragment (the
+    // triangle's number in its draw), 7 bits in bits the node had free: word 3
+    // (the blend word) bits 26-31 hold tie bits 0-5, word 2 (the depth) bit 31
+    // holds tie bit 6; every reader of the depth masks bit 31 off, every
+    // reader of the blend word looks below bit 26. The node stays 6 words.
+    // The key follows the draw's order (a later triangle on top, as the API's
+    // blending would put it) only for numbers less than 128 apart: it wraps
+    // every 128 triangles, and what matters is that the order is fixed, not
+    // that it is the API's. A program with a geometry stage writes no key
+    // (0). When every node has none the resolve orders as before (all the keys
+    // are 0, so none beats another). A keyed variant sharing a surface with keyless nodes: within
+    // the epsilon the keyless node is below any keyed one of key above 0, and
+    // keeps the order of the first pass (depth) against one of key 0 (a number
+    // a multiple of 128).
+    // Layers at an angle to each other are ordered by the key only where
+    // they are within the epsilon of each other: the front/back switch moves
+    // to where the gap equals the epsilon, it does not go away.
     //
     // The node buffer starts with { count, capacity, flags, 0, bounds };
     // count is read back a frame or two later and the buffer grows when it
     // was short. Fragments past the capacity are summed into the rest image
     // (weighted average, flags bit 0), which the resolve puts behind the
-    // sorted nodes; so are the farthest nodes of a pixel with more than
-    // LLRHI_OIT_MAX_LAYERS (16, at most OIT_MAX_LAYERS). The resolve: a
+    // sorted nodes, and only in a session whose count passed the capacity.
+    // The rest image is made when a session first ran out of nodes at that
+    // size (oit_harvest), however far the buffer can still grow (research/381
+    // B'; LLRHI_OIT_REST: lazy, the rule before it, waits for the buffer to be
+    // at its largest, eager makes it with the lists): the fragments of that
+    // first session, and of one more, are lost (a full session then leaves the
+    // pixel's color as the opaque pass had it there). The farthest nodes of a
+    // pixel with more than LLRHI_OIT_MAX_LAYERS (16, at most OIT_MAX_LAYERS)
+    // are summed behind the sorted ones too. A
+    // fragment that would leave the target as it is
+    // (oit_blend_inert: its blend at alpha 0 changes nothing, and the alpha
+    // is at most OIT_SKIP_CONSTANT_ID's threshold) is no node at all
+    // (research/381 A; a negative alpha counts as 0: the tail, the rest and
+    // the front clamp it to 0 too). The resolve: a
     // bounds pass (OIT_BOUNDS_COMPUTE) finds the pixels with a list and
     // copies the target there, then a strip over their bounds composites.
     //
@@ -1837,6 +1872,11 @@ namespace llvkgl
     // fragment makes an empty head non-empty, so which pixels are split
     // does not depend on draw order. The resolve then only touches pixels
     // with nodes, whose target color has no alpha of the session in it.
+    // An avatar whose alpha is 0 over its whole surface makes no node (research/381 A):
+    // OIT_EMPTY_STREAK sessions of that and the world's alpha draws as before (oit_world). If it
+    // then shows (llSetAlpha) with no new draw, node_draws is not above empty_draws, so the world
+    // stays classic until the count read back (a frame or two) shows nodes: for those frames the
+    // avatar's alpha is drawn over the world's alpha in front of it. Recorded, not counted.
 
     // The blend word: GL blend factors as OIT_FACTOR_*, equations as OIT_EQ_*,
     // and the color mask.
@@ -1851,9 +1891,13 @@ namespace llvkgl
     enum OITEquation { OIT_EQ_ADD, OIT_EQ_SUBTRACT, OIT_EQ_REVERSE_SUBTRACT, OIT_EQ_MIN, OIT_EQ_MAX };
     // Bits 0-3 source RGB factor, 4-7 destination RGB, 8-11 source alpha,
     // 12-15 destination alpha, 16-18 RGB equation, 19-21 alpha equation,
-    // 22-25 color mask (R, G, B, A).
+    // 22-25 color mask (R, G, B, A). In a node's word 3 bits 26-31 are the
+    // tie key's bits 0-5 (its bit 6: word 2 bit 31; see above).
     constexpr U32 OIT_BLEND_CONSTANT_ID = 200;
     constexpr U32 OIT_SPLIT_CONSTANT_ID = 201;  // 1: the hybrid session's world draws
+    // research/381: a float, the alpha up to which a fragment of an inert blend (oit_blend_inert) makes no node; below
+    // 0 (-1): every fragment does. 202 is not used (research/370 once thought of it for the tie key).
+    constexpr U32 OIT_SKIP_CONSTANT_ID = 203;
     // The draw's priority: the last push constant word, which the program's
     // own words never reach in a variant (it would not build: their offsets meet).
     constexpr U32 OIT_PRIORITY_OFFSET = LLVKBindless::PUSH_CONSTANT_BYTES - 4;
@@ -1863,7 +1907,9 @@ namespace llvkgl
     // The rest image: the rest (layers 0-5: sum of rgb * a (3), sum of a, sum
     // of -log2(1 - a), glow) and the front (6-11, the same).
     constexpr U32 OIT_REST_LAYERS = 12;
-    constexpr U32 OIT_FLAG_REST = 1;
+    constexpr U32 OIT_FRONT_FIRST_LAYER = 6;   // the front's first layer; only a hybrid session writes it (split)
+    constexpr U32 OIT_FLAG_REST = 1;        // the session has the rest image
+    constexpr U32 OIT_FLAG_FRONT = 2;       // a hybrid session: the front layers are cleared and read (a full session's are not)
     // How a draw uses its program's OIT variant: not at all, every fragment a
     // node (no color writes), or split (hybrid world draws: the draw's own
     // blend state, nodes only at pixels with avatar nodes).
@@ -1876,6 +1922,10 @@ namespace llvkgl
     extern const char* const OIT_RESOLVE_VERTEX;
     extern const char* const OIT_BOUNDS_COMPUTE;
     extern const char* const OIT_RESOLVE_FRAGMENT;
+    // research/381 (llvkgl_oit.cpp): LLRHI_OIT_SKIP_ALPHA, the alpha up to which the variants of an inert blend
+    // (oit_blend_inert, llvkgl_pipeline.cpp: a blend word whose node at alpha 0 leaves the target as it is, to the
+    // last bit) make no node. Below 0: off. Read at startup, fixed for the process; any thread.
+    F32 oit_skip_alpha();
     // row_word (research/205 3a-2): not U32_MAX, a draw reading rows takes its
     // priority from that word of its row (row_priority: it does; false when
     // the fragment file with main reads no rows).
@@ -1884,6 +1934,15 @@ namespace llvkgl
     // draw_row_words words (its rows word's place): while LLRHI_SCENE_ALPHA is
     // not off; else U32_MAX (the variants stay as baked).
     U32 oit_row_word(bool draw_rows, U32 draw_row_words);
+    // research/370 (llvkgl_oit.cpp). oit_coplanar: LLRHI_OIT_COPLANAR, how
+    // close (a share of the surface tolerance) two layers of a surface are
+    // ordered by the tie key (0.05, about 0.2 mm near the eye; 0: equal depth
+    // bits only; below 0: never).
+    // oit_tiekey: the variants write the key (oit_coplanar not below 0 and
+    // the GPU has geometryShader, which gl_PrimitiveID in a fragment shader
+    // needs). Fixed for the process; any thread.
+    F32 oit_coplanar();
+    bool oit_tiekey();
 
     // The OIT sessions (llvkgl_oit.cpp): LLRHI's hooks and the report.
     bool oit_supported();

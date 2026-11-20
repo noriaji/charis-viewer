@@ -340,6 +340,84 @@
                          height="25"
                          width="25"/>
                     </layout_panel>
+                    <!-- plus chat-channel-select: shown only in nearby chat when FSShowChatChannel is on (LLFloaterIMNearbyChat::postBuild) -->
+                    <layout_panel
+                     auto_resize="false"
+                     user_resize="false"
+                     visible="false"
+                     name="chat_channel_layout_panel"
+                     width="66">
+                        <spinner
+                         layout="topleft"
+                         follows="left|right|bottom"
+                         bottom="-3"
+                         left="1"
+                         right="-1"
+                         height="24"
+                         decimal_digits="0"
+                         increment="1.00"
+                         initial_value="0"
+                         label=""
+                         label_width="29"
+                         max_val="16777216"
+                         min_val="0"
+                         name="ChatChannel"
+                         tool_tip="Channel to send chat on" />
+                    </layout_panel>
+                    <layout_panel
+                     auto_resize="false"
+                     user_resize="false"
+                     visible="false"
+                     name="chat_type_layout_panel"
+                     width="85">
+                        <!-- Makeshift split button (from Firestorm): the button sends, the combo below it picks Whisper / Say / Shout -->
+                        <combo_box
+                         name="chat_type"
+                         layout="topleft"
+                         bottom="-3"
+                         left="0"
+                         right="-2"
+                         height="24"
+                         follows="bottom|right"
+                         drop_down_button.image_pressed="PushButton_Off"
+                         drop_down_button.image_pressed_selected="PushButton_Off"
+                         drop_down_button.image_selected="PushButton_Off"
+                         drop_down_button.image_unselected="PushButton_Off"
+                         drop_down_button.halign="center"
+                         list_position="above"
+                         tool_tip="Whisper = 10m, Say = 20m, Shout = 100m">
+                            <combo_box.item name="chat_type_whisper" value="whisper" label="Whisper" />
+                            <combo_box.item name="chat_type_say" value="say" label="Say" />
+                            <combo_box.item name="chat_type_shout" value="shout" label="Shout" />
+                        </combo_box>
+                        <button
+                         image_unselected="transparent.j2c"
+                         image_selected="PushButton_Off"
+                         image_pressed="PushButton_Off"
+                         image_pressed_selected="transparent.j2c"
+                         image_disabled="transparent.j2c"
+                         layout="topleft"
+                         left_delta="0"
+                         right="-22"
+                         height="24"
+                         follows="bottom|left|right"
+                         label="Say"
+                         pad_bottom="-22"
+                         name="send_chat"
+                         tab_stop="false"
+                         tool_tip="Whisper = 10m, Say = 20m, Shout = 100m" />
+                        <icon
+                         name="chat_type_combo_arrow_icon"
+                         layout="topleft"
+                         left_pad="0"
+                         top_delta="1"
+                         width="18"
+                         height="20"
+                         follows="bottom|right"
+                         image_name="arrow_up.tga"
+                         scale_image="true" />
+                    </layout_panel>
+                    <!-- /plus -->
                     <layout_panel
                      auto_resize="false"
                      name="input_button_layout_panel"

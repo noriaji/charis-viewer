@@ -75,7 +75,9 @@ namespace plus::importsettings
         bool general = true;    // settings.xml (but the graphics), the warnings not to show again, the colors
         bool graphics = false;  // the Render* settings (and the Charis Viewer's own), the window, the graphics presets
         bool keys = true;       // key_bindings.xml (ours kept as key_bindings_before_import_<date>.xml)
-        bool accounts = true;   // settings_per_account.xml and the other files of each account
+        // settings_per_account.xml and the other files of each account, the contact sets among them
+        // (settings_friends_groups.xml: ours is replaced when it has no sets, people or aliases; research/333 3)
+        bool accounts = true;
         bool chat = true;       // chat and IM transcripts
         bool files = true;      // user_settings folders (poses, environments, dictionaries, presets) and favorites
     };

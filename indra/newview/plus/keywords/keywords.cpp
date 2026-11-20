@@ -370,7 +370,10 @@ namespace plus::keywords
             {
                 return; // the settings did not change (their signals mark it) and your names are learnt
             }
-            const bool own = gSavedPerAccountSettings.getBOOL(SET_OWN_NAME);
+            // (asked at every call while your names are not known, so no name lookup: a try-out field of the window asks
+            // every frame)
+            static LLCachedControl<bool> own_name_setting(gSavedPerAccountSettings, SET_OWN_NAME, false);
+            const bool own = own_name_setting;
             if (own)
             {
                 learnOwnNames();

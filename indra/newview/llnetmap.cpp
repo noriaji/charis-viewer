@@ -73,6 +73,7 @@
 // <plus> rlv: RLVa (plus/rlv) (research/248)
 #include "plus/rlv/rlvhooks.h"
 // </plus>
+#include "plus/contactsethooks/cshooks.h" // <plus> contactsets: set colours of the dots (research/333) </plus>
 
 static LLDefaultChildRegistry::Register<LLNetMap> r1("net_map");
 
@@ -440,6 +441,7 @@ void LLNetMap::draw()
             // <plus> rlv: @shownames - the dot of a hidden agent is not coloured as a friend's (plus/rlv) (research/248 E24)
             if (plus::rlv::enabled() && !plus::rlv::canShowMenuName(uuid)) color = map_avatar_color;
             // </plus>
+            plus::cshooks::colorFor(uuid, ContactSetType::MINIMAP, color); // <plus> contactsets: the set colour (FSContactSetsColorizeMiniMap; not under @shownames) (research/333) </plus>
 
             unknown_relative_z = sorted_positions[i].mdV[VZ] >= COARSEUPDATE_MAX_Z &&
                     camera_position.mV[VZ] >= COARSEUPDATE_MAX_Z;

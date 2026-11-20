@@ -61,11 +61,17 @@ public:
     // CPU records frame N while the GPU still runs frame N-1.
     static const U32 FRAMES_IN_FLIGHT = 2;
 
+    // Colour attachments a target may have at once: the G-buffer's four and its
+    // motion vectors (research/373 tu-motion-v1; was 4). The GL translation's
+    // framebuffers and pipeline keys, the render thread's secondary buffers and
+    // the fullscreen passes hold this many (each checks it where both are known).
+    static constexpr U32 MAX_COLORS = 5;
+
     // A set of attachments to render into (dynamic rendering).
     struct Target
     {
-        VkImageView colors[4] = { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
-        VkFormat color_formats[4] = { VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED };
+        VkImageView colors[MAX_COLORS] = {};                // VK_NULL_HANDLE
+        VkFormat color_formats[MAX_COLORS] = {};            // VK_FORMAT_UNDEFINED
         U32 color_count = 0;
         VkImageView depth = VK_NULL_HANDLE;
         VkFormat depth_format = VK_FORMAT_UNDEFINED;

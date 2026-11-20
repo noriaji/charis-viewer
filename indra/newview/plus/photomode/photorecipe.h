@@ -30,6 +30,7 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "llsd.h"
 
@@ -43,7 +44,8 @@ namespace plus::photomode
         LLSD wrote;
     };
     // Where the writes are kept is the caller's: the presets keep theirs for the session (photomode.cpp),
-    // the recipe below in a saved setting, so that it can be given back after a restart.
+    // the recipe below in a saved setting, so that it can be given back after a restart; plus/presets keeps what
+    // the move to a new revision of the quality levels wrote, for its notice's Undo (research/352).
     using SettingWrites = std::map<std::string, SettingWrite>;
 
     // Writes `value` into the setting and keeps what it was before; a key written already keeps the
@@ -55,6 +57,13 @@ namespace plus::photomode
     bool changedSince(const std::string& key, const SettingWrite& write);
     // The setting back as it was, when it still holds what was written. One changed since is the user's and stays.
     void giveBack(const std::string& key, const SettingWrite& write);
+
+    // The writes as a saved setting keeps them: {setting name: {"before": ..., "wrote": ...}}.
+    LLSD writesToLLSD(const SettingWrites& writes);
+    // The writes kept so, read back (a settings.xml edited by hand names no other setting to write): only the names
+    // in `names`, settings that exist, and plain numbers (a check box, a slider, a choice); `before` as the setting's
+    // own type. Whether each still holds what was written is the caller's to check (stillAsWritten).
+    SettingWrites writesFromLLSD(const LLSD& saved, const std::vector<std::string>& names);
 
     // --- The one-press recipe "sunbeams through clouds" (research/253 9) ----------
     // One switch, PlusCloudShaftsScene (the photo tools' Sky & Weather tab, the photo screen, the Charis

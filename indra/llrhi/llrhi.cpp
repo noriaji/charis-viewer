@@ -475,6 +475,7 @@ void (*LLRHI::sResourceCounts)(U64&, U64&, U64&) = nullptr;
 void (*LLRHI::sDumpAllocations)(const std::string&) = nullptr;
 bool (*LLRHI::sVRAMBudget)(U64&, U64&, U64&) = nullptr;
 bool LLRHI::sVRAMBudgetReal = LLRHI::envDefaultOn("LLRHI_VK_BUDGET_REAL");
+U32 LLRHI::sVRAMOverrideMB = 0;     // research/371: plus (LLAppViewer::init) or LLRHI_VRAM_OVERRIDE_MB
 void (*LLRHI::sTextureImageBytes)(const U32*, U32, U64*) = nullptr;
 std::string (*LLRHI::sPoolDetail)() = nullptr;
 std::atomic<bool> LLRHI::sBufferCompact{ false };     // research/245: plus/tplag sets it

@@ -41,22 +41,37 @@
 // The Charis presets of before (light, standard, beautiful, and official_mid
 // for comparisons; copies in the account's presets/graphic folder, a backup
 // for "Undo") are retired. Once, after a login (PlusPresetMigrated), a preset
-// that was in use moves to its level: light Mid, official_mid MidHigh,
-// standard High, beautiful Ultra (the draw distance and the avatar limits as
-// they were). Settings of the user's own ("Custom") are left as they are. The
-// copies are removed at every login (another account may still have them), and
-// so is the backup.
+// that was in use moves to its level: light Mid, standard High, beautiful
+// Ultra, official_mid the comparison below (the draw distance and the avatar
+// limits as they were). Settings of the user's own ("Custom") are left as they
+// are. The copies are removed at every login (another account may still have
+// them), and so is the backup.
 //
 // Here too: the levels next to the one in use get their shaders compiled in
 // the background after a login or a change of level (research/111 B-PW); the
 // official preset saving takes the Charis settings of the levels
 // (addPresetControlNames(), a <plus> hook in LLPresetsManager::savePreset); the
 // automatic level picks Ultra for a fast GPU (recommendedGraphicsLevel(), a
-// <plus> hook in LLFeatureManager); the comparison with the official viewer
-// (research/151, Preferences > Charis > Development) is MidHigh, whose Charis
-// features are all off but full OIT, with the official MidHigh's own LOD and
-// anisotropic filtering (featuretable.txt has Firestorm's), partial OIT, the official
-// night sky, no TAA (off at every level too) and a 256 m draw distance.
+// <plus> hook in LLFeatureManager).
+//
+// The comparison with the official viewer (research/151, research/352;
+// Preferences > Charis > Development) is not a level: MidHigh, then the lines of
+// featuretable.txt's hidden list Official in place of the level's (Charis'
+// features off, partial OIT, no loading wireframe, the official MidHigh's LOD
+// and anisotropic filtering, 256 m), and the official night sky. It is "in use"
+// while the values are those (isComparison(): no saved flag, so every way of
+// changing them, the official slider's included, ends it as the values say).
+// Applying any level puts the loading wireframe back (RenderGrayTextureWireframe
+// is 1 in "all" and every level), so the comparison always ends there.
+//
+// When the Charis values of the levels change, the saved settings of the users
+// of before are moved once (PlusLevelsRevision, at the start: a saved value that
+// is still the old level's gets the new one, any other is the user's and kept),
+// and a notice after the next login offers to undo it (PlusLevelsMigrationWrites).
+// Revision 1 (research/352): MidHigh got the distant avatars as pictures and
+// grey figures, the materialize band, the UI frames (the UI keeps up while the
+// world is slow) and no sun shadows of far small moving objects; the
+// comparison no loading wireframe.
 //
 // The snapshot boost (PlusSnapshotBoost, one check box, on by default) is the
 // second axis: whatever the level, the frames of a snapshot are drawn with
@@ -79,6 +94,7 @@
 #include "llcallbacklist.h"
 #include "lldir.h"
 #include "lldiriterator.h"
+#include "llf32uictrl.h"
 #include "llfeaturemanager.h"
 #include "llfile.h"
 #include "llfloaterpreference.h"
@@ -92,13 +108,16 @@
 #include "llstartup.h"
 #include "lltexturefetch.h"
 #include "lltimer.h"
+#include "llui.h"
 #include "lluictrl.h"
 #include "lluictrlfactory.h"
 #include "lluri.h"
 #include "llviewercontrol.h"
 #include "fsyspath.h"
+#include "plus/photomode/photorecipe.h"
 #include "plus/photomode/phototools.h"
 #include "plus/photoscreen/psui/psstyle.h"
+#include "plus/safemode/safemode.h"
 #include "plus/shaderreload/shaderreload.h"
 
 #include <algorithm>
@@ -117,6 +136,11 @@ namespace
     constexpr char SETTING_REVISION[]       = "PlusGraphicPresetRevision";  // in the retired presets' copies: marks ours
     constexpr char SETTING_MIGRATED[]       = "PlusPresetMigrated";         // the move to the levels is done
     constexpr char SETTING_BOOST[]          = "PlusSnapshotBoost";
+    constexpr char SETTING_FULL_DISTANCE[]  = "PlusAvatarFullDistance";          // research/343
+    constexpr char SETTING_FULL_DISTANCE_MIGRATED[] = "PlusAvatarFullDistanceMigrated"; // its level's value is written once
+    constexpr char SETTING_JELLY_FLAT[]     = "PlusJellyDollFlat";               // research/344
+    constexpr char SETTING_SILHOUETTE_DISTANCE[] = "PlusAvatarSilhouetteDistance"; // research/344
+    constexpr char SETTING_JELLY_MIGRATED[] = "PlusJellyDollMigrated";           // their levels' values are written once
     constexpr char SETTING_OIT_SNAPSHOT[]   = "RenderOITSnapshotFull";      // full OIT in snapshots (research/41)
     constexpr char SETTING_ACTIVE[]         = "PresetGraphicActive";        // official: the saved preset in use
     constexpr char SETTING_QUALITY[]        = "RenderQualityPerformance";   // official: the quality slider's level
@@ -147,24 +171,72 @@ namespace
     constexpr S32 ULTRA_GPU_CLASS = GPU_CLASS_5;
     constexpr U32 ULTRA_MIN_VRAM_MB = 7 * 1024;
 
-    // The comparison with the official viewer (research/151): MidHigh (no Charis feature on),
-    // with the official MidHigh's values where featuretable.txt has Firestorm's, partial OIT
-    // (the MidHigh level has full OIT, 2026-10-25; the comparison is "about the official one"),
-    // the official night sky (the stars are a matter of taste, not in the levels; the retired comparison
-    // preset had them off), no TAA (the official viewer has none; every level has it off too, 2026-11-09)
-    // and 256 m. tools/dummy-sim/level_preset.py writes the same.
+    // The comparison with the official viewer (research/151, research/352): MidHigh, then featuretable.txt's
+    // hidden list Official in place of the level's values (each the smaller of "all" with this GPU's masks and
+    // the list's), and the official night sky (the stars are a matter of taste, not in the table; the retired
+    // comparison preset had them off). tools/dummy-sim/level_preset.py writes the same.
     constexpr U32 COMPARISON_LEVEL = LEVEL_MID_HIGH;
-    constexpr F32 COMPARISON_FAR_CLIP = 256.f;
-    constexpr F32 COMPARISON_VOLUME_LOD = 1.375f;
-    constexpr U32 COMPARISON_ANISOTROPIC = 4;
-    constexpr U32 COMPARISON_OIT = 1;          // partial (hybrid)
+    constexpr char COMPARISON_LIST[] = "Official";
     constexpr char SETTING_TAA[] = "PlusTAA";   // plus/taa: off in every level and in the comparison
+    constexpr char SETTING_WIREFRAME[] = "RenderGrayTextureWireframe";  // the loading wireframe: 1 in every level, 0 in the comparison
+
+    // Official settings among the Charis lines of the levels: a saved graphics preset holds them too
+    // (addPresetControlNames; as official_mid_scope.txt's "official render" lines).
+    constexpr const char* LEVEL_OFFICIAL_SETTINGS[] = { "RenderOITMode", "RenderGrayTextureWireframe" };
 
     // Values read back from F32 settings are compared with this tolerance.
     constexpr F64 F32_TOLERANCE = 1e-4;
 
+    // The move of the saved settings to a new revision of the Charis values of the levels (research/352 section 3).
+    // Each revision has a table of {setting, the old value}: a setting whose saved value is still the old one gets
+    // the new one (read from featuretable.txt, not written here again). Before a release the latest revision's table
+    // may grow; after one, a change of a level's Charis values is a new revision with a table of its own.
+    constexpr char SETTING_LEVELS_REVISION[] = "PlusLevelsRevision";
+    constexpr char SETTING_LEVELS_WRITES[]   = "PlusLevelsMigrationWrites";  // what the move wrote, for the notice's Undo
+    constexpr char NOTIFICATION_LEVELS[]     = "PlusLevelsMigrated";
+    constexpr char KIND_MIDHIGH[]            = "midhigh";
+    constexpr char KIND_COMPARISON[]         = "comparison";
+    constexpr U32  LEVELS_REVISION = 1;
+    struct RevisionRow
+    {
+        const char* name;
+        F32 old_value;
+    };
+    // Revision 1: MidHigh (its new values: list MidHigh).
+    constexpr RevisionRow REVISION_1_MIDHIGH[] =
+    {
+        { SETTING_FULL_DISTANCE,       0.f },
+        { SETTING_SILHOUETTE_DISTANCE, 0.f },
+        { "PlusMaterialize",           0.f },
+        { "PlusMaterializeAvatar",     0.f },
+        { "PlusUiFrame",               0.f },   // speed features that leave the picture as it was
+        { "PlusShadowSkipFarSmall",    0.f },
+    };
+    // Revision 1: the comparison (its new values: list Official with this GPU's masks; the code of before wrote
+    // partial OIT and 4x anisotropic filtering over the masks, and left the loading wireframe on).
+    constexpr RevisionRow REVISION_1_COMPARISON[] =
+    {
+        { SETTING_WIREFRAME,   1.f },
+        { SETTING_OIT,         1.f },
+        { SETTING_ANISOTROPIC, 4.f },
+    };
+    // The comparison as the code of before wrote it (applyComparison) and recognized it (isComparison), read
+    // from the saved values: the users of before who had it.
+    constexpr RevisionRow OLD_COMPARISON[] =
+    {
+        { SETTING_QUALITY,     (F32)LEVEL_MID_HIGH },
+        { SETTING_FAR_CLIP,    256.f },
+        { SETTING_VOLUME_LOD,  1.375f },
+        { SETTING_ANISOTROPIC, 4.f },
+        { SETTING_SKY_STARS,   0.f },
+        { SETTING_OIT,         1.f },
+        { SETTING_TAA,         0.f },
+        { SETTING_DYNAMIC_LOD, 1.f },
+    };
+
     // The retired presets and the level each moves to (research/183 section 3.3). official_mid
-    // was the comparison: all its settings counted for "in use", no matter of taste.
+    // was the comparison: all its settings counted for "in use", no matter of taste, and it moves
+    // to the comparison (applyComparison(), research/352; its level is the comparison's).
     struct RetiredPreset
     {
         const char* id;
@@ -336,12 +408,10 @@ namespace
         return nullptr;
     }
 
-    // The saved value (getSaveValue()), as the retired presets' "in use" had it (fix-round87: an
-    // unsaved test value of the MCP tools does not count).
-    bool sameSavedValue(LLControlVariable& control, const LLSD& value)
+    // Two values of a setting of this type: the same (an F32 within F32_TOLERANCE).
+    bool sameAs(eControlType type, const LLSD& current, const LLSD& value)
     {
-        const LLSD current = control.getSaveValue();
-        switch (control.type())
+        switch (type)
         {
         case TYPE_BOOLEAN:
             return current.asBoolean() == value.asBoolean();
@@ -355,6 +425,13 @@ namespace
         default:
             return llsd_equals(current, value);
         }
+    }
+
+    // The saved value (getSaveValue()), as the retired presets' "in use" had it (fix-round87: an
+    // unsaved test value of the MCP tools does not count).
+    bool sameSavedValue(LLControlVariable& control, const LLSD& value)
+    {
+        return sameAs(control.type(), control.getSaveValue(), value);
     }
 
     // A retired preset's copy whose every setting has its value (the matters of taste of an
@@ -406,11 +483,25 @@ namespace
         return LLFeatureManager::getInstance()->getNameForGraphicsLevel(level);
     }
 
-    // A setting's value at a level as LLFeatureManager::setGraphicsLevel() gives it on this GPU: the
-    // smaller of "all" with this GPU's masks (getBaseFeatures(): Intel, Unknown, safe...) and the
-    // level's, 0 where a mask makes it unavailable (getRecommendedValue()); the fallback when "all"
-    // does not have it.
-    F32 levelValue(U32 level, const std::string& name, F32 fallback)
+    // The value LLFeatureManager::applyFeatures() gives from "all" with this GPU's masks (top) and a list's own
+    // line (own; null: the list has none): the smaller of the two, 0 where a mask makes it unavailable
+    // (getRecommendedValue(); a mask cannot turn back on what an earlier one turned off: maskList).
+    F32 maskedValue(const LLFeatureInfo& top, const LLFeatureInfo* own)
+    {
+        bool available = top.mAvailable;
+        F32 value = top.mRecommendedLevel;
+        if (own)
+        {
+            available = available && own->mAvailable;
+            value = llmin(value, own->mRecommendedLevel);
+        }
+        return available ? value : 0.f;
+    }
+
+    // A setting's value with a list of featuretable.txt over "all" with this GPU's masks (getBaseFeatures(): Intel,
+    // Unknown, safe...): a level's as LLFeatureManager::setGraphicsLevel() gives it, or the hidden list Official's
+    // as applyComparison() gives it. The fallback when "all" does not have it.
+    F32 listValue(const std::string& list_name, const std::string& name, F32 fallback)
     {
         LLFeatureManager* features = LLFeatureManager::getInstance();
         const LLFeatureList::feature_map_t& base = features->getBaseFeatures();
@@ -419,30 +510,94 @@ namespace
         {
             return fallback;
         }
-        bool available = top->second.mAvailable;
-        F32 value = top->second.mRecommendedLevel;
-        if (LLFeatureList* list = features->findMask(levelName(level)))
+        const LLFeatureInfo* own = nullptr;
+        if (LLFeatureList* list = features->findMask(list_name))
         {
-            LLFeatureList::feature_map_t::const_iterator own = list->getFeatures().find(name);
-            if (own != list->getFeatures().end())
+            LLFeatureList::feature_map_t::const_iterator line = list->getFeatures().find(name);
+            if (line != list->getFeatures().end())
             {
-                available = available && own->second.mAvailable;
-                value = llmin(value, own->second.mRecommendedLevel);
+                own = &line->second;
             }
         }
-        return available ? value : 0.f;
+        return maskedValue(top->second, own);
     }
+
+    F32 levelValue(U32 level, const std::string& name, F32 fallback)
+    {
+        return listValue(levelName(level), name, fallback);
+    }
+
+    bool isNumber(LLControlVariable& control)
+    {
+        return control.isType(TYPE_BOOLEAN) || control.isType(TYPE_S32) || control.isType(TYPE_U32) || control.isType(TYPE_F32);
+    }
+
+    // A table's number as the setting holds it, cast as LLFeatureManager::applyFeatures() casts it (a check box
+    // on for anything but 0, an S32 cut toward 0).
+    LLSD typedValue(LLControlVariable& control, F32 value)
+    {
+        switch (control.type())
+        {
+        case TYPE_BOOLEAN:
+            return LLSD((bool)value);
+        case TYPE_S32:
+            return LLSD((LLSD::Integer)(S32)value);
+        case TYPE_U32:
+            return LLSD((LLSD::Integer)(U32)value);
+        default:
+            return LLSD((LLSD::Real)value);
+        }
+    }
+
+    // A table's number into a numeric setting, only when it holds another value (a write rebuilds what
+    // depends on the setting).
+    void setNumber(LLControlVariable& control, F32 value)
+    {
+        const LLSD typed = typedValue(control, value);
+        if (!sameAs(control.type(), control.getValue(), typed))
+        {
+            control.setValue(typed);
+        }
+    }
+
+    // Each line of a list of featuretable.txt that is not a level (list Official) written as listValue gives it,
+    // in place of the level's value.
+    void applyList(const char* list_name)
+    {
+        LLFeatureList* list = LLFeatureManager::getInstance()->findMask(list_name);
+        if (!list)
+        {
+            LL_WARNS("Plus") << "featuretable.txt has no list " << list_name << " (an older table): only the level applied" << LL_ENDL;
+            return;
+        }
+        for (const LLFeatureList::feature_map_t::value_type& line : list->getFeatures())
+        {
+            LLControlVariable* control = gSavedSettings.getControl(line.first).get();
+            if (control && isNumber(*control))
+            {
+                setNumber(*control, listValue(list_name, line.first, (F32)control->getValue().asReal()));
+            }
+        }
+    }
+
+    // A level (or the comparison) was applied since the notice of the levels' move offered Undo (offerLevelsUndo
+    // clears it as it offers): Charis' own way (applyLevelValues) and a change of the level by any other one (the
+    // official slider, init()'s watch). The notice's Undo then does nothing: the values of Mid-High applied again
+    // are the same as the move's, so stillAsMigrated() alone cannot tell (research/352, preset-compare-exit).
+    bool sLevelAppliedSinceOffer = false;
 
     // What the official slider does (LLFloaterPreference::onChangeQuality), from the Charis
     // menu and the photo tools: the level's values, the shaders reloaded once. The settings are
-    // a level's now, not a saved preset's: "Preset in use" names none.
-    void applyLevel(U32 level)
+    // a level's now, not a saved preset's: "Preset in use" names none. The windows and the
+    // listeners hear of it from notifyLevelApplied(), once everything is written.
+    void applyLevelValues(U32 level)
     {
         level = llmin(level, LEVEL_COUNT - 1);
         LL_INFOS("Plus") << "Graphics quality level " << level << " (" << levelName(level) << ")" << LL_ENDL;
         // fix-round22: a compare held in the photo tools ends first, so the level starts from the
         // user's own values (its window sees the end in draw()).
         plus::photomode::compareEnd();
+        sLevelAppliedSinceOffer = true;
         LLTimer timer;
         LLFeatureManager::getInstance()->setGraphicsLevel(level, true);
         // Changing the level turns the depth of field off (a matter of taste, so the levels do not set it): it is switched on again
@@ -458,6 +613,12 @@ namespace
             gSavedSettings.setString(SETTING_ACTIVE, "");
         }
         LL_INFOS("Plus") << "Graphics quality level " << level << " applied in " << timer.getElapsedTimeF32() << " s" << LL_ENDL;
+    }
+
+    // After a level (or the comparison) was written: the windows, the presets' list and the listeners
+    // (addGraphicsLevelListener: the photo recipes, Preferences > Charis), once.
+    void notifyLevelApplied(U32 level)
+    {
         LLFloaterPreference::refreshEnabledGraphics();
         LLPresetsManager::getInstance()->triggerChangeSignal();
         for (const std::function<void(U32)>& listener : levelListeners())
@@ -466,35 +627,72 @@ namespace
         }
     }
 
-    void applyComparison()
+    void applyLevel(U32 level)
     {
-        applyLevel(COMPARISON_LEVEL);
-        gSavedSettings.setF32(SETTING_FAR_CLIP, COMPARISON_FAR_CLIP);
-        gSavedSettings.setF32(SETTING_VOLUME_LOD, COMPARISON_VOLUME_LOD);
-        gSavedSettings.setU32(SETTING_ANISOTROPIC, COMPARISON_ANISOTROPIC);
-        gSavedSettings.setS32(SETTING_SKY_STARS, 0);
-        gSavedSettings.setU32(SETTING_OIT, COMPARISON_OIT);
-        gSavedSettings.setBOOL(SETTING_TAA, false);
+        level = llmin(level, LEVEL_COUNT - 1);
+        applyLevelValues(level);
+        notifyLevelApplied(level);
     }
 
-    // Asked by the menu's checks and the photo tools' periodic refresh: cached controls, not looked up by name.
+    void applyComparison()
+    {
+        applyLevelValues(COMPARISON_LEVEL);
+        applyList(COMPARISON_LIST);
+        gSavedSettings.setS32(SETTING_SKY_STARS, 0);
+        notifyLevelApplied(COMPARISON_LEVEL);
+    }
+
+    // A line of list Official as isComparison() checks it: the setting, and the list's own line (the GPU's masks
+    // are looked up at each call: getBaseFeatures() is made again by every applyBaseMasks()).
+    struct ComparisonRow
+    {
+        std::string name;
+        LLControlVariable* control;
+        LLFeatureInfo own;
+    };
+
+    // Asked by the menu's checks and the photo tools' periodic refresh: no setting looked up by name. Not at
+    // MidHigh: one comparison. At MidHigh: each line of list Official (some 50) against its value with this GPU's masks.
     bool isComparison()
     {
-        static LLCachedControl<F32> far_clip(gSavedSettings, SETTING_FAR_CLIP, 0.f);
-        static LLCachedControl<F32> volume_lod(gSavedSettings, SETTING_VOLUME_LOD, 0.f);
-        static LLCachedControl<U32> anisotropic(gSavedSettings, SETTING_ANISOTROPIC, 0);
         static LLCachedControl<S32> sky_stars(gSavedSettings, SETTING_SKY_STARS, 0);
-        static LLCachedControl<U32> oit(gSavedSettings, SETTING_OIT, 0);
-        static LLCachedControl<bool> taa(gSavedSettings, SETTING_TAA, false);
-        static LLCachedControl<bool> dynamic_lod(gSavedSettings, SETTING_DYNAMIC_LOD, true);
-        return plus::presets::graphicsLevel() == COMPARISON_LEVEL
-               && std::fabs(far_clip() - COMPARISON_FAR_CLIP) <= F32_TOLERANCE
-               && std::fabs(volume_lod() - COMPARISON_VOLUME_LOD) <= F32_TOLERANCE
-               && anisotropic() == COMPARISON_ANISOTROPIC
-               && sky_stars() == 0
-               && oit() == COMPARISON_OIT
-               && !taa()
-               && dynamic_lod();   // "not by distance" is not the official MidHigh (research/275 L059)
+        if (plus::presets::graphicsLevel() != COMPARISON_LEVEL || sky_stars() != 0)
+        {
+            return false;
+        }
+        static std::vector<ComparisonRow> rows;     // made once the table is read; it does not change while running
+        LLFeatureManager* features = LLFeatureManager::getInstance();
+        if (rows.empty())
+        {
+            LLFeatureList* list = features->findMask(COMPARISON_LIST);
+            if (!list)
+            {
+                return false;
+            }
+            for (const LLFeatureList::feature_map_t::value_type& line : list->getFeatures())
+            {
+                LLControlVariable* control = gSavedSettings.getControl(line.first).get();
+                if (control && isNumber(*control))
+                {
+                    rows.push_back({ line.first, control, line.second });
+                }
+            }
+            if (rows.empty())
+            {
+                return false;
+            }
+        }
+        const LLFeatureList::feature_map_t& base = features->getBaseFeatures();
+        for (const ComparisonRow& row : rows)
+        {
+            LLFeatureList::feature_map_t::const_iterator top = base.find(row.name);
+            if (top != base.end()
+                && !sameAs(row.control->type(), row.control->getValue(), typedValue(*row.control, maskedValue(top->second, &row.own))))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     // The level the official viewer would pick for this PC, with Ultra for a fast GPU.
@@ -684,6 +882,219 @@ namespace
     }
 
     // ------------------------------------------------------------------
+    // The move to a new revision of the levels' Charis values (research/352 section 3)
+
+    // The comparison as the code of before had it, from the saved values (asked once, at the start).
+    bool oldComparisonSaved()
+    {
+        for (const RevisionRow& row : OLD_COMPARISON)
+        {
+            LLControlVariable* control = gSavedSettings.getControl(row.name).get();
+            if (!control || !sameSavedValue(*control, LLSD((LLSD::Real)row.old_value)))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // One line of a revision's table: the new value written (and remembered, for Undo) when the saved value is
+    // still the old one. An unsaved value over it (a --set, a test) is left alone; a value of the user's is kept.
+    void maybeWrite(plus::photomode::SettingWrites& writes, const RevisionRow& row, F32 new_value)
+    {
+        LLControlVariable* control = gSavedSettings.getControl(row.name).get();
+        if (!control || !isNumber(*control))
+        {
+            return;
+        }
+        if (!sameAs(control->type(), control->getValue(), control->getSaveValue()))
+        {
+            LL_INFOS("Plus") << "level table revision " << LEVELS_REVISION << ": " << row.name
+                             << " has a value that is not saved over it: left alone" << LL_ENDL;
+            return;
+        }
+        const LLSD wanted = typedValue(*control, new_value);
+        if (sameSavedValue(*control, wanted))
+        {
+            LL_INFOS("Plus") << "level table revision " << LEVELS_REVISION << ": " << row.name << " is already the new value "
+                             << wanted.asString() << LL_ENDL;
+        }
+        else if (!sameSavedValue(*control, LLSD((LLSD::Real)row.old_value)))
+        {
+            LL_INFOS("Plus") << "level table revision " << LEVELS_REVISION << ": " << row.name << " kept the user's value "
+                             << control->getSaveValue().asString() << LL_ENDL;
+        }
+        else if (plus::photomode::writeRemembered(writes, row.name, wanted))
+        {
+            LL_INFOS("Plus") << "level table revision " << LEVELS_REVISION << ": " << row.name << " " << row.old_value
+                             << " -> " << wanted.asString() << LL_ENDL;
+        }
+    }
+
+    // The table of a revision's kind, and the names it may write (what the notice's Undo reads back).
+    template <size_t N>
+    std::vector<std::string> rowNames(const RevisionRow (&rows)[N])
+    {
+        std::vector<std::string> names;
+        for (const RevisionRow& row : rows)
+        {
+            names.emplace_back(row.name);
+        }
+        return names;
+    }
+
+    std::vector<std::string> revisionNames(const std::string& kind)
+    {
+        if (kind == KIND_MIDHIGH)
+        {
+            return rowNames(REVISION_1_MIDHIGH);
+        }
+        if (kind == KIND_COMPARISON)
+        {
+            return rowNames(REVISION_1_COMPARISON);
+        }
+        return {};
+    }
+
+    // At the start, before the login (the levels' settings are the computer's, not an account's). Not in the safe
+    // mode: it sets features off with --set (unsaved values), and a saved write takes that away (llcontrol's
+    // setValue returns to the default first), turning them on for this run; the next normal start moves them.
+    // Not saved yet when the viewer stops before saving: the next start does the same again.
+    void migrateLevelsRevision(bool was_comparison)
+    {
+        LLControlVariable* revision = gSavedSettings.getControl(SETTING_LEVELS_REVISION).get();
+        LLControlVariable* quality = gSavedSettings.getControl(SETTING_QUALITY).get();
+        if (plus::safemode::active() || !revision || !quality || (U32)revision->getValue().asInteger() >= LEVELS_REVISION)
+        {
+            return;
+        }
+        plus::photomode::SettingWrites writes;
+        const char* kind = nullptr;
+        if (sameSavedValue(*quality, LLSD((LLSD::Integer)LEVEL_MID_HIGH)))
+        {
+            if (was_comparison)
+            {
+                kind = KIND_COMPARISON;
+                for (const RevisionRow& row : REVISION_1_COMPARISON)
+                {
+                    maybeWrite(writes, row, listValue(COMPARISON_LIST, row.name, row.old_value));
+                }
+            }
+            else
+            {
+                kind = KIND_MIDHIGH;
+                for (const RevisionRow& row : REVISION_1_MIDHIGH)
+                {
+                    maybeWrite(writes, row, levelValue(LEVEL_MID_HIGH, row.name, row.old_value));
+                }
+            }
+        }
+        revision->setValue(LLSD((LLSD::Integer)LEVELS_REVISION));
+        if (!writes.empty())
+        {
+            gSavedSettings.setLLSD(SETTING_LEVELS_WRITES, LLSD().with("kind", kind).with("writes", plus::photomode::writesToLLSD(writes)));
+        }
+        LL_INFOS("Plus") << "level table revision " << LEVELS_REVISION << ": "
+                         << (kind ? std::string(kind) : std::string("not at Mid-High, nothing to move")) << ", "
+                         << writes.size() << " setting(s) written" << LL_ENDL;
+    }
+
+    // What the move wrote and still holds it, offered back once by the notice (this run only).
+    plus::photomode::SettingWrites sPendingUndo;
+
+    // The settings are still in the state the move left (its kind): no level applied since. Values alone cannot
+    // tell what the move wrote from the same value another level wrote (High has the materialize band too), so a
+    // level applied after the move (Preferences before the login, a new GPU's recommended level, the slider with the
+    // notice still in the list) ends the offer. Mid-High: still at it and not the comparison. The comparison: still
+    // at Mid-High with the loading wireframe off (every level puts it back on).
+    bool stillAsMigrated(const std::string& kind)
+    {
+        if (plus::presets::graphicsLevel() != LEVEL_MID_HIGH)
+        {
+            return false;
+        }
+        if (kind == KIND_COMPARISON)
+        {
+            LLControlVariable* wireframe = gSavedSettings.getControl(SETTING_WIREFRAME).get();
+            return wireframe && !wireframe->getValue().asBoolean();
+        }
+        return kind == KIND_MIDHIGH && !isComparison();
+    }
+
+    // After the login (the notice needs the UI of a session). Not in the safe mode: its --set values would look
+    // changed since the move and be dropped; the next normal start offers it. The saved record is emptied as the
+    // notice is shown: a notice left unanswered is not shown again at every login.
+    void offerLevelsUndo()
+    {
+        LLControlVariable* control = gSavedSettings.getControl(SETTING_LEVELS_WRITES).get();
+        if (plus::safemode::active() || !control)
+        {
+            return;
+        }
+        const LLSD saved = control->getValue();
+        if (!saved.isMap() || saved.size() == 0)
+        {
+            return;
+        }
+        const std::string kind = saved.get("kind").asString();
+        plus::photomode::SettingWrites writes = plus::photomode::writesFromLLSD(saved.get("writes"), revisionNames(kind));
+        for (auto it = writes.begin(); it != writes.end();)
+        {
+            it = plus::photomode::stillAsWritten(it->first, it->second) ? std::next(it) : writes.erase(it);
+        }
+        control->setValue(LLSD::emptyMap());
+        if (writes.empty())
+        {
+            return;
+        }
+        if (!stillAsMigrated(kind))
+        {
+            LL_INFOS("Plus") << "level table revision " << LEVELS_REVISION << ": a level was applied since the move ("
+                             << kind << "): no Undo offered" << LL_ENDL;
+            return;
+        }
+        std::string message;
+        if (kind == KIND_COMPARISON)
+        {
+            message = text("comparison_migrated");
+            if (writes.count(SETTING_OIT) || writes.count(SETTING_ANISOTROPIC))
+            {
+                message += " " + text("comparison_migrated_gpu");
+            }
+        }
+        else
+        {
+            // this GPU's masks may leave the grey figures off (Unknown): then the notice does not name them
+            message = text(writes.count(SETTING_SILHOUETTE_DISTANCE) ? "midhigh_migrated" : "midhigh_migrated_no_silhouette");
+        }
+        sPendingUndo = writes;
+        sLevelAppliedSinceOffer = false;
+        LLNotificationsUtil::add(NOTIFICATION_LEVELS, LLSD().with("MESSAGE", message), LLSD(),
+                                 [kind](const LLSD& notification, const LLSD& response)
+                                 {
+                                     const bool undo = LLNotificationsUtil::getSelectedOption(notification, response) == 1;
+                                     // the notice stays in the list until answered: a level may have been applied since
+                                     if (undo && (sLevelAppliedSinceOffer || !stillAsMigrated(kind)))
+                                     {
+                                         LL_INFOS("Plus") << "level table revision " << LEVELS_REVISION
+                                                          << " not undone: a level was applied since the move" << LL_ENDL;
+                                     }
+                                     else if (undo)
+                                     {
+                                         for (const auto& [key, write] : sPendingUndo)
+                                         {
+                                             const bool back = plus::photomode::stillAsWritten(key, write);
+                                             plus::photomode::giveBack(key, write);
+                                             LL_INFOS("Plus") << "level table revision " << LEVELS_REVISION << " undone: " << key
+                                                              << (back ? " back to " + write.before.asString() : std::string(" changed since: kept"))
+                                                              << LL_ENDL;
+                                         }
+                                     }
+                                     sPendingUndo.clear();
+                                 });
+    }
+
+    // ------------------------------------------------------------------
     // The move from the retired presets (once), and their leftovers (every login)
 
     // The retired presets' backups for "Undo": the one in user_settings, and the old ones left
@@ -746,9 +1157,17 @@ namespace
                     kept.emplace_back(name, control->getValue());
                 }
             }
-            LL_INFOS("Plus") << "The retired Charis graphics preset " << id << " was in use: moved to the quality level "
-                             << preset->level << LL_ENDL;
-            applyLevel(preset->level);
+            if (preset->comparison)
+            {
+                LL_INFOS("Plus") << "The retired Charis graphics preset " << id << " was in use: moved to the comparison" << LL_ENDL;
+                applyComparison();
+            }
+            else
+            {
+                LL_INFOS("Plus") << "The retired Charis graphics preset " << id << " was in use: moved to the quality level "
+                                 << preset->level << LL_ENDL;
+                applyLevel(preset->level);
+            }
             for (const std::pair<std::string, LLSD>& setting : kept)
             {
                 gSavedSettings.setUntypedValue(setting.first, setting.second);
@@ -764,7 +1183,8 @@ namespace
         {
             LLStringUtil::format_map_t args;
             args["[LEVEL]"] = in_use ? text("level_" + std::to_string(preset->level)) : std::string();
-            LLNotificationsUtil::add("SystemMessageTip", LLSD().with("MESSAGE", text(in_use ? "migrated" : "migrated_custom", args)));
+            const char* notice = !in_use ? "migrated_custom" : preset->comparison ? "migrated_comparison" : "migrated";
+            LLNotificationsUtil::add("SystemMessageTip", LLSD().with("MESSAGE", text(notice, args)));
         }
     }
 
@@ -795,6 +1215,7 @@ namespace
         sCopiesRemoved = true;
         clearRetiredActiveName(dir);
         LLPresetsManager::getInstance()->triggerChangeSignal();
+        offerLevelsUndo();      // after the retired presets' move, which may have rewritten what it offers back
     }
 
     // Runs every frame until the login is done. The account's folder is named
@@ -840,8 +1261,9 @@ namespace
 
     void init()
     {
-        // Settings: app_settings/settings_plus.xml (PlusPresetMigrated, PlusSnapshotBoost; PlusGraphicPreset
-        // read once). Levels: featuretable.txt. Preferences > Charis: skins/default/xui/<lang>/panel_preferences_charis.xml
+        // Settings: app_settings/settings_plus.xml (PlusPresetMigrated, PlusSnapshotBoost, PlusLevelsRevision,
+        // PlusLevelsMigrationWrites; PlusGraphicPreset read once). Levels and the comparison: featuretable.txt
+        // (list Official). The notice: notifications.xml PlusLevelsMigrated. Preferences > Charis: skins/default/xui/<lang>/panel_preferences_charis.xml
         // ("b_gl_recommended", "c_snapshot_boost", "b_comparison"); the buttons of the photo tools' Quality
         // tab ("btn_gl_*") and its "PlusSnapshotBoost" row.
 
@@ -855,8 +1277,38 @@ namespace
             boost->getCommitSignal()->connect([](LLControlVariable*, const LLSD& value, const LLSD&) { syncSnapshotOIT(value.asBoolean()); });
         }
 
+        // A change of the level by a way that is not applyLevelValues (the official slider) ends the Undo's offer too.
+        if (LLControlVariable* quality = gSavedSettings.getControl(SETTING_QUALITY).get())
+        {
+            quality->getCommitSignal()->connect([](LLControlVariable*, const LLSD&, const LLSD&) { sLevelAppliedSinceOffer = true; });
+        }
+
         LLUICtrl::CommitCallbackRegistry::defaultRegistrar().add("Plus.Presets.SetLevel",
             [](LLUICtrl*, const LLSD& param) { plus::presets::requestGraphicsLevel(levelParam(param)); });
+        // The mouse's release on Preferences' quality slider (panel_plus_prefs_graphics.xml). The slider commits only a
+        // changed value, and in the comparison it stands on Mid-High: a click on Mid-High chooses that level again and
+        // leaves the comparison, as the photo tools' buttons do. Not in the comparison: nothing (the commit did it all).
+        // The bar moves its value in handleHover, a frame after the press: a press and a release in the same frame (a
+        // quick click at a low frame rate) leave the value at Mid-High wherever the click was, so the place where the
+        // mouse was let go must be Mid-High's too (the middle of the track: the thumb's half width does not shift it).
+        LLUICtrl::CommitCallbackRegistry::defaultRegistrar().add("Plus.Presets.ReapplyInComparison",
+            [](LLUICtrl* ctrl, const LLSD& value)
+            {
+                const LLF32UICtrl* bar = dynamic_cast<const LLF32UICtrl*>(ctrl);
+                if (!bar || !isComparison() || (U32)ll_round(value.asReal()) != COMPARISON_LEVEL)
+                {
+                    return;
+                }
+                const S32 width = bar->getRect().getWidth();
+                S32 x = 0;
+                S32 y = 0;
+                LLUI::getInstance()->getMousePositionLocal(bar, &x, &y);
+                const F32 at = bar->getMinValue() + llclamp((F32)x / (F32)llmax(width, 1), 0.f, 1.f) * (bar->getMaxValue() - bar->getMinValue());
+                if ((U32)ll_round(at) == COMPARISON_LEVEL)
+                {
+                    plus::presets::requestGraphicsLevel(COMPARISON_LEVEL);
+                }
+            });
         LLUICtrl::CommitCallbackRegistry::defaultRegistrar().add("Plus.Presets.SetRecommended",
             [](LLUICtrl*, const LLSD&)
             {
@@ -878,13 +1330,50 @@ namespace
                                                                  [](LLUICtrl*, const LLSD&) { return false; });
     }
 
+    // research/343, 344: settings added after the levels were chosen have no value in the user's settings: once (the flag
+    // `migrated`), the one of the level in use is written to each of them that was never set (0 or off) and that the level
+    // has a value for. Later changes are the user's. Not for the comparison (was_comparison: as the start found it).
+    void migrateOnce(const char* migrated, std::initializer_list<const char*> names, bool was_comparison)
+    {
+        // not in the safe mode: its --set of 0 is not saved, and a level's value written now would turn the feature on
+        if (plus::safemode::active() || gSavedSettings.getBOOL(migrated))
+        {
+            return;
+        }
+        gSavedSettings.setBOOL(migrated, true);
+        if (was_comparison)
+        {
+            return;
+        }
+        for (const char* name : names)
+        {
+            LLControlVariable* control = gSavedSettings.getControl(name).get();
+            if (!control || !isNumber(*control) || control->getValue().asReal() != 0.0)
+            {
+                continue;
+            }
+            const F32 value = levelValue(plus::presets::graphicsLevel(), name, 0.f);
+            if (value > 0.f)
+            {
+                setNumber(*control, value);
+                LL_INFOS("Plus") << name << " set once to " << value << ", the value of the level in use" << LL_ENDL;
+            }
+        }
+    }
+
     void onUIReady()
     {
+        // research/352: the comparison of before is known by its saved values, once, before anything is moved.
+        const bool was_comparison = oldComparisonSaved();
+        migrateLevelsRevision(was_comparison);
+        migrateOnce(SETTING_FULL_DISTANCE_MIGRATED, { SETTING_FULL_DISTANCE }, was_comparison);
+        migrateOnce(SETTING_JELLY_MIGRATED, { SETTING_JELLY_FLAT, SETTING_SILHOUETTE_DISTANCE }, was_comparison); // research/344
         // igpu-safe: with the level in use (a new GPU gets the recommended one: LLViewerWindow's
         // LastGPUString check, "Applying Recommended Features" in the log).
         LL_INFOS("Plus") << "Recommended graphics quality level for this PC (GPU class "
                          << (S32)LLFeatureManager::getInstance()->getGPUClass() << ", " << gGLManager.mVRAM
-                         << " MB VRAM): " << recommendedLevel() << "; in use: " << plus::presets::graphicsLevel() << LL_ENDL;
+                         << " MB VRAM): " << recommendedLevel() << "; in use: " << plus::presets::graphicsLevel()
+                         << "; comparison: " << (isComparison() ? "yes" : "no") << LL_ENDL;
         doOnIdleRepeating(&onIdleUntilLoggedIn);
     }
 
@@ -934,7 +1423,9 @@ namespace plus::presets
         for (const LLFeatureList::feature_map_t::value_type& feature : all->getFeatures())
         {
             const std::string& name = feature.first;
-            if ((name.rfind("Plus", 0) == 0 || name == "RenderOITMode")
+            const bool level_official = std::find(std::begin(LEVEL_OFFICIAL_SETTINGS), std::end(LEVEL_OFFICIAL_SETTINGS), name)
+                                        != std::end(LEVEL_OFFICIAL_SETTINGS);
+            if ((name.rfind("Plus", 0) == 0 || level_official)
                 && std::find(names.begin(), names.end(), name) == names.end())
             {
                 names.push_back(name);
@@ -1070,10 +1561,10 @@ namespace plus::presets
         sBudget.held = textureBudgetHeld();
     }
 
-    SnapshotBoost::SnapshotBoost()
+    SnapshotBoost::SnapshotBoost(bool enclosing) : mEnclosing(enclosing)
     {
         static LLCachedControl<bool> boost(gSavedSettings, SETTING_BOOST, true);
-        mActive = boost && sWithheldDepth == 0;
+        mActive = boost && sWithheldDepth == 0 && !enclosing;
         mStart = LLTimer::getTotalSeconds();
         mVRAMBefore = vramInUseMB();
         if (sSnapshotDepth++ == 0)
@@ -1084,7 +1575,7 @@ namespace plus::presets
         }
         if (LLRHI::sNoteEvent)
         {
-            LLRHI::sNoteEvent(llformat("snapshot begins (boost %s), VRAM %llu MB", mActive ? "on" : "off", mVRAMBefore).c_str());
+            LLRHI::sNoteEvent(llformat("snapshot begins (%s), VRAM %llu MB", mEnclosing ? "scope" : mActive ? "boost on" : "boost off", mVRAMBefore).c_str());
         }
         if (mActive && ++sBoostDepth == 1)
         {
@@ -1106,9 +1597,10 @@ namespace plus::presets
         // research/109: one line a snapshot (the GPU fault report has the same in its frame events).
         const F64 now = LLTimer::getTotalSeconds();
         // "After" is about the peak: nothing a snapshot releases is freed before it ends.
-        const std::string line = llformat("snapshot rendered in %.0f ms (boost %s); VRAM in use %llu MB before, %llu MB after; "
-                                          "screen and shadow target sets made %u",
-                                          (now - mStart) * 1000.0, mActive ? "on" : "off", mVRAMBefore, vramInUseMB(), sScreenTargetSets);
+        const std::string line = llformat("snapshot rendered in %.0f ms (%s); VRAM in use %llu MB before, %llu MB after; "
+                                          "screen and shadow target sets made %u%s",
+                                          (now - mStart) * 1000.0, mEnclosing ? "scope" : mActive ? "boost on" : "boost off", mVRAMBefore,
+                                          vramInUseMB(), sScreenTargetSets, sSnapshotDepth > 0 ? " so far" : " in all");
         LL_INFOS("Plus") << line << LL_ENDL;
         if (LLRHI::sNoteEvent)
         {

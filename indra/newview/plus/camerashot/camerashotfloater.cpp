@@ -32,6 +32,7 @@
 
 #include "llagent.h"
 #include "llbutton.h"
+#include "llcheckboxctrl.h"
 #include "llcombobox.h"
 #include "llfloater.h"
 #include "llfloaterreg.h"
@@ -77,6 +78,8 @@ namespace plus::camerashot
                 mEase    = getChild<LLComboBox>("ease");
                 mStatus  = getChild<LLTextBox>("status");
                 mStop    = getChild<LLButton>("btn_stop");
+                mHideUi  = getChild<LLCheckBoxCtrl>("hide_ui");
+                mHideUi->setCommitCallback([](LLUICtrl* ctrl, const LLSD&) { setHideUIWhileRunning(ctrl->getValue().asBoolean()); });
 
                 getChild<LLButton>("btn_refresh")->setCommitCallback([this](LLUICtrl*, const LLSD&) { refreshSubjects(); });
                 // Each button names its move and its direction. The dolly zoom's two directions:
@@ -129,6 +132,7 @@ namespace plus::camerashot
             void onOpen(const LLSD& key) override
             {
                 LLFloater::onOpen(key);
+                mHideUi->setValue(hideUIWhileRunning());
                 refreshSubjects();
             }
 
@@ -218,6 +222,7 @@ namespace plus::camerashot
             LLTextBox*  mStatus  = nullptr;
             LLButton*   mStop    = nullptr;
             LLButton*   mBack    = nullptr;
+            LLCheckBoxCtrl* mHideUi = nullptr;
             std::string mError;       // the key of the last refusal, shown until the next press
             bool        mIdleText = false;
             int         mPercentShown = -1; // the percent the status says while a shot runs (-1: it says something else)

@@ -67,7 +67,7 @@ class LLSpatialGroup;
 // (llscenerecords.h, research/205 section 9) do; the batches the scene drew
 // are noted by the loops with the program it drew them with.
 //
-// Main thread only. With both off every hook returns at once (sActive).
+// Main thread only. With both off every hook returns at once (active()).
 class LLSceneAlpha
 {
 public:
@@ -111,10 +111,12 @@ public:
         DIFF_COUNT,
     };
 
-    // The switches, read once at startup (LLRHI_SCENE_ALPHA needs LLRHI_SCENE).
+    // The switches (LLRHI_SCENE_ALPHA needs LLRHI_SCENE). The census is read
+    // once at startup; verify is LLRHI_SCENE_ALPHA not off, read each time
+    // (research/218 vk-s2f-2: off from LLRHI::sceneOffForDevice on).
     static const bool sCensus;
-    static const bool sVerify;
-    static const bool sActive;  // census or verify: the hooks do anything
+    static bool verifying();
+    static bool active();       // census or verify: the hooks do anything
 
     // --- events (LLSceneRecords::onCreated and friends, first) ----------------
     void onCreated(LLDrawInfo& info, LLSpatialGroup* group, U32 pass);

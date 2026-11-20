@@ -108,6 +108,26 @@ bool LLFloaterPreferenceGraphicsAdvanced::postBuild()
         {
             updateIndirectMaxNonImpostors(new_val);
         });
+    // <plus> research/371: the texture limit's slider goes up to the detected VRAM (as Firestorm's), at least its lowest value
+    if (LLSliderCtrl* limit = findChild<LLSliderCtrl>("RenderMaxVRAMBudget"))
+    {
+        const F32 detected = (F32)gGLManager.getReportedVRAM();
+        if (detected > limit->getMinValue())
+        {
+            // LLViewerTexture::updateClass takes the lower of the saved value and the detected VRAM and leaves the saved value as it is.
+            // setMaxValue does not bring a value over the new top back, so the slider is shown at what holds: setValue with from_event
+            // true only moves the slider (with false LLSlider::setValue writes the setting, here the saved value). The slider's
+            // steps are 64 MB (the XML's increment), so it is shown at the step at or under the detected VRAM (8176 MB: 8128),
+            // never over the top
+            constexpr F32 LIMIT_STEP_MB = 64.f;
+            limit->setMaxValue(detected);
+            if ((F32)gSavedSettings.getU32("RenderMaxVRAMBudget") > detected)
+            {
+                limit->setValue(llmax(limit->getMinValue(), floorf(detected / LIMIT_STEP_MB) * LIMIT_STEP_MB), true);
+            }
+        }
+    }
+    // </plus>
     return true;
 }
 

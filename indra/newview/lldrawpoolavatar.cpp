@@ -544,6 +544,45 @@ void LLDrawPoolAvatar::endRigid()
     }
 }
 
+// <plus> research/344: the plate of an impostor is drawn by one of two programs: the G-buffer one (diffuse, normal and
+// specular pictures) or, for a flat silhouette (mImpostorIsFlat), the flat one (the colour picture only, a constant normal).
+// The picture decides, never the setting: the two kinds of picture are not drawn by the other's program.
+static void bind_impostor_program(bool flat)
+{
+    LLGLSLShader* program = flat ? &gDeferredImpostorFlatProgram : &gDeferredImpostorProgram;
+    LLDrawPoolAvatar::sVertexProgram = program;
+    if (flat)
+    {
+        specular_channel = -1;
+        normal_channel = -1;
+    }
+    else
+    {
+        specular_channel = program->enableTexture(LLViewerShaderMgr::SPECULAR_MAP);
+        normal_channel = program->enableTexture(LLViewerShaderMgr::NORMAL_MAP);
+    }
+    LLDrawPoolAvatar::sDiffuseChannel = program->enableTexture(LLViewerShaderMgr::DIFFUSE_MAP);
+    program->bind();
+    // a flat picture's outline is smoothed by the filter: the edge texels are part covered, and only the half or more is drawn
+    program->setMinimumAlpha(flat ? 0.5f : 0.01f);
+}
+
+// Changes the bound impostor program to the other kind's, as the plate of the next avatar needs. Only between plates of
+// the impostor pass (the program bound is one of the two): it leaves the one it had as the pass's end would not (the
+// texture units stay on, the end's disable covers both), a cheaper change than a whole unbind.
+static void select_impostor_program(bool flat)
+{
+    LLGLSLShader* want = flat ? &gDeferredImpostorFlatProgram : &gDeferredImpostorProgram;
+    LLGLSLShader* have = LLDrawPoolAvatar::sVertexProgram;
+    if (have == want || (have != &gDeferredImpostorProgram && have != &gDeferredImpostorFlatProgram))
+    {
+        return;
+    }
+    have->unbind();
+    bind_impostor_program(flat);
+}
+// </plus>
+
 void LLDrawPoolAvatar::beginDeferredImpostor()
 {
     LL_PROFILE_ZONE_SCOPED_CATEGORY_AVATAR;
@@ -553,12 +592,10 @@ void LLDrawPoolAvatar::beginDeferredImpostor()
         LLVOAvatar::sNumVisibleAvatars = 0;
     }
 
-    sVertexProgram = &gDeferredImpostorProgram;
-    specular_channel = sVertexProgram->enableTexture(LLViewerShaderMgr::SPECULAR_MAP);
-    normal_channel = sVertexProgram->enableTexture(LLViewerShaderMgr::NORMAL_MAP);
-    sDiffuseChannel = sVertexProgram->enableTexture(LLViewerShaderMgr::DIFFUSE_MAP);
-    sVertexProgram->bind();
-    sVertexProgram->setMinimumAlpha(0.01f);
+    // <plus> research/344 (was: sVertexProgram = &gDeferredImpostorProgram; the normal, specular and diffuse channels enabled;
+    // sVertexProgram->bind(); setMinimumAlpha(0.01f)): the same in bind_impostor_program
+    bind_impostor_program(false);
+    // </plus>
 }
 
 void LLDrawPoolAvatar::endDeferredImpostor()
@@ -566,9 +603,13 @@ void LLDrawPoolAvatar::endDeferredImpostor()
     LL_PROFILE_ZONE_SCOPED_CATEGORY_AVATAR;
 
     sShaderLevel = mShaderLevel;
-    sVertexProgram->disableTexture(LLViewerShaderMgr::NORMAL_MAP);
-    sVertexProgram->disableTexture(LLViewerShaderMgr::SPECULAR_MAP);
-    sVertexProgram->disableTexture(LLViewerShaderMgr::DIFFUSE_MAP);
+    // <plus> research/344: whichever program is bound, the units of both are left
+    // (was: sVertexProgram->disableTexture(NORMAL_MAP); ...(SPECULAR_MAP); ...(DIFFUSE_MAP))
+    gDeferredImpostorProgram.disableTexture(LLViewerShaderMgr::NORMAL_MAP);
+    gDeferredImpostorProgram.disableTexture(LLViewerShaderMgr::SPECULAR_MAP);
+    gDeferredImpostorProgram.disableTexture(LLViewerShaderMgr::DIFFUSE_MAP);
+    gDeferredImpostorFlatProgram.disableTexture(LLViewerShaderMgr::DIFFUSE_MAP);
+    // </plus>
     gPipeline.unbindDeferredShader(*sVertexProgram);
    sVertexProgram = NULL;
    sDiffuseChannel = 0;
@@ -780,6 +821,12 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
 //      if (impostor || (LLVOAvatar::AV_DO_NOT_RENDER == avatarp->getVisualMuteSettings() && !avatarp->needsImpostorUpdate()))
         if (impostor || (LLVOAvatar::AOA_NORMAL != avatarp->getOverallAppearance() && !avatarp->needsImpostorUpdate()))
         {
+            // <plus> research/344: the program of the plate's kind (a no-op outside the deferred impostor pass)
+            if (is_deferred_render && avatarp->mImpostor.isComplete())
+            {
+                select_impostor_program(avatarp->mImpostorIsFlat);
+            }
+            // </plus>
             if (LLPipeline::sRenderDeferred && !LLPipeline::sReflectionRender && avatarp->mImpostor.isComplete())
             {
                 if (normal_channel > -1)

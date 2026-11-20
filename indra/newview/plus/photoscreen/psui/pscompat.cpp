@@ -65,6 +65,11 @@ namespace plus::psui
             return LLRect(S32(r.mLeft), S32(r.mTop), S32(r.mRight), S32(r.mBottom));
         }
 
+        LLRectf toRectf(const LLRect& r)
+        {
+            return LLRectf(F32(r.mLeft), F32(r.mTop), F32(r.mRight), F32(r.mBottom));
+        }
+
         // The mouse over view (in its coordinates), only while it is (mHover of the widgets: no other view in front).
         bool mouseIn(const LLView& view, const LLRect& rect)
         {
@@ -180,6 +185,28 @@ namespace plus::psui
             drawText(font, label, x, r.mBottom + r.getHeight() * 0.5f, faded(style::CHECK_TEXT, alpha), LLFontGL::LEFT,
                      LLFontGL::VCENTER, llmax(0, S32(r.mRight - x)), true);
             drawFocusRingOf(focus, mark, half);
+        }
+
+        S32 clickWidth(S32 mark, S32 width, S32 label_width)
+        {
+            const S32 w = label_width > 0 ? mark + style::CHECK_GAP + label_width : mark;
+            return llclamp(w, 0, llmax(0, width));
+        }
+
+        S32 labelWidth(const LLFontGL* font, const LLWString& label)
+        {
+            if (!font)
+            {
+                return 0;
+            }
+            for (const llwchar c : label)
+            {
+                if (!LLStringOps::isSpace(c))
+                {
+                    return S32(std::ceil(font->getWidthF32(label.c_str())));
+                }
+            }
+            return 0;
         }
 
         void sliderTrack(F32 x0, F32 x1, F32 kx, F32 mid, S32 ticks, bool dragging, bool hover, F32 alpha,
@@ -369,6 +396,9 @@ namespace plus::psui
         mFont(font(style::FONT_BODY)),
         mMark(icon("check"))
     {
+        // The children stay within the widget (placeChildren): its own rect takes the clicks, and the blank after the
+        // words, where no child is, is still this widget's (mouse_opaque: the click stops here and does nothing).
+        setUseBoundingRect(false);
         placeChildren();
     }
 
@@ -376,15 +406,22 @@ namespace plus::psui
     {
         const S32 w = getRect().getWidth();
         const S32 h = getRect().getHeight();
+        mLabelGeneration = mLabel ? mLabel->getTextGeneration() : -1;
+        mClickWidth = look::clickWidth(style::CHECK_BOX, w, look::labelWidth(mFont, wtextOf(mLabel)));
         if (mLabel)
         {
-            mLabel->setShape(LLRect(llmin(w, style::CHECK_BOX + style::CHECK_GAP), h, w, 0));
+            mLabel->setShape(LLRect(llmin(mClickWidth, style::CHECK_BOX + style::CHECK_GAP), h, mClickWidth, 0));
         }
         if (mButton)
         {
-            mButton->setShape(LLRect(0, h, w, 0));
+            mButton->setShape(LLRect(0, h, mClickWidth, 0));
         }
         updateBoundingRect();
+    }
+
+    LLRectf PsCheckCompat::clickRect() const
+    {
+        return LLRectf(0.f, F32(getRect().getHeight()), F32(mClickWidth), 0.f);
     }
 
     void PsCheckCompat::reshape(S32 width, S32 height, bool called_from_parent)
@@ -407,15 +444,21 @@ namespace plus::psui
 
     void PsCheckCompat::draw()
     {
+        if (mLabel && mLabel->getTextGeneration() != mLabelGeneration)
+        {
+            placeChildren();    // the words changed: the part that takes the click with them
+        }
         const LLRectf r = localRectOf(*this);
+        const LLRectf click = clickRect();
         if (getHighlighted() || highlighted(mLabel))
         {
-            look::searchHit(r, getDrawContext().mAlpha);
+            look::searchHit(click, getDrawContext().mAlpha);
         }
         const bool on = mButton && mButton->getToggleState();
         const bool down = mButton && mButton->hasMouseCapture();
+        const bool hover = mHover && getEnabled() && mouseIn(*this, toRect(click));
         // the focus is the button's (hasFocus(): this one or a child)
-        look::check(r, on, mHover && getEnabled(), down, drawAlphaOf(*this), mFont, wtextOf(mLabel), mMark.get(), *this);
+        look::check(r, on, hover, down, drawAlphaOf(*this), mFont, wtextOf(mLabel), mMark.get(), *this);
     }
 
     // =========================================================================================
@@ -823,13 +866,21 @@ namespace plus::psui
         }
         for (S32 i = 0; i < count; ++i)
         {
-            const LLCheckBoxCtrl* item = mItems[i];
-            if (item->getVisible() && item->getRect().pointInRect(x, y))
+            LLCheckBoxCtrl* item = mItems[i];
+            if (item->getVisible() && itemClickRect(item).pointInRect(x, y))
             {
                 return i;
             }
         }
         return -1;
+    }
+
+    LLRect PsRadio::itemClickRect(LLCheckBoxCtrl* item) const
+    {
+        const LLRect& ir = item->getRect();
+        const S32 words = look::labelWidth(mFont, wtextOf(item->getTextBox()));
+        const S32 w = look::clickWidth(style::RADIO_SIZE, ir.getWidth(), words);
+        return LLRect(ir.mLeft, ir.mTop, ir.mLeft + w, ir.mBottom);
     }
 
     bool PsRadio::itemHighlighted(LLCheckBoxCtrl* item) const
@@ -842,7 +893,9 @@ namespace plus::psui
         const S32 i = itemAt(x, y);
         if (i < 0)
         {
-            return LLRadioGroup::handleMouseDown(x, y, mask);
+            // a list: nothing (the official item under the blank after the words would choose itself with its own
+            // button); a segment: outside the bar, as before
+            return mSegment ? LLRadioGroup::handleMouseDown(x, y, mask) : true;
         }
         if (getEnabled() && mItems[i]->getEnabled())
         {
@@ -867,6 +920,11 @@ namespace plus::psui
             onClickButton(mItems[i]);      // the official item's click: chooses it and commits (last: it may close us)
         }
         return true;
+    }
+
+    bool PsRadio::handleDoubleClick(S32 x, S32 y, MASK mask)
+    {
+        return mSegment ? LLRadioGroup::handleDoubleClick(x, y, mask) : handleMouseDown(x, y, mask);
     }
 
     bool PsRadio::handleHover(S32 x, S32 y, MASK mask)
@@ -945,11 +1003,10 @@ namespace plus::psui
             {
                 continue;
             }
-            const LLRect& ir = item->getRect();
-            const LLRectf rect(F32(ir.mLeft), F32(ir.mTop), F32(ir.mRight), F32(ir.mBottom));
+            const LLRectf rect = toRectf(item->getRect());
             if (itemHighlighted(item))
             {
-                look::searchHit(rect, context_alpha);
+                look::searchHit(toRectf(itemClickRect(item)), context_alpha);
             }
             const bool enabled = item->getEnabled();
             look::radio(rect, i == chosen, hover && enabled && i == mHoverItem, i == mPressedItem,

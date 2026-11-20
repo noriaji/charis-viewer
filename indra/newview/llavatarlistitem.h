@@ -111,6 +111,11 @@ public:
     void setRlvCheckShowNames(bool fRlvCheckShowNames);
     void updateRlvRestrictions();
     // </plus>
+    // <plus> contactsets: the name in its contact set's colour (FSContactSetsColorizeFriends); the contact set tab's look,
+    // online names in bold and offline ones not grey (set by LLAvatarList; Firestorm FIRE-32748, FIRE-31733) (research/333)
+    void setUseContactSetColors(bool use_colors);
+    void setUseContactSetListStyle(bool use_style);
+    // </plus>
 
     const LLUUID& getAvatarId() const;
     std::string getAvatarName() const;
@@ -229,6 +234,12 @@ private:
     // <plus> rlv: @shownames (research/248 E9)
     bool mRlvCheckShowNames = false;
     bool rlvCanShowName() const; // the name may be shown (always unless the list follows @shownames and RLVa is on)
+    // </plus>
+    // <plus> contactsets (research/333)
+    bool mUseContactSetColors = false;
+    bool mUseContactSetListStyle = false;
+    // The name's style: mAvatarNameStyle, or a copy in scratch with the contact set look and colour.
+    const LLStyle::Params& contactSetNameStyle(LLStyle::Params& scratch) const;
     // </plus>
 
     void fetchAvatarName();

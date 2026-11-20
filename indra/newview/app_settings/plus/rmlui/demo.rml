@@ -1,0 +1,41 @@
+<rml>
+<!-- The RmlUi test window (development): plus/rmlui/rmldemo.cpp, research/364. Its words are "[[name]]": the
+     <string>s of floater_plus_rml_demo.xml (en, ja). The parts that are bound to the data model "demo" (clicks,
+     option, amount) and the ids rmldemo.cpp listens to (b_count, b_colour, b_size, list) are its contract. -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body data-model="demo">
+    <div class="panel">
+        <h1>[[heading]]</h1>
+        <div class="row">
+            <button id="b_count" title="[[tip_count]]">[[button_count]]</button>
+            <span class="value">{{ clicks }}</span>
+        </div>
+        <div class="row">
+            <input type="checkbox" id="c_option" data-checked="option" title="[[tip_option]]"/>
+            <label for="c_option">[[check_option]]</label>
+        </div>
+        <div class="row">
+            <span class="label">[[slider_label]]</span>
+            <input type="range" id="s_amount" min="0" max="100" step="1" data-value="amount" title="[[tip_amount]]"/>
+            <input type="text" class="text value-box" id="t_amount" maxlength="3" data-attr-value="amount" title="[[tip_amount]]"/>
+        </div>
+        <div class="row">
+            <span class="label">[[text_label]]</span>
+            <input type="text" id="t_text" maxlength="64" title="[[tip_text]]"/>
+        </div>
+        <div class="row">
+            <button id="b_colour" title="[[tip_colour]]">[[button_colour]]</button>
+            <button id="b_size" title="[[tip_size]]">[[button_size]]</button>
+        </div>
+        <p class="hint">[[list_label]]</p>
+        <div id="list" class="list">
+            <div id="list_top"></div>
+            <div id="list_rows"></div>
+            <div id="list_bottom"></div>
+        </div>
+    </div>
+</body>
+</rml>

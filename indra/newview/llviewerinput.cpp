@@ -1122,8 +1122,8 @@ REGISTER_KEYBOARD_GLOBAL_ACTION("photo_screen_toggle", [](const LLKeyPressState&
 REGISTER_KEYBOARD_ACTION("camera_path_add", [](const LLKeyPressState& s) { return plus::camerapath::keyAddPoint(s.mState); });
 REGISTER_KEYBOARD_ACTION("camera_path_play", [](const LLKeyPressState& s) { return plus::camerapath::keyTogglePlay(s.mState); });
 // </plus>
-// <plus> 3D mouse sensitivity on the number keys while the flycam is on (plus/flycamsens)
-REGISTER_KEYBOARD_ACTION("flycam_sens_reset", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 0); });
+// <plus> 3D mouse sensitivity on the number keys while the flycam is on, 0 levels it (plus/flycamsens)
+REGISTER_KEYBOARD_ACTION("flycam_level", [](const LLKeyPressState& s) { return plus::flycamsens::keyLevel(s.mState); });
 REGISTER_KEYBOARD_ACTION("flycam_sens_1", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 1); });
 REGISTER_KEYBOARD_ACTION("flycam_sens_2", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 2); });
 REGISTER_KEYBOARD_ACTION("flycam_sens_3", [](const LLKeyPressState& s) { return plus::flycamsens::keySens(s.mState, 3); });
@@ -1833,7 +1833,7 @@ S32 LLViewerInput::loadBindingsXML(const std::string& filename)
     // fix-round7: bindKey() would put the command on a key and mask the file gives to something
     // else (it overwrites the function and keeps the file's name). Such a key stays the file's: a
     // nudge key gives way; a flycam digit goes in front of it and passes the key on to it whenever
-    // it does not take it (keySens: flycam off, a text field, a modifier). A command the file binds
+    // it does not take it (keySens / keyLevel: flycam off, a text field, a modifier). A command the file binds
     // itself gets no default key in that mode. What was left to the file: one log line. (A global
     // binding or an F-key remap on the same key is not looked at: neither is in mKeyBindings, the
     // list scanKey reads, so both ran before and still do.)
@@ -1866,8 +1866,8 @@ S32 LLViewerInput::loadBindingsXML(const std::string& filename)
             kept += llformat(" %s%s%s%s(%d)=%s", (mask & MASK_CONTROL) ? "Ctrl+" : "", (mask & MASK_ALT) ? "Alt+" : "",
                              (mask & MASK_SHIFT) ? "Shift+" : "", LLKeyboard::stringFromKey(key, false).c_str(), mode,
                              user->mFunctionName.c_str());
-            // a key the file gives to another of the same commands (flycam_sens_*) is the file's choice
-            if (!in_front || !user->mFunction || user->mFunctionName.compare(0, 12, "flycam_sens_") == 0)
+            // a key the file gives to another of the same commands (flycam_sens_*, flycam_level) is the file's choice
+            if (!in_front || !user->mFunction || plus::flycamsens::isOwnCommand(user->mFunctionName))
             {
                 return false;
             }
@@ -2133,7 +2133,7 @@ bool LLViewerInput::scanControllerInput(const LLGameControl::ActionType actionTy
             continue;
         }
 
-        LL_WARNS() << "Controller Val " << LLGameControl::stringFromAction(actionType, action) << state.mValue << LL_ENDL;
+        LL_DEBUGS("UserInput") << "Controller Val " << LLGameControl::stringFromAction(actionType, action) << state.mValue << LL_ENDL;
 
         bool res = binding.mFunction(state);
         if (state.mDown)

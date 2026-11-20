@@ -4,6 +4,10 @@
   looking at an avatar; countdown; a picture for every frame. Control names and string names are used by
   camerapathfloater.cpp. The error strings (path_err_*) are the keys camerapath.cpp gives back.
   The timeline is a view the window makes inside the panel "timeline_holder".
+  Sizes (fixed layout, ja shares these; 13 px a Japanese character): the window is 450 wide and keeps 10 px on the
+  right (every row ends at 440 or less). The tab container is 432 wide; the tab container takes 1 px off each side of
+  a tab panel, so a panel is 430 wide and its rows end at 426 or less. Spinner label_width must hold the Japanese
+  label (Time/Stay 72, Countdown 100, Camera tilt 90).
 -->
 <floater
  positioning="cascading"
@@ -15,7 +19,7 @@
  can_close="true"
  legacy_header_height="18"
  height="564"
- width="420"
+ width="450"
  layout="topleft"
  name="plus_camera_path"
  title="CAMERA PATH">
@@ -67,7 +71,7 @@
      layout="topleft"
      left="8"
      top="26"
-     width="250"
+     width="270"
      name="saved"
      tool_tip="The paths and scripts you saved (a name ending in .json is a script)" />
     <button
@@ -75,9 +79,9 @@
      height="22"
      label="Open"
      layout="topleft"
-     left="262"
+     left="282"
      top="26"
-     width="60"
+     width="68"
      name="btn_load"
      tool_tip="Opens the chosen saved path or script (the path now open is replaced)" />
     <button
@@ -85,7 +89,7 @@
      height="22"
      label="Delete file"
      layout="topleft"
-     left="326"
+     left="354"
      top="26"
      width="86"
      name="btn_delete_file"
@@ -96,7 +100,7 @@
      layout="topleft"
      left="8"
      top="54"
-     width="190"
+     width="200"
      max_length_chars="64"
      commit_on_focus_lost="false"
      name="path_name"
@@ -106,7 +110,7 @@
      height="22"
      label="Save"
      layout="topleft"
-     left="202"
+     left="212"
      top="54"
      width="60"
      name="btn_save"
@@ -116,7 +120,7 @@
      height="22"
      label="New"
      layout="topleft"
-     left="266"
+     left="276"
      top="54"
      width="56"
      name="btn_new"
@@ -126,9 +130,9 @@
      height="16"
      label="Loop"
      layout="topleft"
-     left="332"
+     left="342"
      top="57"
-     width="80"
+     width="98"
      name="loop"
      tool_tip="After the last point, go back to the first with a cut" />
     <panel
@@ -137,7 +141,7 @@
      layout="topleft"
      left="8"
      top="84"
-     width="404"
+     width="432"
      name="timeline_holder" />
     <tab_container
      follows="left|top"
@@ -145,7 +149,7 @@
      layout="topleft"
      left="8"
      top="134"
-     width="404"
+     width="432"
      tab_position="top"
      tab_height="20"
      tab_min_width="80"
@@ -156,7 +160,7 @@
          layout="topleft"
          left="0"
          top="0"
-         width="404"
+         width="430"
          height="274"
          name="tab_points">
             <scroll_list
@@ -164,7 +168,7 @@
              tool_tip="The camera goes through the points from the top. Choose one to change it."
              left="0"
              top="2"
-             width="404"
+             width="426"
              height="92"
              multi_select="false"
              draw_heading="true"
@@ -202,7 +206,7 @@
              layout="topleft"
              left="0"
              top="98"
-             width="100"
+             width="102"
              name="btn_add"
              tool_tip="Adds the camera as it is now as the last point (key: K)" />
             <button
@@ -210,9 +214,9 @@
              height="24"
              label="Overwrite Point"
              layout="topleft"
-             left="104"
+             left="106"
              top="98"
-             width="112"
+             width="114"
              name="btn_overwrite"
              tool_tip="Puts the camera as it is now into the chosen point" />
             <button
@@ -220,9 +224,9 @@
              height="24"
              label="Go to Point"
              layout="topleft"
-             left="220"
+             left="224"
              top="98"
-             width="84"
+             width="90"
              name="btn_goto"
              tool_tip="Moves the camera to the chosen point to look at it" />
             <button
@@ -230,9 +234,9 @@
              height="24"
              label="Remove Point"
              layout="topleft"
-             left="308"
+             left="318"
              top="98"
-             width="96"
+             width="108"
              name="btn_remove"
              tool_tip="Takes the chosen point out of the path" />
             <button
@@ -274,7 +278,7 @@
              layout="topleft"
              left="0"
              top="152"
-             width="400"
+             width="426"
              name="lbl_point">
                 The chosen point
             </text>
@@ -284,7 +288,7 @@
              layout="topleft"
              left="0"
              top="170"
-             width="196"
+             width="206"
              max_length_chars="64"
              commit_on_focus_lost="true"
              name="name"
@@ -293,9 +297,9 @@
              follows="left|top"
              height="22"
              layout="topleft"
-             left="200"
+             left="210"
              top="170"
-             width="204"
+             width="216"
              name="motion"
              tool_tip="How the camera goes from the point before to this one">
                 <combo_box.item
@@ -323,7 +327,7 @@
              follows="left|top"
              height="20"
              label="Time (s)"
-             label_width="62"
+             label_width="72"
              decimal_digits="1"
              increment="0.5"
              initial_value="3"
@@ -332,23 +336,23 @@
              top="197"
              max_val="600"
              min_val="0"
-             width="140"
+             width="142"
              name="seconds"
              tool_tip="How long the camera takes from the point before to this one. 0 is a cut: the camera is here at once." />
             <spinner
              follows="left|top"
              height="20"
              label="Stay (s)"
-             label_width="58"
+             label_width="72"
              decimal_digits="1"
              increment="0.5"
              initial_value="0"
              layout="topleft"
-             left="144"
+             left="146"
              top="197"
              max_val="600"
              min_val="0"
-             width="130"
+             width="142"
              name="hold"
              tool_tip="How long the camera stays at this point before it goes on" />
             <spinner
@@ -360,11 +364,11 @@
              increment="1"
              initial_value="0"
              layout="topleft"
-             left="278"
+             left="292"
              top="197"
              max_val="8"
              min_val="-8"
-             width="126"
+             width="134"
              name="spin"
              tool_tip="Whole extra turns of the picture while the camera moves into this point: 1 is one full turn, -1 one full turn the other way" />
             <combo_box
@@ -373,16 +377,16 @@
              layout="topleft"
              left="0"
              top="224"
-             width="232"
+             width="250"
              name="subject"
              tool_tip="Look at an avatar: the camera turns to follow it while it moves. The first choice looks in the direction that was saved." />
             <combo_box
              follows="left|top"
              height="22"
              layout="topleft"
-             left="236"
+             left="254"
              top="224"
-             width="116"
+             width="120"
              name="part"
              tool_tip="Which part of the avatar the camera looks at">
                 <combo_box.item
@@ -406,7 +410,7 @@
              height="22"
              label="Find"
              layout="topleft"
-             left="356"
+             left="378"
              top="224"
              width="48"
              name="btn_refresh_subjects"
@@ -434,7 +438,7 @@
          layout="topleft"
          left="0"
          top="0"
-         width="404"
+         width="430"
          height="274"
          name="tab_effects">
             <text
@@ -446,7 +450,7 @@
              layout="topleft"
              left="0"
              top="2"
-             width="400"
+             width="426"
              name="lbl_shake">
                 Camera shake
             </text>
@@ -492,7 +496,7 @@
              layout="topleft"
              left="204"
              top="20"
-             width="64"
+             width="70"
              name="btn_shake_weak"
              tool_tip="A small shake" />
             <button
@@ -500,9 +504,9 @@
              height="22"
              label="Medium"
              layout="topleft"
-             left="270"
+             left="278"
              top="20"
-             width="64"
+             width="70"
              name="btn_shake_medium"
              tool_tip="A medium shake" />
             <button
@@ -510,9 +514,9 @@
              height="22"
              label="Strong"
              layout="topleft"
-             left="336"
+             left="352"
              top="20"
-             width="64"
+             width="74"
              name="btn_shake_strong"
              tool_tip="A strong shake" />
             <slider
@@ -570,7 +574,7 @@
              layout="topleft"
              left="164"
              top="90"
-             width="76"
+             width="84"
              name="btn_shake_seed"
              tool_tip="Picks another seed, another shake" />
             <button
@@ -578,16 +582,16 @@
              height="22"
              label="Shake in place"
              layout="topleft"
-             left="244"
+             left="252"
              top="90"
-             width="160"
+             width="174"
              name="btn_inplace"
              tool_tip="Holds the camera where it is and shakes it, to try the shake out or to shoot a still scene (Stop or Esc ends it)" />
             <spinner
              follows="left|top"
              height="20"
              label="Countdown (s)"
-             label_width="90"
+             label_width="100"
              decimal_digits="0"
              increment="1"
              initial_value="0"
@@ -596,7 +600,7 @@
              top="120"
              max_val="10"
              min_val="0"
-             width="196"
+             width="200"
              name="countdown"
              tool_tip="Counts 3, 2, 1 with a beep before the path starts, so you can start recording first. 0 starts at once." />
             <check_box
@@ -604,9 +608,9 @@
              height="16"
              label="Show the route on the screen"
              layout="topleft"
-             left="200"
+             left="210"
              top="122"
-             width="204"
+             width="216"
              name="show_route"
              tool_tip="Draws the path and its points over the world while this window is open and nothing plays. It is never in a picture." />
             <text
@@ -618,7 +622,7 @@
              layout="topleft"
              left="0"
              top="146"
-             width="400"
+             width="426"
              name="lbl_export">
                 Pictures of every frame
             </text>
@@ -666,7 +670,7 @@
              layout="topleft"
              left="0"
              top="188"
-             width="400"
+             width="426"
              name="lbl_spin">
                 Spin the picture once round
             </text>
@@ -693,7 +697,7 @@
              layout="topleft"
              left="144"
              top="205"
-             width="126"
+             width="136"
              name="btn_spin_right"
              tool_tip="Tilts the camera to the right through one full turn and back to the tilt it had (the horizon turns counter-clockwise). Works while you move the camera too." />
             <button
@@ -701,9 +705,9 @@
              height="22"
              label="Turn left"
              layout="topleft"
-             left="274"
+             left="284"
              top="205"
-             width="126"
+             width="142"
              name="btn_spin_left"
              tool_tip="Tilts the camera to the left through one full turn and back to the tilt it had (the horizon turns clockwise)." />
             <button
@@ -713,9 +717,19 @@
              layout="topleft"
              left="0"
              top="230"
-             width="404"
+             width="426"
              name="btn_spin_point"
              tool_tip="Saves one full turn in the chosen point (it can be changed under Spin in the Points tab): the picture turns once round while the camera moves into that point, every time the path plays." />
+            <check_box
+             follows="left|top"
+             height="16"
+             label="Hide the UI and HUD while playing"
+             layout="topleft"
+             left="0"
+             top="254"
+             width="426"
+             name="hide_ui"
+             tool_tip="Hides the menu, toolbars, floaters, the navigation and status bars and the HUD attachments while the path counts down, plays, shakes in place or takes its pictures, and shows them again when it stops. Never moves the camera or the avatar. This window hides too: press Esc or J to stop." />
         </panel>
     </tab_container>
     <slider
@@ -725,23 +739,23 @@
      height="18"
      increment="0.5"
      label="Camera tilt"
-     label_width="84"
+     label_width="90"
      layout="topleft"
      left="8"
      max_val="180"
      min_val="-180"
      name="tilt"
      top="438"
-     width="308"
+     width="322"
      tool_tip="Tilts the camera now, in degrees (+ to the right). The same tilt as the photo tools and the camera keys. A point saves the tilt the camera has when it is added." />
     <button
      follows="left|top"
      height="22"
      label="Level"
      layout="topleft"
-     left="320"
+     left="334"
      top="436"
-     width="92"
+     width="106"
      name="btn_level"
      tool_tip="Levels the camera at once (tilt 0)" />
     <button
@@ -773,7 +787,7 @@
      layout="topleft"
      left="210"
      top="476"
-     width="202"
+     width="230"
      name="time">
         Length 0 s
     </text>
@@ -786,7 +800,7 @@
      layout="topleft"
      left="8"
      top="506"
-     width="404"
+     width="432"
      word_wrap="true"
      name="status">
         Ready.
@@ -801,7 +815,7 @@
      left="8"
      top="534"
      text_color="EmphasisColor"
-     width="404"
+     width="432"
      word_wrap="true"
      name="warning">
     </text>

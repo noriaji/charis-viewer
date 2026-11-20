@@ -324,7 +324,8 @@ namespace
         void idle()
         {
             const F64 now = LLTimer::getTotalSeconds();
-            if (now < mNextPoll || now < mHoldUntil)
+            // a poll time further ahead than one period: the clock went back (a guard: monotonic since mono-clock, research/362), poll now
+            if ((now < mNextPoll && mNextPoll - now <= POLL_SECONDS) || now < mHoldUntil)
                 return;
             mNextPoll = now + POLL_SECONDS;
 

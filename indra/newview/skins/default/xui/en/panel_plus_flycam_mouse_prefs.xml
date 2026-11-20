@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <!-- The flycam on the keyboard and the mouse (plus/flycammouse, research/219): its tab in
      Preferences > Game Controls, after "Server Data". Included from panel_preferences_game_control.xml.
-     The ranges are the clamps of flycammouse.cpp, the flying speed's too (0.05 to 50, as the wheel); its
+     The ranges are the clamps of flycammouse.cpp, the flying speed's too (0.05 to 50; the wheel steps 0.1 to 6); its
      slider is bound by flycammouse.cpp's callbacks, not control_name, so Cancel leaves the wheel's speed
      (research/275 L063, L071; as panel_plus_prefs_flycam_mouse.xml). From the top: the intro 6-36, the
-     mouse mode 43-66, the five sliders every 28 from 78 (to 206), the note 218-282, of the tab's about 380. -->
+     mouse mode 43-66, the five sliders every 28 from 78 (to 206), the note 218-314, of the tab's about 380. -->
 <panel
  border="false"
  follows="all"
@@ -105,7 +105,7 @@
      max_val="50"
      min_val="0.05"
      name="speed"
-     tool_tip="How fast the flycam flies on the keys (1 = normal, up to 50). The mouse wheel also changes it while you fly (hold Shift, Ctrl or Alt to zoom instead); Cancel keeps what the wheel set."
+     tool_tip="How fast the flycam flies (1 = normal, up to 50 here), on the keys and on a 3D mouse (a 3D mouse only moves faster, up to 6; it turns as before). While you fly, the mouse wheel steps it through 9 levels from 0.1 to 6 (hold Shift, Ctrl or Alt to zoom instead); Cancel keeps what the wheel set."
      top="106"
      width="400">
         <slider.init_callback
@@ -169,7 +169,7 @@
      width="400" />
     <text
      follows="left|top"
-     height="64"
+     height="96"
      layout="topleft"
      left="9"
      mouse_opaque="false"
@@ -177,6 +177,6 @@
      top="218"
      width="490"
      word_wrap="true">
-        While you fly: W A S D move, Space and C go up and down, Q and E tilt the camera, Shift flies faster and the mouse wheel changes the speed. The 3D mouse has its own settings (Move &amp; View > 3Dconnexion devices). The gamepad's flycam is set on Action Mappings.
+        While you fly: W A S D move, Space and C go up and down, Q and E tilt the camera, Shift flies faster, the mouse wheel changes the speed and pressing it levels the camera. The speed and the wheel work for a 3D mouse too (its other settings: Move &amp; View > 3Dconnexion devices). The gamepad's flycam is set on Action Mappings.
     </text>
 </panel>

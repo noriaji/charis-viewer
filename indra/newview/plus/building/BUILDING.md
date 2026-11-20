@@ -338,22 +338,33 @@ Before the first run / 最初に動かす前に:
 
 ## Not in the source / ソースに含まれない物
 
-The voice subtitles and the local translation (plus/subtitle, plus/translate)
-start separate helper programs, `charis-subtitle.exe` and `charis-translate.exe`,
-with Whisper and translation models. Their source is `tools/helpers/` (LGPL 2.1;
-its README.md has the build steps), but the viewer's build does not build them:
-the release workflow takes them, with the OpenMP runtime `vcomp140.dll` they
-load, from a release of https://github.com/noriaji/charis-models pinned by size
-and SHA-256 (`release-package.yml` HELPER_*, `release/fetch-helpers.py`), and puts
-them next to the viewer exe in the zip, the Setup.exe and the update package
-(`make-release-zip.py --helpers`). A new build of a helper goes to a new release
-(helper-2 ...) with new pins; a published release asset is never replaced. The
-models are not shipped (the viewer fetches them when asked to).
-ボイスの字幕とローカル翻訳（plus/subtitle、plus/translate）は、別のヘルパー
-`charis-subtitle.exe`・`charis-translate.exe` と、Whisper・翻訳のモデルを使います。ヘルパーのソースは
-`tools/helpers/`（LGPL 2.1。ビルドの手順はその README.md）ですが、ビューワのビルドでは作りません。リリースのワークフローが、両方が読む OpenMP のランタイム `vcomp140.dll` と一緒に
+The voice subtitles, the local translation and the motion between poses in the poser
+(plus/subtitle, plus/translate, plus/posermotion) start separate helper programs,
+`charis-subtitle.exe`, `charis-translate.exe` and `charis-motion.exe`, with Whisper,
+translation and motion models. Their source is `tools/helpers/` (LGPL 2.1, the motion
+helper's pre- and post-processing Apache 2.0; its README.md has the build steps), but the
+viewer's build does not build them: the release workflow takes them, with the OpenMP runtime
+`vcomp140.dll` the first two load and the `charis-onnxruntime.dll` (Microsoft's signed ONNX Runtime
+1.23.2, which also needs `msvcp140_1.dll` from the VC runtime the package step ships) and
+`onnxruntime-ThirdPartyNotices.txt` (into `licenses/`) of the third, from releases of
+https://github.com/noriaji/charis-models pinned by size and SHA-256 (`release-package.yml`
+HELPER_*, `release/fetch-helpers.py`; the motion helper's three are pinned with the tag of
+their release, helper-2), and puts them next to the viewer exe in the zip, the Setup.exe and
+the update package (`make-release-zip.py --helpers`). The viewer starts a helper from its own
+folder only. A new build of a helper goes to a new release (helper-3 ...) with new pins
+(`tools/helper-release.py` makes the files and the pins); a published release asset is never
+replaced. The motion model's file name and size are fixed in the helper: a new model needs a
+new helper build. The models are not shipped (the viewer fetches them when asked to).
+ボイスの字幕・ローカル翻訳・ポーズ間のモーション生成（plus/subtitle、plus/translate、plus/posermotion）は、別のヘルパー
+`charis-subtitle.exe`・`charis-translate.exe`・`charis-motion.exe` と、Whisper・翻訳・モーションのモデルを使います。ヘルパーのソースは
+`tools/helpers/`（LGPL 2.1。モーションのヘルパーの前処理・後処理だけ Apache 2.0。ビルドの手順はその README.md）ですが、ビューワのビルドでは作りません。
+リリースのワークフローが、最初の 2 つが読む OpenMP のランタイム `vcomp140.dll`、3 つ目が読む `charis-onnxruntime.dll`
+（Microsoft 署名の ONNX Runtime 1.23.2。ビューワの隣の VC ランタイムの `msvcp140_1.dll` も要る）とその第三者の表示
+`onnxruntime-ThirdPartyNotices.txt`（zip では `licenses/`）と一緒に、
 https://github.com/noriaji/charis-models のリリースから大きさと SHA-256 を固定して取り出し
-（`release-package.yml` の HELPER_*、`release/fetch-helpers.py`）、zip・Setup.exe・更新パッケージの
-ビューワの exe の隣に入れます（`make-release-zip.py --helpers`）。ヘルパーを作り直したら新しいリリース
-（helper-2 …）に置いて固定値を変えます。公開したリリースのファイルは差し替えません。モデルは同梱しません
-（ビューワが求められた時に取得します）。
+（`release-package.yml` の HELPER_*、`release/fetch-helpers.py`。モーションのヘルパーの 3 つはリリースの名前 helper-2 も固定値に付けます）、
+zip・Setup.exe・更新パッケージのビューワの exe の隣に入れます（`make-release-zip.py --helpers`）。
+ビューワはヘルパーを自分のフォルダからしか起動しません。ヘルパーを作り直したら新しいリリース
+（helper-3 …）に置いて固定値を変えます（ファイルと固定値は `tools/helper-release.py` が作ります）。
+公開したリリースのファイルは差し替えません。モーションのモデルのファイル名と大きさはヘルパーに固定なので、
+モデルを替える時はヘルパーも作り直します。モデルは同梱しません（ビューワが求められた時に取得します）。

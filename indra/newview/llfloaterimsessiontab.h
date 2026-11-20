@@ -159,7 +159,7 @@ protected:
     // prepare chat's params and out one message to chatHistory
     void appendMessage(const LLChat& chat, const LLSD& args = LLSD());
 
-    std::string appendTime();
+    std::string appendTime(time_t when = 0);    // when 0: now
     void assignResizeLimits();
 
     void updateUsedEmojis(LLWStringView text);

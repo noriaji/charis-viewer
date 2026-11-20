@@ -1382,6 +1382,9 @@ LLPanelObjectInventory::LLPanelObjectInventory(const LLPanelObjectInventory::Par
     mCommitCallbackRegistrar.add("Inventory.BeginIMSession", boost::bind(&do_nothing));
     mCommitCallbackRegistrar.add("Inventory.Share",  boost::bind(&LLAvatarActions::shareWithAvatars, this));
     mCommitCallbackRegistrar.add("Inventory.FileUploadLocation", boost::bind(&do_nothing));
+    // <plus> invctxfs: menu_inventory.xml's "Find Links" names this callback; object contents never show the entry
+    mCommitCallbackRegistrar.add("Inventory.CustomAction", boost::bind(&do_nothing));
+    // </plus>
 }
 
 // Destroys the object

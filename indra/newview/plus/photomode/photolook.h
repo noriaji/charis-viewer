@@ -57,6 +57,8 @@ namespace plus::photomode
     // False for "no look", or when there are MAX_LOOK_FAVORITES already.
     bool addFavoriteLook(const std::string& id);
     void removeFavoriteLook(const std::string& id);
+    // Takes the favorites whose look is gone (not in the look folders) off the list; how many went.
+    size_t removeMissingFavoriteLooks();
 
     std::string currentLook();
     // Puts the look on (PlusLook) and notes it among the recent ones ("no look" is not noted).

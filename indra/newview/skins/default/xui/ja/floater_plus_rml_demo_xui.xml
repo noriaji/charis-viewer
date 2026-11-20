@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+  name="plus_rml_demo_xui"
+  title="RmlUi の試作窓の XUI 版（開発用）">
+  <string name="list_item">[N] 行目</string>
+  <string name="colour_switched">色を切り替えました。</string>
+  <string name="size_switched">文字の大きさを切り替えました。</string>
+  <plus_ps_box name="body">
+    <plus_ps_label name="heading" label="RmlUi の試作窓（XUI 版）" />
+    <plus_ps_button name="b_count" label="数える" tool_tip="ボタンの横の数を 1 つ増やします。" />
+    <plus_ps_check name="c_option" label="オプション" tool_tip="チェックボックスです（何も変わりません）。" />
+    <plus_ps_slider name="s_amount" label="量" tool_tip="スライダーです。数値の欄が付いてきます。" />
+    <plus_ps_label name="text_label" label="文字" />
+    <plus_ps_box name="text_box">
+      <line_editor name="t_text" tool_tip="ここに入力します。日本語入力（IME）も使えます。" />
+    </plus_ps_box>
+    <plus_ps_button name="b_colour" label="色を切り替え" tool_tip="RmlUi の窓は CSS 変数を書き換えます。ここでは知らせるだけです。" />
+    <plus_ps_button name="b_size" label="文字の大きさを切り替え" tool_tip="RmlUi の窓は CSS 変数を切り替えます。ここでは知らせるだけです。" />
+    <plus_ps_label name="list_label" label="1000 行（公式の一覧が見えている行だけを描きます）" />
+  </plus_ps_box>
+</floater>

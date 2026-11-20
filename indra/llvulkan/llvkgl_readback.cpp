@@ -601,8 +601,8 @@ namespace
             return true;
         }
         auto fb = sFramebuffers.find(sState.read_framebuffer);
-        U32 index = fb != sFramebuffers.end() ? fb->second.read_buffer - GL_COLOR_ATTACHMENT0 : 4;
-        if (index >= 4 || !fb->second.color[index] || !sTextures.find(fb->second.color[index]))
+        U32 index = fb != sFramebuffers.end() ? fb->second.read_buffer - GL_COLOR_ATTACHMENT0 : LLVKMirror::MAX_COLORS;
+        if (index >= LLVKMirror::MAX_COLORS || !fb->second.color[index] || !sTextures.find(fb->second.color[index]))
         {
             why = "copy from unsupported read buffer";
             return false;
@@ -861,7 +861,7 @@ namespace
             else
             {
                 const U32 index = fb->second.read_buffer - GL_COLOR_ATTACHMENT0;
-                name = index < 4 ? fb->second.color[index] : 0;
+                name = index < LLVKMirror::MAX_COLORS ? fb->second.color[index] : 0;
             }
             tex = name ? sTextures.find(name) : nullptr;
             if (!tex || !tex->image || tex->format.depth != depth || tex->layers != 1)

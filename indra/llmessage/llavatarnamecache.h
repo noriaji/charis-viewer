@@ -68,6 +68,10 @@ public:
     // otherwise returns false.
     static bool get(const LLUUID& agent_id, LLAvatarName *av_name);
     bool getName(const LLUUID& agent_id, LLAvatarName *av_name);
+    // <plus> contactsets: as getName(), but the name as the cache has it, without an alias of the contact sets
+    // (RLVa's @shownames filters the names others type, which are the real ones)
+    bool getNameWithoutAlias(const LLUUID& agent_id, LLAvatarName *av_name);
+    // </plus>
 
     // Callback types for get() below
     typedef boost::signals2::signal<
@@ -108,7 +112,16 @@ public:
 
     void setAccountNameChangedCallback(const account_name_changed_callback_t& cb) { mAccountNameChangedCallback = cb; }
 
+    // <plus> contactsets: an alias for someone (Firestorm's contact sets, plus/contactsets; the same names
+    // as Firestorm's). Asked for every name given out (get, getName, the callbacks): true with custom_name
+    // in place of the display name, or dn_removed for the legacy name. The cache itself keeps the real names.
+    typedef std::function<bool(const LLUUID& id, bool& dn_removed, std::string& custom_name)> custom_name_check_callback_t;
+    void setCustomNameCheckCallback(custom_name_check_callback_t cb) { mCustomNameCheckCallback = cb; }
+    // </plus>
+
 private:
+    // <plus> contactsets: av_name with the alias of mCustomNameCheckCallback; false (unchanged) for none </plus>
+    bool applyCustomName(const LLUUID& agent_id, LLAvatarName& av_name) const;
     // Handle name response off network.
     void processName(const LLUUID& agent_id,
         const LLAvatarName& av_name);
@@ -147,6 +160,7 @@ private:
 
     use_display_name_signal_t mUseDisplayNamesSignal;
     account_name_changed_callback_t mAccountNameChangedCallback;
+    custom_name_check_callback_t mCustomNameCheckCallback; // <plus> contactsets </plus>
 
     // Cache starts in a paused state until we can determine if the
     // current region supports display names.

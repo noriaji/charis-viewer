@@ -29,7 +29,11 @@
 // its centre (what is outside is discarded) that fades out by dithering. The normal is the face's own,
 // from the derivatives (the vertex buffers of fullbright faces have none, and the blocks look cut).
 
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 
 uniform sampler2D diffuseMap;       // the face's texture (sRGB)
 uniform vec4 derez_color;           // rgb: the face's colour (linear), a: its alpha
@@ -126,5 +130,8 @@ void main()
 #endif
     frag_data[0] = vec4(col, 0.0);
     frag_data[1] = vec4(1.0, 0.55, 0.0, 0.0);   // occlusion, roughness, metal
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
     frag_data[2] = encodeNormal(n, 0.0, GBUFFER_FLAG_HAS_PBR);
 }

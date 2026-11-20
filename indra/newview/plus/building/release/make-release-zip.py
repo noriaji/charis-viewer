@@ -20,8 +20,9 @@ same files. Read-only on the build folder.
   --allow-no-bundle  without the shader bundle (app_settings/vk_shader_bundle/
                      shaders.vkb in the output folder): a warning, not a stop
   --helpers DIR      the folder fetch-helpers.py filled and checked: exactly the files
-                     of releasecommon.HELPER_FILES (the local translation and subtitle
-                     helpers, vcomp140.dll), put next to the viewer exe
+                     of releasecommon.HELPER_FILES (the local translation, subtitle and
+                     motion helpers, vcomp140.dll, charis-onnxruntime.dll and its notices), put
+                     next to the viewer exe (the notices in licenses/)
   --allow-no-helpers without them: a warning, not a stop (a test build whose helpers
                      could not be fetched). One of --helpers and this is needed for a zip
   --symbols          also make the symbols zip (the pdb files, for crash dumps)
@@ -60,16 +61,16 @@ import zipfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.dont_write_bytecode = True     # no __pycache__ in the source tree
-from releasecommon import (BUNDLE_DIR, BUNDLE_FILES, HELPER_FILES, OUTPUT_REL, PDBS, RELEASE_STAMP,  # noqa: E402
-                           SOURCE, FileListError, checked_rel, read_file_list, read_stamp, release_version,
+from releasecommon import (BUNDLE_DIR, BUNDLE_FILES, HELPER_FILES, HELPER_ZIP_NAMES, OUTPUT_REL, PDBS,  # noqa: E402
+                           RELEASE_STAMP, SOURCE, FileListError, checked_rel, read_file_list, read_stamp, release_version,
                            sha256_file, tag_version, viewer_exe)
 README_TEMPLATE = os.path.join(HERE, 'README-charis-zip.txt')
 README_NAME = 'README-charis.txt'
 REQUIRED = ('slplugin.exe', 'llwebrtc.dll', 'licenses.txt', 'licenses-charis.txt', 'ca-bundle.crt',
             'app_settings/settings.xml', 'app_settings/settings_plus.xml', 'character/avatar_lad.xml',
             'skins/default/xui/ja/strings.xml', 'llplugin/media_plugin_cef.dll', 'llplugin/dullahan_host.exe',
-            'llplugin/libcef.dll', 'llplugin/locales/ja.pak', 'msvcp140.dll', 'vcruntime140.dll',
-            'vcruntime140_1.dll')
+            'llplugin/libcef.dll', 'llplugin/locales/ja.pak', 'msvcp140.dll', 'msvcp140_1.dll', 'vcruntime140.dll',
+            'vcruntime140_1.dll')   # msvcp140_1.dll: charis-onnxruntime.dll (the motion helper's) imports it
 REQUIRED_PREFIXES = ('app_settings/shaders/', 'app_settings/plus/', 'fonts/')
 # Build intermediates, debug files, scripts, per-user data (settings, logs, caches),
 # keys and credentials: never in a release.
@@ -142,21 +143,21 @@ def helper_items(files, helpers, allow_missing):
     (a warning), else Stop."""
     if not helpers:
         if not allow_missing:
-            raise Stop('no --helpers (the translation and subtitle helpers; --allow-no-helpers to go without)')
-        warn('no translation or subtitle helper in this release: the translation and voice subtitle windows say '
-             'charis-translate.exe / charis-subtitle.exe is missing next to the viewer')
+            raise Stop('no --helpers (the translation, subtitle and motion helpers; --allow-no-helpers to go without)')
+        warn('no helper in this release: the translation, voice subtitle and motion-between-poses windows say '
+             'charis-translate.exe / charis-subtitle.exe / charis-motion.exe is missing next to the viewer')
         return []
     if os.path.islink(helpers) or not os.path.isdir(helpers):
         raise Stop('--helpers %s is not a folder' % helpers)
     found = sorted(os.listdir(helpers))
     if found != sorted(HELPER_FILES):
         raise Stop('--helpers %s holds %s, not exactly %s' % (helpers, found, sorted(HELPER_FILES)))
-    paths = [(os.path.join(helpers, n), n) for n in HELPER_FILES]
+    paths = [(os.path.join(helpers, n), HELPER_ZIP_NAMES.get(n, n)) for n in HELPER_FILES]
     bad = [n for src, n in paths if os.path.islink(src) or not os.path.isfile(src)]
     if bad:
         raise Stop('--helpers: not plain files: %s' % ', '.join(bad))
     listed = {f.lower() for f in files}
-    clash = [n for n in HELPER_FILES if n.lower() in listed]
+    clash = [n for _, n in paths if n.lower() in listed]
     if clash:
         raise Stop('the packaging step\'s list already names %s (a helper of the build, not the pinned one)'
                    % ', '.join(clash))

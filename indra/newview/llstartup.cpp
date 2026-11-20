@@ -281,6 +281,7 @@
 #include "plus/loginfast/loginfast.h" // <plus> fast login (research/241) </plus>
 #include "plus/plus.h" // <plus> plus::onStartupStateChanged (research/248) </plus>
 #include "plus/rlv/rlvhooks.h" // <plus> rlv (research/248) </plus>
+#include "plus/contactsets/contactsets.h" // <plus> contactsets (research/333) </plus>
 
 #if LL_WINDOWS
 #include "lldxhardware.h"
@@ -2189,6 +2190,8 @@ bool idle_startup()
             LLAvatarTracker::instance().addBuddyList(list);
             do_startup_frame();
         }
+
+        plus::contactsets::onLogin(); // <plus> contactsets: the account's contact sets and aliases, once the friends are known (plus/contactsets) </plus>
 
         bool show_hud = false;
         LLSD tutorial_setting = response["tutorial_setting"];

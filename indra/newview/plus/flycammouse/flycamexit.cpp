@@ -34,6 +34,7 @@
 
 #include "flycammouse.h"
 
+#include "plus/chatbar/chatbarlayout.h"
 #include "plus/photoscreen/photoscreen.h"
 
 #include "llagentcamera.h"
@@ -61,7 +62,7 @@ namespace plus::flycammouse
         constexpr char MENU_KEY[]     = "Alt+Shift+F";  // the menu item's shortcut: it works whatever the key bindings say
         constexpr char KEY_SEPARATOR[] = " | ";         // between the keys of getKeyBindingAsString()
 
-        bool sHintShown = false;    // this session
+        bool sHintShown = false;        // this session
 
         // The keys of a mode's toggle_flycam as the key settings have them ("Z | Alt+Shift+F"), the menu item's when
         // none is bound.
@@ -162,7 +163,7 @@ namespace plus::flycammouse
                 LLToolBar* bottom = gToolBarView ? gToolBarView->getToolbar(LLToolBarEnums::TOOLBAR_BOTTOM) : nullptr;
                 if (bottom)
                 {
-                    center = bottom->getRect().getCenterX();
+                    center = plus::chatbar::bottomToolbarCenterX(bottom);  // beside the chat bar (plus/chatbar)
                 }
                 LLToolBar* left = gToolBarView ? gToolBarView->getToolbar(LLToolBarEnums::TOOLBAR_LEFT) : nullptr;
                 if (left && left->hasButtons())
@@ -229,9 +230,14 @@ namespace plus::flycammouse
             sPanel = panel->getHandle();
         }
 
+        // Once a session.
         void showHint()
         {
-            if (sHintShown || !gSavedSettings.getBOOL(SETTING_HINT))
+            if (!gSavedSettings.getBOOL(SETTING_HINT))
+            {
+                return;
+            }
+            if (sHintShown)
             {
                 return;
             }

@@ -26,6 +26,7 @@
 
 #include "llrhiscene.h"
 
+#include <atomic>
 #include <cstdlib>
 #include <cstring>
 
@@ -33,9 +34,24 @@ namespace LLRHI
 {
     Scene* sScene = nullptr;
 
-    // Read once: the mode does not change while the viewer runs (auto moves
-    // between its own states inside the viewer's scene records).
-    SceneMode sceneMode()
+    // research/218 vk-s2f-2: sceneOffForDevice (never cleared).
+    static std::atomic<bool> sOffForDevice{ false };
+
+    // A mode read once (the scene's, a part's): Off once the device turned the
+    // scene off. A static initializer may read a mode before the device is
+    // chosen (llrhiavatar.cpp's reads the rigged one), so every read asks
+    // again (llscenealpha.cpp reads the alpha's each time too). The one copy
+    // made before it is llrhiavatar.cpp's palette switch, from the rigged
+    // mode: it matters only with LLRHI_SCENE_RIGGED set (off when unset).
+    static SceneMode unless_off_for_device(SceneMode mode)
+    {
+        return sOffForDevice.load(std::memory_order_relaxed) ? SceneMode::Off : mode;
+    }
+
+    // LLRHI_SCENE as asked. Read once: it does not change while the viewer
+    // runs (auto moves between its own states inside the viewer's scene
+    // records).
+    static SceneMode asked_scene_mode()
     {
         static const SceneMode mode = []()
         {
@@ -59,6 +75,27 @@ namespace LLRHI
             return SceneMode::Off;
         }();
         return mode;
+    }
+
+    SceneMode sceneMode()
+    {
+        return unless_off_for_device(asked_scene_mode());
+    }
+
+    bool sceneRequired()
+    {
+        static const bool required = asked_scene_mode() != SceneMode::Off && !envUnset("LLRHI_SCENE");
+        return required;
+    }
+
+    void sceneOffForDevice()
+    {
+        sOffForDevice.store(true, std::memory_order_relaxed);
+    }
+
+    bool sceneIsOffForDevice()
+    {
+        return sOffForDevice.load(std::memory_order_relaxed);
     }
 
     namespace
@@ -99,35 +136,35 @@ namespace LLRHI
     SceneMode sceneAlphaMode()
     {
         static const SceneMode mode = part_mode("LLRHI_SCENE_ALPHA", SCENE_ALPHA_DEFAULT);
-        return mode;
+        return unless_off_for_device(mode);
     }
 
     // research/206: read once, as sceneMode.
     SceneMode sceneShadowMode()
     {
         static const SceneMode mode = part_mode("LLRHI_SCENE_SHADOW", SCENE_SHADOW_DEFAULT);
-        return mode;
+        return unless_off_for_device(mode);
     }
 
     // research/209: read once, as sceneMode.
     SceneMode sceneProbeMode()
     {
         static const SceneMode mode = part_mode("LLRHI_SCENE_PROBE", SCENE_PROBE_DEFAULT);
-        return mode;
+        return unless_off_for_device(mode);
     }
 
     // research/219: read once, as sceneMode.
     SceneMode sceneRiggedMode()
     {
         static const SceneMode mode = part_mode("LLRHI_SCENE_RIGGED", SCENE_RIGGED_DEFAULT);
-        return mode;
+        return unless_off_for_device(mode);
     }
 
     // research/204 10 (vk-s4c2): read once, as sceneMode.
     SceneMode sceneWorldMode()
     {
         static const SceneMode mode = part_mode("LLRHI_SCENE_WORLD", SCENE_WORLD_DEFAULT);
-        return mode;
+        return unless_off_for_device(mode);
     }
 
     // ==== scene auto: begin ====

@@ -39,7 +39,7 @@
 //   plus_ps_header       a heading (size: panel, right, sub), open and closed by a click
 //   plus_ps_label        a line of text (kind: label, white, dim, sub, hint, title)
 //   plus_ps_divider      a thin line between sections
-//   plus_ps_check        a check box with its label
+//   plus_ps_check        a check box with its label (the box and the words take the click, not the blank after)
 //   plus_ps_switch       an on / off switch
 //   plus_ps_slider       label, track and value box (the box takes typed numbers)
 //   plus_ps_combo        a drop-down (the official one inside; its closed box drawn here)
@@ -49,7 +49,7 @@
 //   plus_ps_readout      the exposure read-out and the shade under it
 //   plus_ps_card         a card with a picture (kind thumb: location, sky; kind avatar)
 //   plus_ps_picture      a picture with rounded corners (the time of day strip)
-//   plus_ps_preset_card  a preset: picture, two lines, chosen / hovered, delete
+//   plus_ps_preset_card  a preset: picture and two lines, or (compact) a box of two lines; chosen / hovered, delete
 //   plus_ps_add_card     "+ save the current settings"
 //   plus_ps_segment      a choice of two or more on one bar (photo / 360, the quality's levels)
 //   plus_ps_shutter      the round shutter button
@@ -120,6 +120,9 @@ namespace plus::psui
         virtual void onClick(S32 x, S32 y) {}
         // false: Return does not click (a check box or switch changes with Space only, as the official check box does).
         virtual bool clicksOnReturn() const { return true; }
+        // Where the mouse clicks (x, y in the widget). Elsewhere a press does nothing and is not passed on (the
+        // widget is still mouse_opaque), and the hover look is not drawn (hoverClickable). Default: all of it.
+        virtual bool clickableAt(S32 x, S32 y) const { return true; }
         virtual void onLabelChanged() {}
 
         // The value changed by the user: the control of control_name, then the commit callback.
@@ -131,6 +134,8 @@ namespace plus::psui
         void takeFocusFromSibling();
         // Another child of the same parent and of the same class (one of this widget's group).
         bool isSibling(const LLView* view) const;
+        // The mouse is over the widget where it clicks (mHover and clickableAt).
+        bool hoverClickable() const;
         // The opacity to draw with: the floater's fading and 40 % when disabled.
         F32 drawAlpha() const;
         void drawFocusRing(const LLRectf& r, F32 radius) const;
@@ -314,11 +319,16 @@ namespace plus::psui
         explicit PsCheck(const Params& p);
         void onClick(S32 x, S32 y) override;
         bool clicksOnReturn() const override { return false; }
+        // The box and the words (look::clickWidth): the blank after them does nothing.
+        bool clickableAt(S32 x, S32 y) const override;
+        void onLabelChanged() override;
 
     private:
+        S32 clickWidth() const;
         bool mOn = false;
         const LLFontGL* mFont;
         LLPointer<LLUIImage> mMark;
+        S32 mLabelWidth = 0;    // look::labelWidth of mLabelW (set with the label)
     };
 
     class PsSwitch : public PsCtrl
@@ -373,6 +383,9 @@ namespace plus::psui
         void setDisplayText(const std::string& text);
         F32 getMinValue() const { return mMin; }
         F32 getMaxValue() const { return mMax; }
+        // A new top of the range (a list whose length changes: the frames of a clip); the value is kept in range,
+        // and the default of the XML is clamped to the new range from its own value (a later, larger top gives it back).
+        void setMaxValue(F32 max_value);
 
     protected:
         friend class LLUICtrlFactory;
@@ -404,6 +417,7 @@ namespace plus::psui
         bool mShowSign;
         bool mHasDefault;
         F32  mDefaultValue;                 // clamped to min..max; not snapped (0.325 on a 0.05 grid stays 0.325)
+        F32  mDefaultGiven;                 // the XML's default as given (setMaxValue clamps mDefaultValue from it)
         F32  mDefaultEps;                   // isDefault()'s margin, well under half an increment
         bool mDefaultHover = false;
         bool mDragging = false;
@@ -603,6 +617,7 @@ namespace plus::psui
             Optional<std::string> subtitle;
             Optional<LLUIImage*>  image;
             Optional<bool>        deletable;    // an "x" while hovered
+            Optional<bool>        compact;      // words only: a rounded box with the name and the second line, no picture
             Params();
         };
         void draw() override;
@@ -620,8 +635,10 @@ namespace plus::psui
     private:
         LLRectf pictureRect() const;
         LLRectf closeRect() const;
+        void drawCompact();
         bool mChosen = false;
         bool mDeletable;
+        bool mCompact;
         std::string mSubtitle;
         LLWString mSubtitleW;
         LLPointer<LLTexture> mTexture;

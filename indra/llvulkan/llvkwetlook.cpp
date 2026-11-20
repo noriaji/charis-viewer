@@ -683,7 +683,7 @@ void main()
         bool writeBack(const LLRHI::WetLookWriteBack& pass);
 
         // research/159 3.1 (--bake-shaders): the passes set up ahead of their first use.
-        bool bake() { return ready(); }
+        bool bake() { return ready() && motionWriteBackReady(); }   // the motion variant too (made lazily in a session)
 
     private:
         bool ready();
@@ -691,9 +691,16 @@ void main()
         bool mTried = false;
         bool mReady = false;
         LLVKFullscreen::Pass mCompute[PIXEL_CHOICES];
-        // [0]: the G-buffer without the emissive attachment, [1]: with it;
-        // everywhere and not on avatars.
-        LLVKFullscreen::Pass mWriteBack[2][2];
+        // The write-back onto a G-buffer with the motion vectors' slot (research/373: five attachments; the emissive
+        // one and the vectors are not written), made at the first such G-buffer (none while the vectors are off).
+        bool motionWriteBackReady();
+
+        // [0]: the G-buffer without the emissive attachment, [1]: with it, [2]: with it and the motion vectors' slot
+        // (motionWriteBackReady); everywhere and not on avatars.
+        LLVKFullscreen::Pass mWriteBack[3][2];
+        std::string mWriteBackEmissive;     // the source of [1] and [2]
+        bool mMotionTried = false;
+        bool mMotionReady = false;
         bool mLoggedCompute = false;
         bool mLoggedWriteBack = false;
         // The textures each pass samples: kept so that no frame allocates them anew. (fix-round67 6)
@@ -708,10 +715,12 @@ void main()
         if (!mTried)
         {
             mTried = true;
+            // The first three written; the emissive attachment and the motion vectors (when there) kept.
             const VkColorComponentFlags write_all[LLVKFullscreen::MAX_COLORS] = { LLVKFullscreen::WRITE_RGBA, LLVKFullscreen::WRITE_RGBA,
-                                                                                LLVKFullscreen::WRITE_RGBA, 0 };
+                                                                                LLVKFullscreen::WRITE_RGBA, 0, 0 };
             const std::string write_back = std::string("#version 450\n") + WRITE_BACK_BODY;
-            const std::string write_back_emissive = std::string("#version 450\n#define EMISSIVE_ATTACHMENT\n") + WRITE_BACK_BODY;
+            mWriteBackEmissive = std::string("#version 450\n#define EMISSIVE_ATTACHMENT\n") + WRITE_BACK_BODY;
+            const std::string& write_back_emissive = mWriteBackEmissive;
             const std::string compute = std::string(COMPUTE_HEAD) + LLVKRain::OVERHEAD_GLSL + COMPUTE_BODY;
             const char* const compute_fragment = compute.c_str();
             mReady = mCompute[LLRHI::WET_LOOK_EVERYWHERE].initColors("wet look", compute_fragment, COMPUTE_IMAGES, COPY_COLORS, write_all,
@@ -808,6 +817,26 @@ void main()
         return drawn;
     }
 
+    bool Renderer::motionWriteBackReady()
+    {
+        if (!mMotionTried)
+        {
+            mMotionTried = true;
+            const VkColorComponentFlags write_three[LLVKFullscreen::MAX_COLORS] = { LLVKFullscreen::WRITE_RGBA, LLVKFullscreen::WRITE_RGBA,
+                                                                                  LLVKFullscreen::WRITE_RGBA, 0, 0 };
+            mMotionReady = mWriteBack[2][0].initColors("wet look write-back motion", mWriteBackEmissive.c_str(), WRITE_BACK_IMAGES,
+                                                       COPY_COLORS + 2, write_three, STENCIL_TESTS[LLRHI::WET_LOOK_EVERYWHERE]) &&
+                           mWriteBack[2][1].initColors("wet look write-back motion not avatars", mWriteBackEmissive.c_str(),
+                                                       WRITE_BACK_IMAGES, COPY_COLORS + 2, write_three,
+                                                       STENCIL_TESTS[LLRHI::WET_LOOK_NOT_AVATARS]);
+            if (!mMotionReady)
+            {
+                LL_WARNS("VKWetLook") << "The wet look's write-back onto a G-buffer with motion vectors could not be set up" << LL_ENDL;
+            }
+        }
+        return mMotionReady;
+    }
+
     bool Renderer::writeBack(const LLRHI::WetLookWriteBack& pass)
     {
         std::lock_guard<LLVKTrackerMutex> lock(LLVKTracker::lock());
@@ -824,14 +853,15 @@ void main()
             return false;
         }
         bool drawn = false;
-        if (target.color_count == COPY_COLORS || target.color_count == COPY_COLORS + 1)
+        if (target.color_count >= COPY_COLORS && target.color_count <= COPY_COLORS + 2 &&
+            (target.color_count < COPY_COLORS + 2 || motionWriteBackReady()))
         {
             const WriteBackUniforms uniforms = {};
             LLVKFullscreen::Image images[WRITE_BACK_IMAGES];
             images[0].texture = pass.diffuse_texture;
             images[1].texture = pass.specular_texture;
             images[2].texture = pass.normal_texture;
-            LLVKFullscreen::Pass& draw_pass = mWriteBack[target.color_count == COPY_COLORS ? 0 : 1]
+            LLVKFullscreen::Pass& draw_pass = mWriteBack[target.color_count - COPY_COLORS]
                                                         [pass.pixels == LLRHI::WET_LOOK_EVERYWHERE ? 0 : 1];
             drawn = draw_pass.draw(cmd, target, &uniforms, sizeof(uniforms), images, WRITE_BACK_IMAGES);
         }

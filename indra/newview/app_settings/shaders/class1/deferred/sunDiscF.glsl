@@ -25,7 +25,11 @@
 
 /*[EXTRA_CODE_HERE]*/
 
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 
 vec3 srgb_to_linear(vec3 c);
 
@@ -47,6 +51,9 @@ void main()
 
     frag_data[0] = vec4(0);
     frag_data[1] = vec4(0.0f);
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
     frag_data[2] = vec4(0.0, 1.0, 0.0, GBUFFER_FLAG_SKIP_ATMOS);
 #if defined(HAS_EMISSIVE)
     frag_data[0] = vec4(0);

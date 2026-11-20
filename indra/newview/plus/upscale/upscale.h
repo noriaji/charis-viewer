@@ -64,9 +64,20 @@ namespace plus::upscale
     bool active();
 
     // The anti-aliasing to use for RenderFSAAType (fsaa_type): at least FXAA
-    // (1) while active, as FSR 1 wants an anti-aliased picture; the setting
-    // itself is not changed (research/165 review 3).
+    // (1) while active, as FSR 1 wants an anti-aliased picture; none (0) in a
+    // temporal mode, which takes the jittered picture as it is (research/373);
+    // the setting itself is not changed (research/165 review 3).
     U32 effectiveAAType(U32 fsaa_type);
+
+    // A temporal mode (PlusUpscale 3, 4: research/373) is drawing the main view
+    // and will mix it with its history: the size it is drawn at, and the window's
+    // size over it (>= 1) for plus/temporal's jitter period. False for every
+    // other mode (and for now for all: the temporal values come with the backends).
+    bool temporalAhead(U32& width, U32& height, F32& ratio);
+
+    // A temporal mode (PlusUpscale 3, 4) is chosen, drawing or not yet (what plus/temporal makes the
+    // G-buffer's motion vectors for). False for now: the temporal values come with the backends.
+    bool temporalSelected();
 
     // The official CAS is left out of the tone mapping: FSR 1's RCAS sharpens
     // instead (active with FSR 1, not the bilinear stretch).

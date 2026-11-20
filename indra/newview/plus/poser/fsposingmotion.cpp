@@ -31,6 +31,8 @@
 #include "fsposingmotion.h"
 #include "llcharacter.h"
 
+LLUUID FSPosingMotion::sSnapMotionId; // <plus> SnapToTargetScope </plus>
+
 FSPosingMotion::FSPosingMotion(const LLUUID& id) : LLKeyframeMotion(id)
 {
     mName = "fs_poser_pose";
@@ -52,6 +54,7 @@ LLMotion::LLMotionInitStatus FSPosingMotion::onInitialize(LLCharacter* character
             continue;
 
         FSJointPose jointPose = FSJointPose(targetJoint, POSER_JOINT_STATE);
+        jointPose.setOwnerSerial(mInstanceSerial); // <plus> research/374 review 2 </plus>
         mJointPoses.push_back(jointPose);
 
         addJointState(jointPose.getJointState());
@@ -63,6 +66,7 @@ LLMotion::LLMotionInitStatus FSPosingMotion::onInitialize(LLCharacter* character
             continue;
 
         FSJointPose jointPose = FSJointPose(targetJoint, POSER_JOINT_STATE, true);
+        jointPose.setOwnerSerial(mInstanceSerial); // <plus> research/374 review 2 </plus>
         mJointPoses.push_back(jointPose);
 
         addJointState(jointPose.getJointState());
@@ -85,7 +89,11 @@ bool FSPosingMotion::onUpdate(F32 time, U8* joint_mask)
     LLVector3 currentScale;
     LLVector3 targetScale;
 
-    for (FSJointPose jointPose : mJointPoses)
+    // <plus> SnapToTargetScope (Motion Between Poses): the targets at once, no easing
+    const bool snapToTarget = sSnapMotionId.notNull() && mMotionID == sSnapMotionId;
+    // </plus>
+
+    for (const FSJointPose& jointPose : mJointPoses) // <plus> by reference (was a copy of each joint pose, its name and undo queue, every frame) </plus>
     {
         LLJoint* joint = jointPose.getJointState()->getJoint();
         if (!joint)
@@ -100,19 +108,19 @@ bool FSPosingMotion::onUpdate(F32 time, U8* joint_mask)
 
         if (vectorsNotQuiteEqual(currentPosition, targetPosition))
         {
-            currentPosition = lerp(currentPosition, targetPosition, mInterpolationTime);
+            currentPosition = snapToTarget ? targetPosition : lerp(currentPosition, targetPosition, mInterpolationTime); // <plus> snap </plus>
             jointPose.getJointState()->setPosition(currentPosition);
         }
 
         if (quatsNotQuiteEqual(currentRotation, targetRotation))
         {
-            currentRotation = slerp(mInterpolationTime, currentRotation, targetRotation);
+            currentRotation = snapToTarget ? targetRotation : slerp(mInterpolationTime, currentRotation, targetRotation); // <plus> snap </plus>
             jointPose.getJointState()->setRotation(currentRotation);
         }
 
         if (vectorsNotQuiteEqual(currentScale, targetScale))
         {
-            currentScale = lerp(currentScale, targetScale, mInterpolationTime);
+            currentScale = snapToTarget ? targetScale : lerp(currentScale, targetScale, mInterpolationTime); // <plus> snap </plus>
             jointPose.getJointState()->setScale(currentScale);
         }
     }

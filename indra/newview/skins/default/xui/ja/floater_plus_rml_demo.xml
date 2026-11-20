@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater
+  name="plus_rml_demo"
+  title="RmlUi の試作窓（開発用）">
+  <string name="heading">RmlUi の試作窓</string>
+  <string name="button_count">数える</string>
+  <string name="tip_count">ボタンの横の数を 1 つ増やします。</string>
+  <string name="check_option">オプション</string>
+  <string name="tip_option">データモデルにつないだチェックボックスです（何も変わりません）。</string>
+  <string name="slider_label">量</string>
+  <string name="tip_amount">データモデルにつないだスライダーです。横の数が付いてきて、数を打ち込んで Enter でも値を決められます。</string>
+  <string name="text_label">文字</string>
+  <string name="tip_text">ここに入力します。日本語入力（IME）の変換・確定も使えます。</string>
+  <string name="button_colour">色を切り替え</string>
+  <string name="tip_colour">アクセント色の CSS 変数をビューワから書き換えます（もう一度で元に戻ります）。</string>
+  <string name="button_size">文字の大きさを切り替え</string>
+  <string name="tip_size">本文の文字の大きさの変数を切り替えます（もう一度で元に戻ります）。</string>
+  <string name="list_label">1000 行（見えている行だけを作ります）</string>
+  <string name="list_item">[N] 行目</string>
+  <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+  <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。</string>
+</floater>

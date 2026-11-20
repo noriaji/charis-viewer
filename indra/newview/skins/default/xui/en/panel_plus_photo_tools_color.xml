@@ -154,7 +154,7 @@
                  top="22"
                  width="80"
                  name="btn_looktab_recent"
-                 tool_tip="The last ten put on in this window" />
+                 tool_tip="The last ten put on (in this window, in Quick Preferences, or on the photo screen)" />
                 <filter_editor
                  follows="left|top|right"
                  height="22"
@@ -226,6 +226,16 @@
                  width="100"
                  name="btn_look_reload"
                  tool_tip="Read the look folders again: new LUTs show up, an edited one is read again (the same as Charis &gt; Look (Color Grading) &gt; Reload the Looks)" />
+                <button
+                 follows="left|bottom"
+                 height="22"
+                 label="Remove Missing"
+                 layout="topleft"
+                 left="348"
+                 bottom="-4"
+                 width="120"
+                 name="btn_look_prune"
+                 tool_tip="In the favorites tab: take the favorites whose look is gone (shown as not found) off the list" />
             </panel>
             <panel name="rows_color" background_visible="false" follows="left|top" height="1" layout="topleft" left="0" mouse_opaque="false" top="294" width="597" />
         </panel>

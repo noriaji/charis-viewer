@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Portrait Film</string><key>ja</key><string>人物向けフィルム</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Gentle contrast, creamy skin and quiet greens, with the blacks held low.</string><key>ja</key><string>おだやかなコントラスト、クリームのような肌、静かな緑。黒は沈めたまま。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>221</integer>
+    <key>group</key><string>film</string>
+  </map>
+</llsd>

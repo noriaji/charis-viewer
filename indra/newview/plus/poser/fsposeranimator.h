@@ -103,12 +103,28 @@ typedef enum E_BoneAxisNegation
     NEGATE_ALL     = 8,
 } E_BoneAxisNegation;
 
+// <plus> research/374 §6': who holds the posing motion of an avatar. One owner at a time, per avatar (sPoseOwner).
+// Window: the poser window and posermcp (the poses you make). Share: the pose another person shares (plus/poseshare).
+// Push: the pose of another person pushed onto your own avatar (research/374b). The order of rank is Window over
+// Share and Push: tryPosingAvatar() is the only place where one takes an avatar from another.
+enum class PoseOwner : U8
+{
+    None,
+    Window,
+    Share,
+    Push
+};
+// </plus>
+
 class FSPoserAnimator
 {
     friend class PlusPoserTools; // <plus> posermcp reads joint targets through getPosingMotion()
 
 public:
-    FSPoserAnimator() = default;
+    // <plus> research/374 §6': the owner this instance acts for. The poser window and posermcp keep Window; plus/poseshare
+    // has one instance of its own with Share (it serves Push too, see startShared()).
+    explicit FSPoserAnimator(PoseOwner owner = PoseOwner::Window) : mOwner(owner) {}
+    // </plus>
 
     virtual ~FSPoserAnimator() = default;
 
@@ -423,7 +439,69 @@ public:
     /// Stops posing the supplied avatar.
     /// </summary>
     /// <param name="avatar">The avatar to stop posing.</param>
+    /// <remarks>Charis: another person's avatar (isOtherPerson) is stopped with forceStopPosingAvatar().</remarks>
     void stopPosingAvatar(LLVOAvatar* avatar);
+
+    // <plus> other people's avatars, posed on this screen only with their consent (plus/poseconsent, research/336)
+    // True for an avatar that is neither the own one nor an animesh (nor a UI avatar of a preview).
+    static bool isOtherPerson(const LLVOAvatar* avatar);
+    // Another person's live avatar by the object list (one look-up), null when out of view, gone or not another person.
+    static LLVOAvatar* findLiveOther(const LLUUID& avatar_id);
+    // True while the other person's pose still runs on a live avatar: findLiveOther() finds one and it has the motion
+    // registered for the ID. False when the avatar is gone, or a new avatar object of the same person came in its
+    // place (it has not the motion: the pose went with the old object). tryPosingAvatar() registers and creates the
+    // motion before it lists the person, so a pose just started is alive.
+    static bool isOtherPoseAlive(const LLUUID& avatar_id);
+
+    // Stops the pose of `avatar_id` without the region/"safe to use" checks, then clears the static tables
+    // (sAvatarIdToRegisteredAnimationId, FSPoseState::sMotionStates) for it. Safe to call twice.
+    // The motion is stopped at once and removed from the avatar (a later pose makes a new one), so the posing state
+    // of another person never outlives the stop. Meant for other people (isOtherPerson): the own avatar and animeshes
+    // keep their motion for the undo, with stopPosingAvatar(). It is also what beginPosing() does to the own avatar
+    // when the window takes it from a push, or a push takes it from a window pose that has stopped (research/374).
+    // Main thread.
+    static void forceStopPosingAvatar(const LLUUID& avatar_id);
+
+    // forceStopPosingAvatar() for every other person posed, listed in the poser or not.
+    static void forceStopPosingAllOthers();
+
+    // The other people posed now (started by tryPosingAvatar(), until forceStopPosingAvatar()).
+    static const std::vector<LLUUID>& posedOthers() { return sPosedOthers; }
+    static bool isPosingOther(const LLUUID& avatar_id);
+    // </plus>
+
+    // <plus> research/374 §6': poses shared by others (plus/poseshare)
+    // Most people whose shared pose is held at once (plus::poseshare keeps to it too).
+    static constexpr size_t MAX_SHARED_OTHERS = 8;
+    // Who holds the posing motion of `avatar_id` now (None: nobody).
+    static PoseOwner ownerOf(const LLUUID& avatar_id);
+    // The people whose shared pose is held now (Share only: not Push, which is the own avatar).
+    static const std::vector<LLUUID>& sharedOthers() { return sSharedOthers; }
+    static bool isSharedOther(const LLUUID& avatar_id);
+    // True when a share or a push holds the avatar: a stop that belongs to the window's pose or to a consent leaves it.
+    static bool isHeldByShare(const LLUUID& avatar_id)
+    {
+        const PoseOwner owner = ownerOf(avatar_id);
+        return owner == PoseOwner::Share || owner == PoseOwner::Push;
+    }
+
+    // Starts the pose of a shared or pushed avatar: role Share for another person's avatar, Push for the own one; this
+    // instance must have been made for Share. false: the avatar may not be used, the wrong kind of avatar for the role,
+    // the window holds it (running), the pose is already running, or MAX_SHARED_OTHERS people are held already. On
+    // true the motion exists with its joint poses (createMotion() initialises it on the spot) and the avatar stands
+    // in the pose it had; the caller turns off the joints it has no value for and sets the others (FSJointPose::
+    // setSharedTarget). Unlike tryPosingAvatar(), nothing is captured for the poser's save and the avatar is not
+    // listed in sPosedOthers. Main thread.
+    bool startShared(LLVOAvatar* avatar, PoseOwner role);
+    // The shared or pushed pose of `avatar` when this instance holds it (null otherwise: the window's pose is not seen).
+    FSPosingMotion* sharedMotion(LLVOAvatar* avatar) const { return getPosingMotion(avatar); }
+    // The motion of `avatar` and its owner whoever the owner is, for reading (the sender of plus::poseshare reads the
+    // own pose of the window or of a push). null when there is none. Not checked for the region (as getPosingMotion()
+    // of the own avatar is, with a teleport on its way the region may be another one).
+    static FSPosingMotion* motionOf(LLVOAvatar* avatar, PoseOwner* owner);
+    // forceStopPosingAvatar() for everybody whose pose is Share or Push.
+    static void forceStopAllShared();
+    // </plus>
 
     /// <summary>
     /// Determines if the supplied avatar is being posed by this.
@@ -840,7 +918,7 @@ public:
     /// When a pose is created for the avatar, it is 'registered' with their character for use later on.
     /// Thus we start & stop posing the same animation.
     /// </remarks>
-    FSPosingMotion* findOrCreatePosingMotion(LLVOAvatar* avatar);
+    FSPosingMotion* findOrCreatePosingMotion(LLVOAvatar* avatar, PoseOwner role); // <plus> role: the owner a new motion is registered for </plus>
 
     /// <summary>
     /// Gets the poser posing-motion for the supplied avatar.
@@ -1007,6 +1085,30 @@ public:
     /// Is static, so the animationId is not lost between sessions (such as when the UI floater is closed and reopened).
     /// </summary>
     static std::map<LLUUID, LLAssetID> sAvatarIdToRegisteredAnimationId;
+
+    // <plus> the other people posed (no duplicates; research/336). Written by tryPosingAvatar() and
+    // forceStopPosingAvatar() only, main thread.
+    static std::vector<LLUUID> sPosedOthers;
+    // </plus>
+
+    // <plus> research/374 §6'. Written by findOrCreatePosingMotion() (sets) and forceStopPosingAvatar() (erases) only, main
+    // thread. An avatar has an entry exactly while sAvatarIdToRegisteredAnimationId has one.
+    static std::map<LLUUID, PoseOwner> sPoseOwner;
+    // The other people held as Share (no duplicates, at most MAX_SHARED_OTHERS).
+    static std::vector<LLUUID> sSharedOthers;
+
+    // This instance's owner: the window's, or the shared one's (which serves Share and Push).
+    PoseOwner mOwner{ PoseOwner::Window };
+    // True when an avatar held by `owner` is one this instance acts on.
+    bool ownerIsMine(PoseOwner owner) const
+    {
+        return mOwner == PoseOwner::Window ? owner == PoseOwner::Window : (owner == PoseOwner::Share || owner == PoseOwner::Push);
+    }
+    // The registered motion of the avatar whoever holds it (null: none, or the avatar's motion is gone).
+    static FSPosingMotion* registeredMotion(LLVOAvatar* avatar);
+    // tryPosingAvatar() and startShared(): the one place where a motion is taken from another owner (see PoseOwner).
+    bool beginPosing(LLVOAvatar* avatar, PoseOwner role);
+    // </plus>
 
     FSPoseState mPosingState;
 };

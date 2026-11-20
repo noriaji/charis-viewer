@@ -1,6 +1,6 @@
 # Charis Viewer Privacy Policy
 
-Last updated: 2026-11-13
+Last updated: 2026-11-15
 
 日本語は下にあります。
 
@@ -46,6 +46,10 @@ Second Life, and it has no connection to Linden Lab.
   - The zip version never downloads or installs an update. The notice only
     opens the download page (or the release notes) in your web browser when
     you press its button.
+- **After 0.1.0-alpha2 (the next version and later)**: pose requests between avatars
+  (Aurora compatible) come in, with the pose bridge on by default (see "Where
+  the viewer connects" and "What the viewer does not do"). 0.1.0-alpha2 and
+  earlier have no pose bridge.
 
 ## Where the viewer connects
 
@@ -56,16 +60,19 @@ Second Life, and it has no connection to Linden Lab.
 | raw.githubusercontent.com | update check (alpha2 and later, see above) | a GET of one file |
 | github.com (the project's releases: the update list `releases.win.json` and the package) and its download servers (objects.githubusercontent.com, release-assets.githubusercontent.com) | only the Setup.exe version, to download an update: after you press Download (the default), or without asking if you chose that in Preferences > Setup | a normal download (the package in pieces, or whole if the server does not give pieces) (your IP address and the User-Agent) |
 | huggingface.co and the download server it redirects to | only when you press "Get the model" (speech recognition model for voice subtitles) | a normal download (your IP address) |
-| github.com (releases of noriaji/charis-models) and the download server it redirects to | only when you press "Get the models" in the translation settings or "Get translation models" in the subtitle window (local translation) | a normal download (your IP address) |
+| github.com (releases of noriaji/charis-models) and the download server it redirects to | only when you press "Get the models" in the translation settings or "Get translation models" in the subtitle window (local translation), or "Fetch..." (the model) in the Motion Between Poses window | a normal download (your IP address) |
 | The online translation service you choose (Microsoft Azure, DeepL or Google; these are official viewer features) | only when you turn on chat translation, or subtitle translation with "Translate: service", and the translation service (Preferences > Chat) is Azure, Google or DeepL (translation is off by default) | the text to translate (for subtitles: what other people said in voice, as recognized), and your API key |
 | Web pages, media and music streams | web pages in the viewer, links you open, media and music set on land and objects, as the official viewer | what any web browser or media player sends to that site |
+| Your own pose bridge's HTTP-in address (*.secondlife.io / *.lindenlab.com, the Second Life script servers) | while "Make and wear the bridge used for pose requests" is on (Preferences > Privacy, setting `PlusPoseBridgeEnable`: on by default, per account; uncheck it to turn the bridge off). Only the address of your own bridge, given by Second Life; no other server | a hello with a random token (the bridge makes a new one for each new address: at every region change, teleport and wearing it again), and the pose requests and answers you send, each with that token: the request id, its kind (request, accept, refuse, cancel, withdraw) and the other person's avatar id. The bridge, worn by you, passes them on in the region (see "What the viewer does not do") |
+| Pose sharing through your own pose bridge (a Second Life chat channel) | only while you pose your own avatar in the poser and "Share" (poser window) is not off (off by default, per account: `PlusPoseShareMode`). Posing another person and showing it on their screen needs their agreement | your avatar's pose (joint rotations, and some positions and sizes). "With friends" and "With everyone near" both go out as a shout (up to 100 m) on a fixed chat channel; the choice only tells the other person's Charis Viewer whether to show it, it is not a lock: a script of anyone near that listens on that channel can read it. A pose you set on a person who agreed goes to that person only |
 | Local MCP server (poser and inventory remote control) | only when you turn it on (off by default) | it listens on 127.0.0.1 (your own computer) only, with a token. The program you connect can get: your avatar name and region name, the names of you and nearby animesh, inventory item and folder names with their creators' names, and pictures of the world (pictures of the viewer's windows, which can show IM, only if you allow it with `PlusPoserMcpAllowUiSnapshot`). It can move the camera, read and change viewer settings (not secrets, paths or the MCP server's own settings) and pose your avatar. If that program uses a cloud service, this data, including other people's names (creators) and other avatars seen in the pictures, goes to that service. |
 
 Downloaded models are checked against a fixed SHA-256 before use. Speech
 recognition for voice subtitles runs on your computer. Subtitle
 translation with "Translate: this PC", and the translation service
 "This PC (local AI; nothing is sent anywhere)", both send nothing. Only
-with an online service is the text sent (see the table).
+with an online service is the text sent (see the table). Motion Between Poses
+runs on your computer and sends no pose data.
 
 ## What the viewer does not do
 
@@ -82,6 +89,33 @@ with an online service is the text sent (see the table).
   answers @version with the viewer and RLV versions automatically, and
   answers @list only after you allow it (setting `RLVaEnableIMQuery`, on
   by default while RLVa is on).
+- A second exception: pose requests (Aurora compatible). The pose bridge is
+  on by default (as in Firestorm and Aurora): once you are logged in, the
+  viewer makes a small invisible attachment with a script in a `#Charis`
+  folder of your inventory and wears it on your HUD; it takes one of your
+  attachment places and one script (Mono, 64 KB). Your attachments come
+  first: the bridge is worn only while one more place is left free for you,
+  and when an outfit you put on needs the places, the bridge is taken off and
+  put on again by itself once you take something off. To turn it off,
+  uncheck "Make and wear the bridge used for pose requests" in Preferences >
+  Privacy (for each account): the bridge is taken off (the object stays in
+  `#Charis`). The bridge tells no one
+  anything by itself. When you ask someone to pose, that person, and any
+  script they wear, learn your avatar id and that your viewer takes pose
+  requests: the bridge says the request on channel -184735220, to that
+  person only, in the region. On the receiving side the viewer answers only
+  the people your setting "Who may ask to pose my avatar" takes (it refuses,
+  or lets the request time out, for the others it was shown to; requests
+  from the rest are dropped without an answer). A permission lasts for the
+  session at most; the pose shows only on the asker's screen.
+  - Known point (being worked on before the public release): the bridge
+    stays in your outfit after you quit Charis. If you log in with another
+    viewer while still wearing it, that viewer's chat can show a line with
+    the bridge's address and token, until the bridge takes itself off
+    (45 seconds).
+  - Decided (2026-11-14): an answer from any attachment of the person you
+    asked is taken as theirs (the simulator reports the owner; the viewer
+    does not check which attachment it was).
 - The developers do not sell or share your data (they receive none).
 
 ## What is stored on your computer
@@ -99,11 +133,18 @@ itself is in `%LOCALAPPDATA%\CharisViewerApp` when installed with Setup.exe):
   out the MAC address and the disk serial number),
 - caches of textures, meshes, inventory and shaders,
 - files of Charis features: photo presets, camera positions, poses,
-  AO sets, the outfit backup, downloaded subtitle and translation models,
+  AO sets, the outfit backup, downloaded subtitle, translation and motion models,
   the MCP server's connection file with its token
   (`user_settings\plus_poser_mcp.json`), and the MCP pictures
   (`user_settings\plus_poser_snapshots\poser_snapshot_NN.png`, at most 20,
-  overwritten in turn).
+  overwritten in turn),
+- with the pose bridge on (the default): a `#Charis` folder in your inventory with the
+  bridge (an object with a script) in it (your inventory is on Second Life's
+  servers, not on your computer; the object stays there after you turn the
+  bridge off, until you delete it); `plus_pose_consent.xml` in your
+  account's folder (the avatar ids of the people you blocked from asking);
+  and, in the viewer's log, the avatar ids of the people you exchanged pose
+  requests with (never their names).
 
 Voice subtitles are shown on screen and not written to a file. When you
 import settings from another viewer, saved logins (user names and
@@ -136,7 +177,7 @@ about this policy, write to charisviewer@gmail.com.
 
 # Charis Viewer プライバシーポリシー
 
-最終更新: 2026-11-13
+最終更新: 2026-11-15
 
 Charis Viewer（以下「本ビューワ」）は、Second Life 用の非公式（サードパーティー）
 のビューワです。Second Life を作っている Linden Lab が提供・サポートするもので
@@ -176,6 +217,9 @@ Charis Viewer（以下「本ビューワ」）は、Second Life 用の非公式�
     あなたの情報を送りません。いつでも中止できます。
   - zip 版は更新をダウンロード・インストールしません。お知らせのボタンを
     押した時に、ダウンロードページ（またはリリースノート）をブラウザで開くだけです。
+- **0.1.0-alpha2 より後（次の版から）**: アバター同士のポーズの依頼（Aurora と互換）が
+  入り、ポーズ用のブリッジが既定でオンです（下の「本ビューワが接続する先」と「しない
+  こと」）。0.1.0-alpha2 までにはポーズ用のブリッジはありません。
 
 ## 本ビューワが接続する先
 
@@ -186,15 +230,17 @@ Charis Viewer（以下「本ビューワ」）は、Second Life 用の非公式�
 | raw.githubusercontent.com | 更新確認（alpha2 以降、上のとおり） | ファイル 1 つの GET |
 | github.com（このプロジェクトの Releases: 更新の一覧 `releases.win.json` とパッケージ）とその配信サーバー（objects.githubusercontent.com、release-assets.githubusercontent.com） | Setup.exe 版が更新をダウンロードする時だけ。［ダウンロード］を押した後（既定）、または環境設定 > セットアップで尋ねずに自動でダウンロードする設定を選んだ時 | ふつうのダウンロード（パッケージは小分け。サーバーが対応しない時は丸ごと）（IP アドレスと User-Agent） |
 | huggingface.co とそのリダイレクト先の配信サーバー | 「モデルを取得」（ボイスの字幕の音声認識モデル）を押した時だけ | ふつうのダウンロード（IP アドレス） |
-| github.com（noriaji/charis-models の Releases）とそのリダイレクト先の配信サーバー | 翻訳設定の「モデルを取得」か、字幕の窓の「翻訳モデルを取得」（ローカル翻訳）を押した時だけ | ふつうのダウンロード（IP アドレス） |
+| github.com（noriaji/charis-models の Releases）とそのリダイレクト先の配信サーバー | 翻訳設定の「モデルを取得」、字幕の窓の「翻訳モデルを取得」（ローカル翻訳）、ポーズ間モーション生成の窓の「取得…」（モデル）のどれかを押した時だけ | ふつうのダウンロード（IP アドレス） |
 | 選んだオンライン翻訳サービス（Microsoft Azure・DeepL・Google。これらは公式の機能） | チャットの翻訳、または字幕の翻訳（「翻訳: サービス」）をオンにし、かつ翻訳サービス（環境設定 > チャット）が Azure・Google・DeepL の時だけ（翻訳は既定オフ） | 翻訳する文（字幕なら、ボイスで他の人が話したことを聞き取った文）と API キー |
 | Web ページ・メディア・音楽のストリーム | ビューワ内の Web ページ、開いたリンク、土地や物に設定されたメディアと音楽（公式と同じ） | ふつうのブラウザやプレーヤーがそのサイトに送るもの |
+| 自分のポーズ用ブリッジの HTTP-in のアドレス（*.secondlife.io / *.lindenlab.com。Second Life のスクリプトのサーバー） | 「ポーズの依頼に使うブリッジを作って装着する」（環境設定 > プライバシー、設定 `PlusPoseBridgeEnable`。既定オン、アカウントごと。チェックを外すとブリッジを外します）がオンの間。Second Life が与える自分のブリッジのアドレスだけで、ほかのサーバーには送りません | 乱数の合言葉つきのハロー（合言葉はブリッジがアドレスごとに作り直します。リージョンの移動・テレポート・付け直しのたびに新しくなります）と、送るポーズの依頼・答え（それぞれ合言葉と一緒に送ります）: 依頼の ID、種類（依頼・許可・断る・取り消し・取り下げ）、相手のアバター ID。自分が着けたブリッジがリージョン内で中継します（下の「しないこと」） |
 | ローカル MCP サーバー（ポーザーとインベントリの遠隔操作） | オンにした時だけ（既定オフ） | 127.0.0.1（自分の PC）だけで、合言葉つきで待ち受けます。つないだプログラムは、自分のアバター名とリージョン名、自分と近くのアニメッシュの名前、インベントリのアイテム・フォルダーの名前とその作者名、ワールドの画像（IM などが映るビューワの窓の画像は `PlusPoserMcpAllowUiSnapshot` で許可した時だけ）を受け取れます。カメラの操作、設定の読み書き（秘密・パス・MCP 自身の設定は除く）、ポーズの操作ができます。そのプログラムがクラウドのサービスを使うなら、他の人の名前（作者名）や画像に映った他のアバターを含め、これらがそのサービスに渡ります。 |
 
 取得したモデルは、使う前に固定の SHA-256 で確かめます。ボイスの字幕の聞き
 取りは PC の中で動きます。字幕の「翻訳: この PC」と、翻訳サービスの「この PC（ローカル AI。文字は外へ
 出ません）」は、どちらも何も送りません。文が送られるのは、オンラインのサービス
-を使う時だけです（上の表）。
+を使う時だけです（上の表）。ポーズ間モーション生成は PC の中で動き、
+ポーズのデータは送りません。
 
 ## しないこと
 
@@ -209,6 +255,29 @@ Charis Viewer（以下「本ビューワ」）は、Second Life 用の非公式�
   聞くことができます。また、ほかの住人が IM で尋ねた時は、@version にビューワ
   と RLV の版を自動で答え、@list はご本人が許可した時だけ答えます（設定
   `RLVaEnableIMQuery`。RLVa がオンの間は既定でオン）。
+- もう一つの例外: ポーズの依頼（Aurora と互換）。ポーズ用のブリッジは既定でオン
+  です（Firestorm・Aurora と同じ）。ログインすると、インベントリの
+  `#Charis` フォルダーにスクリプト入りの小さな透明の装着物を作り、HUD に着けます
+  （装着の枠を 1 つ、スクリプトを 1 つ（Mono、64 KB）使います）。あなたの装着物が
+  先です: ブリッジを着けるのは、ほかにもう 1 つ枠が空いている時だけで、着る
+  アウトフィットに枠が要る時はブリッジを外し、何か外すと自動でまた着けます。
+  止めるには、環境設定 > プライバシーの「ポーズの依頼に使うブリッジを作って装着
+  する」のチェックを外します（アカウントごと）。ブリッジは外れます（物は `#Charis` に
+  残ります）。ブリッジが
+  自分から誰かに何かを伝えることはありません。ポーズを依頼すると、その相手と、
+  相手が着けているスクリプトに、あなたのアバター ID と、あなたのビューワがポーズの
+  依頼を受けることが伝わります（ブリッジがチャンネル -184735220 で、その相手に
+  だけ、リージョンの中で依頼を言います）。受ける側では、設定「自分のアバターをポーズする依頼を受ける相手」に
+  合う人の依頼にだけ答えます（確認を出した相手には、断るか時間切れにします。それ
+  以外の人の依頼は答えずに捨てます）。許可は長くてもそのセッションの間だけで、
+  ポーズは依頼した人の画面の中だけです。
+  - 既知の点（公開前の課題として記録中）: ブリッジは Charis を終えても着ている物
+    に残ります。着けたまま別のビューワでログインすると、ブリッジが自分を外すまで
+    （45 秒）、そのビューワのチャットにブリッジのアドレスと合言葉の行が出ることが
+    あります。
+  - 決めたこと（2026-11-14）: 依頼した相手のどの装着物から来た答えも、その人の
+    答えとして受け取ります（シミュレーターが持ち主を知らせます。どの装着物かは
+    確かめません）。
 - 開発者はデータを受け取らないので、売ったり渡したりもしません。
 
 ## PC に保存するもの
@@ -224,9 +293,15 @@ Charis Viewer（以下「本ビューワ」）は、Second Life 用の非公式�
   ログに書く統計の写しからは、MAC アドレスとディスクのシリアル番号を除きます）
 - テクスチャ・メッシュ・インベントリ・シェーダーのキャッシュ
 - Charis の機能のファイル: 撮影のプリセット、カメラ位置、ポーズ、AO のセット、
-  アウトフィットの控え、取得した字幕・翻訳のモデル、MCP サーバーの接続ファイル
+  アウトフィットの控え、取得した字幕・翻訳・ポーズ間モーション生成のモデル、MCP サーバーの接続ファイル
   と合言葉（`user_settings\plus_poser_mcp.json`）、MCP が撮った画像
   （`user_settings\plus_poser_snapshots\poser_snapshot_NN.png`。最大 20 枚を順に上書き）
+- ポーズ用のブリッジがオンの時（既定）: インベントリの `#Charis` フォルダーとその中の
+  ブリッジ（スクリプト入りの物。インベントリは PC ではなく Second Life のサーバーに
+  あります。ブリッジをオフにしても、消すまでその物は残ります）、アカウントのフォルダーの
+  `plus_pose_consent.xml`
+  （依頼をブロックした人のアバター ID）、ビューワのログに残る、ポーズの依頼をやり
+  取りした相手のアバター ID（名前は書きません）
 
 ボイスの字幕は画面に出すだけで、ファイルには書きません。ほかのビューワから
 設定を取り込む時も、保存したログイン情報（ユーザー名とパスワード）は写しま

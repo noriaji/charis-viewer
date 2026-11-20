@@ -35,6 +35,7 @@
 #include "llscrolllistctrl.h"
 #include "lltooltip.h"
 #include "lltrans.h"
+#include "llui.h"
 #include "lluictrlfactory.h"
 
 #include <algorithm>
@@ -102,7 +103,7 @@ namespace plus::psui
 
     bool PsCtrl::handleMouseDown(S32 x, S32 y, MASK mask)
     {
-        if (getEnabled())
+        if (getEnabled() && clickableAt(x, y))
         {
             mPressed = true;
             gFocusMgr.setMouseCapture(this);
@@ -115,7 +116,7 @@ namespace plus::psui
         if (hasMouseCapture())
         {
             gFocusMgr.setMouseCapture(nullptr);
-            const bool inside = pointInView(x, y);
+            const bool inside = pointInView(x, y) && clickableAt(x, y);
             mPressed = false;
             if (inside && getEnabled())
             {
@@ -201,6 +202,17 @@ namespace plus::psui
     {
         setControlValue(getValue());
         onCommit();
+    }
+
+    bool PsCtrl::hoverClickable() const
+    {
+        if (!mHover)
+        {
+            return false;
+        }
+        S32 x = 0, y = 0;
+        LLUI::getInstance()->getMousePositionLocal(this, &x, &y);
+        return clickableAt(x, y);
     }
 
     F32 PsCtrl::drawAlpha() const
@@ -625,6 +637,7 @@ namespace plus::psui
         {
             mOn = p.initial_value().asBoolean();
         }
+        onLabelChanged();
     }
 
     void PsCheck::onClick(S32, S32)
@@ -633,10 +646,27 @@ namespace plus::psui
         commitChange();
     }
 
+    void PsCheck::onLabelChanged()
+    {
+        mLabelWidth = look::labelWidth(mFont, mLabelW);
+    }
+
+    S32 PsCheck::clickWidth() const
+    {
+        return look::clickWidth(style::CHECK_BOX, getRect().getWidth(), mLabelWidth);
+    }
+
+    bool PsCheck::clickableAt(S32 x, S32) const
+    {
+        // across: the box and the words; the height is all the widget's
+        return x >= 0 && x < clickWidth();
+    }
+
     void PsCheck::draw()
     {
-        look::check(localRectf(), mOn, mHover && getEnabled(), mPressed, drawAlpha(), mFont, mLabelW, mMark.get(), *this);
-        drawSearchHighlight(localRectf());
+        look::check(localRectf(), mOn, hoverClickable() && getEnabled(), mPressed, drawAlpha(), mFont, mLabelW,
+                    mMark.get(), *this);
+        drawSearchHighlight(LLRectf(0.f, F32(getRect().getHeight()), F32(clickWidth()), 0.f));
     }
 
     // =========================================================================================
@@ -744,6 +774,7 @@ namespace plus::psui
         mShowSign(p.show_sign),
         mHasDefault(p.default_value.isProvided() && std::isfinite(p.default_value())),
         mDefaultValue(mHasDefault ? llclamp(p.default_value(), mMin, mMax) : 0.f),
+        mDefaultGiven(mHasDefault ? p.default_value() : 0.f),
         mDefaultEps(llmax(1e-5f * (mMax - mMin), 1e-6f)),
         mFont(font(style::FONT_BODY))
     {
@@ -808,6 +839,28 @@ namespace plus::psui
     void PsSlider::setValue(const LLSD& value)
     {
         setValueInternal(F32(value.asReal()));
+    }
+
+    void PsSlider::setMaxValue(F32 max_value)
+    {
+        if (!std::isfinite(max_value))
+        {
+            return;
+        }
+        max_value = llmax(mMin, max_value);
+        if (max_value == mMax)
+        {
+            return;
+        }
+        mMax          = max_value;
+        mDefaultValue = llclamp(mDefaultGiven, mMin, mMax);
+        mDefaultEps   = llmax(1e-5f * (mMax - mMin), 1e-6f);
+        if (mIncrement > 0.f)
+        {
+            mDefaultEps = llmin(mDefaultEps, 0.25f * mIncrement);
+        }
+        mValue = snap(mValue);
+        updateText();
     }
 
     void PsSlider::setDisplayText(const std::string& text)

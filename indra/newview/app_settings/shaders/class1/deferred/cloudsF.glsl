@@ -24,7 +24,11 @@
  */
 /*[EXTRA_CODE_HERE]*/
 
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 
 /////////////////////////////////////////////////////////////////////////
 // The fragment shader for the sky
@@ -555,6 +559,9 @@ void main()
     /// Gamma correct for WL (soft clip effect).
 
     frag_data[1] = vec4(0.0,0.0,0.0,0.0);
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
     frag_data[2] = vec4(0,0,0,GBUFFER_FLAG_SKIP_ATMOS);
 
 #if defined(HAS_EMISSIVE)

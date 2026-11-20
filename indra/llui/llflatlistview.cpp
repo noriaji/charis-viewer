@@ -490,7 +490,8 @@ LLFlatListView::LLFlatListView(const LLFlatListView::Params& p)
   , mDeferredSelectPair(nullptr)
   , mReorderMouseDownX(0)
   , mReorderMouseDownY(0)
-  , mReorderInsertIndex(-1)
+  , mReorderOutOfRange(false) // <plus> reorder-live </plus>
+  , mReorderSwapLockPair(nullptr) // <plus> reorder-live </plus>
   , mDragIndicatorColor(p.drag_indicator_color.isProvided()
         ? p.drag_indicator_color()
         : LLUIColorTable::instance().getColor("EmphasisColor"))
@@ -562,7 +563,7 @@ void LLFlatListView::draw()
         LLUI::getInstance()->getMousePositionLocal(this, &local_x, &local_y);
         if (autoScroll(local_x, local_y))
         {
-            mReorderInsertIndex = constrainInsertIndex(getInsertIndexAt(local_x, local_y));
+            updateReorderPreview(local_x, local_y); // <plus> reorder-live </plus>
         }
     }
 
@@ -573,7 +574,7 @@ void LLFlatListView::draw()
     }
     LLScrollContainer::draw();
 
-    if (mIsReordering && mReorderInsertIndex >= 0)
+    if (mIsReordering) // <plus> reorder-live </plus>
     {
         drawReorderIndicator();
     }
@@ -813,7 +814,9 @@ void LLFlatListView::armReorderDrag(item_pair_t* item_pair)
     mReorderDragGroup.clear();
     mDeferredSelectPair = nullptr;
     mIsReordering = false;
-    mReorderInsertIndex = -1;
+    mReorderOutOfRange = false; // <plus> reorder-live </plus>
+    mReorderSwapLockPair = nullptr; // <plus> reorder-live </plus>
+    mReorderOrigOrder.clear(); // <plus> reorder-live </plus>
 
     LLUI::getInstance()->getMousePositionLocal(this, &mReorderMouseDownX, &mReorderMouseDownY);
     gFocusMgr.setMouseCapture(this);
@@ -832,11 +835,231 @@ void LLFlatListView::updateReorderDrag(S32 x, S32 y)
             return; // still within the click slop, not a drag yet
         }
         mIsReordering = true;
+        mReorderOutOfRange = false; // <plus> reorder-live </plus>
+        mReorderSwapLockPair = nullptr; // <plus> reorder-live </plus>
+        mReorderOrigOrder = mItemPairs; // <plus> reorder-live </plus>
         buildReorderGroup();
     }
 
-    mReorderInsertIndex = constrainInsertIndex(getInsertIndexAt(x, y));
+    updateReorderPreview(x, y); // <plus> reorder-live </plus>
 }
+
+// <plus> reorder-live: live swap preview. Replaces the official insertion-line
+// drag (#5918); if that code changes upstream, merge by hand.
+void LLFlatListView::getReorderRestoredOrder(pairs_list_t& restored) const
+{
+    // The start order, limited to rows that still exist. A row added since (a
+    // refresh mid-drag) goes right after the row that precedes it now, so it keeps
+    // the place addItem gave it.
+    restored.clear();
+    for (item_pair_t* pair : mReorderOrigOrder)
+    {
+        if (std::find(mItemPairs.begin(), mItemPairs.end(), pair) != mItemPairs.end())
+            restored.push_back(pair);
+    }
+
+    item_pair_t* prev = nullptr;
+    for (item_pair_t* pair : mItemPairs)
+    {
+        if (std::find(restored.begin(), restored.end(), pair) == restored.end())
+        {
+            pairs_iterator_t at = prev ? std::find(restored.begin(), restored.end(), prev) : restored.begin();
+            if (prev)
+                ++at;
+            restored.insert(at, pair);
+        }
+        prev = pair;
+    }
+}
+
+void LLFlatListView::restoreReorderOrder()
+{
+    pairs_list_t restored;
+    getReorderRestoredOrder(restored);
+    if (restored == mItemPairs)
+        return;
+
+    mItemPairs = restored;
+    rearrangeItems();
+}
+
+bool LLFlatListView::isReorderChanged() const
+{
+    // Compare the start order with the current order over the rows present in both;
+    // rows added or removed since do not count as a move.
+    auto present = [](const pairs_list_t& list, item_pair_t* pair)
+    {
+        return std::find(list.begin(), list.end(), pair) != list.end();
+    };
+
+    pairs_const_iterator_t a = mReorderOrigOrder.begin();
+    pairs_const_iterator_t b = mItemPairs.begin();
+    while (true)
+    {
+        while (a != mReorderOrigOrder.end() && !present(mItemPairs, *a)) ++a;
+        while (b != mItemPairs.end() && !present(mReorderOrigOrder, *b)) ++b;
+        if (a == mReorderOrigOrder.end() || b == mItemPairs.end())
+            return a != mReorderOrigOrder.end() || b != mItemPairs.end();
+        if (*a != *b)
+            return true;
+        ++a;
+        ++b;
+    }
+}
+
+LLFlatListView::item_pair_t* LLFlatListView::getReorderPairNearestY(S32 x, S32 y) const
+{
+    S32 panel_x, panel_y;
+    localPointToOtherView(x, y, &panel_x, &panel_y, mItemsPanel);
+
+    item_pair_t* nearest = nullptr;
+    S32 best = S32_MAX;
+    for (item_pair_t* pair : mItemPairs)
+    {
+        if (!pair->first->getVisible())
+            continue;
+
+        const LLRect& rc = pair->first->getRect();
+        S32 dist = (panel_y > rc.mTop) ? panel_y - rc.mTop : (panel_y < rc.mBottom) ? rc.mBottom - panel_y : 0;
+        if (dist < best)
+        {
+            best = dist;
+            nearest = pair;
+        }
+    }
+    return nearest;
+}
+
+void LLFlatListView::getReorderGrabbedExtentAfterSwap(item_pair_t* target, bool target_after, S32& top, S32& bottom) const
+{
+    // Where the grabbed row would sit (items-panel coordinates, y up) if the dragged
+    // rows took the target's slot, without moving anything: stack the visible rows
+    // from the top, as rearrangeItems does.
+    S32 y = mItemsPanel->getRect().getHeight();
+    top = y;
+    bottom = y;
+
+    auto place_group = [&]()
+    {
+        for (item_pair_t* pair : mReorderDragGroup)
+        {
+            if (!pair->first->getVisible())
+                continue;
+
+            if (pair == mReorderDragPair)
+            {
+                top = y;
+                bottom = y - pair->first->getRect().getHeight();
+            }
+            y -= pair->first->getRect().getHeight() + mItemPad;
+        }
+    };
+
+    for (item_pair_t* pair : mItemPairs)
+    {
+        if (!pair->first->getVisible() || isInReorderGroup(pair))
+            continue;
+
+        if (pair == target && !target_after)
+            place_group();
+        y -= pair->first->getRect().getHeight() + mItemPad;
+        if (pair == target && target_after)
+            place_group();
+    }
+}
+
+void LLFlatListView::updateReorderPreview(S32 x, S32 y)
+{
+    if (!mReorderDragPair->first->getVisible())
+    {
+        return; // the grabbed row was hidden mid-drag: there is no slot to move it to
+    }
+
+    item_pair_t* target = getReorderPairAt(x, y);
+    if (!target && (!mReorderValidateCallback || getLocalRect().pointInRect(x, y)))
+    {
+        // Past either end of the rows (inside the list, or anywhere for a list
+        // without a validator) the drag counts as the nearest row; the validator
+        // still decides whether that row is allowed.
+        target = getReorderPairNearestY(x, y);
+    }
+    bool in_group = target && isInReorderGroup(target);
+    bool allowed = in_group
+        || (target && (!mReorderValidateCallback || mReorderValidateCallback(mReorderDragPair->second, target->second)));
+
+    if (!allowed)
+    {
+        // Outside the range the rows may swap in: show the start order again so the
+        // drop visibly goes back to where the drag started. Only on entering.
+        if (!mReorderOutOfRange)
+        {
+            mReorderOutOfRange = true;
+            mReorderSwapLockPair = nullptr;
+            restoreReorderOrder();
+        }
+        return;
+    }
+
+    mReorderOutOfRange = false;
+    if (in_group)
+    {
+        // The dragged rows are under the cursor again: the next row it enters swaps.
+        mReorderSwapLockPair = nullptr;
+        return;
+    }
+
+    // The target is after the grabbed row when we meet that row before it. (The grabbed
+    // row, not any dragged row: the lock test below judges by the grabbed row too, and
+    // the two must agree when the selection is not contiguous.)
+    bool target_after = false;
+    for (item_pair_t* pair : mItemPairs)
+    {
+        if (pair == target)
+            break;
+        if (pair == mReorderDragPair)
+        {
+            target_after = true;
+            break;
+        }
+    }
+
+    // Right after a swap the cursor may still be over the row it swapped with (rows
+    // of different heights). Swapping with that row again would flicker, so do it only
+    // once the cursor is where the grabbed row would end up (the same range
+    // getReorderPairAt hits for a row), or beyond it.
+    if (target == mReorderSwapLockPair)
+    {
+        S32 panel_x, panel_y;
+        localPointToOtherView(x, y, &panel_x, &panel_y, mItemsPanel);
+        S32 grab_top, grab_bottom;
+        getReorderGrabbedExtentAfterSwap(target, target_after, grab_top, grab_bottom);
+        bool reaches_cursor = target_after ? (panel_y < grab_top + mItemPad) : (panel_y >= grab_bottom);
+        if (!reaches_cursor)
+        {
+            return;
+        }
+    }
+
+    // The dragged rows take the target's slot: past it when coming from above,
+    // before it when coming from below (also when the cursor jumped over rows).
+    for (item_pair_t* pair : mReorderDragGroup)
+    {
+        mItemPairs.remove(pair);
+    }
+    pairs_iterator_t it = std::find(mItemPairs.begin(), mItemPairs.end(), target);
+    if (target_after)
+    {
+        ++it;
+    }
+    for (item_pair_t* pair : mReorderDragGroup)
+    {
+        mItemPairs.insert(it, pair); // preserves group order
+    }
+    mReorderSwapLockPair = target;
+
+    rearrangeItems();
+}
+// </plus>
 
 void LLFlatListView::buildReorderGroup()
 {
@@ -867,56 +1090,20 @@ bool LLFlatListView::isInReorderGroup(item_pair_t* item_pair) const
     return std::find(mReorderDragGroup.begin(), mReorderDragGroup.end(), item_pair) != mReorderDragGroup.end();
 }
 
-void LLFlatListView::getReorderRemaining(pairs_list_t& remaining) const
-{
-    remaining.clear();
-    for (item_pair_t* pair : mItemPairs)
-    {
-        if (!pair->first->getVisible() || isInReorderGroup(pair))
-            continue;
-        remaining.push_back(pair);
-    }
-}
-
 void LLFlatListView::finishReorderDrag()
 {
-    if (mReorderDragPair && mIsReordering && mReorderInsertIndex >= 0)
+    if (mReorderDragPair && mIsReordering) // <plus> reorder-live </plus>
     {
-        pairs_list_t remaining;
-        getReorderRemaining(remaining);
+        // <plus> reorder-live
+        // Committed (or reverted): the cancel below must not restore the start order.
+        // Out of range the start order is already on screen, so nothing is reported.
+        bool changed = !mReorderOutOfRange && isReorderChanged();
+        mReorderOrigOrder.clear();
 
-        // Resolve the drop boundary to the remaining row it lands before (nullptr = append).
-        item_pair_t* anchor = nullptr;
-        S32 cur = 0;
-        for (item_pair_t* pair : remaining)
+        if (changed && mReorderCallback)
         {
-            if (cur == mReorderInsertIndex)
-            {
-                anchor = pair;
-                break;
-            }
-            ++cur;
-        }
+            LLSD moved_value = mReorderDragPair->second;
 
-        LLSD moved_value = mReorderDragPair->second;
-
-        for (item_pair_t* pair : mReorderDragGroup)
-        {
-            mItemPairs.remove(pair);
-        }
-
-        pairs_iterator_t it = (anchor != nullptr)
-            ? std::find(mItemPairs.begin(), mItemPairs.end(), anchor)
-            : mItemPairs.end();
-        for (item_pair_t* pair : mReorderDragGroup)
-        {
-            mItemPairs.insert(it, pair); // preserves group order; it stays before anchor
-        }
-
-        rearrangeItems();
-
-        if (mReorderCallback)
-        {
             S32 visible_index = 0;
             for (item_pair_t* pair : mItemPairs)
             {
@@ -929,22 +1116,41 @@ void LLFlatListView::finishReorderDrag()
 
             mReorderCallback(moved_value, visible_index);
         }
+        // </plus>
     }
 
     cancelReorderDrag();
 }
 
-void LLFlatListView::cancelReorderDrag()
+void LLFlatListView::cancelReorderDrag(bool send_ended) // <plus> reorder-live </plus>
 {
+    // <plus> reorder-live: a cancelled drag (list hidden, row removed, Esc) must not
+    // leave the preview order. The finished drag keeps it: the owner was just told.
+    if (mIsReordering)
+    {
+        restoreReorderOrder();
+    }
+    // </plus>
+
     if (hasMouseCapture())
     {
-        gFocusMgr.setMouseCapture(nullptr);
+        // <plus> reorder-live: setMouseCapture(nullptr) calls onMouseCaptureLost, which would
+        // send the ended call right here. With send_ended false, release quietly instead.
+        if (send_ended)
+        {
+            gFocusMgr.setMouseCapture(nullptr);
+        }
+        else
+        {
+            gFocusMgr.removeMouseCaptureWithoutCallback(this);
+        }
+        // </plus>
     }
 
-    clearReorderDragState();
+    clearReorderDragState(send_ended); // <plus> reorder-live </plus>
 }
 
-void LLFlatListView::clearReorderDragState()
+void LLFlatListView::clearReorderDragState(bool send_ended) // <plus> reorder-live </plus>
 {
     if (mIsReordering)
     {
@@ -957,16 +1163,32 @@ void LLFlatListView::clearReorderDragState()
     mReorderDragGroup.clear();
     mDeferredSelectPair = nullptr;
     mIsReordering = false;
-    mReorderInsertIndex = -1;
+    mReorderOutOfRange = false; // <plus> reorder-live </plus>
+    mReorderSwapLockPair = nullptr; // <plus> reorder-live </plus>
+    mReorderOrigOrder.clear(); // <plus> reorder-live </plus>
 
-    if (was_armed && mReorderEndedCallback)
+    notifyReorderEnded(was_armed && send_ended); // <plus> reorder-live </plus>
+} // <plus> reorder-live </plus>
+
+// <plus> reorder-live: one place for the drag-ended call, so a caller can run it last
+void LLFlatListView::notifyReorderEnded(bool armed)
+{
+    if (armed && mReorderEndedCallback)
     {
         mReorderEndedCallback();
     }
 }
+// </plus>
 
 void LLFlatListView::onMouseCaptureLost()
 {
+    // <plus> reorder-live: focus loss or a modal window ends the drag without a drop;
+    // put the rows back (a finished drag has already cleared the snapshot).
+    if (mIsReordering)
+    {
+        restoreReorderOrder();
+    }
+    // </plus>
     clearReorderDragState();
 }
 
@@ -978,27 +1200,6 @@ void LLFlatListView::onVisibilityChange(bool new_visibility)
     }
 
     LLScrollContainer::onVisibilityChange(new_visibility);
-}
-
-S32 LLFlatListView::getInsertIndexAt(S32 x, S32 y) const
-{
-    S32 panel_x, panel_y;
-    localPointToOtherView(x, y, &panel_x, &panel_y, mItemsPanel);
-
-    // The drop boundary among the remaining rows is the count of remaining rows
-    // whose vertical centre sits above the cursor.
-    S32 index = 0;
-    for (item_pair_t* pair : mItemPairs)
-    {
-        if (!pair->first->getVisible() || isInReorderGroup(pair))
-            continue;
-
-        if (pair->first->getRect().getCenterY() > panel_y)
-        {
-            ++index;
-        }
-    }
-    return index;
 }
 
 LLFlatListView::item_pair_t* LLFlatListView::getReorderPairAt(S32 x, S32 y) const
@@ -1022,89 +1223,23 @@ LLFlatListView::item_pair_t* LLFlatListView::getReorderPairAt(S32 x, S32 y) cons
     return nullptr;
 }
 
-S32 LLFlatListView::constrainInsertIndex(S32 dest_index) const
-{
-    if (!mReorderValidateCallback)
-        return dest_index;
-
-    // Clamp the boundary to the contiguous run of remaining rows that share the
-    // grabbed row's group, so a drag can't leave its group.
-    pairs_list_t remaining;
-    getReorderRemaining(remaining);
-
-    const LLSD& dragged = mReorderDragPair->second;
-    S32 first_valid = -1;
-    S32 last_valid = -1;
-    S32 i = 0;
-    for (item_pair_t* pair : remaining)
-    {
-        if (mReorderValidateCallback(dragged, pair->second))
-        {
-            if (first_valid < 0)
-                first_valid = i;
-            last_valid = i;
-        }
-        ++i;
-    }
-
-    if (first_valid < 0)
-        return -1; // no valid neighbour (whole group is being dragged)
-
-    if (dest_index < first_valid)
-        return first_valid;
-    if (dest_index > last_valid + 1)
-        return last_valid + 1;
-    return dest_index;
-}
-
+// <plus> reorder-live: only the grabbed rows are marked (rows swap live, no insertion line)
 void LLFlatListView::drawReorderIndicator()
 {
-    pairs_list_t remaining;
-    getReorderRemaining(remaining);
-    if (remaining.empty())
-        return;
-
+    // Rows swap live while dragging, so only the grabbed rows need marking.
     const LLRect& panel_rc = mItemsPanel->getRect();
     const LLColor4& color = mDragIndicatorColor.get();
+    const F32 alpha = mReorderOutOfRange ? 0.08f : 0.15f;
 
-    // faint highlight on each row being moved
     for (item_pair_t* pair : mReorderDragGroup)
     {
         const LLRect& dr = pair->first->getRect();
         gl_rect_2d(panel_rc.mLeft + dr.mLeft, panel_rc.mBottom + dr.mTop,
                    panel_rc.mLeft + dr.mRight, panel_rc.mBottom + dr.mBottom,
-                   color % 0.15f, true);
+                   color % alpha, true);
     }
-
-    // insertion line at the drop boundary among the remaining rows
-    S32 count = (S32)remaining.size();
-    bool at_end = mReorderInsertIndex >= count;
-    S32 anchor_idx = at_end ? count - 1 : mReorderInsertIndex;
-
-    item_pair_t* anchor = nullptr;
-    S32 cur = 0;
-    for (item_pair_t* pair : remaining)
-    {
-        if (cur == anchor_idx)
-        {
-            anchor = pair;
-            break;
-        }
-        ++cur;
-    }
-    if (!anchor)
-        return;
-
-    const LLRect& item_rc = anchor->first->getRect();
-    S32 left = panel_rc.mLeft + item_rc.mLeft;
-    S32 right = panel_rc.mLeft + item_rc.mRight;
-    S32 line_y = panel_rc.mBottom + (at_end ? item_rc.mBottom : item_rc.mTop);
-
-    if (line_y < 0 || line_y > getRect().getHeight())
-        return;
-
-    gl_rect_2d(left, line_y, right, line_y - 1, color, true);
 }
+// </plus>
 
 bool LLFlatListView::handleHover(S32 x, S32 y, MASK mask)
 {
@@ -1113,7 +1248,7 @@ bool LLFlatListView::handleHover(S32 x, S32 y, MASK mask)
         updateReorderDrag(x, y);
         if (mIsReordering)
         {
-            getWindow()->setCursor(UI_CURSOR_ARROWDRAG);
+            getWindow()->setCursor(mReorderOutOfRange ? UI_CURSOR_NO : UI_CURSOR_ARROWDRAG); // <plus> reorder-live </plus>
             return true;
         }
     }
@@ -1145,6 +1280,12 @@ bool LLFlatListView::handleMouseUp(S32 x, S32 y, MASK mask)
         bool was_reordering = mIsReordering;
         item_pair_t* deferred = mDeferredSelectPair;
         mDeferredSelectPair = nullptr;
+        // <plus> reorder-live-uaf: finishReorderDrag can run a pending refresh that frees
+        // every row (onReorderEnded), and a new row may reuse the freed address. Keep the
+        // row's value and look it up again afterwards instead of comparing the old pointer.
+        const bool has_deferred = deferred != nullptr;
+        const LLSD deferred_value = has_deferred ? deferred->second : LLSD();
+        // </plus>
 
         finishReorderDrag();
 
@@ -1154,10 +1295,11 @@ bool LLFlatListView::handleMouseUp(S32 x, S32 y, MASK mask)
         }
 
         // No drag: apply the selection collapse that was deferred on mouse-down.
-        if (deferred)
-        {
+        item_pair_t* deferred_now = has_deferred ? getItemPair(deferred_value) : nullptr; // <plus> reorder-live-uaf </plus>
+        if (deferred_now) // <plus> reorder-live-uaf </plus>
+        { // <plus> reorder-live-uaf </plus>
             resetSelection(true);
-            selectItemPair(deferred, true);
+            selectItemPair(deferred_now, true); // <plus> reorder-live-uaf </plus>
             return true;
         }
     }
@@ -1201,7 +1343,14 @@ bool LLFlatListView::handleKeyHere(KEY key, MASK mask)
         }
         case KEY_ESCAPE:
         {
-            if (mask == MASK_NONE)
+            // <plus> reorder-live: Esc cancels a drag in progress
+            if (mReorderDragPair)
+            {
+                cancelReorderDrag();
+                handled = true;
+            }
+            // </plus>
+            else if (mask == MASK_NONE) // <plus> reorder-live: now an else of the drag check </plus>
             {
                 setFocus(false); // pass focus to the game area (EXT-8357)
             }
@@ -1535,10 +1684,20 @@ bool LLFlatListView::removeItemPair(item_pair_t* item_pair, bool rearrange)
     bool removing_reorder_pair = item_pair == mReorderDragPair
         || std::find(mReorderDragGroup.begin(), mReorderDragGroup.end(), item_pair) != mReorderDragGroup.end();
 
+    // <plus> reorder-live: the drag-ended callback may refresh the owner and free every
+    // row, so it runs at the very end, after this row is gone (not in the middle).
     if (removing_reorder_pair)
     {
-        cancelReorderDrag();
+        cancelReorderDrag(false);
     }
+    // </plus>
+    mReorderOrigOrder.remove(item_pair); // <plus> reorder-live: no dangling pointer in the snapshot </plus>
+    // <plus> reorder-live
+    if (item_pair == mReorderSwapLockPair)
+    {
+        mReorderSwapLockPair = nullptr;
+    }
+    // </plus>
     if (item_pair == mDeferredSelectPair)
     {
         mDeferredSelectPair = nullptr;
@@ -1557,7 +1716,13 @@ bool LLFlatListView::removeItemPair(item_pair_t* item_pair, bool rearrange)
         }
     }
 
-    if (!deleted) return false;
+    // <plus> reorder-live
+    if (!deleted)
+    {
+        notifyReorderEnded(removing_reorder_pair);
+        return false;
+    }
+    // </plus>
 
     for (pairs_iterator_t it = mSelectedItemPairs.begin(); it != mSelectedItemPairs.end(); ++it)
     {
@@ -1584,6 +1749,8 @@ bool LLFlatListView::removeItemPair(item_pair_t* item_pair, bool rearrange)
     {
         onCommit();
     }
+
+    notifyReorderEnded(removing_reorder_pair); // <plus> reorder-live </plus>
 
     return true;
 }
@@ -1709,6 +1876,12 @@ void LLFlatListView::detachItems(std::vector<LLPanel*>& detached_items)
 {
     LLSD action;
     action.with("detach", LLSD());
+    // <plus> reorder-live: rows are about to be freed
+    if (mReorderDragPair)
+    {
+        cancelReorderDrag();
+    }
+    // </plus>
     // Clear detached_items list
     detached_items.clear();
     // Go through items and detach valid items, remove them from items panel
@@ -1750,8 +1923,8 @@ void LLFlatListView::detachItems(std::vector<LLPanel*>& detached_items)
                 auto found_pos = std::find_if(mItemPairs.begin(), mItemPairs.end(), [detached_item](auto item_pair) { return item_pair->first == detached_item; });
                 if (found_pos != mItemPairs.end())
                 {
+                    auto item_pair = *found_pos; // <plus> reorder-live: read before erase </plus>
                     mItemPairs.erase(found_pos);
-                    auto item_pair = *found_pos;
                     item_pair->first = nullptr;
                     delete item_pair;
                 }

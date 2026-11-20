@@ -4,6 +4,7 @@
 	<menu_item_check label="撮影モード（画面全体を撮影用に）" name="PhotoScreen"/>
 	<menu_item_check label="簡易設定" name="QuickPreferences"/>
 	<menu_item_call label="Charis の設定…" name="PrefsCharis"/>
+	<menu_item_call label="すべての別窓を元に戻す" name="DetachReturnAll"/>
 	<menu_item_check label="カメラワーク" name="CameraShot"/>
 	<menu_item_check label="カメラ演出（ポイントを順に巡る）" name="CameraPath"/>
 	<menu_item_check label="フライカム（キーボードとマウス）" name="FlycamKeyboardMouse"/>
@@ -14,8 +15,13 @@
 	<menu_item_check label="ローカルメッシュ（手元のメッシュを貼って見る）" name="LocalMesh"/>
 	<menu_item_check label="保護したフォルダ（削除・移動できないフォルダ）" name="ProtectedFolders"/>
 	<menu_item_check label="チャットのキーワード通知" name="Keywords"/>
+	<menu_item_check label="区画の天候…" name="ParcelWeather"/>
 	<menu label="ルック（色合い）" name="Look">
 		<menu_item_check label="なし" name="LookNone"/>
+		<menu label="人物・ファッション" name="LookGroup_portrait"/>
+		<menu label="街・夜景" name="LookGroup_street"/>
+		<menu label="フィルム・カメラ" name="LookGroup_film"/>
+		<menu label="雰囲気・ジャンル" name="LookGroup_mood"/>
 		<menu_item_call label="自分のルック（ルックフォルダ）" name="LookUserHeader"/>
 		<menu_item_call label="   （まだありません: .cube か .png の LUT をルックフォルダに置きます）" name="LookUserNone"/>
 		<menu_item_call label="ルックフォルダを開く" name="LookOpenFolder"/>
@@ -23,6 +29,9 @@
 	</menu>
 	<menu_item_check label="チャットコンソール（左下にチャットを表示）" name="ChatConsoleOn"/>
 	<menu_item_check label="ポーザー" name="Poser"/>
+	<menu_item_check label="ポーズ間モーション生成…" name="PoserMotion"/>
 	<menu_item_check label="AO（アニメーションの置き換え）" name="AnimationOverrider"/>
 	<menu_item_check label="RestrainedLove API" name="RLV API"/>
+	<menu_item_check label="RmlUi の試作窓（開発用）" name="RmlDemo"/>
+	<menu_item_check label="RmlUi の試作窓の XUI 版（開発用）" name="RmlDemoXui"/>
 </menu>

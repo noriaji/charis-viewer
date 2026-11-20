@@ -28,16 +28,15 @@
 #include "plus.h"
 
 #include "taa.h"
+#include "plus/temporal/temporal.h"
 #include "presets/presets.h"
 
 #include "llappviewer.h"
 #include "llgl.h"
-#include "llgraywire.h"
 #include "llrender.h"
 #include "llrendertarget.h"
 #include "llrhi.h"
 #include "llrhitaa.h"
-#include "llviewercamera.h"
 #include "llviewercontrol.h"
 #include "pipeline.h"
 
@@ -52,11 +51,9 @@ namespace
 {
     constexpr char SETTING_ENABLED[] = "PlusTAA";
     constexpr char SETTING_BLEND[] = "PlusTAABlend";
-    constexpr char SETTING_JITTER[] = "PlusTAAJitter";
-    constexpr char SETTING_JITTER_SCALE[] = "PlusTAAJitterScale";
     constexpr char SETTING_THIN_GAPS[] = "PlusTAAThinGaps";
 
-    // The jitter's points (Halton 2,3 from index 1): with the history's weight
+    // The jitter's points (Halton 2,3 from index 1, plus/temporal): with the history's weight
     // near 0.9 (about ten frames) the picture holds a whole round of them. The
     // pass's flicker memory (research/250) keeps one sign per point.
     constexpr U32 JITTER_POINTS = LLRHI::TAA_JITTER_ROUND;
@@ -73,32 +70,14 @@ namespace
     // ... but not below this share of it (a light TAA, PlusTAABlend near 0.5, must not become none while moving).
     // The pass takes up to 35% more off a history it had to clip far (llvktaa.cpp), so the least is 0.6 x 0.65 = 0.39 of still.
     constexpr F32 MOVING_BLEND_FLOOR = 0.6f;
-    // Frames the viewer did not draw in between (idle skipping) are allowed up to this many: the picture is
-    // brought over by the two cameras however many frames lie between. More is a login or a minimized window.
-    constexpr U32 MAX_FRAME_GAP = 8;
-    // A camera that moved further than this between two drawn frames jumped (a teleport,
-    // the agent frame moving to another region): no history. As plus/ssr.
-    constexpr F32 JUMP_METRES = 10.f;
 
     struct State
     {
         LLRenderTarget out[2];          // the picture's size: this frame's result and the last frame's, taken turns
         plus::RetryWait retry;          // after one could not be made (VRAM full)
-        U32 last = 0;                   // out[last] holds the last frame's result (when has_history)
-        bool has_history = false;       // out[last] is a picture of frame history_frame
-        U32 history_frame = 0;          // gFrameCount of it
+        U32 last = 0;                   // out[last] holds the last frame's result (when history.has())
+        plus::temporal::FrameHistory history;   // has(): out[last] is a picture of that frame (its size and unmoved camera)
         U32 history_jitter_index = 0;   // the jitter's Halton index it was drawn with (1..JITTER_POINTS; 0: not jittered)
-        U32 width = 0;                  // its size
-        U32 height = 0;
-        glm::mat4 last_view = glm::mat4(1.f);   // the camera of that frame
-        glm::mat4 last_projection = glm::mat4(1.f);     // without the jitter
-
-        // The jitter (JitterScope): the frame whose scene was drawn moved
-        // (U32_MAX: none yet), by how much, and the projection unmoved.
-        U32 jitter_index = 0;           // the last Halton index used (1..JITTER_POINTS)
-        U32 jitter_frame = U32_MAX;
-        glm::vec2 jitter_pixels = glm::vec2(0.f);   // where the samples lie from the pixel centres
-        glm::mat4 jitter_unmoved = glm::mat4(1.f);
     };
 
     // Never destroyed: released with the screen's targets (LLPipeline::releaseScreenBuffers), before GL goes.
@@ -130,52 +109,6 @@ namespace
         static LLCachedControl<F32> thin(gSavedSettings, SETTING_THIN_GAPS, 1.f);
         const F32 value = thin;
         return value > 0.f ? llmin(value, 1.f) : 0.f;      // also a NaN: none
-    }
-
-    // The jitter's size, 0..1 of a pixel either way of the centre's half (0: none).
-    F32 jitterScale()
-    {
-        static LLCachedControl<bool> jitter(gSavedSettings, SETTING_JITTER, true);
-        static LLCachedControl<F32> scale(gSavedSettings, SETTING_JITTER_SCALE, 1.f);
-        if (!jitter)
-        {
-            return 0.f;
-        }
-        const F32 value = scale;
-        return value > 0.f ? llmin(value, 1.f) : 0.f;      // also a NaN: none
-    }
-
-    // The Halton sequence's index-th number in base (0..1).
-    F32 halton(U32 index, U32 base)
-    {
-        F32 result = 0.f;
-        F32 fraction = 1.f;
-        while (index > 0)
-        {
-            fraction /= (F32)base;
-            result += fraction * (F32)(index % base);
-            index /= base;
-        }
-        return result;
-    }
-
-    // The clip space moved by ndc (x, y): x' = x + ndc.x * w, so the picture moves by ndc.
-    glm::mat4 clipShift(const glm::vec2& ndc)
-    {
-        glm::mat4 shift(1.f);
-        shift[3][0] = ndc.x;
-        shift[3][1] = ndc.y;
-        return shift;
-    }
-
-    // Loads a projection: gGL's (what the draws' shaders get) and get_current_projection (what the passes read).
-    void loadProjection(const glm::mat4& current, const glm::mat4& loaded)
-    {
-        const LLRender::eMatrixMode mode = gGL.getMatrixMode();
-        gGL.matrixMode(LLRender::MM_PROJECTION);
-        gGL.loadMatrix(glm::value_ptr(loaded));
-        gGL.matrixMode(mode);
-        set_current_projection(current);
     }
 
     void releaseTarget(LLRenderTarget& target)
@@ -213,55 +146,6 @@ namespace
         gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
         return true;
     }
-
-    // The camera's place in the world of a view matrix.
-    glm::vec3 eyePosition(const glm::mat4& view)
-    {
-        return glm::vec3(glm::inverse(view)[3]);
-    }
-
-    // Whether out[last] is the last frame's picture and this frame's camera is where it left off.
-    bool historyUsable(const State& s, U32 width, U32 height, const glm::mat4& view)
-    {
-        if (!s.has_history || gFrameCount <= s.history_frame || gFrameCount - s.history_frame > MAX_FRAME_GAP || s.width != width ||
-            s.height != height)
-        {
-            return false;       // a long gap is the login, a minimized window, or the setting having been off
-        }
-        const glm::vec3 moved = eyePosition(view) - eyePosition(s.last_view);
-        return std::isfinite(moved.x) && std::isfinite(moved.y) && std::isfinite(moved.z) && glm::length(moved) <= JUMP_METRES;
-    }
-
-    // Whether what is drawn now is the plain main view and TAA, on, drew it a moment ago (so that it
-    // will mix this frame's picture with a history): not a snapshot, a probe's face or a mirror.
-    bool historyAhead(const State& s)
-    {
-        if (!enabled() || !LLRHI::sTaa || !LLRHI::sTaaDraw)
-        {
-            return false;
-        }
-        if (!s.has_history || !s.width || !s.height || gFrameCount <= s.history_frame || gFrameCount - s.history_frame > MAX_FRAME_GAP)
-        {
-            return false;
-        }
-        return !gCubeSnapshot && gPipeline.mRT == &gPipeline.mMainRT && !plus::presets::snapshotInProgress();
-    }
-
-    // The jitter's size for this frame's main view (0: not moved): TAA is on and drew a
-    // moment ago (it takes the jitter out again; a frame it does not draw would show it),
-    // the jitter is wanted, and this is the plain main view (not a snapshot or its tiles). Nor while a texture not
-    // loaded yet is drawn as a wireframe (GrayWire, select-flicker): lines thinner than a pixel, moved by under one,
-    // came and went with the jitter; TAA mixes the unmoved picture meanwhile. research/289: wireframes covering
-    // enough of the view only (near ones; PlusWireframeTaaNearOnly off: any, as before).
-    F32 jitterWanted(const State& s)
-    {
-        const F32 scale = jitterScale();
-        if (scale <= 0.f || !historyAhead(s) || LLViewerCamera::getInstance()->getZoomFactor() != 1.f || GrayWire::drawnLately())
-        {
-            return 0.f;
-        }
-        return scale;
-    }
 }
 
 namespace plus::taa
@@ -271,7 +155,7 @@ namespace plus::taa
         State& s = state();
         if (!enabled() || !LLRHI::sTaa || !LLRHI::sTaaDraw)
         {
-            if (s.has_history || s.out[0].isComplete() || s.out[1].isComplete())
+            if (s.history.has() || s.out[0].isComplete() || s.out[1].isComplete())
             {
                 releaseTargets();   // off: nothing is kept
             }
@@ -283,7 +167,7 @@ namespace plus::taa
         }
         if (plus::presets::snapshotInProgress())
         {
-            s.has_history = false;      // a snapshot is drawn once, in tiles, at another size
+            s.history.drop();      // a snapshot is drawn once, in tiles, at another size
             return false;
         }
         if (!source || !source->isComplete() || !gPipeline.mRT->deferredScreen.getDepth())
@@ -301,7 +185,7 @@ namespace plus::taa
         const bool new_size = s.out[0].getWidth() != width || s.out[0].getHeight() != height;
         if (!sizeTarget(s, s.out[0], width, height) || !sizeTarget(s, s.out[1], width, height))
         {
-            s.has_history = false;
+            s.history.drop();
             return false;
         }
         if (new_size)
@@ -311,9 +195,9 @@ namespace plus::taa
 
         const glm::mat4 view = get_last_modelview();    // the 3D scene's camera of this frame (renderGeomPostDeferred keeps it)
         // The projection without the jitter: the pixel centres are brought back and kept as the unmoved camera sees them.
-        const bool jittered = s.jitter_frame == gFrameCount;
-        const glm::mat4 projection = jittered ? s.jitter_unmoved : get_last_projection();
-        const bool history = historyUsable(s, width, height, view);
+        const bool jittered = plus::temporal::jitteredThisFrame();
+        const glm::mat4 projection = jittered ? plus::temporal::unmovedProjection() : get_last_projection();
+        const bool history = s.history.usable(width, height, view);
 
         LLRHI::TaaPass pass;
         pass.source_texture = source->getTexture();
@@ -324,9 +208,9 @@ namespace plus::taa
         pass.height = height;
         if (history)
         {
-            // In double, back to float once (research/246): the views hold the agent frame's offset (up to 4096 m high),
-            // and in float the last view times the inverse of this one was off by up to 0.7 pixel with the camera still.
-            const glm::mat4 reproject = glm::mat4(glm::dmat4(s.last_projection) * glm::dmat4(s.last_view) * glm::inverse(glm::dmat4(view)));
+            // In double (research/246): in float the last view times the inverse of this one was off by up to 0.7 pixel
+            // with the camera still.
+            const glm::mat4 reproject = s.history.reprojectFrom(view);
             memcpy(pass.reproject, glm::value_ptr(reproject), sizeof(pass.reproject));
         }
         const glm::mat4 inverse_projection = glm::inverse(projection);
@@ -336,12 +220,13 @@ namespace plus::taa
         pass.flicker_keep = thinGapsSetting();
         pass.flicker_blend = pass.blend_still + (MAX_BLEND - pass.blend_still) * FLICKER_BLEND_TOWARDS_MAX;
         pass.jittered = jittered;
-        pass.jitter_pixels[0] = jittered ? s.jitter_pixels.x : 0.f;
-        pass.jitter_pixels[1] = jittered ? s.jitter_pixels.y : 0.f;
+        const glm::vec2 jitter_pixels = plus::temporal::depthJitter();    // (0, 0) when not jittered
+        pass.jitter_pixels[0] = jitter_pixels.x;
+        pass.jitter_pixels[1] = jitter_pixels.y;
         // The flicker memory keeps a sign per point of the round: only a frame whose point follows the history's goes on with it.
-        pass.jitter_point = jittered ? s.jitter_index - 1 : 0;
+        pass.jitter_point = jittered ? plus::temporal::jitterIndex() - 1 : 0;
         pass.jitter_round_goes_on = history && jittered && s.history_jitter_index != 0 &&
-                                    s.history_jitter_index % JITTER_POINTS + 1 == s.jitter_index;
+                                    s.history_jitter_index % JITTER_POINTS + 1 == plus::temporal::jitterIndex();
 
         const U32 write = history ? 1 - s.last : 0;
         LLRHI::gpuMark("taa");
@@ -350,18 +235,13 @@ namespace plus::taa
         s.out[write].flush();
         if (!drawn)
         {
-            s.has_history = false;
+            s.history.drop();
             return false;       // the picture (after FXAA/SMAA) is left as it is
         }
 
         s.last = write;
-        s.has_history = true;
-        s.history_frame = gFrameCount;
-        s.history_jitter_index = jittered ? s.jitter_index : 0;
-        s.width = width;
-        s.height = height;
-        s.last_view = view;
-        s.last_projection = projection;
+        s.history.commit(width, height, view, projection);
+        s.history_jitter_index = jittered ? plus::temporal::jitterIndex() : 0;
 
         target = source;                // the picture that came in is a spare of the same size
         source = &s.out[write];
@@ -373,61 +253,33 @@ namespace plus::taa
         State& s = state();
         releaseTarget(s.out[0]);
         releaseTarget(s.out[1]);
-        s.has_history = false;
+        s.history.drop();
+    }
+
+    bool historyAhead(U32& width, U32& height)
+    {
+        const State& s = state();
+        if (!enabled() || !LLRHI::sTaa || !LLRHI::sTaaDraw || !s.history.ahead())
+        {
+            return false;
+        }
+        width = s.history.width();
+        height = s.history.height();
+        return true;
     }
 
     F32 jitterMargin()
     {
-        return 0.5f * jitterWanted(state());
-    }
-
-    bool smoothsMainView()
-    {
-        return historyAhead(state());
+        return plus::temporal::jitterMargin();
     }
 
     bool jitteredThisFrame()
     {
-        return state().jitter_frame == gFrameCount;
+        return plus::temporal::jitteredThisFrame();
     }
 
     glm::vec2 depthJitter()
     {
-        const State& s = state();
-        return s.jitter_frame == gFrameCount ? s.jitter_pixels : glm::vec2(0.f);
-    }
-
-    JitterScope::JitterScope(bool for_snapshot)
-    {
-        State& s = state();
-        const F32 scale = for_snapshot ? 0.f : jitterWanted(s);
-        if (scale <= 0.f)
-        {
-            // A scene drawn unmoved after a moved one in the same frame (a snapshot's): what reads its depth or
-            // glow is told it is not jittered (select-flicker).
-            s.jitter_frame = U32_MAX;
-            return;
-        }
-        s.jitter_index = s.jitter_index % JITTER_POINTS + 1;
-        const glm::vec2 pixels((halton(s.jitter_index, 2) - 0.5f) * scale, (halton(s.jitter_index, 3) - 0.5f) * scale);
-        // The picture's pixels (s.width x s.height, the size TAA drew it at) in NDC, which spans 2.
-        const glm::mat4 shift = clipShift(glm::vec2(2.f * pixels.x / (F32)s.width, 2.f * pixels.y / (F32)s.height));
-        mCurrent = get_current_projection();
-        mLoaded = gGL.getProjectionMatrix();
-        loadProjection(shift * mCurrent, shift * mLoaded);
-        mApplied = true;
-        s.jitter_frame = gFrameCount;
-        s.jitter_pixels = pixels;
-        s.jitter_unmoved = mCurrent;
-    }
-
-    void JitterScope::restore()
-    {
-        if (!mApplied)
-        {
-            return;
-        }
-        mApplied = false;
-        loadProjection(mCurrent, mLoaded);
+        return plus::temporal::depthJitter();
     }
 }

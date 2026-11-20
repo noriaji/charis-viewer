@@ -30,6 +30,9 @@
 		<menu_item_call label="着用中…" name="NowWearing"/>
 		<menu_item_call label="アウトフィット…" name="ChangeOutfit"/>
 		<menu_item_call label="ホバーする高さ…" name="Hover Height"/>
+		<!-- plus: Avatar menu entry, same function as Advanced > Rebake Textures -->
+		<menu_item_call label="自分の姿を作り直す（灰色に見える時）" name="Rebake Appearance"/>
+		<!-- /plus -->
 		<menu_item_call label="シェイプの編集…" name="Edit My Shape"/>
 		<menu_item_call label="アウトフィットパーツの編集…" name="Edit Outfit"/>
 		<menu label="脱ぐ" name="Take Off &gt;">

@@ -43,6 +43,17 @@ namespace
 layout(early_fragment_tests) in;
 layout(constant_id = 200) const uint llrhi_oit_blend = 0u;
 layout(constant_id = 201) const uint llrhi_oit_split = 0u;
+// research/381: the alpha up to which a fragment of a blend that leaves the
+// target as it is at alpha 0 (oit_blend_inert) makes no node, no mark and no
+// sum; below 0: every fragment does. A float: llvkgl_internal.h has 202 left out.
+layout(constant_id = 203) const float llrhi_oit_skip_below = -1.0;
+// research/370: the tie key, which of nearly coplanar layers goes on top
+// (gl_PrimitiveID & 127: within a draw a later triangle on top, the numbers
+// less than 128 apart; it wraps every 128). Only where
+// llrhi_oit_tie_read (oit_rewrite) is 1: gl_PrimitiveID in a fragment shader
+// needs the geometryShader feature (and leaves OpCapability Geometry in the
+// SPIR-V, so it is switched by the source, not by a specialization constant).
+// Where it is 0 the fragment writes no key (0).
 layout(set = 2, binding = 0, r32ui) uniform uimage2D llrhi_oit_heads;
 layout(std430, set = 2, binding = 1) buffer llrhi_oit_nodes { uint count; uint capacity; uint flags; uint pad; uvec4 bounds; uint words[]; } llrhi_oit;
 layout(set = 2, binding = 2, r32ui) uniform uimage2DArray llrhi_oit_rest;
@@ -59,61 +70,77 @@ void main()
         return;     // frag_color goes through the draw's own blend state
     }
     vec4 llrhi_oit_c = frag_color;
-    uint llrhi_oit_i = atomicAdd(llrhi_oit.count, 1u);
-    if (llrhi_oit_i < llrhi_oit.capacity)
+    // research/381: a fragment of a blend that leaves the target as it is at alpha 0
+    // (oit_blend_inert; its alpha at most the threshold, or not a number) is no node:
+    // nothing to order, to mark or to sum. The split's discard below still comes.
+    // A negative alpha counts as 0 here (the gate drops it too): the tail, the rest and the front
+    // clamp it to 0 as well (max / clamp below and in the resolve).
+    if (!(llrhi_oit_skip_below >= 0.0 && !(llrhi_oit_c.a > llrhi_oit_skip_below)))
     {
-        uint llrhi_oit_next = imageAtomicExchange(llrhi_oit_heads, llrhi_oit_p, llrhi_oit_i);
-        uint llrhi_oit_at = llrhi_oit_i * 6u;
-        llrhi_oit.words[llrhi_oit_at] = packHalf2x16(llrhi_oit_c.rg);
-        llrhi_oit.words[llrhi_oit_at + 1u] = packHalf2x16(llrhi_oit_c.ba);
-        llrhi_oit.words[llrhi_oit_at + 2u] = floatBitsToUint(gl_FragCoord.z);
-        llrhi_oit.words[llrhi_oit_at + 3u] = llrhi_oit_blend;
-        llrhi_oit.words[llrhi_oit_at + 4u] = llrhi_oit_priority;
-        llrhi_oit.words[llrhi_oit_at + 5u] = llrhi_oit_next;
-    }
-    else
-    {
-        // No room. Avatar (and full) sessions: the pixel is still marked as
-        // covered (0xfffffffe, if it has no node yet), so a hybrid session's
-        // world draws split there, and the fragment is summed into the rest
-        // (behind the pixel's nodes). Split: summed into the front (layers
-        // 6-11, over the nodes: world alpha comes far to near, so it is the
-        // nearest drawn so far); without those images it blends into the
-        // target (behind the nodes) rather than being lost.
-        if (llrhi_oit_split == 0u)
+        uint llrhi_oit_i = atomicAdd(llrhi_oit.count, 1u);
+        if (llrhi_oit_i < llrhi_oit.capacity)
         {
-            imageAtomicCompSwap(llrhi_oit_heads, llrhi_oit_p, 0xffffffffu, 0xfffffffeu);
-        }
-        if ((llrhi_oit.flags & 1u) == 0u)
-        {
-            if (llrhi_oit_split != 0u)
-            {
-                return;
-            }
+            uint llrhi_oit_next = imageAtomicExchange(llrhi_oit_heads, llrhi_oit_p, llrhi_oit_i);
+            uint llrhi_oit_at = llrhi_oit_i * 6u;
+#if llrhi_oit_tie_read
+            uint llrhi_oit_tie = uint(gl_PrimitiveID) & 127u;
+#else
+            uint llrhi_oit_tie = 0u;
+#endif
+            // The key's bit 6 in the depth word's bit 31 (a depth in [0, 1]
+            // leaves it 0), bits 0-5 above the blend word's bits (0-25).
+            llrhi_oit.words[llrhi_oit_at] = packHalf2x16(llrhi_oit_c.rg);
+            llrhi_oit.words[llrhi_oit_at + 1u] = packHalf2x16(llrhi_oit_c.ba);
+            llrhi_oit.words[llrhi_oit_at + 2u] = floatBitsToUint(gl_FragCoord.z) | ((llrhi_oit_tie >> 6u) << 31u);
+            llrhi_oit.words[llrhi_oit_at + 3u] = llrhi_oit_blend | ((llrhi_oit_tie & 63u) << 26u);
+            llrhi_oit.words[llrhi_oit_at + 4u] = llrhi_oit_priority;
+            llrhi_oit.words[llrhi_oit_at + 5u] = llrhi_oit_next;
         }
         else
         {
-            int llrhi_oit_base = llrhi_oit_split != 0u ? 6 : 0;
-            if ((llrhi_oit_blend & 255u) == 16u)
+            // No room. Avatar (and full) sessions: the pixel is still marked as
+            // covered (0xfffffffe, if it has no node yet), so a hybrid session's
+            // world draws split there, and the fragment is summed into the rest
+            // (behind the pixel's nodes); without the rest image it is lost (the
+            // draw writes no color). Split: summed into the front (layers 6-11,
+            // over the nodes: world alpha comes far to near, so it is the
+            // nearest drawn so far); without those images it blends into the
+            // target (behind the nodes) rather than being lost.
+            if (llrhi_oit_split == 0u)
             {
-                // ZERO, ONE: the color stays, only the glow mark grows.
-                imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 5), uint(clamp(llrhi_oit_c.a, 0.0, 255.0) * 4096.0 + 0.5));
+                imageAtomicCompSwap(llrhi_oit_heads, llrhi_oit_p, 0xffffffffu, 0xfffffffeu);
+            }
+            if ((llrhi_oit.flags & 1u) == 0u)
+            {
+                if (llrhi_oit_split != 0u)
+                {
+                    return;
+                }
             }
             else
             {
-                float llrhi_oit_a = clamp(llrhi_oit_c.a, 0.0, 1.0);
-                vec3 llrhi_oit_rgb = clamp(llrhi_oit_c.rgb, vec3(0.0), vec3(255.0)) * llrhi_oit_a * 4096.0 + 0.5;
-                imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base), uint(llrhi_oit_rgb.r));
-                imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 1), uint(llrhi_oit_rgb.g));
-                imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 2), uint(llrhi_oit_rgb.b));
-                imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 3), uint(llrhi_oit_a * 4096.0 + 0.5));
-                imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 4), uint(-log2(1.0 - min(llrhi_oit_a, 0.996)) * 4096.0 + 0.5));
+                int llrhi_oit_base = llrhi_oit_split != 0u ? 6 : 0;     // 6: OIT_FRONT_FIRST_LAYER
+                if ((llrhi_oit_blend & 255u) == 16u)
+                {
+                    // ZERO, ONE: the color stays, only the glow mark grows.
+                    imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 5), uint(clamp(llrhi_oit_c.a, 0.0, 255.0) * 4096.0 + 0.5));
+                }
+                else
+                {
+                    float llrhi_oit_a = clamp(llrhi_oit_c.a, 0.0, 1.0);
+                    vec3 llrhi_oit_rgb = clamp(llrhi_oit_c.rgb, vec3(0.0), vec3(255.0)) * llrhi_oit_a * 4096.0 + 0.5;
+                    imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base), uint(llrhi_oit_rgb.r));
+                    imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 1), uint(llrhi_oit_rgb.g));
+                    imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 2), uint(llrhi_oit_rgb.b));
+                    imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 3), uint(llrhi_oit_a * 4096.0 + 0.5));
+                    imageAtomicAdd(llrhi_oit_rest, ivec3(llrhi_oit_p, llrhi_oit_base + 4), uint(-log2(1.0 - min(llrhi_oit_a, 0.996)) * 4096.0 + 0.5));
+                }
             }
         }
     }
     if (llrhi_oit_split != 0u)
     {
-        discard;    // a node (or summed): no color here
+        discard;    // a node, summed or skipped: no color here
     }
 }
 )GLSL";
@@ -136,6 +163,7 @@ layout(push_constant) uniform Resolve
     float span;
     float width;
     float height;
+    float coplanar;     // the fragment stage's
 } pc;
 void main()
 {
@@ -203,7 +231,9 @@ layout(set = 0, binding = 3) uniform sampler2D background;
 // [3][2]) on the clip depth (window depth * ndc_scale + ndc_bias). Layers at
 // most max(tolerance, relative * distance) (m) behind the one in front of
 // them are one surface, a surface at most span such gaps deep; tolerance 0:
-// only equal depths are.
+// only equal depths are. coplanar (research/370, oit_coplanar): two layers
+// of a surface at most coplanar of that tolerance apart, or of equal depth,
+// go by the tie key; below 0: never (the order as without the key).
 layout(push_constant) uniform Resolve
 {
     uint clamp_colors;
@@ -216,6 +246,7 @@ layout(push_constant) uniform Resolve
     float span;
     float width;        // the vertex stage's
     float height;
+    float coplanar;
 } pc;
 layout(location = 0) out vec4 out_color;
 
@@ -296,9 +327,18 @@ float eye_distance(uint depth_bits)
     return max(pc.depth_b / min(z + pc.depth_a, -1e-7), 0.0);
 }
 
+// A node's tie key (research/370): word 2 bit 31 is its bit 6, word 3 bits
+// 26-31 its bits 0-5.
+uint node_tie(uint id)
+{
+    return ((nodes.words[id * 6u + 2u] >> 31u) << 6u) | (nodes.words[id * 6u + 3u] >> 26u);
+}
+
 // Inside a surface: whether node a (key: depth bits, bit 31 set for a node
 // leaving the color as it is) goes on top of node b. The higher priority,
-// then the glow pass, then the nearer.
+// then the glow pass, then, at equal depth or within coplanar of the
+// tolerance at a's distance (research/370), the higher tie key (equal keys:
+// not on top, the order stays), else the nearer.
 bool on_top(uint key_a, uint id_a, uint key_b, uint id_b)
 {
     uint priority_a = nodes.words[id_a * 6u + 4u];
@@ -310,6 +350,23 @@ bool on_top(uint key_a, uint id_a, uint key_b, uint id_b)
     if ((key_a >> 31u) != (key_b >> 31u))
     {
         return (key_a >> 31u) != 0u;
+    }
+    if (pc.coplanar >= 0.0)
+    {
+        uint depth_a = key_a & 0x7fffffffu;
+        uint depth_b = key_b & 0x7fffffffu;
+        bool same_plane = depth_a == depth_b;
+        if (!same_plane && pc.coplanar > 0.0)
+        {
+            float distance = eye_distance(depth_a);
+            same_plane = abs(distance - eye_distance(depth_b)) <= pc.coplanar * max(pc.tolerance, pc.relative * distance);
+        }
+        if (same_plane)
+        {
+            uint tie_a = node_tie(id_a);
+            uint tie_b = node_tie(id_b);
+            return tie_a > tie_b;
+        }
     }
     return (key_a & 0x7fffffffu) < (key_b & 0x7fffffffu);
 }
@@ -334,7 +391,10 @@ void main()
     {
         discard;    // no list (a fragment summed into the rest or front marked its head)
     }
-    bool has_rest = (nodes.flags & 1u) != 0u;
+    // research/381 B': the rest and the front are written only by the fragments past the capacity, so a session
+    // that did not pass it left them all 0 (and its images are only cleared where a session needs them); the front
+    // only by a hybrid session (flags bit 1), whose clear covers it.
+    bool has_rest = (nodes.flags & 1u) != 0u && nodes.count > nodes.capacity;
     uint rest_a = 0u;
     uint rest_glow = 0u;
     if (has_rest)
@@ -482,7 +542,7 @@ void main()
         vec4 s = vec4(unpackHalf2x16(nodes.words[at]), unpackHalf2x16(nodes.words[at + 1u]));
         d = blend(s, d, nodes.words[at + 3u]);
     }
-    if (has_rest)
+    if (has_rest && (nodes.flags & 2u) != 0u)
     {
         // The front: world fragments of a hybrid session that found no room,
         // the nearest drawn when they came (world alpha comes far to near).
@@ -507,8 +567,10 @@ void main()
     // it, so the files of a stage still agree on it; the fragment file with
     // main gets the block if another fragment file has it), else a block of
     // its own in the fragment file. Every other file and declaration stays as
-    // it is. False: no fragment main, mains in more than one fragment file,
-    // or the llrhi_oit names already taken.
+    // it is. The tie key (research/370) is read where oit_tiekey() and the
+    // program has no geometry stage, else the nodes carry 0. False: no
+    // fragment main, mains in more than one fragment file, or the llrhi_oit
+    // names already taken.
     U32 oit_row_word(bool draw_rows, U32 draw_row_words)
     {
         return draw_rows && LLRHI::sceneAlphaMode() != LLRHI::SceneMode::Off ? draw_row_words : U32_MAX;
@@ -644,6 +706,12 @@ void main()
             }
         }
         text += "\n#define llrhi_oit_priority (" + sequence + ")";
+        // research/370: the tie key reads gl_PrimitiveID, the triangle's
+        // number in the draw only without a geometry stage (with one it is
+        // what that stage wrote, if it did).
+        const bool geometry = std::any_of(sources.begin(), sources.end(),
+                                          [](const LLVKShader::Source& s) { return s.stage == LLVKShader::Stage::Geometry; });
+        text += oit_tiekey() && !geometry ? "\n#define llrhi_oit_tie_read 1" : "\n#define llrhi_oit_tie_read 0";
         text += OIT_FRAGMENT_CODE;
         return true;
     }

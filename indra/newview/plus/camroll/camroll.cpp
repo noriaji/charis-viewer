@@ -224,6 +224,19 @@ namespace plus::camroll
         return frame.getQuaternion();
     }
 
+    LLQuaternion withTilt(const LLQuaternion& flycam)
+    {
+        // tiltCamera()'s turn (a camera path's shake left out: it is not the setting's, and no path runs in the flycam)
+        const F32 degrees = finiteOrLevel(rollSetting());
+        if (fabsf(degrees) < 0.01f)
+        {
+            return flycam;
+        }
+        LLCoordFrame frame(flycam);
+        frame.roll(-degrees * DEG_TO_RAD);
+        return frame.getQuaternion();
+    }
+
     void reset()
     {
         // The movement keys call it every frame (research/125 #23): while the

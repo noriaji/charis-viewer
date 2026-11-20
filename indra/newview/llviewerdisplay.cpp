@@ -111,7 +111,8 @@
 #include "plus/rlv/rlvhooks.h"
 #include "plus/avatarrefl/avatarrefl.h"
 #include "plus/rain/rain.h"
-#include "plus/taa/taa.h"
+#include "plus/temporal/temporal.h"
+#include "plus/temporal/motion.h"
 #include "plus/lostattach/lostattach.h"
 #include "plus/loginfast/loginfast.h"
 // </plus>
@@ -992,6 +993,7 @@ void display(bool rebuild, F32 zoom_factor, int subfield, bool for_snapshot)
             }
 
             {
+                LLRHI::cpuDetailMark("pre-gbuffer images bump"); // <plus> research/319 cpu-census </plus>
                 LL_PROFILE_ZONE_NAMED_CATEGORY_DISPLAY("Image Update Bump");
                 gBumpImageList.updateImages();  // must be called before gTextureList version so that it's textures are thrown out first.
             }
@@ -1000,10 +1002,12 @@ void display(bool rebuild, F32 zoom_factor, int subfield, bool for_snapshot)
                 LL_PROFILE_ZONE_NAMED_CATEGORY_DISPLAY("List");
                 F32 max_image_decode_time = 0.050f*gFrameIntervalSeconds.value(); // 50 ms/second decode time
                 max_image_decode_time = llclamp(max_image_decode_time, 0.002f, LLRHI::sTextureBudget ? 0.050f : 0.005f ); // min 2ms/frame, max 5ms/frame)
+                LLRHI::cpuDetailMark("pre-gbuffer images list"); // <plus> research/319 cpu-census </plus>
                 gTextureList.updateImages(max_image_decode_time);
             }
 
             {
+                LLRHI::cpuDetailMark("pre-gbuffer images gltf"); // <plus> research/319 cpu-census </plus>
                 LL_PROFILE_ZONE_NAMED_CATEGORY_DISPLAY("GLTF Materials Cleanup");
                 //remove dead gltf materials
                 gGLTFMaterialList.flushMaterials();
@@ -1021,17 +1025,26 @@ void display(bool rebuild, F32 zoom_factor, int subfield, bool for_snapshot)
         // Also creates special lists for outlines and selected face rendering.
         //
         // <plus> frame cost detail (research/113, LLRHI_FRAME_COST=2)
-        LLRHI::cpuDetailMark("pre-gbuffer state sort"); // the main view's stateSort, rebuildPools
+        LLRHI::cpuDetailMark("pre-gbuffer state sort"); // grabReferences; with FrameCost=2 or the render thread census it is then cut at "pre-gbuffer state sort ..." (research/319)
         // </plus>
         LLAppViewer::instance()->pingMainloopTimeout("Display:StateSort");
         {
             LL_PROFILE_ZONE_NAMED_CATEGORY_DISPLAY("display - 4")
             LLViewerCamera::sCurCameraID = LLViewerCamera::CAMERA_WORLD;
+            // <plus> research/319 cpu-census: the finer sections of this one stateSort (FrameCost=2, render thread
+            // census): the flag is up until the end of this block
+            struct StateSortMarks
+            {
+                StateSortMarks() { gPlusStateSortMarks = LLRHI::sFrameCostDetail || LLRHI::sRenderThreadCensus; }
+                ~StateSortMarks() { gPlusStateSortMarks = false; }
+            } plus_marks;
+            // </plus>
             gPipeline.stateSort(*LLViewerCamera::getInstance(), result);
             stop_glerror();
 
             if (rebuild)
             {
+                LLRHI::cpuDetailMark("pre-gbuffer state sort rebuild pools"); // <plus> research/319 cpu-census </plus>
                 //////////////////////////////////////
                 //
                 // rebuildPools
@@ -1042,6 +1055,7 @@ void display(bool rebuild, F32 zoom_factor, int subfield, bool for_snapshot)
             }
         }
 
+        LLRHI::cpuDetailMark("pre-gbuffer state sort after"); // <plus> research/319 cpu-census: up to the sky's mark </plus>
         LLSceneMonitor::getInstance()->fetchQueryResult();
 
         LLGLState::checkStates();
@@ -1110,9 +1124,9 @@ void display(bool rebuild, F32 zoom_factor, int subfield, bool for_snapshot)
 
         gGL.setColorMask(true, true);
 
-        // <plus> plus/taa (research/185 §13): the main view's scene (the depth pre-pass, the G-buffer, the lighting and the
-        // alpha) drawn with the projection jittered while TAA draws; the cull and the shadows came before, the UI comes after restore()
-        plus::taa::JitterScope plus_taa_jitter(for_snapshot);
+        // <plus> plus/temporal (research/185 §13, 373): the main view's scene (the depth pre-pass, the G-buffer, the lighting and the
+        // alpha) drawn with the projection jittered while a time-based pass (TAA) draws; the cull and the shadows came before, the UI comes after restore()
+        plus::temporal::JitterScope plus_taa_jitter(for_snapshot);
         // </plus>
         gPipeline.mRT->deferredScreen.bindTarget();
         if (gUseWireframe)
@@ -1125,6 +1139,7 @@ void display(bool rebuild, F32 zoom_factor, int subfield, bool for_snapshot)
             LLRHI::clearColor(1, 0, 1, 1);
         }
         gPipeline.mRT->deferredScreen.clear();
+        plus::temporal::clearMotion(); // <plus> tu-motion-v1 (research/373): the motion vectors to 0, not the magenta (w 1) </plus>
 
         gGL.setColorMask(true, false);
 
@@ -1183,7 +1198,7 @@ void display(bool rebuild, F32 zoom_factor, int subfield, bool for_snapshot)
         {
             gPipeline.renderDeferredLighting();
         }
-        plus_taa_jitter.restore(); // <plus> plus/taa: the unmoved projection for the post-processing's HUD and UI </plus>
+        plus_taa_jitter.restore(); // <plus> plus/temporal: the unmoved projection for the post-processing's HUD and UI </plus>
 
         LLPipeline::sUnderWaterRender = false;
 

@@ -83,6 +83,9 @@
 		</layout_panel>
 		<layout_panel name="groups_panel">
 			<text name="group_label" value="グループのメンバーシップ"/>
+			<!-- plus contactsets -->
+			<plus_contact_sets_text name="plus_contact_sets_text" value="コンタクトセット:" tool_tip="この人が入っているコンタクトセットです。クリックすると人物ウィンドウのコンタクトセットタブを開きます。"/>
+			<!-- /plus -->
 			<group_list name="group_list"/>
 		</layout_panel>
 	</layout_stack>

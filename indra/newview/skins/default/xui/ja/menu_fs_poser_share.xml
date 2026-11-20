@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<context_menu name="Pose Share Popup">
+    <menu_item_check label="自分のポーズを見せない" name="share_off"/>
+    <menu_item_check label="自分のポーズをフレンドに見せる" name="share_friends" tool_tip="ポーズは近くの全員に届きますが、相手のビューワは、あなたがフレンドの時だけ表示します"/>
+    <menu_item_check label="自分のポーズを近くの全員に見せる" name="share_everyone"/>
+    <menu_item_check label="他の人の共有ポーズを表示しない" name="receive_nobody"/>
+    <menu_item_check label="他の人の共有ポーズはフレンドだけ表示" name="receive_friends"/>
+    <menu_item_check label="他の人の共有ポーズを全員分表示" name="receive_everyone"/>
+</context_menu>

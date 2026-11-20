@@ -21,8 +21,9 @@
  * $/LicenseInfo$
  */
 
-// No menu entry for now (withdrawn 2026-11-07; it was "Parcel Weather..." in menu_plus.xml, Floater.Toggle plus_weather_parcel), and the
-// openfloater deny lists in llviewerfloaterreg.cpp keep links from opening it. Design: research/229 §8.
+// Opened from the Charis menu ("Parcel Weather..." in menu_plus.xml, Floater.Toggle plus_weather_parcel; withdrawn 2026-11-07, back
+// 2026-11-15). The openfloater deny lists in llviewerfloaterreg.cpp still keep links from opening it (it writes the public parcel
+// description). Design: research/229 §8.
 // The tag's text is built and read by slwxtag.h and written by slwx.h (the core branch); this window
 // holds the sliders, shows what would be written and how many bytes would be left, asks before it
 // writes (the description is public) and says why it cannot when the agent is not the owner/manager.

@@ -40,8 +40,7 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "llfocusmgr.h"
-// <plus> 3D mouse sensitivity (plus/flycamsens); the flycam with no device (plus/flycammouse)
-#include "plus/flycamsens/flycamsens.h"
+// <plus> the flycam with no device, and its speed (plus/flycammouse)
 #include "plus/flycammouse/flycammouse.h"
 // </plus>
 #include "llgamecontrol.h"
@@ -1279,12 +1278,13 @@ void LLViewerJoystick::moveFlycam(bool reset)
         gSavedSettings.getF32("FlycamAxisScale6")
     };
 
-    // <plus> sensitivity on the number keys (plus/flycamsens): the move and turn axes, not the zoom
+    // <plus> the flycam's speed, the mouse wheel's (plus/flycammouse): the three move axes only, as the keyboard flycam's
+    // speed moves and does not turn (the turn and the zoom axes stay as they are)
     {
-        const F32 sens = plus::flycamsens::multiplier();
-        for (U32 i = 0; i < 6; i++)
+        const F32 speed = plus::flycammouse::speedMultiplier();
+        for (U32 i = 0; i < 3; i++)
         {
-            axis_scale[i] *= sens;
+            axis_scale[i] *= speed;
         }
     }
     // </plus>
@@ -1709,7 +1709,10 @@ void LLViewerJoystick::setSNDefaults()
 #else
     const float platformScale = 1.f;
     const float platformScaleAvXZ = 2.f;
-    const bool is_3d_cursor = true;
+    // <plus> flycam-improvements: the 3D cursor off on Windows too (Charis's 3D mouse default; settings.xml's stays official)
+    //const bool is_3d_cursor = true;
+    const bool is_3d_cursor = false;
+    // </plus>
 #endif
 
     //gViewerWindow->alertXml("CacheWillClear");
@@ -1724,7 +1727,11 @@ void LLViewerJoystick::setSNDefaults()
     gSavedSettings.setS32("JoystickAxis6", -1);
 
     gSavedSettings.setBOOL("Cursor3D", is_3d_cursor);
-    gSavedSettings.setBOOL("AutoLeveling", true);
+    // <plus> flycam-improvements: no auto leveling, so the flycam's roll (FlycamAxisScale3 below) stays where it is put
+    // (Charis's 3D mouse default; settings.xml's stays official)
+    //gSavedSettings.setBOOL("AutoLeveling", true);
+    gSavedSettings.setBOOL("AutoLeveling", false);
+    // </plus>
     gSavedSettings.setBOOL("ZoomDirect", false);
 
     gSavedSettings.setF32("AvatarAxisScale0", 1.f * platformScaleAvXZ);
@@ -1744,7 +1751,12 @@ void LLViewerJoystick::setSNDefaults()
     gSavedSettings.setF32("FlycamAxisScale0", 2.1f * platformScale);
     gSavedSettings.setF32("FlycamAxisScale4", .1f * platformScale);
     gSavedSettings.setF32("FlycamAxisScale5", .15f * platformScale);
-    gSavedSettings.setF32("FlycamAxisScale3", 0.f * platformScale);
+    // <plus> flycam-improvements: the flycam's roll on. The index of FlycamAxisScale* is the logical axis (3 the roll,
+    // 4 the pitch, 5 the yaw: LLFlycam::applyFrameDelta()); the comments of JoystickAxis* above name the device's axis
+    // numbers that feed them. A little slower than the yaw's .15 (Charis's 3D mouse default; settings.xml's stays official)
+    //gSavedSettings.setF32("FlycamAxisScale3", 0.f * platformScale);
+    gSavedSettings.setF32("FlycamAxisScale3", .1f * platformScale);
+    // </plus>
     gSavedSettings.setF32("FlycamAxisScale6", 0.f * platformScale);
 
     gSavedSettings.setF32("AvatarAxisDeadZone0", .1f);

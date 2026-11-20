@@ -57,6 +57,12 @@ public:
     /// <param name="avatar">The avatar whose animations are to be purged.</param>
     void purgeMotionStates(LLVOAvatar* avatar);
 
+    // <plus> research/336: drops every record kept for the avatar (its motion states and capture order), not just the
+    // states as purgeMotionStates() does, so that nothing keyed by the ID stays behind once another person's pose is
+    // stopped for good. Needs no LLVOAvatar: the avatar may be gone. Main thread.
+    static void forgetAvatar(const LLUUID& avatarId);
+    // </plus>
+
     /// <summary>
     /// Writes any documented poses for the supplied avatar to the supplied stream.
     /// </summary>

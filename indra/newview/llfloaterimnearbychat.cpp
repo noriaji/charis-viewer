@@ -37,6 +37,10 @@
 #include "llfloatersidepanelcontainer.h"
 #include "llfocusmgr.h"
 #include "lllogchat.h"
+// <plus> chat-channel-select
+#include "llspinctrl.h"
+#include "llbutton.h"
+// </plus>
 #include "llresizebar.h"
 #include "llresizehandle.h"
 #include "lldraghandle.h"
@@ -77,6 +81,9 @@
 // </plus>
 // <plus> rlv: RLVa (plus/rlv) (research/248)
 #include "plus/rlv/rlvhooks.h"
+// </plus>
+// <plus> chat-bar: the chat bar takes the focus of startChat() (plus/chatbar, research/334)
+#include "plus/chatbar/chatbarlayout.h"
 // </plus>
 
 S32 LLFloaterIMNearbyChat::sLastSpecialChatChannel = 0;
@@ -206,6 +213,30 @@ bool LLFloaterIMNearbyChat::postBuild()
     std::string nearbyChatTitle(LLTrans::getString("NearbyChatTitle"));
     mInputEditor->setLabel(nearbyChatTitle);
 
+    // <plus> chat-channel-select / chat-type button (from Firestorm): shown in nearby chat only, by FSShowChatChannel / FSShowChatType
+    mChatChannelPanel = getChild<LLPanel>("chat_channel_layout_panel");
+    mChatChannelSpinner = getChild<LLSpinCtrl>("ChatChannel");
+    mChatTypePanel = getChild<LLPanel>("chat_type_layout_panel");
+    mChatTypeCombo = getChild<LLComboBox>("chat_type");
+    mChatTypeCombo->selectByValue("say");
+    mChatTypeCombo->setCommitCallback(boost::bind(&LLFloaterIMNearbyChat::onChatTypeChanged, this));
+    mSendChatButton = getChild<LLButton>("send_chat");
+    mSendChatButton->setCommitCallback([this](LLUICtrl*, const LLSD&)
+    {
+        onChatBoxCommit();
+        if (!gSavedSettings.getBOOL("CloseChatOnReturn"))
+        {
+            mInputEditor->setFocus(true); // keep typing after a click on the button
+        }
+    });
+    mShowChannelConn = gSavedSettings.getControl("FSShowChatChannel")->getCommitSignal()->connect(boost::bind(&LLFloaterIMNearbyChat::updateInputExtras, this));
+    mShowTypeConn = gSavedSettings.getControl("FSShowChatType")->getCommitSignal()->connect(boost::bind(&LLFloaterIMNearbyChat::updateInputExtras, this));
+    // chat-time-local: the lines already shown follow the switch
+    mTimeLocalConn = gSavedSettings.getControl("PlusChatTimeLocal")->getCommitSignal()->connect(boost::bind(&LLFloaterIMNearbyChat::restampArchive, this));
+    onChatTypeChanged();
+    updateInputExtras();
+    // </plus>
+
     // Title must be defined BEFORE call to addConversationListItem() because
     // it is used to show the item's name in the conversations list
     setTitle(nearbyChatTitle);
@@ -269,7 +300,12 @@ void LLFloaterIMNearbyChat::reloadMessages(bool clean_messages/* = false*/)
     if (clean_messages)
     {
         mMessageArchive.clear();
-        loadHistory();
+        // <plus> chat-history-off: honour "show past log" here too
+        if (gSavedPerAccountSettings.getBOOL("LogShowHistory"))
+        {
+            loadHistory();
+        }
+        // </plus>
     }
 
     mChatHistory->clear();
@@ -282,6 +318,23 @@ void LLFloaterIMNearbyChat::reloadMessages(bool clean_messages/* = false*/)
         addMessage(*it,false, do_not_log);
     }
 }
+
+// <plus> chat-time-local: stamp the lines of this session (they have the viewer's clock, mTime) with the time
+// the menu now asks for, and show them again. Lines read from the log keep the time they were written with.
+void LLFloaterIMNearbyChat::restampArchive()
+{
+    const time_t now = time_corrected();
+    const F64 elapsed = LLFrameTimer::getElapsedSeconds();
+    for (LLChat& chat : mMessageArchive)
+    {
+        if (chat.mTime > 0)
+        {
+            chat.mTimeStr = appendTime((time_t)(now - elapsed + chat.mTime));
+        }
+    }
+    reloadMessages(false);
+}
+// </plus>
 
 void LLFloaterIMNearbyChat::loadHistory()
 {
@@ -529,15 +582,27 @@ bool LLFloaterIMNearbyChat::matchChatTypeTrigger(const std::string& in_str, std:
 
 void LLFloaterIMNearbyChat::onChatBoxKeystroke()
 {
+    onChatEntryKeystroke(mInputEditor, getSelectedChannel()); // <plus> chat-bar: shared with the chat bar (plus/chatbar) </plus>
+}
+
+// <plus> chat-bar: the body of onChatBoxKeystroke(), for any nearby chat field (this floater's and the chat bar's).
+// The nearby chat's session is the null id (mSessionID of this floater). selected_channel: see the header.
+// static
+void LLFloaterIMNearbyChat::onChatEntryKeystroke(LLChatEntry* editor, S32 selected_channel)
+{
+    if (!editor)
+    {
+        return;
+    }
     LLFloaterIMContainer* im_box = LLFloaterIMContainer::findInstance();
     if (im_box)
     {
-        im_box->flashConversationItemWidget(mSessionID,false);
+        im_box->flashConversationItemWidget(LLUUID::null,false);
     }
 
     LLFirstUse::otherAvatarChatFirst(false);
 
-    LLWString raw_text = mInputEditor->getWText();
+    LLWString raw_text = editor->getWText();
 
     // Can't trim the end, because that will cause autocompletion
     // to eat trailing spaces that might be part of a gesture.
@@ -545,7 +610,8 @@ void LLFloaterIMNearbyChat::onChatBoxKeystroke()
 
     auto length = raw_text.length();
 
-    if( (length > 0) && (raw_text[0] != '/') )  // forward slash is used for escape (eg. emote) sequences
+    // chat-channel-select: no typing animation while a channel other than 0 is selected (as in Firestorm)
+    if( (length > 0) && (raw_text[0] != '/') && (0 == selected_channel) )  // forward slash is used for escape (eg. emote) sequences
     {
         gAgent.startTyping();
     }
@@ -582,18 +648,22 @@ void LLFloaterIMNearbyChat::onChatBoxKeystroke()
         if (buildGestureAutocompleteRows(utf8_trigger, rows, total))
         {
             LLGestureAutocompleteHelper::instance().showHelper(
-                mInputEditor,
+                editor,
                 rows,
                 total,
-                [this](std::string trigger)
+                [handle = editor->getDerivedHandle<LLChatEntry>()](std::string trigger)
                 {
-                    mInputEditor->setText(trigger + " ");
-                    mInputEditor->endOfDoc();
+                    LLChatEntry* picked = handle.get();
+                    if (picked)
+                    {
+                        picked->setText(trigger + " ");
+                        picked->endOfDoc();
+                    }
                 });
             return;
         }
 
-        LLGestureAutocompleteHelper::instance().hideHelper(mInputEditor);
+        LLGestureAutocompleteHelper::instance().hideHelper(editor);
     }
     // Ignore "special" keys, like backspace, arrows, etc.
     if (autocomplete_gestures
@@ -611,18 +681,18 @@ void LLFloaterIMNearbyChat::onChatBoxKeystroke()
             std::string rest_of_match = utf8_out_str.substr(utf8_trigger.size());
             if (!rest_of_match.empty())
             {
-                mInputEditor->setText(utf8_trigger + rest_of_match); // keep original capitalization for user-entered part
+                editor->setText(utf8_trigger + rest_of_match); // keep original capitalization for user-entered part
                 // Select to end of line, starting from the character
                 // after the last one the user typed.
-                mInputEditor->selectByCursorPosition(static_cast<S32>(utf8_out_str.size() - rest_of_match.size()), static_cast<S32>(utf8_out_str.size()));
+                editor->selectByCursorPosition(static_cast<S32>(utf8_out_str.size() - rest_of_match.size()), static_cast<S32>(utf8_out_str.size()));
             }
 
         }
         else if (matchChatTypeTrigger(utf8_trigger, &utf8_out_str))
         {
             std::string rest_of_match = utf8_out_str.substr(utf8_trigger.size());
-            mInputEditor->setText(utf8_trigger + rest_of_match + " "); // keep original capitalization for user-entered part
-            mInputEditor->endOfDoc();
+            editor->setText(utf8_trigger + rest_of_match + " "); // keep original capitalization for user-entered part
+            editor->endOfDoc();
         }
 
         //LL_INFOS() << "GESTUREDEBUG " << trigger
@@ -631,6 +701,7 @@ void LLFloaterIMNearbyChat::onChatBoxKeystroke()
         //  << LL_ENDL;
     }
 }
+// </plus>
 
 // static
 void LLFloaterIMNearbyChat::onChatBoxFocusLost()
@@ -678,9 +749,18 @@ EChatType LLFloaterIMNearbyChat::processChatTypeTriggers(EChatType type, std::st
 
 void LLFloaterIMNearbyChat::sendChat( EChatType type )
 {
-    if (mInputEditor)
+    sendChatFromEntry(mInputEditor, type, getSelectedChannel()); // <plus> chat-bar: shared with the chat bar (plus/chatbar) </plus>
+}
+
+// <plus> chat-bar: the body of sendChat(), for any nearby chat field (this floater's and the chat bar's).
+// selected_channel: see the header. The recent emojis are this floater's (single instance), when it was built.
+// Letting go of the focus on Return is what stopChat() did for this floater's field, done for the field that sent.
+// static
+void LLFloaterIMNearbyChat::sendChatFromEntry(LLChatEntry* editor, EChatType type, S32 selected_channel)
+{
+    if (editor)
     {
-        LLWString text = mInputEditor->getConvertedText();
+        LLWString text = editor->getConvertedText();
         LLWStringUtil::trim(text);
         LLWStringUtil::replaceChar(text,182,'\n'); // Convert paragraph symbols back into newlines.
 
@@ -690,9 +770,18 @@ void LLFloaterIMNearbyChat::sendChat( EChatType type )
         {
             // Check if this is destined for another channel
             S32 channel = 0;
-            stripChannelNumber(text, &channel);
+            // chat-channel-select: without "/<number>" selected_channel (this floater's selector; 0 for the chat bar)
+            bool is_set = false;
+            stripChannelNumber(text, &channel, &is_set);
+            if (!is_set)
+            {
+                channel = selected_channel;
+            }
 
-            updateUsedEmojis(text);
+            if (LLFloaterIMNearbyChat* nearby = LLFloaterReg::findTypedInstance<LLFloaterIMNearbyChat>("nearby_chat"))
+            {
+                nearby->updateUsedEmojis(text);
+            }
 
             std::string utf8text = wstring_to_utf8str(text);
             // Try to trigger a gesture, if not chat to a script.
@@ -717,22 +806,30 @@ void LLFloaterIMNearbyChat::sendChat( EChatType type )
             if (!utf8_revised_text.empty())
             {
                 // Chat with animation
-                sendChatFromViewer(utf8_revised_text, type, gSavedSettings.getBOOL("PlayChatAnim"));
+                // chat-channel-select: the gesture / trigger text may still carry its "/<number>" prefix
+                const LLWString revised_wtext = utf8str_to_wstring(utf8_revised_text);
+                S32 prefix_channel = 0;
+                bool prefix_set = false;
+                const LLWString out_wtext = stripChannelNumber(revised_wtext, &prefix_channel, &prefix_set);
+                static LLCachedControl<bool> play_chat_anim(gSavedSettings, "PlayChatAnim", true);
+                sendChatToChannel(revised_wtext, out_wtext, prefix_set ? prefix_channel : selected_channel, type, play_chat_anim);
             }
         }
 
-        mInputEditor->setText(LLStringExplicit(""));
+        editor->setText(LLStringExplicit(""));
     }
 
     gAgent.stopTyping();
 
     // If the user wants to stop chatting on hitting return, lose focus
     // and go out of chat mode.
-    if (gSavedSettings.getBOOL("CloseChatOnReturn"))
+    static LLCachedControl<bool> close_chat_on_return(gSavedSettings, "CloseChatOnReturn", false);
+    if (close_chat_on_return && editor)
     {
-        stopChat();
+        editor->setFocus(false);
     }
 }
+// </plus>
 
 void LLFloaterIMNearbyChat::addMessage(const LLChat& chat,bool archive,const LLSD &args)
 {
@@ -778,10 +875,60 @@ void LLFloaterIMNearbyChat::addMessage(const LLChat& chat,bool archive,const LLS
 
 void LLFloaterIMNearbyChat::onChatBoxCommit()
 {
-    sendChat(CHAT_TYPE_NORMAL);
+    sendChat(getSelectedChatType()); // <plus> chat-channel-select </plus>
 
     gAgent.stopTyping();
 }
+
+// <plus> chat-channel-select / chat-type button (from Firestorm)
+static bool showChatChannelSetting()
+{
+    static LLCachedControl<bool> show_channel(gSavedSettings, "FSShowChatChannel", false);
+    return show_channel;
+}
+
+static bool showChatTypeSetting()
+{
+    static LLCachedControl<bool> show_type(gSavedSettings, "FSShowChatType", false);
+    return show_type;
+}
+
+EChatType LLFloaterIMNearbyChat::getSelectedChatType() const
+{
+    if (!mChatTypeCombo || !showChatTypeSetting())
+    {
+        return CHAT_TYPE_NORMAL;
+    }
+    const std::string type_name = mChatTypeCombo->getValue();
+    if (type_name == "whisper")
+    {
+        return CHAT_TYPE_WHISPER;
+    }
+    if (type_name == "shout")
+    {
+        return CHAT_TYPE_SHOUT;
+    }
+    return CHAT_TYPE_NORMAL;
+}
+
+void LLFloaterIMNearbyChat::onChatTypeChanged()
+{
+    mSendChatButton->setLabel(mChatTypeCombo->getSelectedItemLabel());
+}
+
+void LLFloaterIMNearbyChat::updateInputExtras()
+{
+    mChatChannelPanel->setVisible(showChatChannelSetting());
+    mChatTypePanel->setVisible(showChatTypeSetting());
+}
+
+// The channel of the selector; 0 when it is hidden. The spinner is a float: round it (the range in the XML keeps it exact).
+// Never negative: a viewer cannot chat on a negative channel (only scripts can), the selector's lowest is 0.
+S32 LLFloaterIMNearbyChat::getSelectedChannel() const
+{
+    return (showChatChannelSetting() && mChatChannelSpinner) ? llmax(0, ll_round(mChatChannelSpinner->get())) : 0;
+}
+// </plus>
 
 void LLFloaterIMNearbyChat::displaySpeakingIndicator()
 {
@@ -813,6 +960,14 @@ void LLFloaterIMNearbyChat::sendChatFromViewer(const LLWString &wtext, EChatType
     // Look for "/20 foo" channel chats.
     S32 channel = 0;
     LLWString out_text = stripChannelNumber(wtext, &channel);
+    // <plus> chat-channel-select: the rest of sendChatFromViewer() is sendChatToChannel(), with the channel already decided
+    sendChatToChannel(wtext, out_text, channel, type, animate);
+}
+
+// (wtext is the full text, out_text the text without the "/<number>" prefix)
+void LLFloaterIMNearbyChat::sendChatToChannel(const LLWString &wtext, const LLWString &out_text, S32 channel, EChatType type, bool animate)
+{
+    // </plus>
     std::string utf8_out_text = wstring_to_utf8str(out_text);
     std::string utf8_text = wstring_to_utf8str(wtext);
 
@@ -888,6 +1043,12 @@ bool LLFloaterIMNearbyChat::isWordsName(const std::string& name)
 // static
 void LLFloaterIMNearbyChat::startChat(const char* line)
 {
+    // <plus> chat-bar: the chat bar beside the bottom toolbar takes the focus while it is shown (as in Firestorm)
+    if (plus::chatbar::startChat(line))
+    {
+        return;
+    }
+    // </plus>
     LLFloaterIMNearbyChat* nearby_chat = LLFloaterReg::getTypedInstance<LLFloaterIMNearbyChat>("nearby_chat");
     if (nearby_chat)
     {
@@ -926,12 +1087,19 @@ void LLFloaterIMNearbyChat::stopChat()
 
 // If input of the form "/20foo" or "/20 foo", returns "foo" and channel 20.
 // Otherwise returns input and channel 0.
-LLWString LLFloaterIMNearbyChat::stripChannelNumber(const LLWString &mesg, S32* channel)
+LLWString LLFloaterIMNearbyChat::stripChannelNumber(const LLWString &mesg, S32* channel, bool* is_set) // <plus> is_set: true when the text had a "/<number>" prefix (chat-channel-select) </plus>
 {
+    // <plus> chat-channel-select
+    if (is_set)
+    {
+        *is_set = false;
+    }
+    // </plus>
     if (mesg[0] == '/'
         && mesg[1] == '/')
     {
         // This is a "repeat channel send"
+        if (is_set) { *is_set = true; } // <plus> chat-channel-select </plus>
         *channel = sLastSpecialChatChannel;
         return mesg.substr(2, mesg.length() - 2);
     }
@@ -963,6 +1131,7 @@ LLWString LLFloaterIMNearbyChat::stripChannelNumber(const LLWString &mesg, S32* 
             pos++;
         }
 
+        if (is_set) { *is_set = true; } // <plus> chat-channel-select </plus>
         sLastSpecialChatChannel = strtol(wstring_to_utf8str(channel_string).c_str(), NULL, 10);
         *channel = sLastSpecialChatChannel;
         return mesg.substr(pos, mesg.length() - pos);

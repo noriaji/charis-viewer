@@ -204,6 +204,14 @@ bool LLViewerDynamicTexture::updateAllInstances()
     llassert(bake_target.getWidth() >= (U32) LLAvatarAppearanceDefines::SCRATCH_TEX_WIDTH);
     llassert(bake_target.getHeight() >= (U32) LLAvatarAppearanceDefines::SCRATCH_TEX_HEIGHT);
 
+    // <plus> The previews are 3-component (GL_RGB) textures, which the Vulkan backend keeps as RGBA
+    // and fills from the target's alpha in the copy. Vulkan's clear writes every channel whatever the
+    // colour mask, so the alpha becomes the current clear colour (often 0), and a preview whose
+    // background rectangle does not write alpha (a colour mask left as colour only) stays see-through:
+    // the BVH upload preview flickered. GL reads such a texture with alpha 1: write all four channels.
+    // This first call matters only when the mask coming in is (false,false), which skips the clear.
+    gGL.setColorMask(true, true);
+    // </plus>
     preview_target.bindTarget();
     preview_target.clear();
 
@@ -221,6 +229,9 @@ bool LLViewerDynamicTexture::updateAllInstances()
 
                 LLRHI::clear(GL_DEPTH_BUFFER_BIT);
 
+                // <plus> as above: a render before may leave the alpha off
+                gGL.setColorMask(true, true);
+                // </plus>
                 gGL.color4f(1.f, 1.f, 1.f, 1.f);
                 dynamicTexture->setBoundTarget(&renderTarget);
                 dynamicTexture->preRender();    // Must be called outside of startRender()

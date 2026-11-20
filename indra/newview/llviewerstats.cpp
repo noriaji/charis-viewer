@@ -749,7 +749,7 @@ void send_viewer_stats(bool include_preferences)
     system["gpu_vendor"] = gGLManager.mGLVendorShort;
     system["gpu_version"] = gGLManager.mDriverVersionVendorString;
     system["opengl_version"] = gGLManager.mGLVersionString;
-    system["gpu_vram_mb"] = (S32)gGLManager.mVRAM;
+    system["gpu_vram_mb"] = (S32)gGLManager.getReportedVRAM();     // <plus> research/371: the detected, not a test override </plus>
     system["glsl_version"] = llformat("%d.%d", gGLManager.mGLSLVersionMajor, gGLManager.mGLSLVersionMinor);
 
     // Resource usage

@@ -33,6 +33,7 @@
 #include "lldrawpool.h"
 #include "llframetimer.h"
 #include "llimagegl.h"
+#include "llrhi.h"             // sPeriodicLogs
 #include "llscenerecords.h"
 #include "llspatialpartition.h"
 #include "lltimer.h"
@@ -891,6 +892,31 @@ void LLSceneShadow::report()
         return;
     }
     mReportAt = now + REPORT_SECONDS;
+    // research/218 vk-s2f-2: the census lines (and the walk of the avatars) only in development
+    // starts (LLRHI::sPeriodicLogs); the counts start over either way. A stop and auto's changes
+    // are written where they happen.
+    if (LLRHI::sPeriodicLogs)
+    {
+        writeReport();
+    }
+    memset(mCensusPartitions, 0, sizeof(mCensusPartitions));
+    mReportCalls = mReportSpots = mReportProbeCalls = 0;
+    mGroupsCut = mBatchesCut = mCacheGroups = mCacheBatchesCut = mSpotGroupsCut = 0;
+    mCensusVolume = mCensusVolumeScene = mCensusBridge = mCensusBridgeScene = mCensusAttachment = mCensusAttachmentScene = mCensusOther = 0;
+    mCensusMaskWait = mCensusAttachRigged = mCensusAttachPlain = mCensusAnimesh = 0;
+    mCensusSkinWait = 0;
+    mCensusSamples = 0;
+    mLayerTextureCount = 0;
+    mLayerTexturesWait = 0;
+    memset(mLayers, 0, sizeof(mLayers));
+    memset(mLayersFailed, 0, sizeof(mLayersFailed));
+    memset(mVerified, 0, sizeof(mVerified));
+    mRescuedPackets = mRescuedMap = 0;
+    mDifferences = mChosenNotDrawn = mDrawnNotChosen = mNoRecord = mContent = mTextureMissing = 0;
+}
+
+void LLSceneShadow::writeReport()
+{
     const F64 per = 1.0 / llmax(mReportCalls, 1u);
     const LLRHI::SceneMode asked = LLRHI::sceneShadowMode();
     const LLRHI::SceneMode doing = mode();
@@ -938,20 +964,6 @@ void LLSceneShadow::report()
     }
     LL_INFOS("Scene") << "scene shadow H2 (research/218 vk-s0b): the union's groups a call by partition type: "
                       << (partitions.tellp() > 0 ? partitions.str() : std::string("none")) << LL_ENDL;
-    memset(mCensusPartitions, 0, sizeof(mCensusPartitions));
-    mReportCalls = mReportSpots = mReportProbeCalls = 0;
-    mGroupsCut = mBatchesCut = mCacheGroups = mCacheBatchesCut = mSpotGroupsCut = 0;
-    mCensusVolume = mCensusVolumeScene = mCensusBridge = mCensusBridgeScene = mCensusAttachment = mCensusAttachmentScene = mCensusOther = 0;
-    mCensusMaskWait = mCensusAttachRigged = mCensusAttachPlain = mCensusAnimesh = 0;
-    mCensusSkinWait = 0;
-    mCensusSamples = 0;
-    mLayerTextureCount = 0;
-    mLayerTexturesWait = 0;
-    memset(mLayers, 0, sizeof(mLayers));
-    memset(mLayersFailed, 0, sizeof(mLayersFailed));
-    memset(mVerified, 0, sizeof(mVerified));
-    mRescuedPackets = mRescuedMap = 0;
-    mDifferences = mChosenNotDrawn = mDrawnNotChosen = mNoRecord = mContent = mTextureMissing = 0;
 }
 
 // research/206 H2, from the avatars (research/218 vk-s0b). noteGroups counts

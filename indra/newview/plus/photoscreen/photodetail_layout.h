@@ -41,7 +41,7 @@ namespace plus::photoscreen::sizes
     inline constexpr S32 RAIL_W        = 123;   // 221: 123 (the left rail; ps-left)
     inline constexpr S32 LEFT_PANEL_W  = 296;   // 221: 280 (the left panel) and its gap of 8 at each side (ps-left)
     inline constexpr S32 RIGHT_PANEL_W = 414;   // 221: 406 (the right panel). ps-right: the column with its 8 px gaps, the boxes 398 (the picture's 337 x 1.18)
-    inline constexpr S32 BOTTOM_H      = 250;   // 221: 250 (the preset strip; ps-bottom)
+    inline constexpr S32 BOTTOM_H      = 148;   // the preset strip (words-only cards, no pictures; was 250 with the pictures)
     inline constexpr S32 TOP_H         = 8;     // the gap over the world (221: the chips go inside the world, 12 from its top left)
     inline constexpr S32 NARROW_WIDTH  = 1280;  // window width, not scaled
     inline constexpr S32 MIN_WORLD     = 64;    // not scaled
@@ -49,15 +49,16 @@ namespace plus::photoscreen::sizes
     inline constexpr F32 FRAME_SCALE_MAX = 2.f;
 
     // --- the preset strip (photodetail_bottom.cpp) -------------------------------------------------------------
-    // The panel's XML (panel_plus_photoscreen_bottom.xml) is BOTTOM_H less the gaps above and below (234): the tabs
-    // 6..42, the cards 59..199, the "+" card 59..191 at the right.
-    inline constexpr S32 CARD_W   = 108;        // 221: picture 108 x 90, the name in 2 lines under it
+    // The panel's XML (panel_plus_photoscreen_bottom.xml) is BOTTOM_H less the gaps above and below (132): the tabs
+    // 6..42, the cards 52..108, the "+" card 52..108 at the right.
+    inline constexpr S32 CARD_W   = 156;        // a card is words only: the name and a second line in a rounded box
     inline constexpr S32 CARD_GAP = 12;         // 221: 12
-    inline constexpr S32 CARD_H   = 140;        // the picture (psstyle PRESET_PICTURE_HEIGHT 90) and the two lines under it
+    inline constexpr S32 CARD_H   = 56;         // the two lines and their padding
     inline constexpr S32 STRIP_STEP  = CARD_W + CARD_GAP;
+    inline constexpr S32 BUBBLE_FROM_RIGHT = 480;   // the name bubble's left edge from the panel's right edge (the XML: 1111 - 631)
+    inline constexpr S32 BUBBLE_MIN_LEFT   = 12;    // ... and never nearer than this to the panel's left edge
     inline constexpr S32 STRIP_EDGE  = 24;      // 221: the fade at an end of the strip while cards are out of view there
     inline constexpr S32 STRIP_ARROW = 22;      // the round arrow on that fade
-    inline constexpr S32 THUMB_W  = 192;        // the width of the small picture saved with a preset (pixels of the file)
 
     // --- over the world (photodetail_center.cpp, photodetail_hud.cpp, panel_plus_photoscreen_{top,hud}.xml; research/221 8.-12.) -
     // The XML places the chips, the read-out, the histogram's frame and the icon boxes at these sizes; the code places

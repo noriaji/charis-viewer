@@ -335,7 +335,11 @@ void LLAvatarNameCache::processName(const LLUUID& agent_id, const LLAvatarName& 
     if (sig_it != mSignalMap.end())
     {
         callback_signal_t* signal = sig_it->second;
-        (*signal)(agent_id, av_name);
+        // <plus> contactsets: the waiting ones get the alias (the cache keeps the real name)
+        LLAvatarName shown(av_name);
+        applyCustomName(agent_id, shown);
+        (*signal)(agent_id, shown);
+        // </plus>
 
         mSignalMap.erase(agent_id);
 
@@ -626,7 +630,20 @@ bool LLAvatarNameCache::get(const LLUUID& agent_id, LLAvatarName *av_name)
 }
 // fills in av_name if it has it in the cache, even if expired (can check expiry time)
 // returns bool specifying  if av_name was filled, false otherwise
+// <plus> contactsets: the name from getNameWithoutAlias() (the official getName()), then the alias, if any
+// (the expiry is kept)
 bool LLAvatarNameCache::getName(const LLUUID& agent_id, LLAvatarName *av_name)
+{
+    if (!getNameWithoutAlias(agent_id, av_name))
+    {
+        return false;
+    }
+    applyCustomName(agent_id, *av_name);
+    return true;
+}
+
+bool LLAvatarNameCache::getNameWithoutAlias(const LLUUID& agent_id, LLAvatarName *av_name)
+// </plus>
 {
     if (mRunning)
     {
@@ -660,6 +677,25 @@ bool LLAvatarNameCache::getName(const LLUUID& agent_id, LLAvatarName *av_name)
     return false;
 }
 
+// <plus> contactsets: Firestorm's alias (plus/contactsets); the expiry and the next update are kept
+bool LLAvatarNameCache::applyCustomName(const LLUUID& agent_id, LLAvatarName& av_name) const
+{
+    bool dn_removed = false;
+    std::string custom_name;
+    if (!mCustomNameCheckCallback || !mCustomNameCheckCallback(agent_id, dn_removed, custom_name))
+    {
+        return false;
+    }
+    LLSD info = av_name.asLLSD();
+    info["is_display_name_default"] = dn_removed;
+    info["display_name"] = dn_removed
+        ? (info["legacy_first_name"].asString() + " " + info["legacy_last_name"].asString())
+        : custom_name;
+    av_name.fromLLSD(info);
+    return true;
+}
+// </plus>
+
 void LLAvatarNameCache::fireSignal(const LLUUID& agent_id,
                                    const callback_slot_t& slot,
                                    const LLAvatarName& av_name)
@@ -690,7 +726,11 @@ LLAvatarNameCache::callback_connection_t LLAvatarNameCache::getNameCallback(cons
             if (av_name.mExpires > LLFrameTimer::getTotalSeconds())
             {
                 // ...name already exists in cache, fire callback now
-                fireSignal(agent_id, slot, av_name);
+                // <plus> contactsets: with the alias, if any (a copy: the cache keeps the real name)
+                LLAvatarName shown(av_name);
+                applyCustomName(agent_id, shown);
+                fireSignal(agent_id, slot, shown);
+                // </plus>
                 return connection;
             }
         }

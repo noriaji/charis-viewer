@@ -3,18 +3,36 @@
 the SPIR-V cache folders a --bake-shaders run fills, check one, and record
 which keys it holds and what is in them.
 
-  python -I shaderbundle.py pack DIR... -o OUT --commit SHA
+  python -I shaderbundle.py pack DIR... -o OUT --commit SHA [--no-compress] [--zstd-level N] [--dict-size KB] [--dict-samples N]
   python -I shaderbundle.py info VKB
   python -I shaderbundle.py manifest VKB [-o TSV]
   python -I shaderbundle.py compare-manifest NEW BASELINE
-  python -I shaderbundle.py check VKB --commit SHA [--manifest TSV] [--max-bytes N]
+  python -I shaderbundle.py check VKB --commit SHA [--manifest TSV] [--max-bytes N] [--stored-only]
+  python -I shaderbundle.py recompress IN OUT --commit SHA [--zstd-level N] [--dict-size KB] [--dict-samples N]
 
 pack     reads the <16 hex>.vkp (SPIR-V and reflection) and <16 hex>.glv (GL
           view) files of the folders, checks each file's trailer (size and
           XXH3-64), and writes one bundle: modules once each, tables sorted by
-          key, so the same files make the same bytes. A key in more than one
-          folder: the first folder's file. The folders must come from one exe
-          (one CACHE_VERSION, GL_VIEW_VERSION and glslang): a mixture stops.
+          key, so the same files make the same bytes (with the same zstandard
+          version: the modules are zstd frames with one trained dictionary,
+          format 2, research/363). A key in more than one folder: the first
+          folder's file. The folders must come from one exe (one CACHE_VERSION,
+          GL_VIEW_VERSION and glslang): a mixture stops. The bake job (third-party code
+          runs there: Mesa) packs with --no-compress: modules stored as they are, no
+          zstandard, nothing compressed or decompressed there. The viewer reads those too.
+recompress
+          the package job (trusted) makes the bundle that is shipped from the bake job's
+          plain one: IN must pass check --stored-only (plain modules and no dictionary), run here
+          first, for the commit given with --commit, and what that read is what is written (one
+          read of the file, not a check and then another read),  OUT has the same programs and views with zstd frames and a trained
+          dictionary (needs python's zstandard: requirements-bundle.txt); every module is
+          decoded again and the manifest of OUT is the manifest of IN. Only this job's own
+          compression is shipped, and no frame or dictionary made by the bake job is ever
+          decoded, and what the compressor and the dictionary trainer (native code) read is
+          SPIR-V that has passed check --stored-only (recompress runs it first, on the one
+          read it then uses, for the commit the workflow expects). The bake job's
+          bytes are read by pure Python and by that native code after the check, in the trusted
+          package job only; research/363 section 5.3 says what that changes against format 1.
 info      the header, the counts and whether the trailer matches (exit 1 if not).
 manifest  one line a key: kind (program / view), the key, and the SHA-256 of
           what the key stands for (a program: each stage and its SPIR-V, then
@@ -29,17 +47,24 @@ check     a bundle made by another job (the release workflow's bake job, which
           runs Mesa), read back and nothing in it run: at most --max-bytes
           (default BUNDLE_MAX_BYTES, looked at before reading), the trailer, the
           header (BUNDLE_VERSION, the commit), the counts, every table and
-          entry in place, keys strictly ascending, whole SPIR-V modules with
+          entry in place, the dictionary (a trained zstd dictionary, at most
+          BUNDLE_MAX_DICTIONARY_BYTES, looked at whenever there is one), keys strictly
+          ascending, every zstd frame exactly one frame that decodes to the size its table
+          row says (the size in the frame's header is looked at before anything is decoded,
+          BUNDLE_MAX_MODULE_WORDS at most), whole SPIR-V modules with
           only the version, generator, memory model, capabilities, extensions
           and instruction sets glslang makes for this viewer (an allow list),
           known stages, reflections and GL views the viewer reads to their
           end, and with --manifest exactly the keys and contents listed there.
           Exit 1 when anything is off (check_bundle()). It checks the form,
-          not that the SPIR-V is the one the sources make.
+          not that the SPIR-V is the one the sources make. --stored-only: the bundle
+          must have plain modules and no dictionary (what the bake job hands over), so
+          that nothing needs zstandard to read it.
 
 The layout is the one in indra/llvulkan/llvkshader.cpp ("The shader bundle");
-change BUNDLE_VERSION in both. The viewer uses a bundle only when its header's
-versions are its own, and checks the trailer before it reads anything.
+change BUNDLE_VERSION in all three places: that file, this one and tools/pack-shader-bundle.py
+(predeliver checks that they agree). The viewer uses a bundle only when its header's versions
+are its own, and checks the trailer before it reads anything.
 
 No network. With numpy, XXH3 is much faster (pure Python works, slowly).
 """
@@ -60,8 +85,11 @@ except ImportError:     # the pure Python XXH3 below
 CACHE_MAGIC = 0x4B564C4C        # "LLVK", a .vkp file
 GL_VIEW_MAGIC = 0x56474C4C      # "LLGV", a .glv file
 BUNDLE_MAGIC = 0x42564C4C       # "LLVB"
-BUNDLE_VERSION = 1
-BUNDLE_HEADER = 96
+BUNDLE_VERSION = 2              # 2: modules are zstd frames with a dictionary (research/363)
+BUNDLE_HEADER = 112             # the 96 bytes of version 1, then u64 dictionary offset and u64 dictionary size
+BUNDLE_DICTIONARY_AT = 96
+BUNDLE_MAX_MODULE_WORDS = 1 << 18   # 1 MB; the biggest module is 40,000 words (llvkshader.cpp's limit)
+BUNDLE_MAX_DICTIONARY_BYTES = 1 << 24   # 16 MB (llvkshader.cpp's limit; the default dictionary is 2 MB)
 BUNDLE_COMMIT = 40
 BUNDLE_ENTRY = 24
 BUNDLE_MODULE_ENTRY = 16
@@ -377,11 +405,95 @@ def load_caches(dirs):
 
 # ---- writing -----------------------------------------------------------------
 
+def import_zstandard():
+    try:
+        import zstandard
+    except ImportError:
+        raise Stop('python zstandard is needed (requirements-bundle.txt: pip install --require-hashes --only-binary :all: '
+                   '--no-deps -r requirements-bundle.txt); a bundle without zstd frames or a dictionary needs none '
+                   '(pack --no-compress, check --stored-only)')
+    return zstandard
+
+
+class ZstdDecoder:
+    """Decodes the modules of a bundle. A frame is looked at before anything is decoded: its header must say the
+    size the table row says (so a frame cannot make a bigger buffer than the table allows); then the decoded
+    bytes must be that size."""
+
+    def __init__(self, dictionary):
+        self.zstandard = import_zstandard()
+        data = self.zstandard.ZstdCompressionDict(dictionary) if dictionary else None
+        try:
+            if data is not None and data.dict_id() == 0:
+                raise Stop('the dictionary is not a trained zstd dictionary (its id is 0)')
+            self.context = self.zstandard.ZstdDecompressor(dict_data=data)
+        except self.zstandard.ZstdError as e:
+            raise Stop('the dictionary does not load: %s' % e)
+
+    def decode(self, frame, size):
+        try:
+            declared = self.zstandard.frame_content_size(frame)
+            if declared != size:
+                raise Stop('a zstd frame says %d bytes, its table row %d' % (declared, size))
+            # allow_extra_data=False: bytes after the frame are an error (the viewer refuses them: llvkshader.cpp checks that
+            # the frame fills the stored bytes)
+            out = self.context.decompress(frame, max_output_size=size, allow_extra_data=False)
+        except self.zstandard.ZstdError as e:
+            raise Stop('a zstd frame does not decode: %s' % e)
+        if len(out) != size:
+            raise Stop('a zstd frame decodes to %d bytes, not %d' % (len(out), size))
+        return out
+
+
+class ZstdCodec:
+    """Makes the module list of a bundle: a dictionary trained on --dict-samples modules (--dict-size KB; none when
+    the training fails or the size is 0), every module a frame at --zstd-level (one that does not get smaller is stored
+    as it is: stored bytes == words * 4). Every frame is decoded again here and must give the module back."""
+
+    def __init__(self, level=19, dict_kb=2048, samples=400):
+        if not 0 <= dict_kb * 1024 <= BUNDLE_MAX_DICTIONARY_BYTES:
+            raise Stop('--dict-size %d KB: the viewer refuses a bundle whose dictionary is above %d bytes (0 to %d KB)'
+                       % (dict_kb, BUNDLE_MAX_DICTIONARY_BYTES, BUNDLE_MAX_DICTIONARY_BYTES // 1024))
+        self.level, self.dict_bytes, self.samples = level, dict_kb * 1024, samples
+        self.zstandard = import_zstandard()
+
+    def pack(self, module_list):
+        zstandard = self.zstandard
+        dictionary = b''
+        if self.dict_bytes and len(module_list) >= 8:
+            step = max(1, len(module_list) // max(1, self.samples))
+            chosen = [bytes(module_list[i]) for i in range(0, len(module_list), step)]
+            print('shaderbundle: training a %d KB dictionary on %d modules' % (self.dict_bytes // 1024, len(chosen)), flush=True)
+            try:
+                dictionary = zstandard.train_dictionary(self.dict_bytes, chosen, level=self.level).as_bytes()
+            except zstandard.ZstdError as e:
+                print('shaderbundle: no dictionary (the training failed: %s); frames without one' % e, flush=True)
+        elif self.dict_bytes:
+            print('shaderbundle: too few modules for a dictionary (%d); frames without one' % len(module_list), flush=True)
+        data = zstandard.ZstdCompressionDict(dictionary) if dictionary else None
+        compressor = zstandard.ZstdCompressor(level=self.level, dict_data=data, write_checksum=False, write_content_size=True)
+        decoder = ZstdDecoder(dictionary)
+        stored, packed = [], 0
+        for spirv in module_list:
+            spirv = bytes(spirv)
+            frame = compressor.compress(spirv)
+            if len(frame) >= len(spirv):
+                stored.append(spirv)
+                continue
+            if decoder.decode(frame, len(spirv)) != spirv:
+                raise Stop('a zstd frame does not give its module back')
+            stored.append(frame)
+            packed += 1
+        print('shaderbundle: %d of %d modules as zstd frames (level %d), %d stored as they are'
+              % (packed, len(module_list), self.level, len(module_list) - packed), flush=True)
+        return stored, dictionary
+
+
 def align(out, boundary):
     out.extend(b'\0' * (-len(out) % boundary))
 
 
-def build(programs, views, versions, commit):
+def build(programs, views, versions, commit, codec=None):
     """The bundle's bytes, and the number of programs left out for a cut SPIR-V module."""
     modules = {}            # SPIR-V bytes -> index
     module_list = []
@@ -395,6 +507,10 @@ def build(programs, views, versions, commit):
                 if not whole_module(spirv):
                     refs = None
                     break
+                if len(spirv) // 4 > BUNDLE_MAX_MODULE_WORDS:
+                    raise Stop('a SPIR-V module of %d words (the viewer reads no module above %d words: every program that has '
+                               'it would be compiled at run time instead): raise BUNDLE_MAX_MODULE_WORDS in llvkshader.cpp and both '
+                               'tools together, or fix the shader' % (len(spirv) // 4, BUNDLE_MAX_MODULE_WORDS))
                 index = modules[spirv] = len(module_list)
                 module_list.append(spirv)
             refs.append((lang, index))
@@ -411,6 +527,7 @@ def build(programs, views, versions, commit):
     view_table = program_table + BUNDLE_ENTRY * len(program_keys)
     module_table = view_table + BUNDLE_ENTRY * len(view_keys)
     out = bytearray(module_table + BUNDLE_MODULE_ENTRY * len(module_list))
+    stored_modules, dictionary = codec.pack(module_list) if codec else ([bytes(s) for s in module_list], b'')
 
     def place(items):       # equal contents once
         offsets, placed = {}, {}
@@ -426,10 +543,13 @@ def build(programs, views, versions, commit):
     program_at = place((k, bodies[k]) for k in program_keys)
     view_at = place((k, views[k]) for k in view_keys)
     module_at = []
-    for spirv in module_list:
+    for stored in stored_modules:
         align(out, 4)
         module_at.append(len(out))
-        out.extend(spirv)
+        out.extend(stored)
+    align(out, 4)
+    dictionary_at = len(out) if dictionary else 0
+    out.extend(dictionary)
     align(out, 4)
 
     struct.pack_into(HEADER_FORMAT, out, 0, BUNDLE_MAGIC, BUNDLE_VERSION, *versions,
@@ -440,19 +560,20 @@ def build(programs, views, versions, commit):
     for i, key in enumerate(view_keys):
         struct.pack_into('<QQII', out, view_table + i * BUNDLE_ENTRY, key, *view_at[key], 0)
     for i, spirv in enumerate(module_list):
-        struct.pack_into('<QII', out, module_table + i * BUNDLE_MODULE_ENTRY, module_at[i], len(spirv) // 4, 0)
+        struct.pack_into('<QII', out, module_table + i * BUNDLE_MODULE_ENTRY, module_at[i], len(stored_modules[i]), len(spirv) // 4)
+    struct.pack_into('<QQ', out, BUNDLE_DICTIONARY_AT, dictionary_at, len(dictionary))
     body = len(out)
     out.extend(struct.pack('<QQ', body, xxh3_64(out)))
     return bytes(out), cut
 
 
-def pack(dirs, output, commit):
+def pack(dirs, output, commit, codec=None):
     """Packs the cache folders into output (written to a temporary file, then put in place).
-    Returns a summary dict."""
+    codec: a ZstdCodec, or None for modules stored as they are. Returns a summary dict."""
     if np is None:
         print('shaderbundle: no numpy, XXH3 in pure Python (slower)', flush=True)
     programs, views, versions, bad = load_caches(dirs)
-    data, cut = build(programs, views, versions, commit)
+    data, cut = build(programs, views, versions, commit, codec)
     if cut:
         bad['vkp: a SPIR-V module is cut short'] += cut
     folder = os.path.dirname(os.path.abspath(output))
@@ -486,6 +607,10 @@ def _load(path):
     header = dict(zip(('magic', 'version', 'cache_version', 'view_version', 'glslang', 'programs', 'views',
                        'modules', 'program_table', 'view_table', 'module_table'), fields))
     header['commit'] = body[56:56 + BUNDLE_COMMIT].rstrip(b'\0').decode('ascii', 'replace')
+    if header['version'] != BUNDLE_VERSION:
+        raise Stop('%s: bundle version %d, not %d (this tool reads version %d; the viewer and the tool must agree)'
+                   % (path, header['version'], BUNDLE_VERSION, BUNDLE_VERSION))
+    header['dictionary_at'], header['dictionary_size'] = struct.unpack_from('<QQ', body, BUNDLE_DICTIONARY_AT)
     header['bytes'] = len(data)
     header['sha256'] = hashlib.sha256(data).hexdigest()
 
@@ -493,21 +618,62 @@ def _load(path):
         if at < BUNDLE_HEADER or at + count * size > len(body):
             raise Stop('%s: damaged (a table lies outside it)' % path)
         return [struct.unpack_from('<QQII' if size == BUNDLE_ENTRY else '<QII', body, at + i * size)
-                for i in range(count)]
+                for i in range(count)]    # a module row: offset, stored bytes, words
 
     return (header, body, table(header['program_table'], header['programs'], BUNDLE_ENTRY),
             table(header['view_table'], header['views'], BUNDLE_ENTRY),
             table(header['module_table'], header['modules'], BUNDLE_MODULE_ENTRY))
 
 
-def _assemble(path, body, program_rows, view_rows, module_rows):
-    """(programs {key: (modules [(stage, SPIR-V)], reflection)}, views {key: body}) from _load's rows."""
-    def chunk(at, size):
-        if at + size > len(body):
-            raise Stop('%s: damaged (an entry lies outside it)' % path)
-        return bytes(body[at:at + size])
+def _chunk(path, body, at, size):
+    if at + size > len(body):
+        raise Stop('%s: damaged (an entry lies outside it)' % path)
+    return bytes(body[at:at + size])
 
-    module_list = [chunk(at, words * 4) for at, words, _ in module_rows]
+
+def _check_dictionary(path, body, header):
+    """The dictionary, whenever the header has one (frames or not: the viewer refuses a bundle whose dictionary is not
+    a trained one, llvkshader.cpp): inside the data, at most BUNDLE_MAX_DICTIONARY_BYTES, magic, id not 0, and one the
+    decoder loads. Returns a ZstdDecoder (None when there is no dictionary)."""
+    size, at = header['dictionary_size'], header['dictionary_at']
+    if not size:
+        if at:
+            raise Stop('%s: no dictionary, but a dictionary offset %d' % (path, at))
+        return None
+    if size > BUNDLE_MAX_DICTIONARY_BYTES:
+        raise Stop('%s: a dictionary of %d bytes (at most %d)' % (path, size, BUNDLE_MAX_DICTIONARY_BYTES))
+    dictionary = _chunk(path, body, at, size)
+    if len(dictionary) < 8 or struct.unpack_from('<I', dictionary, 0)[0] != ZSTD_DICTIONARY_MAGIC \
+            or struct.unpack_from('<I', dictionary, 4)[0] == 0:
+        raise Stop('%s: the dictionary is not a trained zstd dictionary' % path)
+    return ZstdDecoder(dictionary)
+
+
+def _decode_modules(path, body, header, module_rows, allow_frames=True):
+    """The SPIR-V bytes of every module row (offset, stored bytes, words): stored as they are, or decoded from a zstd frame.
+    allow_frames=False (the bake job's bundle): a frame or a dictionary is refused, nothing is decoded."""
+    if not allow_frames and header['dictionary_size']:
+        raise Stop('%s: a dictionary in a bundle that must hold plain modules' % path)
+    decoder = _check_dictionary(path, body, header)       # None: no dictionary
+    module_list = []
+    for at, stored, words in module_rows:
+        if not 5 <= words <= BUNDLE_MAX_MODULE_WORDS or not 1 <= stored <= words * 4:
+            raise Stop('%s: damaged (a module of %d words stored in %d bytes)' % (path, words, stored))
+        frame = _chunk(path, body, at, stored)
+        if stored != words * 4:
+            if not allow_frames:
+                raise Stop('%s: a zstd frame in a bundle that must hold plain modules (module at %d)' % (path, at))
+            if decoder is None:         # frames without a dictionary (pack --dict-size 0, a failed training, too few modules)
+                decoder = ZstdDecoder(b'')
+            frame = decoder.decode(frame, words * 4)
+        module_list.append(frame)
+    return module_list
+
+
+def _assemble(path, body, program_rows, view_rows, module_list):
+    """(programs {key: (modules [(stage, SPIR-V)], reflection)}, views {key: body}) from _load's rows
+    and the decoded modules."""
+    chunk = lambda at, size: _chunk(path, body, at, size)    # noqa: E731
     programs = {}
     for key, at, size, _ in program_rows:
         entry = chunk(at, size)
@@ -531,15 +697,17 @@ def read_bundle(path):
     """(header {name: value}, programs {key: (modules [(stage, SPIR-V)], reflection)},
     views {key: body}). Stop when it is not a bundle, is damaged or a table points outside it."""
     header, body, program_rows, view_rows, module_rows = _load(path)
-    return (header,) + _assemble(path, body, program_rows, view_rows, module_rows)
+    return (header,) + _assemble(path, body, program_rows, view_rows, _decode_modules(path, body, header, module_rows))
 
 
 def describe(header):
     """Two lines about a bundle (info and the bake's log)."""
     return ('%d bytes, sha256 %s\n'
-            'version %d, CACHE_VERSION %d, GL_VIEW_VERSION %d, glslang %d, commit %s; %d programs, %d GL views, %d modules'
+            'version %d, CACHE_VERSION %d, GL_VIEW_VERSION %d, glslang %d, commit %s; %d programs, %d GL views, %d modules,'
+            ' dictionary %d bytes'
             % (header['bytes'], header['sha256'], header['version'], header['cache_version'], header['view_version'],
-               header['glslang'], header['commit'] or '?', header['programs'], header['views'], header['modules']))
+               header['glslang'], header['commit'] or '?', header['programs'], header['views'], header['modules'],
+               header['dictionary_size']))
 
 
 # ---- the manifest ------------------------------------------------------------
@@ -609,6 +777,7 @@ BUNDLE_MAX_BYTES = 512 << 20
 BUNDLE_MAX_ENTRIES = 1 << 20        # in each table
 MANIFEST_MAX_BYTES = 64 << 20
 MAX_PROGRAM_MODULES = ESH_LANG_COMPUTE + 1      # llvkshader.cpp's
+ZSTD_DICTIONARY_MAGIC = 0xEC30A437              # the first 4 bytes of a trained zstd dictionary
 
 # What glslang (the Vulkan SDK's, through the viewer) puts in the modules of this viewer's
 # bundles, and nothing else: an allow list against a bake that hands over modules made by
@@ -802,8 +971,12 @@ def _row_problems(kind, rows, data_start, body_size, keyed):
                 problems.append('%s: keys not strictly ascending (a key twice, or out of order)' % name)
             last = key
         else:
-            at, words, reserved = row
-            length, name = words * 4, '%s at %d' % (kind, at)
+            at, length, words = row      # a module: where, stored bytes, words
+            reserved = 0
+            name = '%s at %d' % (kind, at)
+            if not 5 <= words <= BUNDLE_MAX_MODULE_WORDS or length > words * 4:
+                problems.append('%s: %d words stored in %d bytes (5 to %d words, stored at most words * 4)'
+                                % (name, words, length, BUNDLE_MAX_MODULE_WORDS))
         if reserved != 0:
             problems.append('%s: reserved field %d' % (name, reserved))
         if not length or at < data_start or at % 4 or at + length > body_size:
@@ -814,7 +987,7 @@ def _row_problems(kind, rows, data_start, body_size, keyed):
     return problems
 
 
-def check_bundle(path, commit, manifest=None, max_bytes=BUNDLE_MAX_BYTES):
+def _check_bundle(path, commit, manifest=None, max_bytes=BUNDLE_MAX_BYTES, stored_only=False):
     """Reads a bundle made by another job (the release workflow's bake job, which runs Mesa) back
     and checks its form, without running anything in it: the size (before reading it), the
     trailer, the header (magic, BUNDLE_VERSION, the commit), the counts (1 to BUNDLE_MAX_ENTRIES),
@@ -854,16 +1027,21 @@ def check_bundle(path, commit, manifest=None, max_bytes=BUNDLE_MAX_BYTES):
     problems += _row_problems('module', module_rows, data_start, len(body), False)
     if problems:
         raise Stop('%s: %s' % (path, '; '.join(problems[:5])))
+    dictionary_at, dictionary_size = header['dictionary_at'], header['dictionary_size']
+    if dictionary_size and (dictionary_at < data_start or dictionary_at % 4 or dictionary_at + dictionary_size > len(body)):
+        raise Stop('%s: the dictionary (%d bytes at %d) is not inside the data (%d to %d, 4-byte aligned)'
+                   % (path, dictionary_size, dictionary_at, data_start, len(body)))
+    module_list = _decode_modules(path, body, header, module_rows, allow_frames=not stored_only)
     psb = 0
-    for at, words, _ in module_rows:
-        why, uses_psb = spirv_problem(body[at:at + words * 4])
+    for (at, _, _), spirv in zip(module_rows, module_list):
+        why, uses_psb = spirv_problem(spirv)
         if why:
             raise Stop('%s: the SPIR-V module at %d: %s' % (path, at, why))
         psb += uses_psb
     if psb > PHYSICAL_STORAGE_BUFFER_MAX_MODULES:
         raise Stop('%s: %d modules address physical storage buffers (at most %d)'
                    % (path, psb, PHYSICAL_STORAGE_BUFFER_MAX_MODULES))
-    programs, views = _assemble(path, body, program_rows, view_rows, module_rows)
+    programs, views = _assemble(path, body, program_rows, view_rows, module_list)
     for key, (mods, reflection) in programs.items():
         if not 1 <= len(mods) <= MAX_PROGRAM_MODULES or any(lang > ESH_LANG_COMPUTE for lang, _ in mods):
             raise Stop('%s: program %016x: %d modules or an unknown stage' % (path, key, len(mods)))
@@ -888,7 +1066,44 @@ def check_bundle(path, commit, manifest=None, max_bytes=BUNDLE_MAX_BYTES):
             raise Stop('%s is not the manifest of %s: %d keys only in the manifest, %d only in the bundle, '
                        '%d with other contents (first: %s %s)' % (manifest, path, len(missing), len(extra),
                                                                 len(differ), first[0], first[1]))
-    return header
+    return header, programs, views
+
+
+def check_bundle(path, commit, manifest=None, max_bytes=BUNDLE_MAX_BYTES, stored_only=False):
+    """_check_bundle for a caller that wants the header only (check, and the tests)."""
+    return _check_bundle(path, commit, manifest, max_bytes, stored_only)[0]
+
+
+def recompress(input_path, output_path, codec, commit):
+    """The shipped bundle from the bake job's plain one (see the module's docstring). The input is checked FIRST, by
+    check --stored-only against the commit the caller expects (the workflow gives $GITHUB_SHA; the size limit is looked at before
+    the file is read, the trailer, the layout, the SPIR-V allow list, plain modules, no dictionary), and what that read (header,
+    programs, views) is what is written again: the checked bytes and the used bytes are one read, not two. Written with zstd
+    frames and a dictionary (`codec`); the output is read back and its manifest must be the input's, entry by entry.
+    Returns a summary dict."""
+    header, programs, views = _check_bundle(input_path, commit, stored_only=True)
+    versions = (header['cache_version'], header['view_version'], header['glslang'])
+    data, cut = build(programs, views, versions, header['commit'], codec)
+    if cut:
+        raise Stop('%s: %d programs left out while writing (a SPIR-V module cut short)' % (input_path, cut))
+    folder = os.path.dirname(os.path.abspath(output_path))
+    os.makedirs(folder, exist_ok=True)
+    temp = output_path + '.tmp'
+    try:
+        with open(temp, 'wb') as f:
+            f.write(data)
+        os.replace(temp, output_path)
+    finally:
+        if os.path.exists(temp):
+            os.remove(temp)
+    out_header, out_programs, out_views = read_bundle(output_path)
+    if (manifest_lines(out_header, out_programs, out_views)[2:] != manifest_lines(header, programs, views)[2:]
+            or (out_header['cache_version'], out_header['view_version'], out_header['glslang'], out_header['commit'])
+            != versions + (header['commit'],)):
+        os.remove(output_path)
+        raise Stop('the recompressed bundle does not hold what the input held')
+    return {'bytes': len(data), 'input_bytes': header['bytes'], 'sha256': hashlib.sha256(data).hexdigest(),
+            'programs': len(programs), 'views': len(views)}
 
 
 # ---- command line --------------------------------------------------------------
@@ -900,6 +1115,10 @@ def main():
     p.add_argument('dirs', nargs='+')
     p.add_argument('-o', '--output', required=True)
     p.add_argument('--commit', required=True, help="the viewer's commit, for the header")
+    p.add_argument('--no-compress', action='store_true', help='modules stored as they are (no zstandard needed)')
+    p.add_argument('--zstd-level', type=int, default=19)
+    p.add_argument('--dict-size', type=int, default=2048, help='dictionary size in KB (0: none)')
+    p.add_argument('--dict-samples', type=int, default=400, help='modules the dictionary is trained on')
     p = sub.add_parser('info', help="a bundle's header and counts; exit 1 when damaged")
     p.add_argument('bundle')
     p = sub.add_parser('manifest', help='one line a key with the SHA-256 of its contents')
@@ -913,10 +1132,19 @@ def main():
     p.add_argument('--commit', required=True, help='the commit the bundle must be made for')
     p.add_argument('--manifest', help='the manifest that must list exactly its keys and contents')
     p.add_argument('--max-bytes', type=int, default=BUNDLE_MAX_BYTES)
+    p.add_argument('--stored-only', action='store_true', help='the bundle must hold plain modules and no dictionary')
+    p = sub.add_parser('recompress', help="the shipped bundle from the bake job's plain one (zstd frames, a trained dictionary)")
+    p.add_argument('input')
+    p.add_argument('output')
+    p.add_argument('--commit', required=True, help='the commit the input must be made for (checked before anything is used)')
+    p.add_argument('--zstd-level', type=int, default=19)
+    p.add_argument('--dict-size', type=int, default=2048, help='dictionary size in KB (0: none)')
+    p.add_argument('--dict-samples', type=int, default=400, help='modules the dictionary is trained on')
     a = ap.parse_args()
     try:
         if a.command == 'pack':
-            s = pack(a.dirs, a.output, a.commit)
+            codec = None if a.no_compress else ZstdCodec(a.zstd_level, a.dict_size, a.dict_samples)    # zstandard missing: at once
+            s = pack(a.dirs, a.output, a.commit, codec)
             print('%s: %d bytes, sha256 %s, %d programs, %d GL views' % (a.output, s['bytes'], s['sha256'],
                                                                          s['programs'], s['views']))
             for why, count in sorted(s['left_out'].items()):
@@ -931,9 +1159,13 @@ def main():
             else:
                 sys.stdout.write(text)
         elif a.command == 'check':
-            header = check_bundle(a.bundle, a.commit, a.manifest, a.max_bytes)
+            header = check_bundle(a.bundle, a.commit, a.manifest, a.max_bytes, a.stored_only)
             print('%s: %s' % (a.bundle, describe(header)))
             print('OK: a well-formed bundle for %s%s' % (a.commit, ', as its manifest lists' if a.manifest else ''))
+        elif a.command == 'recompress':
+            s = recompress(a.input, a.output, ZstdCodec(a.zstd_level, a.dict_size, a.dict_samples), a.commit)
+            print('%s: %d bytes (from %d), sha256 %s, %d programs, %d GL views, manifest equal to the input\'s'
+                  % (a.output, s['bytes'], s['input_bytes'], s['sha256'], s['programs'], s['views']))
         else:
             ok, counts, differ = compare_manifests(a.new, a.baseline)
             print(', '.join('%s %d' % kv for kv in sorted(counts.items())))

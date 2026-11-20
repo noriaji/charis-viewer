@@ -1,7 +1,7 @@
 /**
  * @file photoshot.h
  * @brief Photo tools: the one-press high resolution snapshot (no snapshot
- *        window), its size and shape, and whether the GPU's memory takes it.
+ *        window), its size and shape, and whether it is taken in one piece or in tiles (GPU memory).
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -26,6 +26,8 @@
 #define PLUS_PHOTOMODE_PHOTOSHOT_H
 
 #include <string>
+
+#include "stdtypes.h"
 
 namespace plus::photomode
 {
@@ -67,23 +69,29 @@ namespace plus::photomode
     // The picture a size and a shape make, for the window as it is now.
     ShotDims shotDims(int size, int aspect);
 
-    // Whether the GPU's memory takes a picture of this size on top of what is in use now. An estimate
-    // (PlusPhotoShotBytesPerPixel for the targets of the picture: the screen set, the shadow maps and the
-    // order-independent-transparency buffers; research/109), against the driver's budget. False with
-    // a reason for the user (from strings.xml, LLTrans) when it does not, or when the memory cannot be
-    // read (then only up to 4K).
-    bool shotFits(const ShotDims& dims, std::string& why_not, double* needed_gb = nullptr, double* free_gb = nullptr);
-
     // The GPU's memory as the driver tells it now, asked once for several sizes (the size menu).
     struct ShotMemory
     {
         bool   known   = false; // false: it cannot be read (the OpenGL path)
-        double room_gb = 0.0;   // the budget less what is in use
+        double room_gb = 0.0;   // the budget less what is in use, never below 0
     };
     ShotMemory shotMemory();
-    // shotFits() against memory asked before.
-    bool shotFits(const ShotDims& dims, const ShotMemory& memory, std::string& why_not, double* needed_gb = nullptr,
-                  double* free_gb = nullptr);
+
+    // Whether a picture of this size may be taken: false with a reason for the user (from strings.xml,
+    // LLTrans) only for a side over the limit, or when the memory cannot be read and it is over 4K. A
+    // shortage of GPU memory does not refuse it: the picture is taken in tiles (research/372). Against memory asked
+    // before (shotMemory()).
+    bool shotFits(const ShotDims& dims, const ShotMemory& memory, std::string& why_not);
+
+    // The estimate of the memory the targets of the picture need (PlusPhotoShotBytesPerPixel; the screen set,
+    // the shadow maps and the order-independent-transparency buffers; research/109). 0 for a picture the
+    // whole window holds, which rawSnapshot() takes without new targets.
+    double shotNeededGb(const ShotDims& dims);
+    // Whether the estimate (and a margin) is over the room: the picture is then taken in window-sized tiles
+    // (rawSnapshot's force_tiles), slower but with no big targets. False when the memory cannot be read.
+    // was_split: the size was split at the last look; it then stays so until there is 0.1 GB more room (the
+    // size menu passes it, so the note does not flicker; the shot itself asks with false).
+    bool shotWillSplit(const ShotDims& dims, const ShotMemory& memory, bool was_split = false);
 
     // What the one-press shot is doing.
     enum class ShotState
@@ -111,8 +119,8 @@ namespace plus::photomode
 
     // Takes the picture with the size and the shape that are set (PlusPhotoShotSize, PlusPhotoShotAspect), the
     // format and quality of the snapshot window (SnapshotFormat, SnapshotQuality), into the folder it saves to
-    // (SnapshotBaseDir; the Pictures folder when none was chosen yet). False if one is being taken or the
-    // memory cannot take this size (lastShot() says so). Not at once: the picture is taken a few frames later.
+    // (SnapshotBaseDir; the Pictures folder when none was chosen yet). False if one is being taken or the size
+    // is over the limit (lastShot() says so). A size the GPU memory does not take in one piece is taken in tiles. Not at once: the picture is taken a few frames later.
     bool takePhoto();
 
     void openLastShot();

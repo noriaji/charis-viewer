@@ -63,8 +63,10 @@ namespace LLRHI
         std::string version;
         std::string glsl_version;
         U32 vendor_id = 0;
-        U32 vram_mb = 0;                    // the GPU that renders (NVML, DXGI or the device heaps)
+        U32 vram_mb = 0;                    // the GPU that renders (NVML, DXGI or the device heaps); the override when sVRAMOverrideMB is set (research/371)
+        U32 vram_detected_mb = 0;           // research/371: what was detected, before sVRAMOverrideMB
         bool shared_memory = false;         // no VRAM of its own (integrated, virtual, CPU): vram_mb is a share of the PC's memory (igpu-safe)
+        U64 luid = 0;                       // the device's LUID (VkPhysicalDeviceIDProperties; on Windows the DXGI adapter's): which GPU, for plus/multiinstance. 0: not known
         S32 max_texture_units = 16;
         S32 max_samples = 1;
         S32 max_color_texture_samples = 1;
@@ -387,6 +389,14 @@ namespace LLRHI
     // under Vulkan let VRAM run past the driver's budget (4-5 fps). On unless
     // LLRHI_VK_BUDGET_REAL=0; vrambudget.toggle.
     extern bool sVRAMBudgetReal;
+    // research/371 (vram-core): the VRAM to pretend the GPU has, MB (0: none; settings FSOverrideVRAMDetection and
+    // FSForcedVideoMemory, or LLRHI_VRAM_OVERRIDE_MB, read before the window and the Vulkan device are made, so a
+    // restart applies it). Two effects: the detection answers it (DeviceInfo::vram_mb, so gGLManager.mVRAM, the feature
+    // table, the presets' recommendation and the sun maps' size follow), and LLVKDevice::vramBudget holds the driver's
+    // budget to it (the texture budget, the compactions, the scene's upload room and the rest follow). The real use is
+    // not changed and nothing is refused: a policy to test the low-VRAM paths, not a real limit. Written once on the
+    // main thread before any other thread reads it.
+    extern U32 sVRAMOverrideMB;
     // research/79: what each named texture's image takes (allocation size,
     // every level), written to bytes[i] for names[i] (0: no image). One call
     // for many names (one lock). Main thread. Null: not available.

@@ -34,13 +34,11 @@
 //               that sends or stores the viewer version (the login request,
 //               user agents, the exec markers, LastRunVersion, crash data)
 //               sees "0.1.0.<build>": four numbers, as the official viewer.
-//   Base        the official release this source is merged from: the channel
-//               name BASE_CHANNEL below and the number of
-//               indra/newview/VIEWER_VERSION.txt (official file, left as it
-//               is: an upstream merge brings the new number with it).
+// The official release number this source is merged from (indra/newview/VIEWER_VERSION.txt,
+// an official file) is the build's own input only: it is not shown or sent anywhere.
 //
 // What people read (About, the window title at start, the log) is displayVersion():
-//   "Charis Viewer 0.1.0 alpha 1 (rev 1967) based on Second Life Release 26.5.0"
+//   "Charis Viewer 0.1.0 alpha 1 (rev 1967)"
 // The window title once the world is up keeps the shorter shortTitle() in
 // front of what it says about the session (setTitlePlace(), setTitleStatus()).
 //
@@ -62,7 +60,7 @@ namespace plus::version
     // and its number: "alpha 1". STAGE "" for a release (nothing shown);
     // STAGE_NUMBER 0 shows the stage without a number ("beta").
     inline constexpr char STAGE[] = "alpha";
-    inline constexpr int STAGE_NUMBER = 2;
+    inline constexpr int STAGE_NUMBER = 3;
 
     // ---------------------------------------------------------------------
 
@@ -70,19 +68,13 @@ namespace plus::version
     // can be changed from the command line; this cannot).
     inline constexpr char PRODUCT_NAME[] = "Charis Viewer";
 
-    // The official viewer this build is based on (the number is VIEWER_VERSION.txt).
-    inline constexpr char BASE_CHANNEL[] = "Second Life Release";
-
     // "0.1.0"
     std::string shortVersion();
 
     // "alpha 1", "beta", or "" for a release
     std::string stage();
 
-    // "26.5.0": the official version this build is based on (VIEWER_VERSION.txt)
-    std::string baseVersion();
-
-    // "Charis Viewer 0.1.0 alpha 1 (rev 1967) based on Second Life Release 26.5.0"
+    // "Charis Viewer 0.1.0 alpha 1 (rev 1967)"
     std::string displayVersion();
 
     // The same with another name in front (the window title uses APP_NAME
@@ -90,7 +82,7 @@ namespace plus::version
     std::string displayVersion(const std::string& name);
 
     // "Charis Viewer 0.1.0 alpha 1 (rev 1967)": the version the window
-    // title always keeps (the base release is left out: too long for it).
+    // title always keeps (the same text as displayVersion()).
     std::string shortTitle(const std::string& name);
 
     // The main window's title after the start: shortTitle(APP_NAME), then

@@ -84,12 +84,6 @@ namespace plus
             enum Voiced : uint8_t { VOICED_NO = 0, VOICED_YES = 1, VOICED_UNKNOWN = 2 };
 
 #if LL_WINDOWS
-            // The longest line from the helper that is kept while its end has not come (a sentence is far shorter).
-            constexpr size_t MAX_PENDING = 1 << 20;
-
-            // How long stop() lets the helper obey QUIT before it is ended (on the main thread: keep it short).
-            constexpr DWORD QUIT_GRACE_MS = 100;
-
             // After the voice was heard, the radio waits this long before it is taken again (research/192).
             constexpr std::chrono::milliseconds VOICE_HOLD{ 1500 };
             // A voice chunk whose loudest sample is below this (about -44 dBFS) counts as silence.
@@ -405,7 +399,7 @@ namespace plus
             {
                 // Until the helper closes its output (it exited). A line that is no event we know fails
                 // parseLine() and is left out.
-                readLines(helper.fromHelper, MAX_PENDING, [this](const std::string& line) {
+                readLines(helper.fromHelper, HELPER_MAX_LINE, [this](const std::string& line) {
                     Event e;
                     bool ok = false;
                     parseLine(line, e, ok);
@@ -503,7 +497,7 @@ namespace plus
             // middle of a sentence only reads it when the sentence is done (a second or more), and the main
             // thread is not held for that: the helper keeps nothing, so ending it loses nothing.
             m.stopWriter = true;
-            m.helper.endWithin(QUIT_GRACE_MS);
+            m.helper.endWithin(HELPER_QUIT_GRACE_MS);
             Impl::finish(m.writer);
             Impl::finish(m.reader);
             // after the writer: it is the one that starts the tap, so it cannot start it again behind us

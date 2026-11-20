@@ -51,7 +51,7 @@
     <floater.string name="focus_st_click_locked">Held on the place clicked, [DIST] m away.</floater.string>
     <floater.string name="focus_st_click_none">Choose "Clicked Spot" again, then click the place.</floater.string>
     <floater.string name="shot_size_tip">How big the photo is (the long side)</floater.string>
-    <floater.string name="size_window">Same as window</floater.string>
+    <floater.string name="size_window">Window</floater.string>
     <floater.string name="size_2k">2K</floater.string>
     <floater.string name="size_4k">4K</floater.string>
     <floater.string name="size_6k">6K</floater.string>
@@ -65,6 +65,7 @@
     <floater.string name="aspect_2x3">2:3 (portrait)</floater.string>
     <floater.string name="shot_dims">[W] × [H], about [MP] MP</floater.string>
     <floater.string name="shot_dims_no">[W] × [H], about [MP] MP. Cannot be taken: [WHY]</floater.string>
+    <floater.string name="shot_dims_split">[W] × [H], about [MP] MP. The GPU memory is low, so it may be taken in pieces, which takes longer.</floater.string>
     <floater.string name="shot_ok">Saved: [FILE] ([W] × [H], [KB] KB, [S] s)</floater.string>
     <floater.string name="shot_fail">The photo was not taken. [WHY]</floater.string>
     <floater.string name="shot_none">No photo yet.</floater.string>
@@ -75,7 +76,8 @@
     <floater.string name="shot_btn_taking">Taking...</floater.string>
     <floater.string name="shot_btn_wait">Wait ([S] s)</floater.string>
     <floater.string name="shot_btn_wait_memory">Wait...</floater.string>
-    <floater.string name="why_memory">Not enough GPU memory: about [NEED] GB are needed, [FREE] GB are free.</floater.string>
+    <floater.string name="why_split">The GPU memory is tight for this size (it wants about [NEED] GB; [FREE] GB are free now), so the photo may be taken in pieces, which takes longer.</floater.string>
+    <floater.string name="size_split">(tiled)</floater.string>
     <floater.string name="why_side">The viewer takes at most 7680 pixels on a side.</floater.string>
     <floater.string name="why_unknown">The GPU memory cannot be read here, so only sizes up to 4K are allowed.</floater.string>
     <floater.string name="fav_missing">[NAME] (not found)</floater.string>
@@ -100,6 +102,19 @@
     <floater.string name="sky_list_open">Choose a Sky ▼</floater.string>
     <floater.string name="water_list_open">Choose a Water Setting ▼</floater.string>
     <floater.string name="env_list_close">Close ▲</floater.string>
+    <floater.string name="env_view_to_flat">List View</floater.string>
+    <floater.string name="env_view_to_tree">Tree View</floater.string>
+    <floater.string name="env_view_to_flat_tip">Show every item as one plain list, sorted by name</floater.string>
+    <floater.string name="env_view_to_tree_tip">Back to the folders of the inventory and the Library. (In the list: click a row to put it on; the arrow keys go through it.)</floater.string>
+    <floater.string name="env_flat_none">Nothing here yet. (The inventory may still be loading.)</floater.string>
+    <floater.string name="env_flat_library">(Library)</floater.string>
+    <floater.string name="env_flat_inventory">(Inventory)</floater.string>
+    <floater.string name="env_flat_library_in">(Library: [FOLDER])</floater.string>
+    <floater.string name="env_flat_folder">([FOLDER])</floater.string>
+    <floater.string name="env_prev_fav">The previous favorite</floater.string>
+    <floater.string name="env_next_fav">The next favorite</floater.string>
+    <floater.string name="env_prev_flat">The previous one in the list</floater.string>
+    <floater.string name="env_next_flat">The next one in the list</floater.string>
     <floater.string name="gaze_open">- Eye Tuning</floater.string>
     <floater.string name="gaze_closed">+ Eye Tuning</floater.string>
     <floater.string name="sky_mark_classic">(old format)</floater.string>
@@ -156,6 +171,7 @@
     <floater.string name="look_recent_empty">Looks you put on in this window are listed here.</floater.string>
     <floater.string name="look_none_found">No looks found.</floater.string>
     <floater.string name="look_fav_full">There are 100 favorite looks already. Remove one first.</floater.string>
+    <floater.string name="look_fav_pruned">[COUNT] look(s) that are gone were taken off the favorites.</floater.string>
     <floater.string name="look_reloaded">Looks read again: [SHIPPED] built-in, [USER] of yours.</floater.string>
     <floater.string name="easy_title">Adjust</floater.string>
     <floater.string name="pins_title">Favorites</floater.string>

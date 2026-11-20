@@ -218,6 +218,8 @@ private:
     void updateMaxNonImpostors();
     void updateIndirectMaxNonImpostors(const LLSD& newvalue);
     void setMaxNonImpostorsText(U32 value, LLTextBox* text_box);
+    void updateDistanceSlider(const LLSD& name); // <plus> research/343, 344: the slider of PlusAvatarFullDistance or PlusAvatarSilhouetteDistance </plus>
+    static void setFullDistanceText(F32 value, LLTextBox* text_box); // <plus> research/343 </plus>
     void updateMaxComplexity();
     void updateComplexityText();
     static bool loadFromFilename(const std::string& filename, std::map<std::string, std::string> &label_map);

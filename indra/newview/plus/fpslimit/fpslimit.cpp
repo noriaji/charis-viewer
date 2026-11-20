@@ -28,6 +28,7 @@
 
 #include "plus.h"
 #include "plus/fpslimit/fpslimit.h"
+#include "plus/multiinstance/multiinstance.h"
 
 #include "llrhi.h"
 #include "llperfstats.h"
@@ -176,7 +177,13 @@ namespace plus::fpslimit
     void wait()
     {
         static LLCachedControl<S32> limit(gSavedSettings, SETTING_LIMIT, 0);
-        const S32 fps = limit;
+        S32 fps = limit;
+        // research/337 (plus/multiinstance): while another Charis viewer on this GPU is in front, its cap too (the lower)
+        const S32 yield_cap = plus::multiinstance::fpsCap();
+        if (yield_cap > 0)
+        {
+            fps = fps > 0 ? llmin(fps, yield_cap) : yield_cap;
+        }
         if (fps <= 0)
         {
             sHaveNext = false;

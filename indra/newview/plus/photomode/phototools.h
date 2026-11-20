@@ -201,6 +201,8 @@ namespace plus::photomode
     // --- The user's own presets --------------------------------------------------
     constexpr int MAX_MY_PRESETS = 32;
     std::vector<std::string> myPresetNames();
+    std::string myPresetsStamp();   // every preset's name and saved time in one string: changes when the list or a time does (for a redraw check)
+    std::string myPresetSavedText(const std::string& name);   // when it was saved ("10/30 18:42", with the year if not this one), "" if not known
     // Saves the values of every item that does not rebuild the pipeline, under the name (an old one with it is replaced).
     // False for an empty name, and for a new name when MAX_MY_PRESETS are saved.
     bool saveMyPreset(const std::string& name);

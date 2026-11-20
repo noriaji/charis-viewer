@@ -85,6 +85,13 @@ public:
     // Return a high precision seconds since epoch
     static F64SecondsImplicit getTotalSeconds();
 
+    // <plus> mono-clock: getTotalTime/getTotalSeconds above are monotonic (they never jump when the PC's
+    // clock is changed) and on the Unix epoch scale; these two are the system clock, for the real date /
+    // time of day (they follow clock changes)
+    static U64MicrosecondsImplicit getWallTime();
+    static F64SecondsImplicit getWallSeconds();
+    // </plus>
+
 
     // MANIPULATORS
     void start() { reset(); mStarted = true; }
@@ -121,9 +128,6 @@ struct TimerInfo
 
     F64HertzImplicit        mClockFrequency;
     F64SecondsImplicit      mClockFrequencyInv;
-    F64MicrosecondsImplicit mClocksToMicroseconds;
-    U64                     mTotalTimeClockCount;
-    U64                     mLastTotalTimeClockCount;
 };
 
 TimerInfo& get_timer_info();
@@ -184,5 +188,9 @@ LL_COMMON_API void microsecondsToTimecodeString(U64MicrosecondsImplicit current_
 LL_COMMON_API void secondsToTimecodeString(F32SecondsImplicit current_time, std::string& tcstring);
 
 U64MicrosecondsImplicit LL_COMMON_API totalTime();                  // Returns current system time in microseconds
+// <plus> mono-clock: totalTime() is monotonic, on the Unix epoch scale (use it for elapsed time). wallTime() is
+// the system clock in microseconds (use only where the real date or time of day is needed)
+U64MicrosecondsImplicit LL_COMMON_API wallTime();
+// </plus>
 
 #endif

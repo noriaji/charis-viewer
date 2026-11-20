@@ -260,6 +260,32 @@ private:
     LLPointer<LLImageRaw> plusReadFastCache(U32 offset, S32& discardlevel, bool& handled);
     // </plus>
 
+    // <plus> research/337 (C): the entry read back from texture.entries at the index's position is checked to be this
+    // texture's. A read-only start (a second one) has the index as it was when it started, and the first one may have
+    // given that position to another texture since; the fast cache (read at the same position, on the main thread) is
+    // checked against the entry too in a read-only start. Counted (the cache thread under mHeaderMutex, the main
+    // thread) and logged from update (main thread), once a PLUS_INDEX_LOG_SECONDS window: a read-only start the first
+    // PLUS_INDEX_LOG_FIRST windows it reads in, then only windows where something did not match; a writer only when one
+    // did not match.
+    static constexpr F64 PLUS_INDEX_LOG_SECONDS = 20.0;
+    static constexpr U32 PLUS_INDEX_LOG_FIRST = 3;
+    std::atomic<U32> mPlusIndexReads{ 0 };          // entries read back for a read or a removal (this window)
+    std::atomic<U32> mPlusIndexWrites{ 0 };         // entries read back for a write (setHeaderCacheEntry; a writer only)
+    std::atomic<U32> mPlusIndexOther{ 0 };          // ... of both, that were another texture's
+    std::atomic<U32> mPlusIndexFreed{ 0 };          // ... that were this texture's but no longer valid (read-only: let go of, not removed)
+    std::atomic<U32> mPlusFastChecked{ 0 };         // read-only: fast cache records looked at (main thread)
+    std::atomic<U32> mPlusFastOther{ 0 };           // ... whose entry was not this texture's any more (not used)
+    U64 mPlusIndexOtherTotal = 0;                   // main thread (the log)
+    U64 mPlusIndexFreedTotal = 0;                   // main thread (the log)
+    U64 mPlusFastOtherTotal = 0;                    // main thread (the log)
+    U32 mPlusIndexWindowsLogged = 0;                // main thread: read-only windows logged with nothing found
+    F64 mPlusIndexLogAt = 0.0;                      // main thread, LLFrameTimer::getTotalSeconds; 0: the first window not started
+    bool plusDropStaleEntry(const LLUUID& id, S32 idx, const Entry& entry);
+    bool plusFastEntryIsFor(const LLUUID& id, U32 idx);
+    void plusForgetTexture(const LLUUID& id);
+    void plusLogIndexChecks();
+    // </plus>
+
     // BODIES (TEXTURES minus headers)
     std::string mTexturesDirName;
     typedef std::map<LLUUID,S32> size_map_t;

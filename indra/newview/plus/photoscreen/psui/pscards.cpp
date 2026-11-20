@@ -52,6 +52,21 @@ namespace plus::psui
         LLDefaultChildRegistry::Register<PsTab>        sTabRegistration("plus_ps_tab");
         LLDefaultChildRegistry::Register<PsListRow>    sListRowRegistration("plus_ps_list_row");
 
+        // A card's name with its second line under it (the name alone: in the middle), as PsCard and the
+        // preset card draw them. x is the left of the words, middle the card's vertical middle; the name may have
+        // less room than the second line (the preset card's "x" is on the name's line).
+        void drawNameAndSubtitle(const LLFontGL* title_font, const LLWString& title, const LLFontGL* sub_font,
+                                 const LLWString& subtitle, F32 x, F32 middle, F32 alpha, S32 name_room, S32 sub_room)
+        {
+            if (subtitle.empty())
+            {
+                drawText(title_font, title, x, middle, faded(style::TEXT_WHITE, alpha), LLFontGL::LEFT, LLFontGL::VCENTER, name_room, true);
+                return;
+            }
+            drawText(title_font, title, x, middle + 1.f, faded(style::TEXT_WHITE, alpha), LLFontGL::LEFT, LLFontGL::BOTTOM, name_room, true);
+            drawText(sub_font, subtitle, x, middle - 2.f, faded(style::TEXT_SUB, alpha), LLFontGL::LEFT, LLFontGL::TOP, sub_room, true);
+        }
+
         // A width that changed inside a row moves the row's other children.
         void rearrangeParent(LLView* view)
         {
@@ -428,15 +443,7 @@ namespace plus::psui
         const F32 x = pic.mRight + F32(style::CARD_TEXT_GAP);
         const F32 more_room = mMore ? F32(style::CARD_MORE_ICON + 2 * style::HEAD_PAD) : F32(style::HEAD_PAD);
         const S32 room = llmax(0, S32(w - x - more_room));
-        if (mSubtitleW.empty())
-        {
-            drawText(mTitleFont, mLabelW, x, h * 0.5f, faded(style::TEXT_WHITE, a), LLFontGL::LEFT, LLFontGL::VCENTER, room, true);
-        }
-        else
-        {
-            drawText(mTitleFont, mLabelW, x, h * 0.5f + 1.f, faded(style::TEXT_WHITE, a), LLFontGL::LEFT, LLFontGL::BOTTOM, room, true);
-            drawText(mSubFont, mSubtitleW, x, h * 0.5f - 2.f, faded(style::TEXT_SUB, a), LLFontGL::LEFT, LLFontGL::TOP, room, true);
-        }
+        drawNameAndSubtitle(mTitleFont, mLabelW, mSubFont, mSubtitleW, x, h * 0.5f, a, room, room);
         if (mMore)
         {
             drawIcon(mMoreIcon.get(), w - F32(style::HEAD_PAD) - F32(style::CARD_MORE_ICON) * 0.5f, h * 0.5f,
@@ -493,7 +500,8 @@ namespace plus::psui
     PsPresetCard::Params::Params()
     :   subtitle("subtitle"),
         image("image"),
-        deletable("deletable", false)
+        deletable("deletable", false),
+        compact("compact", false)
     {
         tab_stop(true);
     }
@@ -501,6 +509,7 @@ namespace plus::psui
     PsPresetCard::PsPresetCard(const Params& p)
     :   PsCtrl(p),
         mDeletable(p.deletable),
+        mCompact(p.compact),
         mTitleFont(font(style::FONT_BUTTON)),
         mSubFont(font(style::FONT_SMALL)),
         mClose(icon("close"))
@@ -529,14 +538,15 @@ namespace plus::psui
     {
         const F32 w = F32(getRect().getWidth());
         const F32 h = F32(getRect().getHeight());
-        return LLRectf(0.f, h, w, h - F32(style::PRESET_PICTURE_HEIGHT));
+        return LLRectf(0.f, h, w, mCompact ? 0.f : h - F32(style::PRESET_PICTURE_HEIGHT));
     }
 
     LLRectf PsPresetCard::closeRect() const
     {
         const LLRectf pic = pictureRect();
         const F32 s = F32(style::PRESET_CLOSE);
-        return LLRectf(pic.mRight - 5.f - s, pic.mTop - 5.f, pic.mRight - 5.f, pic.mTop - 5.f - s);
+        const F32 inset = mCompact ? F32(style::PRESET_COMPACT_PAD) : 5.f;
+        return LLRectf(pic.mRight - inset - s, pic.mTop - inset, pic.mRight - inset, pic.mTop - inset - s);
     }
 
     void PsPresetCard::onClick(S32 x, S32 y)
@@ -549,8 +559,46 @@ namespace plus::psui
         commitChange();
     }
 
+    // The card of words only: the box of the other cards (CARD_FILL, CARD_BORDER), the name over the second line.
+    void PsPresetCard::drawCompact()
+    {
+        const LLRectf r = localRectf();
+        const F32 a = drawAlpha();
+        const bool hover = mHover && getEnabled();
+        LLColor4 fill = style::CARD_FILL;
+        if (mPressed)    fill = pressed(fill);
+        else if (hover)  fill = hovered(fill);
+        drawRoundBordered(r, style::CARD_RADIUS, Fill::solid(faded(fill, a)), faded(style::CARD_BORDER, a));
+        if (mChosen)
+        {
+            drawRing(r, style::CARD_RADIUS, 2.f, faded(style::PRESET_SELECTED_BORDER, a));
+        }
+        else if (hover)
+        {
+            drawRing(r, style::CARD_RADIUS, 1.f, faded(style::PRESET_HOVER_BORDER, a));
+        }
+        const F32 x = F32(style::PRESET_COMPACT_PAD);
+        const bool close = hover && mDeletable && mOnDelete;     // the "x" takes room from the words only while it shows
+        const S32 room = llmax(0, S32(r.getWidth() - 2.f * x));
+        const S32 name_room = llmax(0, room - (close ? style::PRESET_CLOSE + style::PRESET_COMPACT_GAP : 0));   // the "x" is on the name's line only
+        drawNameAndSubtitle(mTitleFont, mLabelW, mSubFont, mSubtitleW, x, r.getHeight() * 0.5f, a, name_room, room);
+        if (close)
+        {
+            const LLRectf c = closeRect();
+            drawCircle(c.getCenterX(), c.getCenterY(), c.getWidth() * 0.5f, Fill::solid(faded(style::PRESET_CLOSE_FILL, a)));
+            drawIcon(mClose.get(), c.getCenterX(), c.getCenterY(), style::PRESET_CLOSE - 6, faded(LLColor4::white, a));
+        }
+        drawSearchHighlight(r);
+        drawFocusRing(r, style::CARD_RADIUS);
+    }
+
     void PsPresetCard::draw()
     {
+        if (mCompact)
+        {
+            drawCompact();
+            return;
+        }
         const F32 a = drawAlpha();
         const LLRectf pic = pictureRect();
         const bool hover = mHover && getEnabled();
@@ -618,9 +666,21 @@ namespace plus::psui
         }
         drawRoundBordered(r, style::CARD_RADIUS, Fill::solid(faded(fill, a)), faded(border, a));
         const F32 h = r.getHeight();
-        drawIcon(mIcon.get(), r.getCenterX(), h * 0.58f, style::ADD_ICON, faded(style::ICON_LIGHT, a));
-        drawText(mFont, mLabelW, r.getCenterX(), h * 0.30f, faded(style::TEXT_WHITE, a), LLFontGL::HCENTER,
-                 LLFontGL::VCENTER, S32(r.getWidth()) - 8, true);
+        if (h < F32(style::ADD_ICON) * 2.f)
+        {
+            // a low card (the preset strip's, words only): the icon at the left of the words, not over them
+            const F32 icon_x = F32(style::ADD_COMPACT_ICON_X) + F32(style::ADD_ICON) * 0.5f;
+            drawIcon(mIcon.get(), icon_x, h * 0.5f, style::ADD_ICON, faded(style::ICON_LIGHT, a));
+            const F32 text_x = icon_x + F32(style::ADD_ICON) * 0.5f + F32(style::ADD_COMPACT_GAP);
+            drawText(mFont, mLabelW, text_x, h * 0.5f, faded(style::TEXT_WHITE, a), LLFontGL::LEFT,
+                     LLFontGL::VCENTER, S32(r.getWidth() - text_x) - style::PRESET_COMPACT_PAD, true);
+        }
+        else
+        {
+            drawIcon(mIcon.get(), r.getCenterX(), h * 0.58f, style::ADD_ICON, faded(style::ICON_LIGHT, a));
+            drawText(mFont, mLabelW, r.getCenterX(), h * 0.30f, faded(style::TEXT_WHITE, a), LLFontGL::HCENTER,
+                     LLFontGL::VCENTER, S32(r.getWidth()) - 8, true);
+        }
         drawSearchHighlight(r);
         drawFocusRing(r, style::CARD_RADIUS);
     }

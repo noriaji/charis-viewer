@@ -56,7 +56,7 @@
              name="chat_scroll_panel"
              background_visible="false"
              follows="left|top"
-             height="954"
+             height="989"
              layout="topleft"
              left="0"
              mouse_opaque="false"
@@ -593,13 +593,13 @@
                      width="529" />
                 </panel>
 
-                <!-- Conversation logs: 165 -->
+                <!-- Conversation logs: 200 -->
                 <panel
                  name="log_settings"
                  background_visible="false"
                  border="false"
                  follows="left|top"
-                 height="165"
+                 height="200"
                  layout="topleft"
                  left="0"
                  mouse_opaque="false"
@@ -731,6 +731,18 @@
                         <plus_ps_button_compat.commit_callback
                          function="Pref.LogPath" />
                     </plus_ps_button_compat>
+                    <!-- plus chat-history-off: the setting is per account; off = no past log is loaded on login -->
+                    <plus_ps_check_compat
+                     name="log_show_history"
+                     control_name="LogShowHistory"
+                     follows="left|top|right"
+                     height="30"
+                     label="Show past chat log when logging in"
+                     layout="topleft"
+                     left="14"
+                     top="165"
+                     width="529" />
+                    <!-- /plus -->
                 </panel>
 
                 <!-- Translation and typing aids: 86 -->
@@ -743,7 +755,7 @@
                  layout="topleft"
                  left="14"
                  size="sub"
-                 top="854"
+                 top="889"
                  width="529" />
                 <plus_ps_button_compat
                  name="ok_btn"
@@ -752,7 +764,7 @@
                  label="Translation..."
                  layout="topleft"
                  left="14"
-                 top="900"
+                 top="935"
                  width="170">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.TranslationSettings" />
@@ -765,7 +777,7 @@
                  label="Auto-Replace..."
                  layout="topleft"
                  left="193"
-                 top="900"
+                 top="935"
                  width="170" />
                 <plus_ps_button_compat
                  name="spellcheck_showgui"
@@ -775,7 +787,7 @@
                  label="Spell Checking..."
                  layout="topleft"
                  left="372"
-                 top="900"
+                 top="935"
                  width="171" />
             </panel>
         </scroll_container>

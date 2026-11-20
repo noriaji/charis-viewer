@@ -136,7 +136,8 @@ namespace
     // the same order and the same size.
     bool same_target(const LLRHI::PassTarget& named, const ResolvedTarget& bound)
     {
-        if (bound.is_default || named.color_count > 4 || bound.color_textures != named.color_count)
+        static_assert(LLRHI::PASS_MAX_COLORS == LLVKMirror::MAX_COLORS, "a pass names every colour attachment a target may have");
+        if (bound.is_default || named.color_count > LLRHI::PASS_MAX_COLORS || bound.color_textures != named.color_count)
         {
             return false;
         }

@@ -83,7 +83,7 @@ namespace plus::photomode
                 LookChoice choice;
                 choice.id     = id;
                 choice.label  = plus::look::labelOf(id);
-                choice.exists = !choice.label.empty();
+                choice.exists = plus::look::exists(id);
                 choice.user   = id.rfind("user:", 0) == 0;
                 list.push_back(choice);
             }
@@ -152,6 +152,19 @@ namespace plus::photomode
             ids.erase(end, ids.end());
             writeIds(SETTING_FAVORITES, ids);
         }
+    }
+
+    size_t removeMissingFavoriteLooks()
+    {
+        std::vector<std::string> ids = readIds(SETTING_FAVORITES);
+        const auto end = std::remove_if(ids.begin(), ids.end(), [](const std::string& id) { return !plus::look::exists(id); });
+        const size_t gone = static_cast<size_t>(ids.end() - end);
+        if (gone > 0)
+        {
+            ids.erase(end, ids.end());
+            writeIds(SETTING_FAVORITES, ids);
+        }
+        return gone;
     }
 
     std::string currentLook()

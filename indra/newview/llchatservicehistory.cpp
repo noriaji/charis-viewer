@@ -2096,7 +2096,10 @@ bool clickTicks(U64& ticks)
 {
     // Convert the click-time microsecond clock into the inclusive final UUIDv1 tick
     // for that microsecond using checked integer arithmetic only.
-    const U64 sampled = LLTimer::getTotalTime();
+    // <plus> mono-clock: a wall clock (like time_corrected() that stamps the messages) + gUTCOffset; the
+    // monotonic totalTime() drifts from the messages' times when the PC's clock changes, and this boundary is saved
+    const U64 sampled = LLTimer::getWallTime();
+    // </plus>
     if (sampled > static_cast<U64>(LLONG_MAX))
     {
         return false;
@@ -2741,6 +2744,39 @@ void LLChatServiceHistory::History::stop()
 void LLChatServiceHistory::History::publish(const Snapshot& snapshot)
 {
     mCallback(composeHistory(mHistory, snapshot, mLimit, mSessionID));
+}
+
+LLSD LLChatServiceHistory::History::outgoingContext(const LLUUID& resident_id) const
+{
+    // Include consumed session rows so a new echo cannot reassign their older matches.
+    TimeUuidKey latest = mHistory.latestServiceKey();
+
+    // Account history survives a stopped view, and a validated preview may be newer
+    // than the session's last publication or its pending archive read.
+    const auto found = sRuntime.residents.find(resident_id);
+    if (found != sRuntime.residents.end())
+    {
+        const Resident& resident = found->second;
+        if (resident.summary.has_oldest)
+        {
+            if (latest == TimeUuidKey() || latest < resident.summary.newest)
+            {
+                latest = resident.summary.newest;
+            }
+        }
+        for (const Row& row : resident.snapshot.head_preview)
+        {
+            if (latest == TimeUuidKey() || latest < row.key)
+            {
+                latest = row.key;
+            }
+        }
+    }
+
+    // An empty string still records that capture happened before this send.
+    LLSD context;
+    context["chat_service_after_msg_id"] = formatTimeUuid(latest);
+    return context;
 }
 
 void LLChatServiceHistory::History::reload()

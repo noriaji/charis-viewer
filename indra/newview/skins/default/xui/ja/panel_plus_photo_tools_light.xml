@@ -10,6 +10,7 @@
 				<button name="btn_sky_fav_sort" label="名前順" tool_tip="お気に入りの空を名前の順に並べます" />
 				<text name="title_sky">空</text>
 				<button name="btn_sky_list_toggle" label="空を選ぶ" tool_tip="空の一覧を開く／閉じる" />
+				<button name="btn_sky_view_toggle" label="一覧表示" />
 				<text name="sky_current">今:</text>
 				<button name="btn_sky_land" label="土地の空に戻す" tool_tip="その土地の空に戻します（水面はそのまま）" />
 				<filter_editor name="flt_sky" label="空を検索" />
@@ -21,6 +22,7 @@
 			<panel name="sec_water">
 				<text name="title_water">水面</text>
 				<button name="btn_water_list_toggle" label="水面を選ぶ" tool_tip="水面の一覧を開く／閉じる" />
+				<button name="btn_water_view_toggle" label="一覧表示" />
 				<text name="water_current">今:</text>
 				<button name="btn_water_land" label="土地の水面に戻す" tool_tip="その土地の水面に戻します（空はそのまま）" />
 				<button name="btn_water_cur_star" tool_tip="今の水面をお気に入りに入れます" />

@@ -8126,7 +8126,7 @@
   <key>RenderMaxVRAMBudget</key>
   <map>
     <key>Comment</key>
-    <string>Maximum amount of texture memory to budget for (in MB), or 0 for autodetect.</string>
+    <string>Maximum amount of texture memory to budget for (in MB, at least 768), used while FSLimitTextureVRAMUsage is on; otherwise autodetect.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -16832,7 +16832,7 @@
       <key>Persist</key>
       <integer>1</integer>
       <key>Type</key>
-      <string>Boolean</string>
+      <string>S32</string>
       <key>Value</key>
       <integer>1</integer>
     </map>

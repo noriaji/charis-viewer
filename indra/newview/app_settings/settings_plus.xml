@@ -95,6 +95,58 @@
     <key>Value</key>
     <real>0.5</real>
   </map>
+  <!-- poseconsent (who may ask to pose my avatar; research/336) -->
+  <key>PlusPoseAskPolicy</key>
+  <map>
+    <key>Comment</key>
+    <string>Whose requests to pose your avatar (on their own screen only, Aurora compatible) are shown to you: 0 everyone, 1 friends, 2 nobody. The others' requests are dropped without an answer. While your pose bridge (PlusPoseBridgeEnable) is off or not working, requests are dropped, as with 2. People you blocked from asking are never shown (plus_pose_consent.xml of the account). Per account: the consent is given for each account (another account starts from friends).</string>
+    <key>PerAccount</key>
+    <integer>1</integer>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <!-- poseshare (your own pose shown to the Charis Viewers near you, and theirs on your screen; research/374) -->
+  <key>PlusPoseShareMode</key>
+  <map>
+    <key>Comment</key>
+    <string>Who gets the pose of your own avatar, to see on their screen, while you pose it in the poser: 0 nobody, 1 friends only, 2 everyone near (100 m). The pose goes through your pose bridge (PlusPoseBridgeEnable) to the other Charis Viewers near; other viewers see nothing. Friends only is kept by the other person's viewer (an agreement between Charis Viewers, not a lock). Per account.</string>
+    <key>PerAccount</key>
+    <integer>1</integer>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>PlusPoseShareReceive</key>
+  <map>
+    <key>Comment</key>
+    <string>Whose shared pose (see PlusPoseShareMode) is shown on your screen: 0 nobody, 1 friends only, 2 everyone. Needs your pose bridge. People you muted or blocked (plus_pose_consent.xml of the account) are never shown. 0 also stops a pose a friend you allowed sets on your own avatar (Reflect, research/374b). Per account.</string>
+    <key>PerAccount</key>
+    <integer>1</integer>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusPoseConsentSettable</key>
+  <map>
+    <key>Comment</key>
+    <string>Not a choice (set by the viewer, never saved): true once logged in (STATE_STARTED). Preferences > Privacy enables the pose bridge's check box and "Who may ask to pose my avatar" with it, as both are per account: changed at the login screen they would be written before the account's own values are read.</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
   <!-- posermcp (the local MCP endpoint: poser and inventory search) -->
   <key>PlusPoserIKKeepFloor</key>
   <map>
@@ -111,6 +163,40 @@
   <map>
     <key>Comment</key>
     <string>Poser IK drag: joints stop at the range of a person (off: they may bend any way).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <!-- Motion Between Poses (plus/posermotion, research/324) -->
+  <key>PlusPoserMotionThreads</key>
+  <map>
+    <key>Comment</key>
+    <string>Motion Between Poses: threads the motion helper (charis-motion.exe) runs the model on, 0 to 16. 0: the physical cores, at most 4. Counts from the next start of the helper.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>PlusPoserMotionLog</key>
+  <map>
+    <key>Comment</key>
+    <string>Motion Between Poses: one diagnostic line per generated motion (frames, the helper's milliseconds, the conversion's milliseconds, the largest error at the ends). No names or paths.</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>PlusDestinationsPageLang</key>
+  <map>
+    <key>Comment</key>
+    <string>Destinations: after the guide page loads, ask the page's translator (Weglot) for the viewer's language, so a reload does not bring English back. Off: the page keeps whatever language it chooses.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -150,6 +236,34 @@
     <string>Boolean</string>
     <key>Value</key>
     <integer>1</integer>
+  </map>
+  <key>PlusPoseBridgeEnable</key>
+  <map>
+    <key>Comment</key>
+    <string>The pose bridge (plus/lslbridge, research/336, 353): a small invisible HUD object with a script that carries the requests to pose someone's avatar on your own screen, and theirs to you (Aurora compatible). On (the default, as Firestorm's and Aurora's bridges): the viewer copies it from the Library into the #Charis folder once logged in and the outfit is on, wears it on HUD Center 2 and repairs it; its failures are shown only when you turned it on in this session (else the log only). Off (Preferences > Privacy): it is taken off (it stays in #Charis), and you can neither ask nor be asked. Not made or worn in a safe start (the setting is kept). Per account: each account can turn it off. It talks only to its own HTTP-in address in Second Life (no other server). Privacy: Charis never shows its lines; logged in with another viewer while it is worn, that viewer shows its owner-only lines (with its address and token) in your nearby chat until it takes itself off (45 s).</string>
+    <key>PerAccount</key>
+    <integer>1</integer>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusPoseBridgeItem</key>
+  <map>
+    <key>Comment</key>
+    <string>The pose bridge object this viewer made for the account (its inventory item UUID, written by plus/lslbridge when it copies the library object). Only this object is worn and listened to as the bridge: an object of the same name and folder given by someone else is left alone. Empty: none made yet (a new one is made). Hidden from the Debug Settings: a UUID typed in there would make that object the bridge.</string>
+    <key>HideFromEditor</key>
+    <integer>1</integer>
+    <key>PerAccount</key>
+    <integer>1</integer>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>String</string>
+    <key>Value</key>
+    <string />
   </map>
   <key>PlusPoserMcpAllowUiSnapshot</key>
   <map>
@@ -818,13 +932,13 @@
   <key>PlusDetachedMaxWindows</key>
   <map>
     <key>Comment</key>
-    <string>Detached windows: how many floaters may be in windows of their own at once (1 to 8).</string>
+    <string>Detached windows: how many floaters may be in windows of their own at once (0 or less = no limit; a positive value caps it).</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>S32</string>
     <key>Value</key>
-    <integer>3</integer>
+    <integer>0</integer>
   </map>
   <key>PlusDetachAutoOnDrag</key>
   <map>
@@ -865,13 +979,35 @@
   <key>PlusPresetMigrated</key>
   <map>
     <key>Comment</key>
-    <string>The move from the retired Charis graphics presets to the official quality levels is done (once, after a login; research/183): the preset that was in use went to its level (light Mid, official_mid MidHigh, standard High, beautiful Ultra), settings of the user's own were kept.</string>
+    <string>The move from the retired Charis graphics presets to the official quality levels is done (once, after a login; research/183): the preset that was in use went to its level (light Mid, standard High, beautiful Ultra; official_mid to the comparison with the official viewer, research/352), settings of the user's own were kept.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>Boolean</string>
     <key>Value</key>
     <integer>0</integer>
+  </map>
+  <key>PlusLevelsRevision</key>
+  <map>
+    <key>Comment</key>
+    <string>The revision of the Charis values of the quality levels (featuretable.txt) the saved settings have been moved to, once at a start (not in the safe mode; research/352). 0: none yet. 1: Mid-High got the distant avatars as pictures and grey figures, the materialize band, the UI frames and no shadows of far small moving objects, the comparison with the official viewer no loading wireframe; a saved value still the old level's was moved, any other is the user's and kept. Bringing over the graphics of another viewer sets it to theirs (0 when they have none), so their old values are moved too.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>U32</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>PlusLevelsMigrationWrites</key>
+  <map>
+    <key>Comment</key>
+    <string>What the move of PlusLevelsRevision wrote (kind: midhigh or comparison; writes: setting name to before and wrote), for the notice after the next login (not in the safe mode) that offers to undo it. Emptied when the notice is shown; Undo gives back each setting that still holds what was written. Only the revision's own settings are read from it. Never brought over from another viewer.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>LLSD</string>
+    <key>Value</key>
+    <map />
   </map>
   <key>PlusSnapshotBoost</key>
   <map>
@@ -2105,7 +2241,7 @@
   <key>PlusPhotoMyPresets</key>
   <map>
     <key>Comment</key>
-    <string>Photo tools: the user's own presets (an array of maps: name, values = setting name to value). Shared by every account.</string>
+    <string>Photo tools: the user's own presets (an array of maps: name, values = setting name to value, saved = when it was saved (a date; absent in presets of earlier builds)). Shared by every account.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -2381,6 +2517,17 @@
     <string>LLSD</string>
     <key>Value</key>
     <array />
+  </map>
+  <key>PlusPhotoEnvListFlat</key>
+  <map>
+    <key>Comment</key>
+    <string>Photo tools, Sky &amp; Weather tab: the All tab of the sky and water lists shows a plain list sorted by name (true) instead of the inventory's folder tree (false).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
   </map>
   <key>PlusPhotoSkyListOpen</key>
   <map>
@@ -3948,6 +4095,18 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
+  <!-- the windows made with RmlUi (plus/rmlui; research/380): one switch for all of them -->
+  <key>PlusRmlUiWindows</key>
+  <map>
+    <key>Comment</key>
+    <string>Use the RmlUi version of the windows that have one (the chat keywords window so far). Off: the old XUI version (also used in safe mode). Takes effect at the next start.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
   <key>PlusInvFolderIcons</key>
   <map>
     <key>Comment</key>
@@ -4152,6 +4311,40 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
+  <!-- multiinstance (plus/multiinstance; research/337 stage 1-2): Charis viewers of one user on one GPU -->
+  <key>PlusMultiBackgroundFps</key>
+  <map>
+    <key>Comment</key>
+    <string>With two or more Charis viewers running on this PC's GPU (the same Windows user): while another one has been in front for 2 seconds and this one is not, this one makes at most this many frames per second, so the one you use gets the GPU. 0 = no cap. A value from 10 to 120. It ends at once when this window comes to the front; the frame rate limit (PlusFpsLimit) still applies, the lower of the two. Alone, nothing changes. LLRHI_MULTI_INSTANCE=0 (and a safe start) turns all of plus/multiinstance off. Debug setting only for now.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>30</integer>
+  </map>
+  <key>PlusMultiBackgroundPriority</key>
+  <map>
+    <key>Comment</key>
+    <string>With two or more Charis viewers running on this PC's GPU (the same Windows user): while another one has been in front for 2 seconds and this one is not, this viewer runs at below normal priority (only when it was at normal priority: a priority you set in Task Manager is left alone; and not while it can speak on voice, as voice runs inside the viewer: connected, where voice is allowed, as the speak button tells), so the one you use gets the processor first. Back to normal when this window comes to the front, it can speak on voice or the others are gone; below normal again within a second of voice being turned off or of going where voice is not allowed. Turn it off if this viewer's sound (music, media) breaks up behind the other one. Debug setting only for now.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusMultiShareVRAM</key>
+  <map>
+    <key>Comment</key>
+    <string>With two or more Charis viewers running on this PC's GPU (the same Windows user): each holds its textures to its share of the driver's video memory budget, by who is in front (in front 2, seen 1, minimized or hidden 0.5), less the rest of the video memory it takes (render targets, buffers), so that together they stay within the GPU's memory (past it, every one of them drops to a few frames per second). A share is never under 1 GB or a quarter of the budget, so on a small GPU the viewers together can still go past it. A larger share applies at once, a smaller one after 5 seconds. As when VRAM is short, the textures off screen go down first (with PlusTexViewPriority, on by default); what is on screen is lowered only by the driver's own limit. Vulkan with the driver's budget only. Off by default until measured (research/337 M1, M2). Debug setting only for now.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
   <!-- rain-wet (the viewer's rain wets what it falls on through the wet look; research/120 section 12; Vulkan only) -->
   <key>PlusRainWetAll</key>
   <map>
@@ -4244,7 +4437,7 @@
   <key>PlusFlycamSpeedMul</key>
   <map>
     <key>Comment</key>
-    <string>The factor on how fast the flycam flies on the keys (0.05 to 50). The mouse wheel sets it while the flycam is on (hold Shift, Ctrl or Alt for the zoom instead). Preferences' Cancel puts back what its slider or Restore Defaults changed, not what the wheel set (the slider has no control_name, research/275 L071).</string>
+    <string>The factor on how fast the flycam flies (0.05 to 50), the same for the keyboard and mouse, a 3D mouse (a factor on its move axes, FlycamAxisScale0-2, at most the fastest of PlusFlycamSpeedLevels; its turn and zoom axes are not scaled) and another controller. The mouse wheel steps it a level a notch while the flycam is on (hold Shift, Ctrl or Alt for the zoom instead), along PlusFlycamSpeedLevels; the number keys 1-9 set a level at once. Preferences' Cancel puts back what its slider or Restore Defaults changed, not what the wheel or the keys set (the slider has no control_name, research/275 L071).</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -4252,21 +4445,10 @@
     <key>Value</key>
     <real>1.0</real>
   </map>
-  <key>PlusFlycamSens</key>
+  <key>PlusFlycamSpeedLevels</key>
   <map>
     <key>Comment</key>
-    <string>How fast the 3D mouse's camera (flycam) moves and turns, as a factor on FlycamAxisScale0-5 (1 = as set there). The number keys 1-9 set it from PlusFlycamSensSteps while the flycam is on; 0 puts it back to 1. The zoom axis is not scaled.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>F32</string>
-    <key>Value</key>
-    <real>1.0</real>
-  </map>
-  <key>PlusFlycamSensSteps</key>
-  <map>
-    <key>Comment</key>
-    <string>The factors the number keys 1-9 give PlusFlycamSens while the flycam is on, nine numbers separated by spaces, slowest first (0.01 to 100). A missing or bad one keeps the default.</string>
+    <string>The nine speed levels the mouse wheel steps along and the number keys 1-9 set (PlusFlycamSpeedMul), numbers separated by spaces, slowest first (0.05 to 50); 5 is 1, the normal speed, by default. A missing or bad one keeps the default.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -5188,6 +5370,17 @@
     <key>Value</key>
     <integer>1</integer>
   </map>
+  <key>PlusWorldMapRegionInfo</key>
+  <map>
+    <key>Comment</key>
+    <string>World map: under each region name show "(avatar count - maturity)" (Firestorm's FSAdvancedWorldmapRegionInfo). Off: the name only.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
   <key>PlusDisableTeleportScreens</key>
   <map>
     <key>Comment</key>
@@ -5638,13 +5831,336 @@
   <key>PlusImpostorCapturesPerFrame</key>
   <map>
     <key>Comment</key>
-    <string>Impostor pictures (full body renders of far avatars) taken per 1/60 s on average (at most as many per frame as 1/30 s would give); the others keep their last picture and are taken in the next frames. Old pictures have twice as many, an animesh is taken with its avatar, and an avatar with no picture is always taken at once (research/319). 0 = no limit. Whatever the value, there is no limit while a snapshot is taken. At most 64.</string>
+    <string>Impostor pictures (full body renders of far avatars) taken per 1/60 s on average (at most as many per frame as 1/30 s would give); the others keep their last picture and are taken in the next frames. Old pictures have twice as many, an animesh is taken with its avatar, and an avatar with no picture is taken first, outside this count but within the time budget PlusImpostorCaptureBudgetMs (research/319). 0 = no limit. Whatever the value, there is no limit while a snapshot is taken. At most 64.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
     <string>U32</string>
     <key>Value</key>
     <integer>2</integer>
+  </map>
+  <key>PlusAnimQuickPreview</key>
+  <map>
+    <key>Comment</key>
+    <string>Quick animation preview: double-clicking an animation in the inventory closes the preview windows that are not pinned, opens the new one at the same place and plays it at once (locally, or in the world as you last chose). A window with its pin checked is kept. Off = the old behaviour (a window opens, press Play yourself).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusAnimQuickInworld</key>
+  <map>
+    <key>Comment</key>
+    <string>Quick animation preview: the way the next double-click plays. 0 = locally (only you see it), 1 = in the world (others see it). Set by pressing Play Inworld / Play Locally in a preview window. Not saved: every login starts locally, so a double-click never shows an animation to others by itself.</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <!-- nearby chat: channel selector and chat type button (from Firestorm) -->
+  <key>FSShowChatChannel</key>
+  <map>
+    <key>Comment</key>
+    <string>Shows/Hides the channel selector in the nearby chat input row</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>PlusChatTimeLocal</key>
+  <map>
+    <key>Comment</key>
+    <string>Show chat window timestamps in local (PC) time instead of Second Life time (SLT)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSShowChatType</key>
+  <map>
+    <key>Comment</key>
+    <string>Shows/Hides the chat type selector and send button (Whisper, Say, Shout) in the nearby chat input row</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSContactSetsColorizeMiniMap</key>
+  <map>
+    <key>Comment</key>
+    <string>Contact sets (plus/contactsets, Firestorm's name): the minimap shows a friend's dot in the color of their contact set</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSContactSetsColorizeNameTag</key>
+  <map>
+    <key>Comment</key>
+    <string>Contact sets (plus/contactsets, Firestorm's name): a friend's name tag is in the color of their contact set</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSContactSetsColorizeRadar</key>
+  <map>
+    <key>Comment</key>
+    <string>Contact sets (plus/contactsets, Firestorm's name): the radar shows a friend's name in the color of their contact set</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSContactSetsColorizeChat</key>
+  <map>
+    <key>Comment</key>
+    <string>Contact sets (plus/contactsets, Firestorm's name): a friend's lines in chat and IMs are in the color of their contact set</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSContactSetsColorizeFriends</key>
+  <map>
+    <key>Comment</key>
+    <string>Contact sets (plus/contactsets, Firestorm's name): the friends list shows a friend's name in the color of their contact set</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSContactSetsNotificationToast</key>
+  <map>
+    <key>Comment</key>
+    <string>Contact sets (plus/contactsets, Firestorm's name): the online and offline notices of the people in sets that show them, as toasts (off while ChatOnlineNotification shows them for all friends)</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSContactSetsNotificationNearbyChat</key>
+  <map>
+    <key>Comment</key>
+    <string>Contact sets (plus/contactsets, Firestorm's name): the online and offline notices of the people in sets that show them, in nearby chat</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusAvatarIdleInterval</key>
+  <map>
+    <key>Comment</key>
+    <string>How often (in frames, each avatar on its own frame) another avatar's name tag text is looked at again for a change (name, title, away, muted, friend): a change shows at most this many frames late. 0 or 1 = every frame, as before; at most 16. Chat and new tags are always at once (research/319).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>U32</string>
+    <key>Value</key>
+    <integer>4</integer>
+  </map>
+  <!-- chat bar at the bottom left (plus/chatbar, research/334; Firestorm's chat bar) -->
+  <key>PlusShowChatBar</key>
+  <map>
+    <key>Comment</key>
+    <string>Chat bar: a "Nearby Chat" button and a one-line chat field at the bottom left, beside the bottom toolbar (Firestorm's chat bar). Enter says, Shift+Enter whispers, Ctrl+Enter shouts, on channel 0 unless the text starts with "/number" (as Firestorm: the nearby chat window's channel selector and chat type button are that window's only).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusAvatarFullDistance</key>
+  <map>
+    <key>Comment</key>
+    <string>Other avatars farther from the camera than this (meters) are drawn as flat pictures (impostors) to run faster, whatever the limit on full avatars is; they come back to full when nearer than that less 10% (at least 2 m). A few avatars at a time are switched, each with its picture taken at once, so none vanishes. Zooming in stretches the distance; the avatar the camera looks at, the focus lock's target, friends (when shown always) and avatars set to always show stay full. 0 = off: only the limit on full avatars decides, as before (research/343).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.0</real>
+  </map>
+  <key>PlusAvatarFullDistanceMigrated</key>
+  <map>
+    <key>Comment</key>
+    <string>PlusAvatarFullDistance got the value of the quality level in use once, at the first start with it (research/343); later changes are the user's.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>PlusJellyDollMigrated</key>
+  <map>
+    <key>Comment</key>
+    <string>PlusJellyDollFlat and PlusAvatarSilhouetteDistance got the values of the quality level in use once, at the first start with them (research/344); later changes are the user's.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>PlusImpostorCaptureBudgetMs</key>
+  <map>
+    <key>Comment</key>
+    <string>The most main thread time (ms) the impostor pictures of one frame may take, after the first one (which is always taken); the others wait for the next frames (on screen first, then those with no picture, then the old pictures, then the most overdue, the nearest first). An animesh with no picture whose avatar is not due is outside the budget. Keeps a crowd that just arrived from freezing the viewer for seconds. 0 = no limit; also none while a snapshot is taken (research/319).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>8.0</real>
+  </map>
+  <key>PlusImpostorCaptureRest</key>
+  <map>
+    <key>Comment</key>
+    <string>After an impostor capture call that took longer than PlusImpostorCaptureBudgetMs (the first picture is always taken, and one picture of an avatar with heavy attachments can take 100 ms or more), no picture is taken for that time multiplied by this value (at most 0.5 s), counted from the end of that call; an avatar just switched to an impostor by distance is still taken at once. A crowd that just arrived then costs a long frame every few frames instead of every frame; its pictures come more slowly. 0 = no rest (research/340).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>1.0</real>
+  </map>
+  <key>PlusImpostorBridgeDefer</key>
+  <map>
+    <key>Comment</key>
+    <string>The geometry of an impostor avatar's attachments is built when its picture is taken or when it is drawn in full, not as soon as it changes (nothing draws it before). A crowd that just arrived no longer builds every avatar's attachments in one frame (seconds). Off = as before (research/340).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusImpostorFreeze</key>
+  <map>
+    <key>Comment</key>
+    <string>Another avatar drawn as an impostor (a picture): its attachments are moved with it only when its picture is due, not at each of its detailed updates (every 32 to 64 frames). 0 = as before (research/338).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusOffscreenAvatarPeriod</key>
+  <map>
+    <key>Comment</key>
+    <string>Another avatar out of view (not seated, not an animesh, and not near the edge of the view) gets its full per-frame update (root position, attachments) once in this many frames, and at least every 0.12 s; its pose is not animated out of view anyway. Not for one whose name tag is drawn, one on an object, one whose attachments are selected, nor in a frame where the camera moved fast. 1 = every frame, as before. At most 16 (research/341).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>4</integer>
+  </map>
+  <key>PlusRiggedFaceImpostorPeriod</key>
+  <map>
+    <key>Comment</key>
+    <string>Seconds between the texture priority's area updates of a rigged face (a mesh worn on an avatar) of an avatar drawn as an impostor, whose own faces are not drawn. Other avatars keep 0.1 s. The area walk over the rigged joints was most of the texture list's time in a crowd. At most 2. 0.12 or less = as before (research/342).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.5</real>
+  </map>
+  <key>PlusRiggedAreaCache</key>
+  <map>
+    <key>Comment</key>
+    <string>How the texture priority works out the area of a rigged face (a mesh worn on an avatar). 0 = as before: a walk over all 216 joint entries of the face's rigging table. 1 or more = a list of the joints the face is rigged to, made once per table, and a walk over those alone; the same joints in the same order, so the area is the same bit for bit. 2 = 1 for now (research/348).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>2</integer>
+  </map>
+  <key>PlusAvatarSilhouetteDistance</key>
+  <map>
+    <key>Comment</key>
+    <string>Other avatars farther from the camera than this (meters, 5 to 1024) are drawn as jelly dolls: grey figures that do not animate, and flat silhouettes when PlusJellyDollFlat is on; they come back when nearer than this less 10% (at least 2 m). Zooming in stretches the distance, and it is never less than PlusAvatarFullDistance. Not for the avatar you look at, the focus lock's target, avatars set to always show, the avatar itself or animesh. 0 = off (also in the photo mode) (research/344).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>0.0</real>
+  </map>
+  <key>PlusJellyDollFlat</key>
+  <map>
+    <key>Comment</key>
+    <string>A jelly doll (an avatar drawn as a grey figure: too complex, set not to be rendered, blocked, or beyond PlusAvatarSilhouetteDistance) is a flat silhouette: one colour, no shading of the figure itself (lit as a face towards the camera, so day, night and back light still change it). Its picture is smaller and cheaper to take. 0 = the official 3D grey figure. Not used in the photo mode or while a snapshot is taken. The graphics presets set it (research/344).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <!-- vram-limit (research/371): the texture limit, as Firestorm -->
+  <key>FSLimitTextureVRAMUsage</key>
+  <map>
+    <key>Comment</key>
+    <string>Limit the video memory the textures may take to RenderMaxVRAMBudget MB (at least 768). The textures off screen go down first; if that is not enough, what is on screen goes down too, but never below the floor of PlusTexOnScreenCoarsest, so a limit that is too low is not reached (the VKPerf line says: limit not reached). Other uses of video memory (shadows, buffers) are not limited. Off: the budget follows the GPU's video memory and the driver's. To test a GPU with less video memory, use FSOverrideVRAMDetection.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <!-- vram-core (research/371): the VRAM to pretend, for testing low-VRAM paths (same names as Firestorm) -->
+  <key>FSOverrideVRAMDetection</key>
+  <map>
+    <key>Comment</key>
+    <string>Pretend the GPU has FSForcedVideoMemory of video memory (requires restart). The detection answers it (feature table, recommended quality, sun shadow map size) and the memory budget is held to it (texture budget, texture and buffer compaction; an integrated GPU, which shares the PC's memory, only goes lower than detected, a GPU with video memory of its own either way), to test how the viewer runs with little VRAM, for example on an integrated GPU. The real use is not changed and nothing is refused: the PC does not run short of memory as a smaller GPU would. For testing: leave it off otherwise. LLRHI_VRAM_OVERRIDE_MB (MB) does the same from the environment.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
+  <key>FSForcedVideoMemory</key>
+  <map>
+    <key>Comment</key>
+    <string>The video memory FSOverrideVRAMDetection pretends, in GB (0.5 to 256; the slider offers 0.5 to 32). Requires restart.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>F32</string>
+    <key>Value</key>
+    <real>4.0</real>
   </map>
 </map>
 </llsd>

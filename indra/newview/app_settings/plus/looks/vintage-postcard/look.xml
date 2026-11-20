@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Vintage Postcard</string><key>ja</key><string>絵はがき</string></map>
+    <key>description</key>
+    <map><key>en</key><string>A faded color print with warm paper and softened reds.</string><key>ja</key><string>色褪せた絵はがき。暖かい紙の色と、おとなしい赤。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>239</integer>
+    <key>group</key><string>mood</string>
+  </map>
+</llsd>

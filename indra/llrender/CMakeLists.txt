@@ -120,3 +120,8 @@ endif ()
 
 # Render hardware interface (sl-viewer). Everything else lives in indra/llrhi.
 include(${CMAKE_CURRENT_SOURCE_DIR}/../llrhi/llrhi.cmake)
+
+if (LL_TESTS)
+  include(LLAddBuildTest)
+  LL_ADD_INTEGRATION_TEST(llgltexture "" "llrender")
+endif ()

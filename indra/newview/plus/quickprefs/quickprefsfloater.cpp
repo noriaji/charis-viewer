@@ -37,6 +37,8 @@
 
 #include "quickprefsfloater.h"
 #include "plus.h"
+#include "plus/look/look.h"
+#include "plus/photomode/photolook.h"
 #include "plus/photomode/photomode.h"
 
 #include "llagent.h"
@@ -63,6 +65,7 @@
 #include "llxmlnode.h"
 #include "llxuiparser.h"
 
+#include <algorithm>
 #include <cmath>
 
 namespace plus::quickprefs
@@ -223,6 +226,25 @@ namespace plus::quickprefs
         getChild<LLUICtrl>("WWNextPreset")->setCommitCallback([this](LLUICtrl*, const LLSD&) { onPresetStep(mWaterPresetsCombo, true); });
         getChild<LLUICtrl>("DCPrevPreset")->setCommitCallback([this](LLUICtrl*, const LLSD&) { onPresetStep(mDayCyclePresetsCombo, false); });
         getChild<LLUICtrl>("DCNextPreset")->setCommitCallback([this](LLUICtrl*, const LLSD&) { onPresetStep(mDayCyclePresetsCombo, true); });
+        // Look
+        mLookCombo          = getChild<LLComboBox>("LookCombo");
+        mLookStrengthSlider = getChild<LLSliderCtrl>("LookStrengthSlider");
+        mLookCombo->setCommitCallback([this](LLUICtrl*, const LLSD&) { onLookCombo(); });
+        mLookStrengthSlider->setCommitCallback([this](LLUICtrl*, const LLSD&) { onLookStrength(); });
+        if (LLControlVariable* look = gSavedSettings.getControl("PlusLook"))
+        {
+            // shown at the next draw, not now: this can come from the drop-down's own commit
+            mLookConnection = look->getCommitSignal()->connect([this](LLControlVariable*, const LLSD&, const LLSD&) { mLookDirty = true; });
+        }
+        else
+        {
+            LL_WARNS("Plus") << "Quick Preferences: no PlusLook setting" << LL_ENDL;
+        }
+        if (LLControlVariable* strength = gSavedSettings.getControl("PlusLookStrength"))
+        {
+            mLookStrengthConnection = strength->getCommitSignal()->connect(
+                [this](LLControlVariable*, const LLSD& value, const LLSD&) { mLookStrengthSlider->setValue(static_cast<F32>(value.asInteger())); });
+        }
         getChild<LLUICtrl>("ResetToRegionDefault")->setCommitCallback([this](LLUICtrl*, const LLSD&) { onClickResetToRegionDefault(); });
 
         mEnvChangedConnection = LLEnvironment::instance().setEnvironmentChanged([this](LLEnvironment::EnvSelection_t, S32) { setSelectedEnvironment(); });
@@ -318,8 +340,18 @@ namespace plus::quickprefs
         return LLFloater::postBuild();
     }
 
+    void QuickPrefsFloater::draw()
+    {
+        if (mLookDirty || mLookGeneration != plus::look::generation())
+        {
+            syncLook();
+        }
+        LLFloater::draw();
+    }
+
     void QuickPrefsFloater::onOpen(const LLSD& key)
     {
+        syncLook();
         loadPresets();
         setSelectedEnvironment();
 
@@ -1322,6 +1354,120 @@ namespace plus::quickprefs
         else
         {
             LLNotificationsUtil::add("GenericAlert", LLSD().with("MESSAGE", getString("qp_no_valid_env")));
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Look
+
+    namespace
+    {
+        constexpr char SETTING_LOOK[]          = "PlusLook";
+        constexpr char SETTING_LOOK_STRENGTH[] = "PlusLookStrength";
+    }
+
+    void QuickPrefsFloater::syncLook()
+    {
+        mLookDirty = false;
+        const std::vector<plus::look::Entry> entries = plus::look::entries();
+        const unsigned generation = plus::look::generation();    // after entries(): the first read of the folders counts up
+        const std::string id = gSavedSettings.controlExists(SETTING_LOOK) ? gSavedSettings.getString(SETTING_LOOK) : std::string();
+        const bool known = id.empty() || std::any_of(entries.begin(), entries.end(), [&id](const plus::look::Entry& e) { return e.id == id; });
+        const std::string missing = known ? std::string() : id;
+
+        if (!mLookFilled || generation != mLookGeneration || missing != mLookMissing)
+        {
+            mLookFilled     = true;
+            mLookGeneration = generation;
+            mLookMissing    = missing;
+            mLookCombo->removeall();
+            mLookCombo->add(getString("qp_none"), LLSD(std::string()));
+
+            // as Charis > Look has them: the looks of no submenu first, then each submenu's under its heading (a row that
+            // cannot be chosen), then the user's
+            const std::vector<plus::look::Group> groups = plus::look::menuGroups();
+            const auto groupOf = [&groups](const plus::look::Entry& e) -> const plus::look::Group*
+            {
+                for (const plus::look::Group& g : groups)
+                {
+                    if (!e.user && g.id == e.group)
+                    {
+                        return &g;
+                    }
+                }
+                return nullptr;
+            };
+            for (const plus::look::Entry& e : entries)
+            {
+                if (!e.user && !groupOf(e))
+                {
+                    mLookCombo->add(e.label, LLSD(e.id));
+                }
+            }
+            for (const plus::look::Group& group : groups)
+            {
+                bool heading = false;
+                for (const plus::look::Entry& e : entries)
+                {
+                    if (e.user || e.group != group.id)
+                    {
+                        continue;
+                    }
+                    if (!heading)
+                    {
+                        heading = true;
+                        mLookCombo->add("- " + group.label + " -", LLSD(), ADD_BOTTOM, false);
+                    }
+                    mLookCombo->add(e.label, LLSD(e.id));
+                }
+            }
+            bool userHeading = false;
+            for (const plus::look::Entry& e : entries)
+            {
+                if (e.user)
+                {
+                    if (!userHeading)
+                    {
+                        userHeading = true;
+                        mLookCombo->add("- " + getString("qp_look_group_user") + " -", LLSD(), ADD_BOTTOM, false);
+                    }
+                    mLookCombo->add(e.label, LLSD(e.id));
+                }
+            }
+            if (!missing.empty())
+            {
+                LLStringUtil::format_map_t args;
+                args["[NAME]"] = missing.rfind("user:", 0) == 0 ? missing.substr(5) : missing;    // as the other entrances show it
+                mLookCombo->add(getString("qp_look_missing", args), LLSD(missing));
+            }
+        }
+        mLookCombo->setValue(LLSD(id));
+        mLookStrengthSlider->setEnabled(!id.empty() && missing.empty());    // no look (or one that is gone, drawn as none): nothing for the strength to do
+        if (gSavedSettings.controlExists(SETTING_LOOK_STRENGTH))
+        {
+            mLookStrengthSlider->setValue(static_cast<F32>(gSavedSettings.getU32(SETTING_LOOK_STRENGTH)));
+        }
+    }
+
+    void QuickPrefsFloater::onLookCombo()
+    {
+        if (!gSavedSettings.controlExists(SETTING_LOOK))
+        {
+            return;
+        }
+        const std::string id = mLookCombo->getValue().asString();
+        if (id == gSavedSettings.getString(SETTING_LOOK))
+        {
+            return;
+        }
+        plus::photomode::applyLook(id);    // PlusLook, and the photo tools' recent looks; the strength stays as it is
+    }
+
+    void QuickPrefsFloater::onLookStrength()
+    {
+        if (gSavedSettings.controlExists(SETTING_LOOK_STRENGTH))
+        {
+            gSavedSettings.setU32(SETTING_LOOK_STRENGTH, static_cast<U32>(llclamp(mLookStrengthSlider->getValueF32(), 0.0f, 100.0f)));
         }
     }
 

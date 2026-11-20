@@ -78,6 +78,9 @@
 #include "llweb.h"
 #include "llsliderctrl.h"
 #include "message.h"
+// <plus> chat-bar: the bottom toolbar's centre beside the chat bar (plus/chatbar, research/334)
+#include "plus/chatbar/chatbarlayout.h"
+// </plus>
 #include "llwindow.h"           // copyTextToClipboard()
 #include <algorithm>
 // <plus> rlv: RLVa (plus/rlv) (research/248)
@@ -2009,7 +2012,7 @@ void LLPanelHideBeacon::updatePosition()
     S32 bottom_tb_center = 0;
     if (LLToolBar* toolbar_bottom = gToolBarView->getToolbar(LLToolBarEnums::TOOLBAR_BOTTOM))
     {
-        bottom_tb_center = toolbar_bottom->getRect().getCenterX();
+        bottom_tb_center = plus::chatbar::bottomToolbarCenterX(toolbar_bottom); // <plus> chat-bar: was toolbar_bottom->getRect().getCenterX() (plus/chatbar) </plus>
     }
 
     S32 left_tb_width = 0;

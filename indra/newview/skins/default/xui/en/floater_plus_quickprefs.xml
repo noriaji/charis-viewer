@@ -12,7 +12,7 @@
  can_resize="false"
  can_close="true"
  can_minimize="true"
- height="174"
+ height="230"
  width="260"
  layout="topleft"
  name="plus_quickprefs"
@@ -23,6 +23,8 @@
     <floater.string name="qp_region_default">Shared Environment</floater.string>
     <floater.string name="qp_day_cycle_based">Day cycle based</floater.string>
     <floater.string name="qp_none">None</floater.string>
+    <floater.string name="qp_look_group_user">My Looks</floater.string>
+    <floater.string name="qp_look_missing">[NAME] (not found)</floater.string>
     <floater.string name="qp_no_valid_env">There is no sky, water or day cycle in your inventory to choose from.</floater.string>
     <floater.string name="qp_duplicate_control">The setting "[NAME]" is in the list already.</floater.string>
     <floater.string name="qp_restore_confirm">Put the list back to the standard one? Your own list is deleted.</floater.string>
@@ -41,7 +43,7 @@
  left="0"
  top="16"
  width="260"
- height="152"
+ height="208"
  follows="all"
  layout="topleft">
     <layout_stack
@@ -80,7 +82,7 @@
      left="0"
      top_pad="0"
      width="260"
-     height="144"
+     height="200"
      orientation="vertical">
 
         <layout_panel
@@ -88,7 +90,7 @@
          follows="all"
          name="wl_options_panel"
          invisibility_control="PlusQuickPrefsEditMode"
-         height="144">
+         height="200">
             <text
              type="string"
              length="1"
@@ -262,13 +264,66 @@
              image_overlay="Arrow_Right_Off"
              scale_image="true" />
 
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             height="16"
+             layout="topleft"
+             left="5"
+             name="LookLabel"
+             tool_tip="The color look of the picture (the same list as Charis > Look)"
+             mouse_opaque="false"
+             top="118"
+             width="55">
+                Look:
+            </text>
+            <combo_box
+             follows="left|top"
+             height="20"
+             layout="topleft"
+             left="63"
+             commit_on_arrow="true"
+             name="LookCombo"
+             top="116"
+             width="173" />
+            <text
+             type="string"
+             length="1"
+             follows="left|top"
+             height="16"
+             layout="topleft"
+             left="5"
+             name="LookStrengthLabel"
+             tool_tip="How strongly the look is applied (0 shows no look at all)"
+             mouse_opaque="false"
+             top="148"
+             width="90">
+                Look Strength:
+            </text>
+            <slider
+             text_width="40"
+             can_edit_text="true"
+             decimal_digits="0"
+             follows="left|right|top"
+             height="16"
+             increment="1"
+             initial_value="100"
+             min_val="0"
+             max_val="100"
+             layout="topleft"
+             left="95"
+             name="LookStrengthSlider"
+             top="148"
+             right="-7" />
+
             <button
              enabled="true"
              name="btn_personal_lighting"
              follows="left|top"
              height="20"
              width="208"
-             top="116"
+             top="172"
              left="5"
              label="Personal Lighting...">
                 <button.commit_callback
@@ -280,7 +335,7 @@
              label=""
              tool_tip="Go back to the shared environment of the region or parcel"
              enabled="true"
-             top="116"
+             top="172"
              left="215"
              height="20"
              width="20"
@@ -293,7 +348,7 @@
              name="button_edit"
              label=""
              tool_tip="Change which settings are listed here"
-             top="116"
+             top="172"
              left="236"
              height="20"
              width="20"
@@ -313,9 +368,9 @@
  name="edit_overlay_panel"
  visibility_control="PlusQuickPrefsEditMode"
  left="1"
- top="-143"
+ top="-199"
  right="-1"
- height="143">
+ height="199">
 
 <view_border
  layout="topleft"

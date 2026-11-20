@@ -32,7 +32,7 @@
 // button on their title bar instead. It goes back into the main window with
 // the button on its title bar (left of the others), or by dragging its title
 // bar onto the main window (Ctrl held: it stays apart, over the main window).
-// Up to PlusDetachedMaxWindows (3) at once. Vulkan only. (Plus.Detach.Toggle,
+// Any number at once (PlusDetachedMaxWindows caps it; 0 = no limit). Vulkan only. (Plus.Detach.Toggle,
 // .Frontmost and .IsDetached stay registered, for no menu item now.)
 //
 // How it fits together (research/87 4, the ImGui multi-viewport model):
@@ -120,6 +120,7 @@
 #include <cstring>
 #include <functional>
 #include <iterator>
+#include <limits>
 #include <map>
 #include <memory>
 #include <set>
@@ -150,7 +151,6 @@ namespace
     constexpr char WINDOW_TITLE_PREFIX[] = "Charis Viewer - ";
     constexpr char STRINGS_FILE[] = "panel_plus_detach.xml";
     constexpr char SETTING_MAX_WINDOWS[] = "PlusDetachedMaxWindows";
-    constexpr S32 MAX_WINDOWS_LIMIT = 8;
     // The return button's images (the floaters' own dock button).
     constexpr char RETURN_IMAGE[] = "Icon_Dock_Foreground";
     constexpr char RETURN_IMAGE_PRESSED[] = "Icon_Dock_Press";
@@ -276,7 +276,9 @@ namespace
 
     size_t maxWindows()
     {
-        return (size_t)llclamp(gSavedSettings.getS32(SETTING_MAX_WINDOWS), 1, MAX_WINDOWS_LIMIT);
+        // 0 (the default) or less: no limit. The load is the user's to manage.
+        const S32 limit = gSavedSettings.getS32(SETTING_MAX_WINDOWS);
+        return limit > 0 ? (size_t)limit : std::numeric_limits<size_t>::max();
     }
 
     constinit plus::psui::StringsPanel sStrings(STRINGS_FILE);
@@ -959,7 +961,7 @@ namespace
                 typed = typed || gFocusMgr.childHasKeyboardFocus(other);
             }
             const F32 fps = typed || idle_fps <= 0.f ? max_fps : idle_fps;
-            return fps <= 0.f || now - mLastDrawn >= 1.0 / fps;
+            return fps <= 0.f || now < mLastDrawn || now - mLastDrawn >= 1.0 / fps;   // now < : the clock went back (a guard: monotonic since mono-clock, research/362)
         }
 
         // LLRHI_DETACH_LOG: one line, then the counts start again.
@@ -1169,6 +1171,19 @@ namespace
             return floater && find(floater) != mWindows.end();
         }
 
+        // The Charis menu's "return all separate windows": every floater apart goes back into the main window, and
+        // stays there (not opened apart again at the next login), as with each one's return button.
+        void returnAll()
+        {
+            const WalkGuard walking(*this);
+            while (!mWindows.empty())
+            {
+                returnToMain(mWindows.begin(), Return::ByUser);
+            }
+        }
+
+        bool anyDetached() const { return !mWindows.empty(); }
+
         // The menu items: shows the floater apart (opening it first), or puts it back.
         void toggle(const std::string& name)
         {
@@ -1271,9 +1286,10 @@ namespace
             }
             LL_PROFILE_ZONE_NAMED_CATEGORY_UI("Detached windows");
             const WalkGuard walking(*this);
-            for (const std::unique_ptr<DetachedWindow>& window : mWindows)
+            sortFloatersByWindow();
+            for (size_t i = 0; i < mWindows.size(); ++i)
             {
-                window->draw(mapping, floatersOn(*window));
+                mWindows[i]->draw(mapping, mOnWindow[i]);
             }
             gViewerWindow->setup2DRender();     // the main window's 2D state again
         }
@@ -2206,26 +2222,40 @@ namespace
             }
         }
 
-        // The floaters adopted by window, back to front.
-        std::vector<LLFloater*> floatersOn(const DetachedWindow& window) const
+        // The floaters adopted by each window, back to front, into mOnWindow
+        // (one list per window, in mWindows order). One pass over the
+        // children, and the lists are kept between frames: with many windows
+        // the cost does not grow with windows x floaters squared.
+        void sortFloatersByWindow()
         {
-            std::vector<LLFloater*> floaters;
+            mOnWindow.resize(mWindows.size());
+            for (std::vector<LLFloater*>& floaters : mOnWindow)
+            {
+                floaters.clear();
+            }
             if (mAdopted.empty() || !mView)
             {
-                return floaters;
+                return;
             }
             const LLView::child_list_t& children = *mView->getChildList();
             for (auto it = children.rbegin(); it != children.rend(); ++it)
             {
-                for (const Adopted& adopted : mAdopted)
+                const auto adopted = std::find_if(mAdopted.begin(), mAdopted.end(),
+                                                  [it](const Adopted& a) { return a.floater.get() == *it; });
+                if (adopted == mAdopted.end())
                 {
-                    if (adopted.floater.get() == *it && adopted.owner.get() == window.floater())
+                    continue;
+                }
+                const LLFloater* owner = adopted->owner.get();
+                for (size_t i = 0; i < mWindows.size(); ++i)
+                {
+                    if (mWindows[i]->floater() == owner)
                     {
-                        floaters.push_back(adopted.floater.get());
+                        mOnWindow[i].push_back(adopted->floater.get());
+                        break;
                     }
                 }
             }
-            return floaters;
         }
 
         // Once after login: the floaters that were open apart when the last
@@ -2309,6 +2339,7 @@ namespace
         LLPlusDetachedFloaterView* mView = nullptr;    // owned by the root view once made
         Windows mWindows;
         std::vector<Adopted> mAdopted;
+        std::vector<std::vector<LLFloater*>> mOnWindow;     // sortFloatersByWindow(): reused every frame
         std::vector<LLHandle<LLFloater>> mToPlace;     // fitFloater()
         std::vector<LLHandle<LLFloater>> mDetachClicks;    // the detach buttons clicked (updateDetachButtons())
         std::vector<LLHandle<LLFloater>> mClicked;         // updateDetachButtons(): mDetachClicks taken, its room kept
@@ -2419,6 +2450,10 @@ namespace
                                                                  [](LLUICtrl*, const LLSD& param) { manager().toggle(param.asString()); });
         LLUICtrl::CommitCallbackRegistry::defaultRegistrar().add("Plus.Detach.Frontmost",
                                                                  [](LLUICtrl*, const LLSD&) { manager().detachFrontmost(); });
+        LLUICtrl::CommitCallbackRegistry::defaultRegistrar().add("Plus.Detach.ReturnAll",
+                                                                 [](LLUICtrl*, const LLSD&) { manager().returnAll(); });
+        LLUICtrl::EnableCallbackRegistry::defaultRegistrar().add("Plus.Detach.AnyDetached",
+                                                                 [](LLUICtrl*, const LLSD&) { return manager().anyDetached(); });
         LLUICtrl::EnableCallbackRegistry::defaultRegistrar().add("Plus.Detach.IsDetached",
                                                                  [](LLUICtrl*, const LLSD& param) { return manager().isDetached(param.asString()); });
         manager().init();

@@ -60,6 +60,8 @@ namespace plus::psui::style
             LLColor4 SLIDER_EMPTY            = rgb(0x363e4d);
             LLColor4 KNOB_TOP                = rgb(0xd0daf0);
             LLColor4 KNOB_BOTTOM             = rgb(0xaab6d0);
+            LLColor4 KNOB_TOP_PRESSED        = rgb(0xffffff);
+            LLColor4 KNOB_BOTTOM_PRESSED     = rgb(0xd3dcf0);
             LLColor4 SLIDER_TICK             = rgb(0x4a5566);
             LLColor4 VALUE_FILL              = rgb(0x0c121b);
             LLColor4 DEFAULT_BTN_COLOR       = rgb(0x8e98a2);
@@ -147,6 +149,15 @@ namespace plus::psui::style
             LLColor4 SHORTCUT_FILL           = rgb(0x0e1119, 0.7f);
             LLColor4 SHORTCUT_ON_LEFT        = rgb(0x2b5185, 0.9f);
             LLColor4 SHORTCUT_ON_RIGHT       = rgb(0x1e3858, 0.9f);
+            LLColor4 TL_FILL                 = rgb(0x0e1119);
+            LLColor4 TL_BORDER               = rgb(0x2a3446);
+            LLColor4 TL_RULER                = rgb(0x8e98a2, 0.45f);
+            LLColor4 TL_TICK                 = rgb(0x8e98a2, 0.7f);
+            LLColor4 TL_HOLD                 = rgb(0x8e98a2, 0.35f);
+            LLColor4 TL_SCROLL               = rgb(0x8e98a2, 0.5f);
+            LLColor4 TL_SMOOTH               = rgb(0x6594c6);
+            LLColor4 TL_LINEAR               = rgb(0x606972);
+            LLColor4 TL_FAIL                 = rgb(0xe2524a);
         };
         inline Colors colors;
     }
@@ -224,12 +235,15 @@ namespace plus::psui::style
     constexpr S32 SLIDER_GAP                        = 12;   // label - track - value box
     constexpr F32 SLIDER_TRACK                      = 4.f;
     constexpr F32 SLIDER_KNOB                       = 16.f;
-    constexpr F32 SLIDER_KNOB_PRESSED               = 18.f;
+    constexpr F32 SLIDER_KNOB_PRESSED               = 18.f;   // the XUI slider's knob while dragging. Not used by RmlUi (the knob's travel is track - knob, so a bigger knob makes it shift): there only KNOB_*_PRESSED
     inline const LLColor4& SLIDER_FILL_LEFT        = detail::colors.SLIDER_FILL_LEFT;
     inline const LLColor4& SLIDER_FILL_RIGHT       = detail::colors.SLIDER_FILL_RIGHT;
     inline const LLColor4& SLIDER_EMPTY            = detail::colors.SLIDER_EMPTY;
     inline const LLColor4& KNOB_TOP                = detail::colors.KNOB_TOP;
     inline const LLColor4& KNOB_BOTTOM             = detail::colors.KNOB_BOTTOM;
+    inline const LLColor4& KNOB_TOP_PRESSED        = detail::colors.KNOB_TOP_PRESSED;   // RmlUi's slider: the knob keeps its size while pressed (its travel is track - knob), only the colour changes
+    inline const LLColor4& KNOB_BOTTOM_PRESSED     = detail::colors.KNOB_BOTTOM_PRESSED;
+    constexpr F32 SLIDER_TRACK_TOP                  = 6.f;   // RmlUi's slider: (SLIDER_KNOB - SLIDER_TRACK) / 2, the track's and the fill's offset from the top
     inline const LLColor4& SLIDER_TICK             = detail::colors.SLIDER_TICK;
     constexpr S32 VALUE_WIDTH                       = 62;
     constexpr S32 VALUE_HEIGHT                      = 26;
@@ -355,6 +369,12 @@ namespace plus::psui::style
     inline const LLColor4& ADD_BORDER              = detail::colors.ADD_BORDER;
     constexpr S32 ADD_ICON                          = 31;
 
+    // ---- 18b. words-only cards (the preset strip's; not in the picture, in its style) -------
+    constexpr S32 PRESET_COMPACT_PAD                = 8;   // the words' margin in the card; the "x" from the card's corner
+    constexpr S32 PRESET_COMPACT_GAP                = 2;   // between the name and the "x" on its line
+    constexpr S32 ADD_COMPACT_ICON_X                = 14;   // the low "+" card: the icon's left margin
+    constexpr S32 ADD_COMPACT_GAP                   = 6;   // ... and the gap between the icon and the words
+
     // ---- 19. list rows (the sky and water lists of the scene tab; not in the picture, in its style) ----
     constexpr S32 LIST_ROW_HEIGHT                   = 30;
     constexpr S32 LIST_ROW_PAD                      = 10;   // left of the text, right of the star
@@ -449,6 +469,23 @@ namespace plus::psui::style
     inline const LLColor4& SHORTCUT_FILL           = detail::colors.SHORTCUT_FILL;   // a button over the world: the world button's translucent navy
     inline const LLColor4& SHORTCUT_ON_LEFT        = detail::colors.SHORTCUT_ON_LEFT;   // a menu item that is on (a check mark in the menu): blue, as the chosen segment
     inline const LLColor4& SHORTCUT_ON_RIGHT       = detail::colors.SHORTCUT_ON_RIGHT;
+
+    // ---- 29. the timeline strip (research/357, plus/posermotion/motiontimelineview.cpp: the band of the keys and segments in the motion window; not in the picture, in its style) ----
+    constexpr F32 TL_RADIUS                         = 7.f;
+    inline const LLColor4& TL_FILL                 = detail::colors.TL_FILL;   // the strip's ground (the chip's, opaque: it sits on a panel, not over the world)
+    inline const LLColor4& TL_BORDER               = detail::colors.TL_BORDER;
+    inline const LLColor4& TL_RULER                = detail::colors.TL_RULER;   // the ruler's line
+    inline const LLColor4& TL_TICK                 = detail::colors.TL_TICK;   // the ruler's marks
+    inline const LLColor4& TL_HOLD                 = detail::colors.TL_HOLD;   // a hold's bar
+    inline const LLColor4& TL_SCROLL               = detail::colors.TL_SCROLL;   // the scroll mark under the strip
+    inline const LLColor4& TL_SMOOTH               = detail::colors.TL_SMOOTH;   // a Smooth segment (ACCENT and TEXT_DIM half and half); a Generate one is ACCENT
+    inline const LLColor4& TL_LINEAR               = detail::colors.TL_LINEAR;   // a Linear segment (TEXT_DIM towards GROUND)
+    inline const LLColor4& TL_FAIL                 = detail::colors.TL_FAIL;   // a failed segment, a length refused (the histogram's red, opaque)
+    constexpr F32 TL_SEG_RADIUS                     = 5.f;
+    constexpr F32 TL_HOLD_RADIUS                    = 3.f;
+    constexpr F32 TL_HANDLE_RADIUS                  = 3.f;   // the playhead's handle on the ruler
+    constexpr F32 TL_LABEL_PAD                      = 6.f;
+    constexpr F32 TL_DOT_RADIUS                     = 3.5f;   // the "regenerating is advised" dot
 
     // ---- fonts (the official sizes nearest to the picture's: research/221 "文字") -------------
     constexpr FontSpec FONT_TITLE                   = { "Huge",   0 };   // headings of the left panel (20 px)

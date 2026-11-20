@@ -3,6 +3,8 @@
 	<floater.string name="qp_region_default">共有された環境</floater.string>
 	<floater.string name="qp_day_cycle_based">デイサイクルに従う</floater.string>
 	<floater.string name="qp_none">なし</floater.string>
+	<floater.string name="qp_look_group_user">自分のルック</floater.string>
+	<floater.string name="qp_look_missing">[NAME]（見つかりません）</floater.string>
 	<floater.string name="qp_no_valid_env">インベントリに、選べる空・水面・デイサイクルがありません。</floater.string>
 	<floater.string name="qp_duplicate_control">設定「[NAME]」はすでに一覧にあります。</floater.string>
 	<floater.string name="qp_restore_confirm">一覧を既定に戻しますか？ 自分で作った一覧は削除されます。</floater.string>
@@ -34,6 +36,13 @@
 				<combo_box name="WLPresetsCombo" left="90" width="123"/>
 				<combo_box name="WaterPresetsCombo" left="90" width="123"/>
 				<combo_box name="DCPresetsCombo" left="90" width="123"/>
+				<text name="LookLabel" tool_tip="画面の色合い（ルック）を選びます。Charis メニューの「ルック」と同じ一覧です。">
+					ルック：
+				</text>
+				<combo_box name="LookCombo" left="90" width="146"/>
+				<text name="LookStrengthLabel" tool_tip="ルックの効き具合です（0 だとルックは見えません）。">
+					ルックの強さ：
+				</text>
 				<button name="btn_personal_lighting" label="自分の光源…"/>
 				<button name="ResetToRegionDefault" tool_tip="リージョンや区画の共有された環境に戻します。"/>
 				<button name="button_edit" tool_tip="ここに並べる設定を変えます。"/>

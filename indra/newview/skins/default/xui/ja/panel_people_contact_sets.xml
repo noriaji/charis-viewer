@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<panel name="contact_sets_panel">
+	<string name="all_sets">すべてのセット</string>
+	<string name="no_sets">どのセットにもいないフレンド</string>
+	<string name="pseudonyms">別名を付けた人</string>
+	<string name="empty_list">このセットには誰もいません。</string>
+	<string name="no_filtered">このセットに、フィルタに合う人はいません。</string>
+	<panel label="bottom_panel" name="contact_sets_buttons_panel">
+		<combo_box name="combo_sets" tool_tip="表示するコンタクトセット"/>
+		<menu_button name="contact_sets_gear_btn" tool_tip="選んだ人とセットへの操作"/>
+		<menu_button name="contact_sets_plus_btn" tool_tip="セットを作る・このセットに人を加える"/>
+		<menu_button name="contact_sets_remove_btn" tool_tip="このセットを消す・人をセットから外す"/>
+		<filter_editor label="人物をフィルタ" name="contact_sets_filter_input"/>
+	</panel>
+</panel>

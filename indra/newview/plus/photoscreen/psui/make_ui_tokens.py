@@ -10,6 +10,10 @@ Made (relative to indra/newview; nothing of it is edited by hand):
   skins/charis/colors.xml                    the tokens' colours as Ps<Name> and the official names they change
   skins/charis/textures/textures.xml         the official image names the skin draws again
   skins/charis/textures/charis/*.png         those images (9 sliced: the corners keep their size)
+  app_settings/plus/rmlui/charis_tokens.rcss every token as a CSS variable of the RmlUi documents' body (plus/rmlui,
+                                             research/364 2.6): PANEL_TOP -> --panel-top; sizes in dp (1 dp = 1 UI
+                                             pixel of a 1080 high window), STATE_* and *_SCALE without a unit,
+                                             *_SECONDS in s, fonts as fonts.xml's points at FONT_DPI in dp
 
 The skin is laid over skins/default (lldir.cpp setSkinFolder: the setting SkinCurrent, "charis" by default):
 colors.xml and textures.xml are read from every skin folder in turn, a later one replacing names of an earlier
@@ -59,6 +63,12 @@ GENERATED_XML = ('<!-- Made by indra/newview/%s/make_ui_tokens.py from tokens.tx
                  '     Do not edit: change tokens.txt and run python -I make_ui_tokens.py. -->\n')
 
 FONT_SIZES = ('Huge', 'Large', 'Medium', 'Small')
+
+RCSS = os.path.join(NEWVIEW, 'app_settings', 'plus', 'rmlui', 'charis_tokens.rcss')
+GENERATED_RCSS = ('/* Made by indra/newview/%s/make_ui_tokens.py from tokens.txt (research/239 (12), research/364 2.6).\n'
+                  '   Do not edit: change tokens.txt and run python -I make_ui_tokens.py. */\n')
+FONTS_XML = os.path.join(NEWVIEW, 'skins', 'default', 'xui', 'en', 'fonts.xml')
+FONT_DPI = 96.0     # FontScreenDPI's default (settings.xml): LLFontGL draws fonts.xml's points at it
 
 # ---------------------------------------------------------------- tokens.txt
 
@@ -135,6 +145,13 @@ def parse_tokens(path):
         sections[-1][1].append(t)
     for t in tokens.values():
         resolve(t, tokens, [])
+    # RmlUi's slider: the track and the fill start SLIDER_TRACK_TOP below the top, so the knob's centre and
+    # the track's centre are the same line only when this holds (a value that is not derived can drift).
+    if all(k in tokens for k in ('SLIDER_TRACK_TOP', 'SLIDER_KNOB', 'SLIDER_TRACK')):
+        want = (tokens['SLIDER_KNOB'].value - tokens['SLIDER_TRACK'].value) / 2
+        if tokens['SLIDER_TRACK_TOP'].value != want:
+            raise TokenError('%d: SLIDER_TRACK_TOP must be (SLIDER_KNOB - SLIDER_TRACK) / 2 = %g'
+                             % (tokens['SLIDER_TRACK_TOP'].line, want))
     xui = {}
     for t in tokens.values():
         if t.kind == 'color':
@@ -1121,6 +1138,46 @@ def make_textures_xml(entries):
     out += ['</textures>', '']
     return '\n'.join(out)
 
+# ---------------------------------------------------------------- RCSS (plus/rmlui)
+
+
+def read_font_points():
+    """fonts.xml's official sizes: {name: points}."""
+    try:
+        root = ET.parse(FONTS_XML).getroot()
+    except (OSError, ET.ParseError) as ex:
+        raise TokenError('0: %s cannot be read: %s' % (rel(FONTS_XML), ex))
+    return {e.get('name'): float(e.get('size')) for e in root.iter('font_size') if e.get('name') and e.get('size')}
+
+
+def rcss_value(t, points):
+    if t.kind == 'color':
+        hexv, alpha = t.value
+        return '#%06x' % hexv if alpha == 1.0 else '#%06x%02x' % (hexv, int(round(alpha * 255)))
+    if t.kind in ('f32', 's32'):
+        if t.name.startswith('STATE_') or t.name.endswith('_SCALE'):
+            return num(t.value)
+        if t.name.endswith('_SECONDS'):
+            return num(t.value) + 's'
+        return num(t.value) + 'dp'
+    size, _bold = t.value
+    if size not in points:
+        raise TokenError('%d: fonts.xml has no font_size %s' % (t.line, size))
+    return num(points[size] * FONT_DPI / 72.0) + 'dp'
+
+
+def make_rcss(sections, tokens):
+    points = read_font_points()
+    out = [GENERATED_RCSS.rstrip('\n') % os.path.relpath(HERE, NEWVIEW).replace('\\', '/'), '', 'body', '{']
+    for title, items in sections:
+        out.append('    /* %s */' % title.replace('*/', '* /'))
+        for item in items:
+            if isinstance(item, str):
+                continue
+            out.append('    --%s: %s;' % (item.name.lower().replace('_', '-'), rcss_value(item, points)))
+    out += ['}', '']
+    return '\n'.join(out)
+
 # ---------------------------------------------------------------- write / check
 
 
@@ -1130,6 +1187,7 @@ def outputs():
         os.path.join(HERE, 'pstokens.h'): make_header(sections, tokens),
         os.path.join(HERE, 'pstokens.cpp'): make_cpp(tokens),
         os.path.join(SKIN, 'colors.xml'): make_colors_xml(tokens, official, keep),
+        RCSS: make_rcss(sections, tokens),
     }
     images, entries = make_images(tokens, need_imaging())
     text[os.path.join(SKIN, 'textures', 'textures.xml')] = make_textures_xml(entries)

@@ -382,6 +382,13 @@ public:
     // <plus> area search (plus/areasearch): all the object cache records, to read (they need no object)
     const std::map<U32, LLPointer<LLVOCacheEntry> >& getVOCacheMap() const;
     // </plus>
+    // <plus> research/355 attach-diag: the local IDs of the cache entries waiting in the orphan map for this parent (read only; null: none)
+    const std::vector<U32>* getOrphanMapChildren(U32 parent_local_id) const
+    {
+        const auto it = mOrphanMap.find(parent_local_id);
+        return it != mOrphanMap.end() ? &it->second : nullptr;
+    }
+    // </plus>
     bool probeCache(U32 local_id, U32 crc, U32 flags, U8 &cache_miss_type);
     U64 getRegionCacheHitCount() { return mRegionCacheHitCount; }
     U64 getRegionCacheMissCount() { return mRegionCacheMissCount; }

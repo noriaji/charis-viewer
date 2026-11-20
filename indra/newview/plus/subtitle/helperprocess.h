@@ -3,7 +3,7 @@
  * @brief Subtitles (plus/subtitle, research/273 #4): starting a helper program on two pipes, tied to the viewer.
  *
  * The recognition helper (charis-subtitle.exe, subtitleclient.cpp) and the translation helper
- * (charis-translate.exe, translateclient.cpp) are started the same way: their standard input and output on
+ * (charis-translate.exe, translateclient.cpp on lineclient.cpp) are started the same way: their standard input and output on
  * pipes of their own, nothing else of the viewer's inherited but our stderr, no window, and in a job that ends
  * them when the viewer goes (even if it crashes). curl.exe for the model download (subtitledownload.cpp) has no
  * pipes but is tied to the viewer by the same job. What is said on the pipes is each client's own.
@@ -42,6 +42,12 @@ namespace plus
 {
     namespace subtitle
     {
+        // How long a client's stop() lets its helper obey its quit command before it is ended (endWithin; stop() is called on
+        // the main thread: keep it short).
+        constexpr DWORD HELPER_QUIT_GRACE_MS = 100;
+        // The longest line from a helper that is kept while its end has not come (readLines' max_pending).
+        constexpr size_t HELPER_MAX_LINE = 1 << 20;
+
         // A helper program and our ends of its pipes. Not copied; the client that owns it closes it (close()).
         struct HelperProcess
         {

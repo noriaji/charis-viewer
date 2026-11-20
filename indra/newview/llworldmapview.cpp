@@ -54,6 +54,9 @@
 #include "llviewertexture.h"
 #include "llviewertexturelist.h"
 #include "llviewerregion.h"
+// <plus> worldmapinfo: the current region's max agents
+#include "llregioninfomodel.h"
+// </plus>
 #include "llviewerwindow.h"
 #include "lltrans.h"
 
@@ -533,7 +536,7 @@ void LLWorldMapView::draw()
             static LLCachedControl<bool> print_coords(gSavedSettings, "MapShowGridCoords");
             static LLFontGL* font = LLFontGL::getFontSansSerifSmallBold();
 
-            auto print = [&](std::string text, F32 x, F32 y, bool use_ellipses)
+            auto print = [&](const std::string& text, F32 x, F32 y, bool use_ellipses)
                 {
                     font->renderUTF8(text, 0,
                         (F32)llfloor(left + x), (F32)llfloor(bottom + y),
@@ -551,18 +554,61 @@ void LLWorldMapView::draw()
                 grid_name += " (" + sStringsMap["offline"] + ")";
             }
 
+            // <plus> worldmapinfo: "(avatar count - maturity)" under the name (from Firestorm's FSAdvancedWorldmapRegionInfo)
+            static LLCachedControl<bool> show_region_info(gSavedSettings, "PlusWorldMapRegionInfo");
+            const bool has_info = show_region_info && !info->isDown();
+            // Lines stack upward from the bottom: info, [coords when no info line], name, [coords above the name]
+            const F32 LINE_STEP = 12.f;
+            F32 line_y = 2.f;
+            std::string grid_coords;
             if (print_coords)
             {
-                print(grid_name, 3, 14, true);
-                // Obtain and print the grid map coordinates
                 LLVector3d region_pos = info->getGlobalOrigin();
-                std::string grid_coords = llformat("[%.0f, %.0f]", region_pos[VX] / 256, region_pos[VY] / 256);
-                print(grid_coords, 3, 2, false);
+                grid_coords = llformat("[%.0f, %.0f]", region_pos[VX] / 256, region_pos[VY] / 256);
             }
-            else
+            if (has_info)
             {
-                print(grid_name, 3, 2, true);
+                S32 agent_count = info->getAgentCount();
+                LLViewerRegion* cur_region = gAgent.getRegion();
+                if (cur_region && cur_region->getHandle() == info->getHandle())
+                {
+                    ++agent_count; // we are in this region
+                }
+                // Localized maturity names: looked up once per kind (a language change needs a restart)
+                static std::string access_names[4];
+                const U8 access = info->getAccess();
+                std::string& access_name = access_names[access == SIM_ACCESS_PG ? 0 : access == SIM_ACCESS_MATURE ? 1 : access == SIM_ACCESS_ADULT ? 2 : 3];
+                if (access_name.empty())
+                {
+                    access_name = info->getAccessString();
+                }
+                // The map data has no maximum; the region-info message (current region only, and only once its window was opened) has it
+                static std::string region_info; // reused every frame
+                region_info = "(";
+                if (agent_count > 0)
+                {
+                    const LLRegionInfoModel& rim = LLRegionInfoModel::instance();
+                    const bool here = cur_region && cur_region->getHandle() == info->getHandle() && rim.mSimName == cur_region->getName();
+                    region_info += (rim.mAgentLimit > 0 && here)
+                        ? llformat("%d/%d - ", agent_count, (S32)rim.mAgentLimit)
+                        : llformat("%d - ", agent_count);
+                }
+                region_info += access_name;
+                region_info += ")";
+                print(region_info, 3, line_y, true);
+                line_y += LINE_STEP;
             }
+            else if (print_coords)
+            {
+                print(grid_coords, 3, line_y, false);
+                line_y += LINE_STEP;
+            }
+            print(grid_name, 3, line_y, true);
+            if (has_info && print_coords)
+            {
+                print(grid_coords, 3, line_y + LINE_STEP, false);
+            }
+            // </plus>
         }
     }
 

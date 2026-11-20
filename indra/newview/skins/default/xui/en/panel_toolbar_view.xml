@@ -131,29 +131,114 @@
                 height="30"
                 width="1024"
                 mouse_opaque="false">
-    <toolbar layout="topleft"
-             button_panel.bg_opaque_image="Rounded_Rect_Top"
-             name="toolbar_bottom"
-             height="30"
-             left="40"
-             right="-40"
-             top="0"
-             side="bottom"
-             follows="left|right|bottom"
-             button_display_mode="icons_with_text"
-             visible="true">
-             <icon layout="topleft"
-	            height="28"
-	            width="15"
-	            follows="left|top"
-	            top="20"
-	            left="10"
-	            tab_stop="false" 
-                visible="false"
-                use_draw_context_alpha="false"
-	            image_name="Caret_Bottom_Icon"
-	            name="caret" />
-    </toolbar>
+  <!-- plus chat-bar (plus/chatbar, research/334): Firestorm's chat bar. The bottom panel holds the chat bar's panel
+       and the bottom toolbar's own panel side by side (FS's chat_bar_stack / chat_bar_layout_panel / toolbar_panel);
+       the toolbar was directly in bottom_toolbar_panel. LLToolBarView::draw() shows and sizes the toolbar's panel,
+       plus::chatbar::syncBottomPanel() the bottom panel. The bar is shown by PlusShowChatBar; its width is the user's
+       (the resize bar on its right), 320 at start (Firestorm's 256 of 1024 is a quarter; the 10 default bottom
+       buttons stay on one row from a 1280 wide window), 200 to 600 (min_dim / max_dim). While the toolbar has buttons
+       its panel keeps at least 480 (its toolbar 400 between the 40 on each side, several buttons a row):
+       plus::chatbar::syncBottomPanel() narrows the bar (to its min_dim at least) when the window or a pull to the
+       right would leave less, or the toolbar would wrap into as many rows as buttons, and widens it back to the
+       width the user wants (320, or as dragged) when the window is widened. The toolbar's panel min_dim is lower
+       (120) only so that a window narrower than 680 does not push the toolbar past its right edge. The bar is 26 high
+       at the bottom (the toolbar's height, chatbar.cpp CHAT_BAR_HEIGHT): the box 26, the button 22 and the field 20
+       in it (its font is the chat font at most SansSerif, set by chatbar.cpp; the field's own background PsFieldBg
+       so that it reads as a field, with the words chat_bar_label while empty). ja: the button's word is 7
+       characters (about 91, in 104). -->
+    <layout_stack name="chat_bar_stack"
+                  orientation="horizontal"
+                  left="0"
+                  top="0"
+                  width="1024"
+                  height="30"
+                  follows="all"
+                  border_size="0"
+                  resize_bar_overlap="8"
+                  mouse_opaque="false">
+      <layout_panel name="chat_bar_layout_panel"
+                    auto_resize="false"
+                    user_resize="true"
+                    min_dim="200"
+                    max_dim="600"
+                    height="30"
+                    width="320"
+                    visibility_control="PlusShowChatBar"
+                    mouse_opaque="false">
+        <plus_ps_box name="chat_bar_box"
+                     kind="glass"
+                     layout="topleft"
+                     follows="left|right|bottom"
+                     left="6"
+                     top="4"
+                     width="308"
+                     height="26"
+                     mouse_opaque="true">
+          <string name="chat_bar_label">Say to nearby chat</string>
+          <plus_ps_button name="local_chat_button"
+                          label="Nearby Chat"
+                          tool_tip="Shows or hides the nearby chat (Ctrl+H)"
+                          layout="topleft"
+                          follows="left|top"
+                          left="2"
+                          top="2"
+                          width="104"
+                          height="22">
+            <plus_ps_button.commit_callback
+              function="Plus.ChatBar.NearbyChat" />
+          </plus_ps_button>
+          <plus_chat_bar name="default_chat_bar"
+                         layout="topleft"
+                         follows="left|right|top"
+                         left="110"
+                         top="3"
+                         width="192"
+                         height="20"
+                         bg_visible="true"
+                         bg_writeable_color="PsFieldBg"
+                         bg_focus_color="PsFieldBg"
+                         bg_readonly_color="PsFieldBg"
+                         text_color="PsTextWhite"
+                         cursor_color="PsTextWhite"
+                         text_tentative_color="PsTextDim"
+                         max_length="1023"
+                         spellcheck="true"
+                         has_history="true"
+                         tool_tip="Nearby chat: Enter says, Shift+Enter whispers, Ctrl+Enter shouts. The channel is 0; another channel with /number. Ctrl+Up/Down: what you said before." />
+        </plus_ps_box>
+      </layout_panel>
+      <layout_panel name="toolbar_panel"
+                    auto_resize="true"
+                    min_dim="120"
+                    height="30"
+                    width="704"
+                    mouse_opaque="false">
+        <toolbar layout="topleft"
+                 button_panel.bg_opaque_image="Rounded_Rect_Top"
+                 name="toolbar_bottom"
+                 height="30"
+                 left="40"
+                 right="-40"
+                 top="0"
+                 side="bottom"
+                 follows="left|right|bottom"
+                 button_display_mode="icons_with_text"
+                 visible="true">
+                 <icon layout="topleft"
+    	            height="28"
+    	            width="15"
+    	            follows="left|top"
+    	            top="20"
+    	            left="10"
+    	            tab_stop="false" 
+                    visible="false"
+                    use_draw_context_alpha="false"
+    	            image_name="Caret_Bottom_Icon"
+    	            name="caret" />
+        </toolbar>
+      </layout_panel>
+    </layout_stack>
+  <!-- /plus -->
   </layout_panel>
   </layout_stack>
 </toolbar_view>

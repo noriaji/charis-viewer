@@ -177,6 +177,7 @@ protected:
     void setTexelsPerImage();
 
 public:
+    // May be null before generateGLTexture() is called.
     /*virtual*/ LLImageGL* getGLTexture() const ;
     // <plus> LLRHI (research/197 stage 1a): its image's number (LLImageGL::rhiTex),
     // without a virtual call. A media texture that shares the image shares it.

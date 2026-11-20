@@ -50,6 +50,15 @@
         <menu_item_call.on_click
          function="Plus.PrefsCharis.Show" />
     </menu_item_call>
+    <!-- detach: every floater shown in a window of its own goes back into the main window (plus/detach) -->
+    <menu_item_call
+     label="Return All Separate Windows"
+     name="DetachReturnAll">
+        <menu_item_call.on_click
+         function="Plus.Detach.ReturnAll" />
+        <menu_item_call.on_enable
+         function="Plus.Detach.AnyDetached" />
+    </menu_item_call>
     <!-- camerashot: slow push-in / pull-out, zoom and dolly zoom (plus/camerashot). Checked: shown. -->
     <menu_item_check
      label="Camera Shot"
@@ -164,13 +173,24 @@
          function="Floater.Toggle"
          parameter="plus_keywords" />
     </menu_item_check>
-    <!-- slwx: the "Parcel Weather..." entry (Floater.Toggle plus_weather_parcel, plus/slwx) is withdrawn from the menu for now (decided
-         2026-11-07): the floater code stays registered, it just has no way to be opened. To bring it back, restore the menu_item_check here
-         (name="ParcelWeather") and the ja label in ja/menu_plus.xml. -->
+    <!-- slwx: sets the [slwx ...] weather tag in the description of the parcel you stand on (plus/slwx). Checked: shown.
+         Withdrawn 2026-11-07, brought back 2026-11-15. Only this menu opens it: secondlife:///app/openfloater links
+         are refused (llviewerfloaterreg.cpp, weather-withdraw), so an outside link cannot open the parcel description writer. -->
+    <menu_item_check
+     label="Parcel Weather..."
+     name="ParcelWeather">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_weather_parcel" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_weather_parcel" />
+    </menu_item_check>
     <menu_item_separator />
-    <!-- look: colour grading of the finished image with a LUT (plus/look, research/102).
+    <!-- look: color grading of the finished image with a LUT (plus/look, research/102).
          The graphics presets set none (a matter of taste: picking one keeps the preset in use). The looks are added by plus::look: the shipped
-         ones before LookShippedEnd, the user's (the look folder) before LookUserNone. -->
+         ones without a "group" before LookShippedEnd, the ones with a group in that group's submenu (LookGroup_*, after the separator),
+         the user's (the look folder) before LookUserNone. -->
     <menu
      create_jump_keys="true"
      label="Look (Color Grading)"
@@ -187,6 +207,24 @@
         </menu_item_check>
         <menu_item_separator
          name="LookShippedEnd" />
+        <!-- the looks that have a "group" in look.xml (plus/look: the group's own submenu, filled in order) -->
+        <menu
+         create_jump_keys="true"
+         label="Portrait and Fashion"
+         name="LookGroup_portrait" />
+        <menu
+         create_jump_keys="true"
+         label="Street and Night"
+         name="LookGroup_street" />
+        <menu
+         create_jump_keys="true"
+         label="Film and Camera"
+         name="LookGroup_film" />
+        <menu
+         create_jump_keys="true"
+         label="Mood and Genre"
+         name="LookGroup_mood" />
+        <menu_item_separator />
         <menu_item_call
          label="Your Looks (the Look Folder)"
          name="LookUserHeader">
@@ -239,6 +277,18 @@
          function="Floater.Toggle"
          parameter="fs_poser" />
     </menu_item_check>
+    <!-- posermotion: Motion Between Poses (Charis, plus/posermotion, research/324). Not in Firestorm: it stays in the
+         Charis menu while the poser above moves to Avatar (plus.cpp FS_MENU_PLACES). The window opens the poser. -->
+    <menu_item_check
+     label="Motion Between Poses..."
+     name="PoserMotion">
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_poser_motion" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_poser_motion" />
+    </menu_item_check>
     <!-- ao: Animation Overrider (from Firestorm, plus/ao). The window; on/off and stands
          are per-account settings (PlusAOEnabled, PlusAOStands), switched in Preferences > Charis too. -->
     <menu_item_check
@@ -264,5 +314,40 @@
          parameter="RestrainedLove" />
         <menu_item_check.on_visible
          function="RLV.MainToggleVisible" />
+    </menu_item_check>
+    <!-- rmlui: the RmlUi test window and its XUI twin, for development (plus/rmlui/rmldemo.cpp, research/364). Not in
+         Firestorm: at the bottom of the Charis menu. Shown only with QAMode, as the Develop menu (show_debug_menus):
+         a release build has it off. The windows do not open from a link either (llviewerfloaterreg.cpp). -->
+    <menu_item_separator
+     name="RmlDemoSeparator">
+        <menu_item_separator.on_visible
+         function="CheckControl"
+         parameter="QAMode" />
+    </menu_item_separator>
+    <menu_item_check
+     label="RmlUi Test Window (Development)"
+     name="RmlDemo">
+        <menu_item_check.on_visible
+         function="CheckControl"
+         parameter="QAMode" />
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_rml_demo" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_rml_demo" />
+    </menu_item_check>
+    <menu_item_check
+     label="RmlUi Test Window, XUI Twin (Development)"
+     name="RmlDemoXui">
+        <menu_item_check.on_visible
+         function="CheckControl"
+         parameter="QAMode" />
+        <menu_item_check.on_check
+         function="Floater.Visible"
+         parameter="plus_rml_demo_xui" />
+        <menu_item_check.on_click
+         function="Floater.Toggle"
+         parameter="plus_rml_demo_xui" />
     </menu_item_check>
 </menu>

@@ -212,6 +212,7 @@ private:
     bool listLayerTextures();                                       // 5c: false: one cannot be sampled now
     void stop(const char* why);
     void report();
+    void writeReport();         // research/218 vk-s2f-2: report's lines (LLRHI::sPeriodicLogs)
     void reportAvatars();       // research/206 H2 (research/218 vk-s0b): the avatars' side of the census
 
     bool mInCall = false;

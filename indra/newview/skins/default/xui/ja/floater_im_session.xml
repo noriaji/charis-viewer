@@ -53,6 +53,19 @@
 						<chat_editor label="送信先" name="chat_editor"/>
 						<button name="emoji_recent_panel_toggle_btn" tool_tip="最近使った絵文字を表示／非表示"/>
 					</layout_panel>
+					<!-- plus chat-channel-select -->
+					<layout_panel name="chat_channel_layout_panel">
+						<spinner name="ChatChannel" tool_tip="発言するチャンネル"/>
+					</layout_panel>
+					<layout_panel name="chat_type_layout_panel" width="95">
+						<combo_box name="chat_type" tool_tip="ささやき＝10m、通常＝20m、シャウト＝100m">
+							<combo_box.item label="ささやき" name="chat_type_whisper"/>
+							<combo_box.item label="通常" name="chat_type_say"/>
+							<combo_box.item label="シャウト" name="chat_type_shout"/>
+						</combo_box>
+						<button name="send_chat" label="通常" tool_tip="ささやき＝10m、通常＝20m、シャウト＝100m"/>
+					</layout_panel>
+					<!-- /plus -->
 					<layout_panel name="input_button_layout_panel">
 						<button name="minz_btn" tool_tip="メッセージパネルの表示／非表示"/>
 					</layout_panel>

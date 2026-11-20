@@ -7,8 +7,10 @@
 list(APPEND plus_SOURCE_FILES
     plus/keywords/keywords.cpp
     plus/keywords/keywordsfloater.cpp
+    plus/keywords/keywordsrml.cpp
     )
 
 list(APPEND plus_HEADER_FILES
     plus/keywords/keywords.h
+    plus/keywords/keywordsrml.h
     )

@@ -47,7 +47,10 @@ class LLRenderTarget;
 // the edges within the frame, TAA then evens them out over the frames.
 //
 // Jitter (research/185 section 13, PlusTAAJitter, on by default but only
-// while TAA draws; PlusTAAJitterScale): while TAA drew the last frame, the
+// while TAA draws; PlusTAAJitterScale), kept by plus/temporal (research/373,
+// which the temporal upscalers share; JitterScope, the last frame's camera and
+// when a history is dropped are there, and the functions below forward to it):
+// while TAA drew the last frame, the
 // main view's scene (its G-buffer, lighting and alpha: JitterScope) is drawn
 // with the projection moved by a fraction of a pixel, a different one each
 // frame (Halton 2,3, 8 points), so that the history gathers samples from
@@ -85,9 +88,8 @@ namespace plus::taa
 
     // True while the main view is being drawn and TAA will mix it with its
     // history (on, drew a moment ago; not a snapshot, a probe's face or a
-    // mirror): noise that changes every frame (the volumetric clouds' march)
-    // is evened out then. False elsewhere, where it would show as flicker.
-    bool smoothsMainView();
+    // mirror: plus/temporal checks those): the picture's size then. plus/temporal asks it for the jitter.
+    bool historyAhead(U32& width, U32& height);
 
     // The main view's scene of this frame was drawn jittered (JitterScope):
     // what is made from it at a lower size (the glow) must look at the whole
@@ -103,27 +105,6 @@ namespace plus::taa
     // up to half a pixel's slope each frame, and a line lying on a surface was
     // in front of it in one frame and behind it in the next (select-flicker).
     glm::vec2 depthJitter();
-
-    // The <plus> hook in display() (llviewerdisplay.cpp) around the main
-    // view's G-buffer, lighting and alpha: moves the projection (the loaded
-    // one and get_current_projection) by this frame's jitter when it is
-    // wanted, and puts both back at restore() or at the end of the scope.
-    // for_snapshot: display()'s, nothing is moved then.
-    class JitterScope
-    {
-    public:
-        explicit JitterScope(bool for_snapshot);
-        ~JitterScope() { restore(); }
-        JitterScope(const JitterScope&) = delete;
-        JitterScope& operator=(const JitterScope&) = delete;
-
-        void restore();
-
-    private:
-        bool mApplied = false;
-        glm::mat4 mCurrent = glm::mat4(1.f);    // get_current_projection() before
-        glm::mat4 mLoaded = glm::mat4(1.f);     // gGL's projection matrix before
-    };
 }
 
 #endif // PLUS_TAA_TAA_H

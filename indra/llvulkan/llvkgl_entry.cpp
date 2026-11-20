@@ -470,7 +470,7 @@ namespace
     {
         Framebuffer* fb = framebuffer_for(GL_DRAW_FRAMEBUFFER);
         if (!fb || !buffers) return;
-        const U32 count = (U32)llclamp(n, 0, 4);
+        const U32 count = (U32)llclamp(n, 0, (GLsizei)LLVKMirror::MAX_COLORS);
         bool same = fb->draw_count == count;
         for (U32 i = 0; same && i < count; ++i) same = fb->draw_buffers[i] == buffers[i];
         if (same)
@@ -525,7 +525,7 @@ namespace
                 // (get: a name not specified yet still remembers it for its first image.)
                 make_attachable(sTextures.get(texture));
             }
-            if (attachment >= GL_COLOR_ATTACHMENT0 && attachment < GL_COLOR_ATTACHMENT0 + 4)
+            if (attachment >= GL_COLOR_ATTACHMENT0 && attachment < GL_COLOR_ATTACHMENT0 + LLVKMirror::MAX_COLORS)
             {
                 fb->color[attachment - GL_COLOR_ATTACHMENT0] = texture;
             }

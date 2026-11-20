@@ -1,0 +1,577 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Motion Between Poses (plus/posermotion/motionfloater*.cpp, research/324 section 1.2, research/357 section 2). Opened by
+     the poser's button and the Charis menu.
+     Size (1080 base): 520 x 720; the body 702 under the title bar (18) is one scroll_container (follows all) whose
+     panel is 503 wide (520 less the scroll bar 15 and the border 2: no sideways scroll bar) and 834 high, so it
+     scrolls at the default size and at the smallest (300). Every part's x / top / width / height, and the sum of the
+     heights, are in research/357 section 12 (12.1: the one-slider change, 12.2: passing through, research/361).
+     The panel's rows (left 14, 475 wide): the model's state and its button (one line); the keys (chips 52 x 26, eight
+     to a line); the selected key, its hold, its passing (mode and strength) and the line that says why it cannot be
+     passed, how to stop at it, or how to pass it (Auto judged "stops"); the selected segment (method, length (Smooth/Linear: the slider; Generate: set by dragging the segment's right end on the timeline) and its
+     marks); the generate buttons and the status; the timeline strip (62 high, its needle is the one position
+     control); play, repeat and the frame's number; the name, save and discard.
+     A label too long for its box ends in an ellipsis and its tool tip has the whole text (ja: the Save button is
+     shortened to fit its 235). -->
+<floater
+ name="plus_poser_motion"
+ title="Motion Between Poses"
+ width="520"
+ height="720"
+ min_width="520"
+ min_height="300"
+ layout="topleft"
+ legacy_header_height="18"
+ positioning="cascading"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="true"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true">
+    <!-- the model (machine M) -->
+    <string name="model_checking">Model: looking...</string>
+    <string name="model_missing">The motions are made by a model (about [SIZE] MB)</string>
+    <string name="model_unpublished">The model is not available for download yet</string>
+    <string name="model_downloading">Fetching the model... [PERCENT]%</string>
+    <string name="model_verifying">Checking the fetched model...</string>
+    <string name="model_installed">Model: fetched</string>
+    <string name="model_failed">Model: fetch failed ([REASON])</string>
+    <string name="model_broken">The model could not be read: fetch it again</string>
+    <string name="model_in_use">Could not remove the model (in use)</string>
+    <string name="btn_fetch">Fetch...</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_remove">Remove...</string>
+    <string name="btn_retry">Try Again</string>
+    <string name="btn_refetch">Fetch Again...</string>
+    <string name="reason_not_published">not released yet</string>
+    <string name="reason_cannot_start">curl.exe could not start</string>
+    <string name="reason_bad_folder">the folder cannot be used</string>
+    <string name="reason_network">connection failed</string>
+    <string name="reason_size">wrong size</string>
+    <string name="reason_hash">contents did not match</string>
+    <string name="reason_disk">could not write to the disk</string>
+    <string name="reason_in_use">in use</string>
+    <string name="confirm_fetch">Fetch the model for Motion Between Poses?
+
+- Size: about [SIZE] MB
+- From: github.com, noriaji/charis-models
+- Model: NVIDIA MotionBricks SOMA
+- License: NVIDIA Open Model Agreement (the full text is on the download page)
+
+It runs on this PC only: no pose data is sent anywhere. If the download is stopped, it starts over next time.</string>
+    <string name="confirm_remove">Remove the model (about [SIZE] MB)? It has to be fetched again to make motions.</string>
+    <string name="confirm_overwrite">[NAME].bvh already exists. Replace it?</string>
+    <string name="confirm_clear">Delete all [COUNT] keys and the motions made for them?</string>
+    <!-- the keys and the segments -->
+    <string name="seconds">[SEC] s</string>
+    <string name="frame_of">Frame [FRAME] / [COUNT]</string>
+    <string name="key_selected">Selected: key [N]</string>
+    <string name="key_none">No key selected</string>
+    <string name="segment_title">Segment: key [FROM] to key [TO]</string>
+    <string name="segment_none">Segment: take at least two keys</string>
+    <string name="method_generate">Generate</string>
+    <string name="method_smooth">Smooth</string>
+    <string name="method_linear">Linear</string>
+    <string name="segment_unmade">Not generated yet (a smooth stand-in plays)</string>
+    <string name="segment_queued">Waiting to be generated</string>
+    <string name="segment_running">Generating</string>
+    <string name="segment_made">Ready</string>
+    <string name="segment_failed">Failed</string>
+    <string name="segment_regen">Regenerating is advised</string>
+    <string name="hold_word">Hold</string>
+    <string name="unit_second">s</string>
+    <string name="reason_prefix">:</string>
+    <!-- generate (machine H) and play (machine C) -->
+    <string name="btn_play">Play</string>
+    <string name="btn_stop">Stop</string>
+    <string name="status_loading">Loading the model...</string>
+    <string name="status_progress">Making the motions... [DONE] / [TOTAL]</string>
+    <string name="why_not_logged_in">Log in to use this.</string>
+    <string name="why_no_poser">Open the poser.</string>
+    <string name="why_not_posing">In the poser, select yourself and press Start Posing.</string>
+    <string name="why_other">This works on your own avatar only: select yourself in the poser.</string>
+    <string name="why_no_model">Fetch the model first.</string>
+    <string name="why_unpublished">The model is not available for download yet, so motions cannot be made.</string>
+    <string name="why_need_keys">Take at least two keys: pose your avatar and press Add Key.</string>
+    <string name="why_not_generate">Smooth and Linear segments need no model.</string>
+    <string name="why_same">The two keys of this segment are the same pose: use Smooth or Linear.</string>
+    <string name="fail_low_memory">Not enough free memory (it uses about 0.8 GB).</string>
+    <string name="fail_no_helper">The motion part (charis-motion.exe) is missing. Please reinstall the viewer.</string>
+    <string name="fail_bad_folder">The model's folder cannot be used.</string>
+    <string name="fail_bad_input">Could not make the motion (the poses were refused).</string>
+    <string name="fail_model_missing">The model is missing: fetch it again.</string>
+    <string name="fail_model_unreadable">The model could not be read: fetch it again.</string>
+    <string name="fail_timeout">Could not make the motion (it took too long).</string>
+    <string name="fail_helper_ended">Could not make the motion (the motion part stopped).</string>
+    <string name="fail_run">Could not make the motion (the model failed).</string>
+    <string name="fail_bad_answer">Could not make the motion (the answer was not usable).</string>
+    <string name="fail_convert">These poses could not be converted.</string>
+    <string name="fail_prev_missing">The segment before it was not made, so this one was taken off the queue.</string>
+    <string name="note_touched">Stopped: a joint was moved during the playback.</string>
+    <string name="note_gone">The motion was dropped: the poser no longer poses your avatar.</string>
+    <string name="note_saved">Saved [NAME].bvh in the poser's folder.</string>
+    <string name="note_save_bad_name">This name cannot be a file name.</string>
+    <string name="note_save_failed">Could not save the BVH file.</string>
+    <string name="note_discarded">Back to the pose from before.</string>
+    <string name="note_discard_failed">Could not restore the pose (is the poser still posing your avatar?).</string>
+    <string name="note_too_many_keys">There can be 16 keys at most.</string>
+    <string name="note_too_long">The whole motion can be 30 seconds at most.</string>
+    <string name="note_busy">That segment is being generated: wait, or press Cancel.</string>
+    <string name="note_same_poses">The two keys are the same pose: Generate needs two different poses.</string>
+    <string name="note_capture_failed">Could not take the pose (is the poser posing your avatar?).</string>
+    <string name="note_apply_failed">Could not put the pose on your avatar (is the poser still posing it?).</string>
+    <string name="note_need_prev">This segment starts at a key that is passed through: generate the segment before it first.</string>
+    <!-- passing through (research/361) -->
+    <string name="pass_auto">Auto</string>
+    <string name="pass_auto_through">Auto (passes)</string>
+    <string name="pass_auto_stop">Auto (stops)</string>
+    <string name="pass_through">Pass Through</string>
+    <string name="pass_why_end">The first and the last keys are not passed through.</string>
+    <string name="pass_why_neighbour">A segment next to this key is not Generate, so the motion stops here.</string>
+    <string name="pass_why_hold">This key has a hold, so the motion stops here.</string>
+    <string name="pass_why_same">A key next to it has the same pose, so the motion stops here.</string>
+    <string name="pass_stop_hint">To stop at this key, duplicate it (the same pose twice).</string>
+    <string name="pass_pass_hint">To go through this key without stopping, choose Pass Through.</string>
+    <string name="regen_ends">a key at its end changed</string>
+    <string name="regen_targets">the keys after it changed</string>
+    <string name="regen_context">the motion before changed</string>
+    <string name="regen_pass">the way it passes changed</string>
+    <string name="regen_join">,</string>
+
+    <plus_ps_box
+     name="body"
+     kind="panel"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="520"
+     height="702">
+        <scroll_container
+         name="scroll"
+         follows="all"
+         layout="topleft"
+         left="0"
+         top="0"
+         width="520"
+         height="702"
+         opaque="false"
+         reserve_scroll_corner="false">
+            <panel
+             name="scroll_panel"
+             background_visible="false"
+             follows="left|top"
+             layout="topleft"
+             left="0"
+             top="0"
+             width="503"
+             height="834">
+                <plus_ps_label
+                 name="model_label"
+                 kind="label"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="10"
+                 width="339"
+                 height="32"
+                 label="Model: looking..." />
+                <plus_ps_button
+                 name="model_button"
+                 follows="right|top"
+                 layout="topleft"
+                 left="359"
+                 top="10"
+                 width="130"
+                 height="32"
+                 label="Fetch..."
+                 tool_tip="Fetch the model (asks first), stop the download, or remove the model" />
+                <plus_ps_divider
+                 name="div_model"
+                 kind="left"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="0"
+                 top="50"
+                 width="503"
+                 height="9" />
+
+                <plus_ps_label
+                 name="keys_title"
+                 kind="label"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="67"
+                 width="475"
+                 height="22"
+                 label="Keys (poses in order)" />
+                <plus_motion_keys
+                 name="key_row"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="91"
+                 width="475"
+                 height="56"
+                 tool_tip="Click a key to put its pose on your avatar. Drag a key to change the order. Right-click for more." />
+                <plus_ps_button
+                 name="add_key_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="155"
+                 width="150"
+                 height="32"
+                 label="Add Key"
+                 tool_tip="Adds your avatar's pose in the poser now as the last key. To start from a saved pose, load it in the poser first." />
+                <plus_ps_button
+                 name="loop_key_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="170"
+                 top="155"
+                 width="150"
+                 height="32"
+                 label="Close the Loop"
+                 tool_tip="Adds a copy of the first key at the end, so that the motion can repeat" />
+
+                <plus_ps_label
+                 name="key_label"
+                 kind="label"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="195"
+                 width="150"
+                 height="30"
+                 label="No key selected" />
+                <plus_ps_slider
+                 name="hold_slider"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="170"
+                 top="195"
+                 width="319"
+                 height="31"
+                 label="Hold"
+                 label_width="60"
+                 min_value="0"
+                 max_value="5"
+                 increment="0.1"
+                 decimal_digits="1"
+                 tool_tip="How long the selected key's pose is kept before the motion goes on (0 to 5 seconds)" />
+                <plus_ps_label
+                 name="pass_title"
+                 kind="label"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="234"
+                 width="70"
+                 height="30"
+                 label="Passing" />
+                <plus_ps_segment
+                 name="pass_mode"
+                 follows="left|top"
+                 layout="topleft"
+                 left="90"
+                 top="234"
+                 width="208"
+                 height="30"
+                 left_label="Auto"
+                 right_label="Pass Through"
+                 tool_tip="Whether the motion stops at the selected key when the segments on both sides are Generate. Auto: it goes on through a key on the way and stops at a turning point (like the bottom of a squat). Pass Through: it never stops there." />
+                <plus_ps_label
+                 name="strength_title"
+                 kind="label"
+                 follows="left|top"
+                 layout="topleft"
+                 left="304"
+                 top="234"
+                 width="58"
+                 height="30"
+                 label="Strength" />
+                <plus_ps_segment
+                 name="pass_strength"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="368"
+                 top="234"
+                 width="121"
+                 height="30"
+                 initial_value="1"
+                 left_label="Weak"
+                 right_label="Normal"
+                 tool_tip="How far the motion carries on past the key when it goes through (Weak: a little, Normal: more)" />
+                <plus_ps_label
+                 name="pass_info"
+                 kind="sub"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="272"
+                 width="475"
+                 height="22"
+                 label="" />
+                <plus_ps_button
+                 name="update_key_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="302"
+                 width="220"
+                 height="32"
+                 label="Update with the Current Pose"
+                 tool_tip="Replaces the selected key's pose with your avatar's pose in the poser now. The motions made for it are fitted to the new pose." />
+                <plus_ps_button
+                 name="duplicate_key_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="240"
+                 top="302"
+                 width="114"
+                 height="32"
+                 label="Duplicate"
+                 tool_tip="Adds a copy of the selected key right after it" />
+                <plus_ps_button
+                 name="delete_key_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="360"
+                 top="302"
+                 width="129"
+                 height="32"
+                 label="Delete"
+                 tool_tip="Deletes the selected key" />
+                <plus_ps_divider
+                 name="div_keys"
+                 kind="left"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="0"
+                 top="342"
+                 width="503"
+                 height="9" />
+
+                <plus_ps_label
+                 name="segment_label"
+                 kind="label"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="359"
+                 width="475"
+                 height="22"
+                 label="Segment: take at least two keys" />
+                <plus_ps_label
+                 name="method_title"
+                 kind="label"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="383"
+                 width="70"
+                 height="30"
+                 label="Method" />
+                <plus_ps_segment
+                 name="method_seg"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="90"
+                 top="383"
+                 width="399"
+                 height="30"
+                 labels="Generate|Smooth|Linear"
+                 tool_tip="Generate: the model makes the motion between the two keys. Smooth: the pose turns straight to the next, easing in and out. Linear: the same without easing." />
+                <plus_ps_slider
+                 name="seconds_slider"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="421"
+                 width="475"
+                 height="31"
+                 label="Length"
+                 min_value="0.2"
+                 max_value="10"
+                 increment="0.1"
+                 decimal_digits="1"
+                 tool_tip="How long this segment lasts (0.2 to 10 seconds). You can also drag the segment's right end in the timeline." />
+                <plus_ps_text
+                 name="segment_mark_text"
+                 kind="sub"
+                 font="SansSerifSmall"
+                 word_wrap="true"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="460"
+                 width="475"
+                 height="46" />
+
+                <plus_ps_button
+                 name="generate_segment_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="514"
+                 width="154"
+                 height="40"
+                 label="Generate Segment"
+                 tool_tip="Makes the motion of the selected segment on this PC (the first time, the model takes a few seconds to load)" />
+                <plus_ps_button
+                 name="generate_all_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="174"
+                 top="514"
+                 width="154"
+                 height="40"
+                 label="Generate All"
+                 tool_tip="Makes the motions of every Generate segment that has none yet" />
+                <plus_ps_button
+                 name="generate_cancel_button"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="334"
+                 top="514"
+                 width="155"
+                 height="40"
+                 label="Cancel"
+                 tool_tip="Stops making motions" />
+                <plus_ps_text
+                 name="status_text"
+                 kind="sub"
+                 font="SansSerifSmall"
+                 word_wrap="true"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="560"
+                 width="475"
+                 height="46" />
+                <plus_ps_divider
+                 name="div_generate"
+                 kind="left"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="0"
+                 top="614"
+                 width="503"
+                 height="9" />
+
+                <plus_motion_timeline
+                 name="timeline"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="14"
+                 top="631"
+                 width="475"
+                 height="62"
+                 tool_tip="Click the ruler or drag the needle to show that frame of the motion on your avatar; stop on a frame and save it with the poser as a pose of its own. Drag a segment's right end to change its length." />
+
+                <plus_ps_button
+                 name="play_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="701"
+                 width="100"
+                 height="32"
+                 label="Play"
+                 tool_tip="Plays the whole motion on your avatar (only you see it)" />
+                <plus_ps_check
+                 name="loop_check"
+                 follows="left|top"
+                 layout="topleft"
+                 left="128"
+                 top="702"
+                 width="170"
+                 height="30"
+                 label="Repeat"
+                 tool_tip="Plays it again and again, holding the last pose for a moment each time" />
+                <plus_ps_label
+                 name="frame_label"
+                 kind="label"
+                 align="right"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="304"
+                 top="701"
+                 width="185"
+                 height="32"
+                 label="" />
+                <plus_ps_divider
+                 name="div_play"
+                 kind="left"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="0"
+                 top="741"
+                 width="503"
+                 height="9" />
+
+                <plus_ps_label
+                 name="name_title"
+                 kind="label"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="758"
+                 width="60"
+                 height="26"
+                 label="Name" />
+                <plus_ps_box
+                 name="name_box"
+                 kind="glass"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="80"
+                 top="758"
+                 width="409"
+                 height="26">
+                    <line_editor
+                     name="name_editor"
+                     bg_color="Transparent"
+                     commit_on_focus_lost="false"
+                     cursor_color="PsTextWhite"
+                     follows="left|top|right"
+                     highlight_text_field="false"
+                     label="Name of the animation"
+                     layout="topleft"
+                     left="4"
+                     top="2"
+                     width="401"
+                     height="22"
+                     max_length_chars="60"
+                     text_color="PsTextWhite"
+                     text_pad_left="4"
+                     text_tentative_color="PsTextDim"
+                     use_bg_color="true"
+                     tool_tip="The file name (without .bvh) in the poser's folder, where the poser saves its BVH files" />
+                </plus_ps_box>
+                <plus_ps_button
+                 name="save_button"
+                 follows="left|top"
+                 layout="topleft"
+                 left="14"
+                 top="792"
+                 width="235"
+                 height="32"
+                 label="Save as Animation (BVH)"
+                 tool_tip="Saves every frame as a BVH file." />
+                <plus_ps_button
+                 name="discard_button"
+                 follows="left|top|right"
+                 layout="topleft"
+                 left="255"
+                 top="792"
+                 width="234"
+                 height="32"
+                 label="Discard and Restore"
+                 tool_tip="Puts your avatar back in the pose it had before this window first changed it. The keys stay." />
+            </panel>
+        </scroll_container>
+    </plus_ps_box>
+</floater>

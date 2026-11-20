@@ -29,12 +29,14 @@
 
 #include "llrhi.h"
 #include "llrhiatmosphere.h"
+#include "llrhiframe.h"      // sRenderThreadProgress
 #include "llrhiglare.h"
 #include "llrhigtao.h"
 #include "llrhiimmediate.h"
 #include "llrhilook.h"
 #include "llrhiupscale.h"
 #include "llrhitaa.h"
+#include "llrhimotion.h"
 #include "llrhiocclusion.h"
 #include "llrhipass.h"
 #include "llrhiresource.h"
@@ -260,6 +262,9 @@ namespace
         CUT(sLookGrade);
         CUT(sUpscaleDraw);
         CUT(sTaaDraw);
+        CUT(sMotionClear);                  // llrhimotion.h (research/373)
+        CUT(sMotionCamera);
+        CUT(sMotionViewDraw);
         CUT(sSkinFillMask);
         CUT(sSkinFillShrink);
         CUT(sSkinFillSoften);
@@ -306,6 +311,7 @@ namespace
         KEEP(sAvatarBackendReport);
         KEEP(sCensusTake);
         KEEP(sDescribeDrawTarget);
+        KEEP(sRenderThreadProgress);        // research/218 vk-s2f-2: words for the debug tools; nothing recorded
         // --- Set by the viewer for the backend, or the retired translation thread's (always null)
         KEEP(sPostWork);                    // runs a job on a cull thread
         KEEP(sVulkanUnavailableExit);       // ends the viewer

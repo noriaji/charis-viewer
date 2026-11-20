@@ -37,6 +37,7 @@
 #include "llvkscene.h"
 #include "llvkrtas.h"      // research/230 R2
 #include "llvkshader.h"
+#include "llvkvramdiag.h"   // <plus> research/354 vram-stall-diag </plus>
 
 #if LL_WINDOWS
 #include "llwin32headers.h"     // LoadLibraryExA: vulkan-1.dll is delay loaded (llvulkan.cmake)
@@ -340,6 +341,19 @@ namespace
         return false;
     }
 
+    // research/197 2.4 (J3): what the retained scene draws with that the GPU
+    // lacks (LLVKScene::deviceGaps), ", " between them; empty: nothing.
+    std::string scene_gaps(VkPhysicalDevice device)
+    {
+        VkPhysicalDeviceVulkan12Features have12 = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES };
+        VkPhysicalDeviceFeatures2 have = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2 };
+        have.pNext = &have12;
+        vkGetPhysicalDeviceFeatures2(device, &have);
+        VkPhysicalDeviceProperties props;
+        vkGetPhysicalDeviceProperties(device, &props);
+        return LLVKScene::deviceGaps(have.features, have12.drawIndirectCount == VK_TRUE, props.limits);
+    }
+
     // What the renderer is built around and has no other way for, checked for
     // each Vulkan 1.3 GPU before one is chosen (pickPhysicalDevice), so a PC
     // with two GPUs uses one that has everything. research/82: the bindless
@@ -424,11 +438,13 @@ namespace
                        std::to_string(table_limit) + ")";
         }
         // research/197 2.4 (J3): the retained scene's GPU-driven draws, required
-        // whenever LLRHI_SCENE is not off (its default turns auto with the
-        // scene's drawing, research/198 5; the old ways stay until stage 7).
-        if (LLRHI::sceneMode() != LLRHI::SceneMode::Off)
+        // when LLRHI_SCENE is set to a mode other than off. research/218
+        // vk-s2f-2: unset (its default, SCENE_DEFAULT) they are not: a GPU without them
+        // is still chosen as before, and runs with the scene off
+        // (pickPhysicalDevice): which GPU a PC uses never depends on them.
+        if (LLRHI::sceneRequired())
         {
-            const std::string scene = LLVKScene::deviceGaps(have.features, have12.drawIndirectCount == VK_TRUE, props.properties.limits);
+            const std::string scene = scene_gaps(device);
             if (!scene.empty())
             {
                 missing += (missing.empty() ? "" : ", ");
@@ -717,6 +733,21 @@ bool LLVKDevice::pickPhysicalDevice()
         }
         return false;
     }
+    // research/218 vk-s2f-2: LLRHI_SCENE unset (its default not off) and the
+    // chosen GPU lacks what the retained scene draws with: the scene is off
+    // for the run (before anything reads its mode to build with it: the
+    // shaders' draw rows, LLVKScene::install). Once off, a second init asks
+    // nothing again.
+    if (!LLRHI::sceneRequired() && LLRHI::sceneMode() != LLRHI::SceneMode::Off)
+    {
+        const std::string gaps = scene_gaps(mPhysicalDevice);
+        if (!gaps.empty())
+        {
+            LLRHI::sceneOffForDevice();
+            LL_INFOS("Vulkan") << "GPU " << mDeviceName << " lacks what the retained scene draws with (" << gaps
+                               << "): LLRHI_SCENE (unset) is off for this run" << LL_ENDL;
+        }
+    }
     // A GPU passed over that would have been chosen otherwise (its score is
     // not below the chosen one's: a discrete GPU skipped for an integrated
     // one) gets a line for the log once init() succeeds, as in
@@ -796,7 +827,7 @@ bool LLVKDevice::createDevice()
     want.pNext = &want12;
     want.features.multiDrawIndirect = have.features.multiDrawIndirect;
     want.features.drawIndirectFirstInstance = have.features.drawIndirectFirstInstance;     // GPU-driven draws (research/46)
-    want.features.geometryShader = have.features.geometryShader;
+    want.features.geometryShader = have.features.geometryShader;   // gl_PrimitiveID in a fragment shader (oit_tiekey, research/370); mGeometryShader below
     want.features.samplerAnisotropy = have.features.samplerAnisotropy;
     want.features.fillModeNonSolid = have.features.fillModeNonSolid;
     want.features.wideLines = have.features.wideLines;
@@ -824,6 +855,7 @@ bool LLVKDevice::createDevice()
     mFillModeNonSolid = have.features.fillModeNonSolid == VK_TRUE;
     mPipelineStatistics = want.features.pipelineStatisticsQuery;
     mMultiDrawIndirect = have.features.multiDrawIndirect;
+    mGeometryShader = want.features.geometryShader == VK_TRUE;
     mDrawIndirectFirstInstance = have.features.drawIndirectFirstInstance;
     mDrawIndirectCount = have12.drawIndirectCount;
     {
@@ -1230,6 +1262,7 @@ void LLVKDevice::setFrame(U32 frame)
         // this a quiet scene (few allocations) left vramBudget() on an old one.
         vmaSetCurrentFrameIndex(mAllocator, frame);
     }
+    LLVKVramDiag::frame();      // <plus> research/354 vram-stall-diag: counts only (LLRHI_VRAM_DIAG) </plus>
 }
 
 std::string LLVKDevice::memoryReport()
@@ -1584,6 +1617,10 @@ void LLVKDevice::noteResource(ResourceStep step, U64 handle, VmaAllocation alloc
     {
         strncpy(event.what, what, sizeof(event.what) - 1);
     }
+    if (step == RESOURCE_MADE)
+    {
+        LLVKVramDiag::resourceMade(what, event.bytes);     // <plus> research/354 vram-stall-diag: counts only (LLRHI_VRAM_DIAG) </plus>
+    }
     std::lock_guard<std::mutex> lock(mHistoryMutex);
     event.frame = mFrame.load(std::memory_order_relaxed);
     if (mResources.empty())
@@ -1744,9 +1781,10 @@ bool LLVKDevice::createAllocator()
     return true;
 }
 
-void VKAPI_PTR LLVKDevice::onDeviceAllocate(VmaAllocator, uint32_t, VkDeviceMemory, VkDeviceSize, void* self)
+void VKAPI_PTR LLVKDevice::onDeviceAllocate(VmaAllocator allocator, uint32_t memory_type, VkDeviceMemory, VkDeviceSize size, void* self)
 {
     static_cast<LLVKDevice*>(self)->mDeviceAllocations.fetch_add(1, std::memory_order_relaxed);
+    LLVKVramDiag::memoryAllocated(allocator, memory_type, size);   // <plus> research/354 vram-stall-diag: counts only (LLRHI_VRAM_DIAG) </plus>
 }
 
 void VKAPI_PTR LLVKDevice::onDeviceFree(VmaAllocator, uint32_t, VkDeviceMemory, VkDeviceSize, void* self)
@@ -2156,6 +2194,16 @@ bool LLVKDevice::vramBudget(U64& image_bytes, U64& usage, U64& budget, bool* flo
             *floored = lowest > shared && lowest < budget;  // the budget follows what is not a texture image
         }
         budget = llmin(budget, llmax(shared, lowest));
+    }
+    else
+    {
+        // research/371 (vram-core): the VRAM set to pretend (a GPU that shares the PC's memory has its share set
+        // already, above). Only the budget; the use stays what it is
+        const U64 cap = mVramCap.load(std::memory_order_relaxed);
+        if (cap && budget > cap)
+        {
+            budget = cap;
+        }
     }
     return budget > 0;
 }

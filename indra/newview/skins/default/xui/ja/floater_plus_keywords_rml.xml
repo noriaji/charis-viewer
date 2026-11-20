@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_keywords" title="チャットのキーワード通知">
+  <string name="try_hint">ここに 1 行打つと、リストに引っかかるか確かめられます。</string>
+  <string name="try_hit">引っかかります: [WORD]</string>
+  <string name="try_miss">引っかかりません。</string>
+  <string name="on">キーワード通知を使う</string>
+  <string name="in_chat">周辺チャットを見る</string>
+  <string name="in_im">IM とグループチャットを見る</string>
+  <string name="list_label">語（カンマ「,」「、」で区切る）:</string>
+  <string name="own_name">自分の名前も入れる（表示名・ユーザー名・名）</string>
+  <string name="speaker">話している人の名前も調べる</string>
+  <string name="case">英字の大文字と小文字を区別する</string>
+  <string name="whole">英単語として独立している時だけ（日本語はどこでも見つける）</string>
+  <string name="fold">全角・半角、ひらがな・カタカナの違いを無視する</string>
+  <string name="change_color">行の色を変える</string>
+  <string name="play_sound">音を鳴らす</string>
+  <string name="sound_label">音の UUID:</string>
+  <string name="sound_play">試聴</string>
+  <string name="sound_reset">戻す</string>
+  <string name="tip_preview">この音を鳴らします。</string>
+  <string name="tip_reset">既定の音に戻します。</string>
+  <string name="toast">画面に通知を出す</string>
+  <string name="try_label">試し打ち:</string>
+  <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+  <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、今までの窓になります。</string>
+</floater>

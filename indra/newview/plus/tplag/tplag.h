@@ -70,11 +70,12 @@ namespace plus::tplag
         F32 used_mb = 0.f;              // textures' image bytes (Vulkan) + vertex buffers once
         F32 settings_target_mb = 0.f;   // RenderTextureVRAMDivisor's target
         F32 real_target_mb = 0.f;       // the driver's budget less the rest of VRAM and the margin (0: no real budget)
+        F32 share_target_mb = 0.f;      // research/337: plus/multiinstance's VRAM share among Charis viewers (0: none, PlusMultiShareVRAM off)
         F32 vertex_mb = 0.f;
         F32 sys_free_mb = 0.f;          // free system memory (checked once a second)
         F32 fall_free_mb = 0.f;         // the free system memory the fall needs more than (the threshold setting + 100 MB)
         F32 room_s = 0.f;               // updateClass's room timer: seconds since the bias was raised or over_pct was not under -10%
-        U32 max_vram_budget_mb = 0;     // RenderMaxVRAMBudget (0: not set)
+        U32 max_vram_budget_mb = 0;     // the texture limit holding the textures: RenderMaxVRAMBudget (at least 768) while FSLimitTextureVRAMUsage is on and it is the lowest limit (0: not)
         S32 pressure = 0;
         bool real_budget = false;
         bool is_low = false;            // the bias is being raised this frame (system memory short, or over the target)

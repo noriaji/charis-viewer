@@ -40,6 +40,7 @@
 
 #include "update.h"
 #include "plus.h"
+#include "plus/uiscope/uiscope.h"
 #include "photoscreen/photoscreen.h"
 #include "photoscreen/psui/psstyle.h"
 #include "photoscreen/psui/pswidgets.h"
@@ -419,7 +420,7 @@ namespace plus::update
                 }
                 sChipOrder = order;
             }
-            const bool shown = !plus::photoscreen::isActive() && gViewerWindow->getUIVisibility();
+            const bool shown = !plus::photoscreen::isActive() && !plus::uiscope::hidingForPlayback() && gViewerWindow->getUIVisibility();
             if (chip->getVisible() != shown)
             {
                 chip->setVisible(shown);

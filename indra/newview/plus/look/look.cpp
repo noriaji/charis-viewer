@@ -57,6 +57,9 @@
 //   lut_strip    integer   which strip of an image of stacked strips (0: the top one)
 //   strength     real      0..1, the look's own strength (PlusLookStrength scales it)
 //   order        integer   where a shipped look sits in the menu (smaller first)
+//   group        string    a shipped look's submenu of Charis > Look: lowercase letters
+//                          and digits, at most 16 (a submenu "LookGroup_<group>" of
+//                          menu_plus.xml; none, or one the menu has not: the Look menu itself)
 //   thumbnail    string    an example picture's file name (stage 1b)
 //   finish       map       reserved for the finishing pack (vignette, grain,
 //                          ...; research/89) and stage 2; ignored for now
@@ -125,6 +128,8 @@ namespace
     constexpr char MENU_LOOK[]              = "Look";
     constexpr char MENU_SHIPPED_END[]       = "LookShippedEnd";
     constexpr char MENU_USER_END[]          = "LookUserNone";
+    constexpr char MENU_GROUP_PREFIX[]      = "LookGroup_"; // submenus of the Look menu, one per look.xml "group"
+    constexpr size_t MAX_GROUP_LENGTH       = 16;
     constexpr char USER_ITEM_INDENT[]       = "   ";       // the user's looks sit under a heading
 
     struct Look
@@ -136,6 +141,7 @@ namespace
         F32 strength = 1.f;     // the look's own, 0..1
         U32 strip = 0;
         S32 order = DEFAULT_ORDER;
+        std::string group;      // the submenu of a shipped look (empty: the Look menu itself)
     };
 
     struct Catalogue
@@ -265,6 +271,24 @@ namespace
         return names;
     }
 
+    // A submenu name from look.xml: lowercase letters and digits only (it is part of
+    // a menu item name); anything else means no group.
+    std::string groupName(const std::string& text)
+    {
+        if (text.empty() || text.size() > MAX_GROUP_LENGTH)
+        {
+            return std::string();
+        }
+        for (const char c : text)
+        {
+            if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')))
+            {
+                return std::string();
+            }
+        }
+        return text;
+    }
+
     // Reads folder/look.xml into look (its id is set by the caller).
     bool readLookFile(const std::string& folder, Look& look)
     {
@@ -304,6 +328,14 @@ namespace
         look.strength = definition.has("strength") ? llclamp((F32)definition["strength"].asReal(), 0.f, 1.f) : 1.f;
         look.strip = (U32)llmax(0, definition["lut_strip"].asInteger());
         look.order = definition.has("order") ? definition["order"].asInteger() : DEFAULT_ORDER;
+        const std::string group = definition["group"].asString();
+        look.group = groupName(group);
+        if (!group.empty() && look.group.empty())
+        {
+            LL_WARNS("Plus") << "Look: " << path << ": group \"" << group
+                             << "\" is not usable (lowercase letters and digits, at most "
+                             << MAX_GROUP_LENGTH << "); the look goes in the Look menu" << LL_ENDL;
+        }
         return true;
     }
 
@@ -393,7 +425,8 @@ namespace
         return nullptr;
     }
 
-    // The name in the UI's language, else in English, else the first given, else the fallback.
+    // The name in the UI's language, else in English, else the first non-empty one given, else the fallback
+    // (and the id, when that is empty too).
     std::string lookLabel(const Look& look)
     {
         if (look.name.isString() && !look.name.asString().empty())
@@ -409,12 +442,15 @@ namespace
                     return look.name[language].asString();
                 }
             }
-            if (look.name.beginMap() != look.name.endMap())
+            for (LLSD::map_const_iterator it = look.name.beginMap(); it != look.name.endMap(); ++it)
             {
-                return look.name.beginMap()->second.asString();
+                if (!it->second.asString().empty())
+                {
+                    return it->second.asString();
+                }
             }
         }
-        return look.fallback;
+        return look.fallback.empty() ? look.id : look.fallback;   // never empty: an empty label means "no such look"
     }
 
     // ------------------------------------------------------------------
@@ -614,6 +650,38 @@ namespace
         sMenuItems.push_back(item->getHandle());
     }
 
+    // The submenu LookGroup_<group> of the Look menu, or null (no group, or the menu has none:
+    // found by view first, as findChildMenuByName warns about a name it does not find).
+    LLMenuGL* groupMenu(LLMenuGL* menu, const std::string& group)
+    {
+        if (group.empty())
+        {
+            return nullptr;
+        }
+        const std::string name = MENU_GROUP_PREFIX + group;
+        return menu->findChildView(name, true) ? menu->findChildMenuByName(name, true) : nullptr;
+    }
+
+    // Each group submenu is shown only when it has looks (an empty one would be an arrow to nothing).
+    void showFilledGroups(LLMenuGL* menu)
+    {
+        const size_t prefix_length = std::char_traits<char>::length(MENU_GROUP_PREFIX);
+        for (U32 i = 0; i < menu->getItemCount(); ++i)
+        {
+            LLMenuItemBranchGL* branch = dynamic_cast<LLMenuItemBranchGL*>(menu->getItem((S32)i));
+            if (!branch || branch->getName().compare(0, prefix_length, MENU_GROUP_PREFIX) != 0)
+            {
+                continue;
+            }
+            LLMenuGL* submenu = branch->getBranch();
+            branch->setVisible(submenu && submenu->getItemCount() > 0);
+            if (submenu)
+            {
+                submenu->needsArrange();
+            }
+        }
+    }
+
     void rebuildMenu()
     {
         LLMenuGL* plus_menu = gMenuBarView ? gMenuBarView->findChildMenuByName(MENU_PLUS, false) : nullptr;
@@ -627,7 +695,10 @@ namespace
         {
             if (LLView* item = handle.get())
             {
-                menu->removeChild(item);
+                if (LLView* parent = item->getParent())     // the Look menu or one of its group submenus
+                {
+                    parent->removeChild(item);
+                }
                 delete item;
             }
         }
@@ -636,13 +707,22 @@ namespace
         const Catalogue& c = catalogue();
         for (const Look& look : c.shipped)
         {
-            addLookItem(menu, look, MENU_SHIPPED_END, "");
+            LLMenuGL* group = groupMenu(menu, look.group);
+            if (group)
+            {
+                addLookItem(group, look, std::string(), "");    // appended: the list is in menu order
+            }
+            else
+            {
+                addLookItem(menu, look, MENU_SHIPPED_END, "");  // no such submenu: the Look menu itself
+            }
         }
         for (const Look& look : c.user)
         {
             addLookItem(menu, look, MENU_USER_END, USER_ITEM_INDENT);
         }
         menu->needsArrange();
+        showFilledGroups(menu);
     }
 
     void select(const LLSD& id)
@@ -734,13 +814,39 @@ namespace plus::look
         list.reserve(c.shipped.size() + c.user.size());
         for (const Look& look : c.shipped)
         {
-            list.push_back({ look.id, lookLabel(look), false });
+            list.push_back({ look.id, lookLabel(look), false, look.group });
         }
         for (const Look& look : c.user)
         {
             list.push_back({ look.id, lookLabel(look), true });
         }
         return list;
+    }
+
+    std::vector<Group> menuGroups()
+    {
+        std::vector<Group> groups;
+        LLMenuGL* plus_menu = gMenuBarView ? gMenuBarView->findChildMenuByName(MENU_PLUS, false) : nullptr;
+        LLMenuGL* menu = plus_menu ? plus_menu->findChildMenuByName(MENU_LOOK, true) : nullptr;
+        if (!menu)
+        {
+            return groups;
+        }
+        const size_t prefix_length = std::char_traits<char>::length(MENU_GROUP_PREFIX);
+        for (U32 i = 0; i < menu->getItemCount(); ++i)
+        {
+            const LLMenuItemBranchGL* branch = dynamic_cast<LLMenuItemBranchGL*>(menu->getItem((S32)i));
+            if (branch && branch->getName().compare(0, prefix_length, MENU_GROUP_PREFIX) == 0)
+            {
+                groups.push_back({ branch->getName().substr(prefix_length), branch->getLabel() });
+            }
+        }
+        return groups;
+    }
+
+    bool exists(const std::string& id)
+    {
+        return !id.empty() && findLook(id) != nullptr;
     }
 
     std::string labelOf(const std::string& id)

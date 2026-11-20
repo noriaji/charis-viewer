@@ -237,7 +237,9 @@ public:
                 "bulk_upload",
                 "legacy_search",
                 "performance", // <plus> hide-perf-floater: no entrance </plus>
-                "plus_weather_parcel" // <plus> weather-withdraw: no entrance (menu entry withdrawn) </plus>
+                "plus_rml_demo", // <plus> rmlui: development windows, opened from the Charis menu only (shown with QAMode), never from a link </plus>
+                "plus_rml_demo_xui", // <plus> rmlui </plus>
+                "plus_weather_parcel" // <plus> weather-withdraw: opened from the Charis menu only, never from a link (it writes the parcel description) </plus>
             };
             return std::find(blacklist_clicked.begin(), blacklist_clicked.end(), fl_name) == blacklist_clicked.end();
         }
@@ -274,7 +276,9 @@ public:
                 "mute_object_by_name",
                 "new_feature_notification",
                 "performance", // <plus> hide-perf-floater: no entrance </plus>
-                "plus_weather_parcel", // <plus> weather-withdraw: no entrance (menu entry withdrawn) </plus>
+                "plus_rml_demo", // <plus> rmlui: development windows, opened from the Charis menu only (shown with QAMode), never from a link </plus>
+                "plus_rml_demo_xui", // <plus> rmlui </plus>
+                "plus_weather_parcel", // <plus> weather-withdraw: opened from the Charis menu only, never from a link (it writes the parcel description) </plus>
                 "publish_classified",
                 "save_pref_preset",
                 "save_camera_preset",

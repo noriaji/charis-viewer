@@ -449,6 +449,21 @@ namespace
         constexpr U32 MAX_BUFFERS_PER_PASS = 8192;      // copies dropped a pass (each a deferred vmaDestroyBuffer)
         constexpr F32 IDLE_SECONDS_MAX = 60.f;          // PlusBufferCompactIdle's top: the frame history below reaches 63 s
         constexpr U8 USE_PINNED = 3;                    // a buffer of the block that stays (uniform, no CPU copy)
+        // research/342 (images-trim): the main thread time of one pass's dropping loop (after the scan), at the end of
+        // a block (a pass dropped 5013 buffers in one go at a heavy place); the blocks left go to the next pass, a few
+        // frames on. The first block always goes whole, and the scan before it has no limit. LLRHI_VK_COMPACT_PASS_MS
+        // (0: no limit, as before; not a number: the default)
+        F64 pass_budget_seconds()
+        {
+            static const F64 seconds = []()
+            {
+                const char* env = std::getenv("LLRHI_VK_COMPACT_PASS_MS");
+                char* end = nullptr;
+                const F64 value = env && *env ? strtod(env, &end) : 1.5;
+                return (std::isfinite(value) && (!end || !*end) ? llclamp(value, 0.0, 1000.0) : 1.5) * 0.001;
+            }();
+            return seconds;
+        }
 
         struct CompactItem
         {
@@ -543,6 +558,7 @@ namespace
         }
 
         // The GL buffers' Vulkan copies in the GL buffer pools, by block.
+        const F64 scan_start = steady_seconds();    // research/342: this pass's own times, for the log line
         sCompactItems.clear();
         sBuffers.forEachNamed([&](GLuint name, Buffer& b)
         {
@@ -611,10 +627,21 @@ namespace
         const U64 target = check.to_free;
         U64 freed = 0, drawn_bytes = 0, other_bytes = 0;
         U32 buffers = 0, blocks = 0;
+        const F64 drop_start = steady_seconds();
+        // (at least as long as the scan took, so a slow scan is not repeated for a few buffers a pass)
+        const F64 drop_budget = pass_budget_seconds() > 0.0 ? llmax(pass_budget_seconds(), drop_start - scan_start) : 0.0;
+        bool cut_short = false;     // research/342: the time limit ended the loop (a later pass goes on)
         for (U32 index : sCompactOrder)
         {
             if (freed >= target)
             {
+                break;
+            }
+            // research/342: the clock between blocks only (a block is dropped whole, as before: one cut half way would leave
+            // a hole that VMA fills again); the first block always goes
+            if (buffers && drop_budget > 0.0 && steady_seconds() - drop_start > drop_budget)
+            {
+                cut_short = true;
                 break;
             }
             const CompactBlock& block = sCompactBlocks[index];
@@ -675,6 +702,7 @@ namespace
         sCompactCounts.buffers += buffers;
         sCompactCounts.drawn_bytes += drawn_bytes;
         sCompactCounts.other_bytes += other_bytes;
+        const F64 drop_end = steady_seconds();
         if (now - sLastLog >= 5.0)
         {
             sLastLog = now;
@@ -687,7 +715,10 @@ namespace
                                   << " MB before it; since the last line " << (c.passes - l.passes) << " passes, "
                                   << (c.buffers - l.buffers) << " buffers, " << ((c.drawn_bytes - l.drawn_bytes) / MB) << " MB drawn, "
                                   << ((c.other_bytes - l.other_bytes) / MB) << " MB not; idle after "
-                                  << (idle_on ? llformat("%.0f s", idle_seconds) : std::string("never (kept)")) << LL_ENDL;
+                                  << (idle_on ? llformat("%.0f s", idle_seconds) : std::string("never (kept)"))
+                                  << llformat("; main thread this pass: scan %.2f ms (%u buffers listed), drop %.2f ms%s (research/342)",
+                                              (drop_start - scan_start) * 1000.0, (U32)sCompactItems.size(), (drop_end - drop_start) * 1000.0,
+                                              cut_short ? ", cut by the limit" : "") << LL_ENDL;
             sCompactLogged = sCompactCounts;
         }
     }

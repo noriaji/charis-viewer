@@ -192,20 +192,13 @@ namespace plus::photomode
             {
                 return;
             }
-            LLSD saved = LLSD::emptyMap();
+            LLSD saved = writesToLLSD(sWrites);
             for (LLSD::map_const_iterator it = sWritesAside.beginMap(); it != sWritesAside.endMap(); ++it)
             {
                 if (!sWrites.count(it->first))
                 {
                     saved[it->first] = it->second;
                 }
-            }
-            for (const auto& [key, write] : sWrites)
-            {
-                LLSD entry;
-                entry["before"] = write.before;
-                entry["wrote"]  = write.wrote;
-                saved[key]      = entry;
             }
             control->setValue(saved);
         }
@@ -220,23 +213,20 @@ namespace plus::photomode
             {
                 return;
             }
+            std::vector<std::string> keys;
             for (const Step& step : STEPS)
             {
-                const LLSD entry = saved.get(step.key);
-                LLControlVariable* setting = gSavedSettings.getControl(step.key);
-                if (!setting || !entry.isMap() || !plainNumber(entry.get("before")) || !plainNumber(entry.get("wrote")))
+                keys.emplace_back(step.key);
+            }
+            for (const auto& [key, write] : writesFromLLSD(saved, keys))
+            {
+                if (stillAsWritten(key, write))
                 {
-                    continue;
+                    sWrites[key] = write;
                 }
-                // `before` as the setting's own type (a check box gets a bool back, not a number)
-                const SettingWrite write = { valueOf(*setting, entry.get("before").asReal()), entry.get("wrote") };
-                if (stillAsWritten(step.key, write))
+                else if (plus::safemode::active() && safeStartSets(key))
                 {
-                    sWrites[step.key] = write;
-                }
-                else if (plus::safemode::active() && safeStartSets(step.key))
-                {
-                    sWritesAside[step.key] = entry;     // not the user's change: the safe start's, for this run only
+                    sWritesAside[key] = saved.get(key);     // not the user's change: the safe start's, for this run only
                 }
             }
             // A safe start sets the volumetric clouds off for this run only (plus/safemode, not saved): what the
@@ -407,6 +397,40 @@ namespace plus::photomode
         }
 
         plus::FeatureRegistration sRegistration({ "photorecipe", &init });
+    }
+
+    LLSD writesToLLSD(const SettingWrites& writes)
+    {
+        LLSD saved = LLSD::emptyMap();
+        for (const auto& [key, write] : writes)
+        {
+            LLSD entry;
+            entry["before"] = write.before;
+            entry["wrote"]  = write.wrote;
+            saved[key]      = entry;
+        }
+        return saved;
+    }
+
+    SettingWrites writesFromLLSD(const LLSD& saved, const std::vector<std::string>& names)
+    {
+        SettingWrites writes;
+        if (!saved.isMap())
+        {
+            return writes;
+        }
+        for (const std::string& key : names)
+        {
+            const LLSD entry = saved.get(key);
+            LLControlVariable* setting = gSavedSettings.getControl(key);
+            if (!setting || !entry.isMap() || !plainNumber(entry.get("before")) || !plainNumber(entry.get("wrote")))
+            {
+                continue;
+            }
+            // `before` as the setting's own type (a check box gets a bool back, not a number)
+            writes[key] = { valueOf(*setting, entry.get("before").asReal()), entry.get("wrote") };
+        }
+        return writes;
     }
 
     void rememberRecipesAsOpened()

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Charis: the menu of the Share button of the poser (plus/poser, plus/poseshare; research/374) -->
+<context_menu
+ layout="topleft"
+ name="Pose Share Popup">
+    <menu_item_check
+     label="Share My Pose: Off"
+     layout="topleft"
+     name="share_off">
+        <menu_item_check.on_check
+         function="Plus.PoseShare.IsSend"
+         parameter="0" />
+        <menu_item_check.on_click
+         function="Plus.PoseShare.SetSend"
+         parameter="0" />
+    </menu_item_check>
+    <menu_item_check
+     label="Share My Pose: With Friends"
+     layout="topleft"
+     name="share_friends"
+     tool_tip="The pose reaches everyone near; the other person's viewer shows it only if you are a friend">
+        <menu_item_check.on_check
+         function="Plus.PoseShare.IsSend"
+         parameter="1" />
+        <menu_item_check.on_click
+         function="Plus.PoseShare.SetSend"
+         parameter="1" />
+    </menu_item_check>
+    <menu_item_check
+     label="Share My Pose: With Everyone Near"
+     layout="topleft"
+     name="share_everyone">
+        <menu_item_check.on_check
+         function="Plus.PoseShare.IsSend"
+         parameter="2" />
+        <menu_item_check.on_click
+         function="Plus.PoseShare.SetSend"
+         parameter="2" />
+    </menu_item_check>
+    <menu_item_separator
+     layout="topleft" />
+    <menu_item_check
+     label="Show Shared Poses: Nobody"
+     layout="topleft"
+     name="receive_nobody">
+        <menu_item_check.on_check
+         function="Plus.PoseShare.IsReceive"
+         parameter="0" />
+        <menu_item_check.on_click
+         function="Plus.PoseShare.SetReceive"
+         parameter="0" />
+    </menu_item_check>
+    <menu_item_check
+     label="Show Shared Poses: Friends Only"
+     layout="topleft"
+     name="receive_friends">
+        <menu_item_check.on_check
+         function="Plus.PoseShare.IsReceive"
+         parameter="1" />
+        <menu_item_check.on_click
+         function="Plus.PoseShare.SetReceive"
+         parameter="1" />
+    </menu_item_check>
+    <menu_item_check
+     label="Show Shared Poses: Everyone"
+     layout="topleft"
+     name="receive_everyone">
+        <menu_item_check.on_check
+         function="Plus.PoseShare.IsReceive"
+         parameter="2" />
+        <menu_item_check.on_click
+         function="Plus.PoseShare.SetReceive"
+         parameter="2" />
+    </menu_item_check>
+</context_menu>

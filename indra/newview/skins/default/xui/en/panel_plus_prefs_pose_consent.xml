@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis: posing my avatar (plus/poseconsent and plus/lslbridge; research/336), in Preferences > Privacy > General
+     under its heading, in the psui look. Included from panel_plus_prefs_privacy.xml.
+     The check box PlusPoseBridgeEnable (declared by plus/lslbridge) is on by default (research/353, 2026-11-15): its
+     note says what is made in the inventory and that turning it off takes the bridge off. No confirmation is asked.
+     Both settings are per account (PlusPoseBridgeEnable and PlusPoseAskPolicy in gSavedPerAccountSettings; control_name
+     finds a control in any settings group). Both are enabled only once logged in (PlusPoseConsentSettable, set by
+     plus/poseconsent at STATE_STARTED): at the login screen the account's values are not read yet. Size (1080 base):
+     529 x 243 = the check 30 + its note 72 + 4 + the row 33 + 4 + the note 54 + 6 + the buttons 40. The notes, in the
+     small type at 38 a line: the bridge's four lines (ja 158 characters, about 138 wide; en 287), under the check's words (31, psui
+     CHECK_BOX and CHECK_GAP); the policy's three (ja 104). The row: the label 0..317 (ja 22 characters, about 290), the drop-down
+     329..529. The buttons: 0..200, 210..410. -->
+<panel
+ background_visible="false"
+ border="false"
+ follows="left|top"
+ height="243"
+ layout="topleft"
+ mouse_opaque="false"
+ name="plus_pose_consent"
+ width="529">
+    <plus_ps_check_compat
+     name="pose_bridge_enable"
+     control_name="PlusPoseBridgeEnable"
+     enabled_control="PlusPoseConsentSettable"
+     follows="left|top|right"
+     height="30"
+     label="Make and wear the bridge used for pose requests"
+     layout="topleft"
+     left="0"
+     tool_tip="The bridge is a small attachment with a script: it carries the pose requests between you and the people near you (Aurora compatible). Nothing else is sent."
+     top="0"
+     width="529" />
+    <plus_ps_text
+     name="pose_bridge_enable_note"
+     follows="left|top|right"
+     height="72"
+     kind="hint"
+     layout="topleft"
+     left="31"
+     length="1"
+     mouse_opaque="false"
+     top="30"
+     type="string"
+     width="498"
+     wrap="true">
+(On by default: the bridge is made in #Charis in your inventory and worn on your HUD, using one attachment place and one script (Mono, 64 KB). Off: it is taken off (the object stays in #Charis) and you cannot be asked, as with Nobody. Both settings here can be changed after you log in.)
+    </plus_ps_text>
+    <plus_ps_text
+     name="pose_ask_policy_label"
+     follows="left|top"
+     height="33"
+     layout="topleft"
+     left="0"
+     top="106"
+     width="317">
+        Who may ask to pose my avatar:
+    </plus_ps_text>
+    <plus_ps_combo
+     name="pose_ask_policy"
+     control_name="PlusPoseAskPolicy"
+     enabled_control="PlusPoseConsentSettable"
+     follows="left|top"
+     height="33"
+     layout="topleft"
+     left="329"
+     tool_tip="Someone near you (50 m) may ask to pose your avatar for photos. The pose shows only on their own screen, for this session, and you are asked each time. The requests of the others are dropped without an answer."
+     top="106"
+     width="200">
+        <plus_ps_combo.item
+         name="Everyone"
+         label="Everyone"
+         value="0" />
+        <plus_ps_combo.item
+         name="Friends"
+         label="Friends"
+         value="1" />
+        <plus_ps_combo.item
+         name="Nobody"
+         label="Nobody"
+         value="2" />
+    </plus_ps_combo>
+    <plus_ps_text
+     name="pose_ask_policy_note"
+     follows="left|top|right"
+     height="54"
+     kind="hint"
+     layout="topleft"
+     left="0"
+     length="1"
+     mouse_opaque="false"
+     top="143"
+     type="string"
+     width="529"
+     wrap="true">
+(Requests reach you only while both of you wear a working pose bridge: while yours is off or not working, it is as with Nobody. Both settings here are for this account only: another account chooses again.)
+    </plus_ps_text>
+    <plus_ps_button_compat
+     name="pose_granted_btn"
+     follows="left|top"
+     height="40"
+     label="Who may pose me"
+     layout="topleft"
+     left="0"
+     tool_tip="The people you allowed to pose your avatar in this session, with Withdraw"
+     top="203"
+     width="200">
+        <plus_ps_button_compat.commit_callback
+         function="Plus.PoseConsent.ShowGranted" />
+    </plus_ps_button_compat>
+    <plus_ps_button_compat
+     name="pose_unblock_btn"
+     follows="left|top"
+     height="40"
+     label="Unblock all"
+     layout="topleft"
+     left="210"
+     tool_tip="Let the people you blocked from asking to pose you ask again"
+     top="203"
+     width="200">
+        <plus_ps_button_compat.commit_callback
+         function="Plus.PoseConsent.ClearBlocks" />
+    </plus_ps_button_compat>
+</panel>

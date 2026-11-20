@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_pose_consent" title="自分のアバターをポーズできる人">
+	<floater.string name="nobody">今は誰もあなたのアバターをポーズできません。</floater.string>
+	<floater.string name="loading">（名前を読み込み中）</floater.string>
+	<floater.string name="withdraw_waiting_row">[NAME]（取り下げ待ち）</floater.string>
+	<floater.string name="reflect_row">[NAME]（ポーズを自分の画面に出す）</floater.string>
+	<floater.string name="reflect_now_row">[NAME]（今ポーズが出ています）</floater.string>
+	<plus_ps_box name="body">
+		<plus_ps_text name="note">
+この人たちは、あなたのアバターを、相手の画面の中で、このセッションの間だけポーズできます。印の付いた人は、そのポーズをあなたのアバターにも出せます。「反映を止める」はそれだけを止めます。
+		</plus_ps_text>
+		<plus_ps_box name="list_box">
+			<scroll_list name="granted_list">
+				<column name="name" label="名前" />
+			</scroll_list>
+		</plus_ps_box>
+		<plus_ps_button name="withdraw_btn" label="取り下げる" tool_tip="選んだ人に、あなたのアバターをポーズさせるのをやめます（その人のポーズを自分の画面に出すのもやめます）" />
+		<plus_ps_button name="reflect_stop_btn" label="反映を止める" tool_tip="選んだ人のポーズを、あなた自身のアバターに出すのをやめます。相手の画面の中でポーズさせるのはそのままです。" />
+		<plus_ps_button name="withdraw_all_btn" label="全員取り下げる" tool_tip="誰にもあなたのアバターをポーズさせないようにします" />
+	</plus_ps_box>
+</floater>

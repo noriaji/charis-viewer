@@ -38,20 +38,34 @@ class LLPreviewAnim : public LLPreview
 public:
 
     LLPreviewAnim(const LLSD& key);
+    ~LLPreviewAnim(); // <plus> anim-preview-fix </plus>
     bool postBuild() override;
     void onClose(bool app_quitting) override;
     void draw() override;
     void refreshFromItem() override;
 
+    // <plus> anim-preview-fix
+    const LLUUID& getPlayingAsset() const { return mItemID; } // the asset this window started (null: none)
+    void stopOwnPlay(bool send);
+    // </plus>
     void cleanup(); // cleanup 'playing' state
     void play(const LLSD& param);
     void showAdvanced();
 
+    // <plus> animquick: the "pin" check box; a window that is not pinned is reused by the next quick open (research/332)
+    bool isPinned();
+    void setPinned(bool pinned);
+    bool isPlaying(); // a play that has started and not ended
+    // </plus>
+
 protected:
 
     LLUUID  mItemID; // Not an item id, but a playing asset id
-    bool    mDidStart;
-    LLTextBox* pAdvancedStatsTextBox;
+    bool    mDidStart = false; // <plus> anim-preview-fix: was uninitialised </plus>
+    LLTextBox* pAdvancedStatsTextBox = nullptr; // <plus> anim-preview-fix: set in postBuild; null-checked by fitAdvancedHeight </plus>
+    void fitAdvancedHeight(); // <plus> anim-preview-fix </plus>
+    bool mWasHosted = false;    // <plus> anim-preview-fix: was in a tabbed host last frame; fit the height once on leaving </plus>
+    bool mPlayedInworld = false; // <plus> anim-preview-fix: the play in mItemID went to the server (only then is a STOP sent) </plus>
 };
 
 #endif  // LL_LLPREVIEWANIM_H

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <context_menu name="Multi-Selected People Context Menu">
 	<menu_item_call label="フレンド登録" name="add_friends"/>
+	<!-- plus contactsets: コンタクトセットに追加（plus/contactsets） -->
+	<menu_item_call label="コンタクトセットに追加…" name="Add to Set"/>
+	<!-- /plus -->
 	<menu_item_call label="フレンドを削除" name="remove_friends"/>
 	<menu_item_call label="IM" name="im"/>
 	<menu_item_call label="コール" name="call"/>

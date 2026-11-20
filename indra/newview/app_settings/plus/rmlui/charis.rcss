@@ -1,0 +1,385 @@
+/* Charis's look for RmlUi documents (plus/rmlui, research/364 2.6): psui's parts (the photo screen's look,
+   .claude/skills/charis-ui-style) written with the variables of charis_tokens.rcss only, which
+   make_ui_tokens.py makes from tokens.txt: no colour or size is written here.
+   Basic drawing only (research/364 2.1.6): no transform, perspective, box-shadow, filter, backdrop-filter,
+   mask-image, linear / radial / conic gradients, nor clipping inside rounded corners. Gradients are
+   vertical-gradient / horizontal-gradient (vertex colours on the rounded box).
+   The accent (--accent) marks what has the focus (psui's rule: the accent only for chosen, on and focus), so a
+   theme that sets --accent on the body (research/320; the test window's colour switch) shows there. The
+   tokens made from another one (FOCUS_RING = ACCENT/0.7) are written out as colours and do not follow it. */
+
+body, div, p, h1, h2, label
+{
+    display: block;
+}
+
+body
+{
+    font-family: Charis;
+    font-weight: normal;
+    font-style: normal;
+    font-size: var(--font-body);
+    color: var(--text-label);
+    word-break: break-word;
+    width: 100%;
+    height: 100%;
+    background-color: var(--ground);
+}
+
+/* The text size switch of the test window: the body text at the heading's size. */
+body.large-text
+{
+    --font-body: var(--font-head);
+}
+
+.panel
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: var(--panel-gap) var(--head-pad);
+    border: 1dp var(--panel-border);
+    border-radius: var(--panel-radius);
+    decorator: vertical-gradient(var(--panel-top) var(--panel-bottom));
+}
+
+h1
+{
+    font-size: var(--font-title);
+    color: var(--text-white);
+    padding-bottom: var(--panel-gap);
+    margin-bottom: var(--panel-gap);
+    border-bottom: 1dp var(--divider-left);
+}
+
+.row
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-height: var(--list-row-height);
+    margin-bottom: var(--panel-gap);
+}
+
+.label
+{
+    width: var(--slider-label-width);
+    color: var(--text-label);
+}
+
+.value
+{
+    margin-left: var(--slider-gap);
+    color: var(--text-white);
+}
+
+.hint
+{
+    font-size: var(--font-small);
+    color: var(--text-hint);
+    margin-bottom: var(--panel-gap);
+}
+
+/* ---- buttons (psui 16.) ---- */
+button
+{
+    display: block;
+    flex: 1;
+    tab-index: auto;
+    focus: auto;
+    cursor: pointer;
+    text-align: center;
+    font-size: var(--font-button);
+    color: var(--text-white);
+    line-height: var(--chip-height);
+    height: var(--chip-height);
+    margin-right: var(--panel-gap);
+    border: 1dp var(--button-border);
+    border-radius: var(--button-radius);
+    background-color: var(--button-fill);
+}
+button:hover
+{
+    border-color: var(--button-border-hover);
+    background-color: var(--button-fill-hover);
+}
+button:active
+{
+    background-color: var(--button-fill-press);
+}
+button:focus-visible
+{
+    border-color: var(--accent);
+}
+
+/* ---- check boxes (psui 4.) ---- */
+input.checkbox
+{
+    width: var(--check-box);
+    height: var(--check-box);
+    margin-right: var(--check-gap);
+    cursor: pointer;
+    border: 1dp var(--check-border);
+    border-radius: var(--check-radius);
+    background-color: var(--check-off);
+}
+input.checkbox:hover
+{
+    border-color: var(--check-border-hover);
+}
+input.checkbox:checked
+{
+    border-color: var(--check-on);
+    background-color: var(--check-on);
+    decorator: image(ui-image/Plus_PS_Icon_check);
+    image-color: var(--check-mark-color);
+}
+input.checkbox:focus-visible
+{
+    border-color: var(--accent);
+}
+label
+{
+    color: var(--check-text);
+    cursor: pointer;
+}
+
+/* ---- sliders (psui 5.) ---- */
+input.range
+{
+    flex: 1;
+    height: var(--slider-knob);
+    cursor: pointer;
+}
+input.range slidertrack
+{
+    height: var(--slider-track);
+    margin-top: var(--slider-track-top);
+    border-radius: var(--slider-track);
+    background-color: var(--slider-empty);
+}
+input.range sliderprogress
+{
+    height: var(--slider-track);
+    /* RmlUi 6.3 (WidgetSlider::FormatProgress) puts the fill at the track's offset (which already holds the
+       track's margin-top) plus the fill's own margin-top. So 0 keeps the fill on the track. */
+    margin-top: 0;
+    border-radius: var(--slider-track);
+    decorator: horizontal-gradient(var(--slider-fill-left) var(--slider-fill-right));
+}
+input.range sliderbar
+{
+    width: var(--slider-knob);
+    height: var(--slider-knob);
+    border-radius: var(--slider-knob);
+    decorator: vertical-gradient(var(--knob-top) var(--knob-bottom));
+}
+input.range sliderbar:active, input.range slidertrack:active + sliderbar
+{
+    /* The size must not change while pressed: the bar's travel is (track - bar width), so a bigger
+       knob moves the knob and the fill while dragging. Only the colour changes. */
+    decorator: vertical-gradient(var(--knob-top-pressed) var(--knob-bottom-pressed));
+}
+input.range sliderarrowdec, input.range sliderarrowinc
+{
+    width: 0;
+    height: 0;
+}
+
+/* ---- text fields (a value box's look: psui 5. and the official field's colours) ---- */
+input.text, input.password
+{
+    flex: 1;
+    height: var(--value-height);
+    line-height: var(--value-height);
+    padding: 0 var(--value-pad);
+    cursor: text;
+    color: var(--text-white);
+    border: 1dp var(--field-border);
+    border-radius: var(--value-radius);
+    background-color: var(--field-bg);
+}
+/* The number beside a slider: a box of one width, whatever the digits are. A flexible width (the digits' own width)
+   moved the slider's right end at nearly every step, since a proportional font gives "1" and "4" other widths. */
+input.text.value-box
+{
+    flex: none;
+    box-sizing: border-box;     /* --value-width is the box's outer width, as the XUI twin's value box (pswidgets.cpp) */
+    width: var(--value-width);
+    margin-left: var(--slider-gap);
+}
+input.text:focus-visible, input.password:focus-visible
+{
+    border-color: var(--accent);
+}
+input.text selection, input.password selection
+{
+    color: var(--text-white);
+    background-color: var(--selection-bg);
+}
+
+/* ---- the long list (psui 19.): only the visible rows are elements (rmldemo.cpp) ---- */
+.list
+{
+    flex: 1;
+    overflow-y: auto;
+    border: 1dp var(--panel-border);
+    border-radius: var(--list-row-radius);
+    background-color: var(--list-bg);
+}
+.list-row
+{
+    height: var(--list-row-height);
+    line-height: var(--list-row-height);
+    padding: 0 var(--list-row-pad);
+    color: var(--list-row-text);
+}
+.list-row:hover
+{
+    background-color: var(--row-hover-bg);
+}
+
+/* ---- scroll bars (the Charis skin's thin thumb) ---- */
+scrollbarvertical
+{
+    width: var(--scroll-width);
+}
+scrollbarvertical slidertrack
+{
+    border-radius: var(--scroll-radius);
+    background-color: var(--scroll-track);
+}
+scrollbarvertical sliderbar
+{
+    min-height: var(--list-row-height);
+    border-radius: var(--scroll-radius);
+    background-color: var(--scroll-thumb);
+}
+scrollbarvertical sliderarrowdec, scrollbarvertical sliderarrowinc
+{
+    width: 0;
+    height: 0;
+}
+
+/* ---- compact settings windows (research/380: the XUI window's own spacing kept, a 16dp row; keywords.rml) ----
+   A window made of rows laid out by the sizes of the XUI window it replaces (16dp check rows, 22dp field rows,
+   12dp from the left, 16dp more for a row under another), on the window's own background (body.bare). Sizes here are
+   that window's, not psui's (psui's rows are 30dp); a window that is new takes the .panel and .row above. */
+body.bare
+{
+    background-color: transparent;
+}
+.kw
+{
+    box-sizing: border-box;
+    padding: 8dp 0 0 12dp;
+    font-size: var(--font-small);
+}
+.line
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 16dp;
+}
+.line.tall
+{
+    height: 22dp;
+}
+.line.sub
+{
+    margin-left: 16dp;
+}
+/* "enabled_control" off: the whole row at the disabled step (psui: disabled = 40%) */
+.kw .off
+{
+    opacity: var(--state-disabled);
+}
+.line input.checkbox
+{
+    flex: none;
+    box-sizing: border-box;
+    width: 16dp;
+    height: 16dp;
+    margin-right: 6dp;
+}
+.line label
+{
+    flex: 1;
+    white-space: nowrap;
+}
+.line .text-only
+{
+    flex: none;
+    color: var(--text-label);
+    white-space: nowrap;
+}
+.kw input.text
+{
+    flex: none;
+    box-sizing: border-box;
+    width: 416dp;
+    height: 22dp;
+    line-height: 20dp;
+}
+.kw button.inline
+{
+    flex: none;
+    box-sizing: border-box;
+    height: 22dp;
+    line-height: 20dp;
+    margin-right: 0;
+    padding: 0;
+    font-size: var(--font-small);
+}
+/* a colour square of the document, opened by its own picker (plus/rmlui/rmlcolour.h); the colour is the inline
+   background-color the data model sets (data-style-background-color) */
+.kw button.swatch
+{
+    flex: none;
+    box-sizing: border-box;
+    width: 30dp;
+    height: 16dp;
+    margin-right: 0;
+    border: 1dp var(--check-border);
+    border-radius: var(--check-radius);
+}
+.kw button.swatch:hover
+{
+    border-color: var(--check-border-hover);
+}
+.kw button.swatch:focus-visible
+{
+    border-color: var(--accent);
+}
+.kw .result
+{
+    width: 416dp;
+    height: 32dp;
+    color: var(--text-label);
+}
+
+/* a disabled row (class off): nothing of it answers the mouse or the Tab key (the XUI parts did not) */
+.kw .off input.checkbox, .kw .off label, .kw input.text.off, .kw .off button.swatch
+{
+    cursor: default;
+}
+.kw .off input.checkbox:hover
+{
+    border-color: var(--check-border);
+}
+.kw .off input.checkbox:checked:hover
+{
+    border-color: var(--check-on);
+}
+.kw .off button.swatch
+{
+    tab-index: none;
+    focus: none;
+}
+.kw .off button.swatch:hover
+{
+    border-color: var(--check-border);
+}

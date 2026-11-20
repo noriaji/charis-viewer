@@ -114,6 +114,7 @@
 						保存先：
 					</plus_ps_text>
 					<plus_ps_button_compat name="log_path_button" label="参照…" label_selected="参照" />
+					<plus_ps_check_compat name="log_show_history" label="ログイン時に過去のチャットログを表示する"/>
 				</panel>
 				<plus_ps_header name="h_tools" label="翻訳と入力の補助" />
 				<plus_ps_button_compat name="ok_btn" label="翻訳…" />

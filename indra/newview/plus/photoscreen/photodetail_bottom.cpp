@@ -21,8 +21,8 @@
  * $/LicenseInfo$
  */
 
-// The strip as the target picture has it: the tabs with the lit line under the chosen one, the
-// cards (a picture with rounded corners, the name and a second line under it), the "+" card at
+// The strip: the tabs with the lit line under the chosen one, the
+// cards (words only: a rounded box with the name and a second line; no pictures), the "+" card at
 // the right end, the panel's rounded ground. The cards that do not fit are reached by the wheel
 // or by the arrows at the strip's ends, which show only while there are cards that way (with all
 // the cards in view, as in the picture, there is nothing at the ends). The name to save under is
@@ -42,28 +42,18 @@
 
 #include <algorithm>
 #include <cmath>
-#include <ctime>
-#include <map>
-#include <set>
+#include <functional>
 
 #include "lldir.h"
 #include "llfile.h"
 #include "llfloaterreg.h"
 #include "llfontgl.h"
-#include "llimage.h"
-#include "llimagepng.h"
 #include "lllineeditor.h"
 #include "lllocalcliprect.h"
-#include "llparcel.h"
 #include "lltextbox.h"
 #include "lltrans.h"
 #include "llwindow.h"
 #include "lluictrlfactory.h"
-#include "lluiimage.h"
-#include "llviewerparcelmgr.h"
-#include "llviewertexture.h"
-#include "llviewertexturelist.h"
-#include "llviewerwindow.h"
 
 namespace plus::photoscreen::detail
 {
@@ -75,139 +65,12 @@ namespace plus::photoscreen::detail
         // A card of the strip as collected for the tab chosen.
         struct StripCard
         {
-            std::string label, subtitle, tip, thumb;    // thumb: the key of the small picture ("" none)
-            const char* icon = "presets";               // drawn when there is no picture
-            LLPointer<LLTexture> picture;               // instead of a saved small picture (the parcel's)
+            std::string label, subtitle, tip;
             bool        current   = false;
             bool        deletable = false;
             std::function<void()> click, remove;
         };
         std::vector<StripCard> sCards;
-
-        // The small pictures of the cards by key; a key with no file is remembered as such (no disk each time).
-        // (a pointer that is never freed: the textures are not to be released by a static destructor after the GL is gone)
-        std::map<std::string, LLUIImagePtr>& thumbs()
-        {
-            static auto* map = new std::map<std::string, LLUIImagePtr>();
-            return *map;
-        }
-        std::set<std::string> sNoThumb;
-
-        // --- the small pictures --------------------------------------------------------------
-
-        std::string thumbPath(const std::string& key)
-        {
-            return gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "plus_photo_thumbs", gDirUtilp->getScrubbedFileName(key) + ".png");
-        }
-
-        LLUIImagePtr thumbOf(const std::string& key)
-        {
-            if (key.empty() || sNoThumb.count(key))
-            {
-                return nullptr;
-            }
-            auto found = thumbs().find(key);
-            if (found != thumbs().end())
-            {
-                return found->second;
-            }
-            const std::string path = thumbPath(key);
-            if (!LLFile::isfile(path))
-            {
-                sNoThumb.insert(key);
-                return nullptr;
-            }
-            LLPointer<LLImageFormatted> png = LLImageFormatted::createFromType(IMG_CODEC_PNG);
-            LLPointer<LLImageRaw> raw = new LLImageRaw;
-            if (png && png->load(path) && png->decode(raw, 0.f) && raw->getWidth() > 0)
-            {
-                LLPointer<LLViewerTexture> texture = LLViewerTextureManager::getLocalTexture(raw.get(), false);
-                if (texture)
-                {
-                    LLUIImagePtr image = new LLUIImage("", texture);
-                    thumbs()[key] = image;
-                    return image;
-                }
-            }
-            sNoThumb.insert(key);
-            return nullptr;
-        }
-
-        void forgetThumb(const std::string& key)
-        {
-            thumbs().erase(key);
-            sNoThumb.erase(key);
-        }
-
-        void deleteThumb(const std::string& key)
-        {
-            forgetThumb(key);
-            LLFile::remove(thumbPath(key));
-        }
-
-        // When the small picture of key was saved ("10/30 18:42"), "" without one. For the second line of my
-        // presets (research/221 part 18: "マイ＝保存した日時"); read when the cards are collected, not drawn.
-        std::string thumbDate(const std::string& key)
-        {
-            llstat status;
-            if (key.empty() || LLFile::stat(thumbPath(key), &status) != 0)
-            {
-                return std::string();
-            }
-            const std::time_t when = (std::time_t)status.st_mtime;
-            std::tm local {};
-#if LL_WINDOWS
-            if (localtime_s(&local, &when) != 0)
-            {
-                return std::string();
-            }
-#else
-            if (!localtime_r(&when, &local))
-            {
-                return std::string();
-            }
-#endif
-            char text[32];
-            return std::strftime(text, sizeof(text), "%m/%d %H:%M", &local) ? std::string(text) : std::string();
-        }
-
-        // The picture of the parcel the avatar is on (About Land's snapshot), null without one. The camera
-        // positions saved before small pictures existed show it (research/221 part 18; the task: "区画の写真").
-        LLPointer<LLTexture> parcelPicture()
-        {
-            const LLParcel* parcel = LLViewerParcelMgr::getInstance()->getAgentParcel();
-            if (!parcel || parcel->getSnapshotID().isNull())
-            {
-                return nullptr;
-            }
-            return LLViewerTextureManager::getFetchedTexture(parcel->getSnapshotID(), FTT_DEFAULT, true, LLGLTexture::BOOST_UI);
-        }
-
-        // A small picture of the world as it is now, for the card of a preset just saved. Once, from an idle
-        // callback (as the one-press photo is taken), never from a draw.
-        void captureThumb(const std::string& key)
-        {
-            const LLRect world = sS.world;
-            if (world.getWidth() < 8 || world.getHeight() < 8 || !gViewerWindow)
-            {
-                return;
-            }
-            const S32 tw = THUMB_W;
-            const S32 th = llmax(1, ll_round((F32)tw * world.getHeight() / world.getWidth()));
-            LLPointer<LLImageRaw> raw = new LLImageRaw;
-            if (!gViewerWindow->rawSnapshot(raw, tw, th, false, false, false, false, false, false, false))
-            {
-                return;
-            }
-            LLPointer<LLImageFormatted> png = LLImageFormatted::createFromType(IMG_CODEC_PNG);
-            if (!png || !png->encode(raw, 0.f))
-            {
-                return;
-            }
-            LLFile::mkdir(gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, "plus_photo_thumbs"));
-            png->save(thumbPath(key));
-            forgetThumb(key);   // read back at the next look at the strip
-        }
 
         // --- the strip that scrolls sideways ---------------------------------------------------
 
@@ -420,9 +283,9 @@ namespace plus::photoscreen::detail
                 const LLRectf band = side < 0 ? LLRectf(0.f, top, edge, bottom) : LLRectf(w - edge, top, w, bottom);
                 ps::fillRect(band, side < 0 ? ps::Fill::horizontal(solid, clear) : ps::Fill::horizontal(clear, solid));
 
-                // on the middle of the pictures
+                // on the middle of the cards
                 const F32 cx = side < 0 ? edge * 0.5f + 1.f : w - edge * 0.5f - 1.f;
-                const F32 cy = top - F32(ps::style::PRESET_PICTURE_HEIGHT) * 0.5f;
+                const F32 cy = top - F32(CARD_H) * 0.5f;
                 const F32 radius = F32(STRIP_ARROW) * 0.5f;
                 const LLColor4 fill = mHoverSide == side ? ps::hovered(ps::style::CHIP_FILL) : ps::style::CHIP_FILL;
                 ps::drawShadow(cx, cy, radius, 0.35f * alpha);
@@ -490,10 +353,7 @@ namespace plus::photoscreen::detail
                     sig += pm::currentPreset();
                     break;
                 case PtMy:
-                    for (const std::string& name : pm::myPresetNames())
-                    {
-                        sig += name + '|';
-                    }
+                    sig += pm::myPresetsStamp();   // the names and the saved times (a save over the last name keeps the order)
                     break;
                 case PtPose:
                     sig += posesFolderStamp();
@@ -529,34 +389,16 @@ namespace plus::photoscreen::detail
             {
                 case PtCamera:
                 {
-                    const std::string region = pm::regionName();
                     const std::vector<pm::CameraView> views = pm::namedViews();
-                    LLPointer<LLTexture> parcel;
-                    bool parcel_read = false;
                     for (size_t i = 0; i < views.size(); ++i)
                     {
                         StripCard card;
                         card.label     = views[i].name;
                         card.subtitle  = viewSubtitle(views[i]);
-                        card.thumb     = "cam_" + region + "_" + views[i].name;
-                        card.icon      = "camera";
                         card.deletable = true;
-                        if (!thumbOf(card.thumb))
-                        {
-                            if (!parcel_read)
-                            {
-                                parcel = parcelPicture();
-                                parcel_read = true;
-                            }
-                            card.picture = parcel;
-                        }
                         card.click     = [i]() { pm::goToNamedView(i, true); };
-                        const std::string key = card.thumb;
-                        card.remove    = [i, key]() {
-                            if (pm::deleteNamedView(i))
-                            {
-                                deleteThumb(key);
-                            }
+                        card.remove    = [i]() {
+                            pm::deleteNamedView(i);
                             relayout();
                         };
                         sCards.push_back(std::move(card));
@@ -575,7 +417,6 @@ namespace plus::photoscreen::detail
                             card.label    = file.substr(0, file.size() - 4);
                             card.subtitle = sub;
                             card.tip      = str("OpenPoser");
-                            card.icon     = "pose";
                             card.click    = []() { LLFloaterReg::showInstance("fs_poser"); };
                             sCards.push_back(std::move(card));
                         }
@@ -597,7 +438,6 @@ namespace plus::photoscreen::detail
                         card.label    = name;
                         card.subtitle = word("sub_" + preset.id);
                         card.tip      = word("tip_" + preset.id); // "" shows the name
-                        card.icon     = "scene";
                         card.current  = preset.id == now;
                         const std::string id = preset.id;
                         card.click    = [id]() { pm::applyPreset(id); };
@@ -610,17 +450,11 @@ namespace plus::photoscreen::detail
                     {
                         StripCard card;
                         card.label     = name;
-                        card.thumb     = "my_" + name;
-                        card.subtitle  = thumbDate(card.thumb);
-                        card.icon      = "presets";
+                        card.subtitle  = pm::myPresetSavedText(name);
                         card.deletable = true;
                         card.click     = [name]() { pm::applyMyPreset(name); };
-                        const std::string key = card.thumb;
-                        card.remove    = [name, key]() {
-                            if (pm::deleteMyPreset(name))
-                            {
-                                deleteThumb(key);
-                            }
+                        card.remove    = [name]() {
+                            pm::deleteMyPreset(name);
                             relayout();
                         };
                         sCards.push_back(std::move(card));
@@ -668,8 +502,8 @@ namespace plus::photoscreen::detail
                 // say what this tab is for (the "+" card at the right does it)
                 const std::string text = sS.ptab == PtCamera ? str("EmptyCamera") : sS.ptab == PtPose ? str("EmptyPose") : str("EmptyMy");
                 if (LLTextBox* note = ps::makeNote("empty",
-                                                   LLRect(STRIP_EDGE, room.mTop - 24, room.getWidth() - STRIP_EDGE, room.mTop - 24 - 60),
-                                                   text, ps::font(ps::style::FONT_BODY), ps::style::TEXT_DIM,
+                                                   LLRect(STRIP_EDGE, room.mTop, room.getWidth() - STRIP_EDGE, room.mTop - CARD_H),
+                                                   text, ps::font(ps::style::FONT_SMALL), ps::style::TEXT_DIM,
                                                    FOLLOWS_LEFT | FOLLOWS_RIGHT | FOLLOWS_TOP))   // the strip's width, as it is resized
                 {
                     cards->addChild(note);
@@ -682,22 +516,14 @@ namespace plus::photoscreen::detail
                 ps::PsPresetCard::Params params;
                 params.name          = "card";
                 params.rect          = LLRect(0, room.mTop, CARD_W, room.mTop - CARD_H);
+                params.compact       = true;     // words only: no picture to keep room for
                 params.label         = card.label;
                 params.subtitle      = card.subtitle;
-                params.icon          = card.icon;
                 params.deletable     = card.deletable && (bool)card.remove;
                 params.initial_value = card.current;
                 if (ps::PsPresetCard* view = LLUICtrlFactory::create<ps::PsPresetCard>(params))
                 {
                     view->setToolTip(card.tip.empty() ? card.label : card.tip);
-                    if (LLUIImagePtr thumb = thumbOf(card.thumb))
-                    {
-                        view->setTexture(thumb->getImage());
-                    }
-                    else if (card.picture)
-                    {
-                        view->setTexture(card.picture);
-                    }
                     if (card.click)
                     {
                         const auto click = card.click;
@@ -744,17 +570,11 @@ namespace plus::photoscreen::detail
                 LLFloaterReg::showInstance("fs_poser");
                 return;
             }
-            std::string key;
             if (sS.ptab == PtCamera)
             {
                 if (!pm::saveNamedView(name))
                 {
                     return;
-                }
-                const std::vector<pm::CameraView> views = pm::namedViews();
-                if (!views.empty())
-                {
-                    key = "cam_" + pm::regionName() + "_" + views.back().name;
                 }
             }
             else
@@ -767,7 +587,6 @@ namespace plus::photoscreen::detail
                 {
                     return;
                 }
-                key = "my_" + name;
                 sS.ptab = PtMy;
             }
             editor->setText(std::string());
@@ -776,17 +595,6 @@ namespace plus::photoscreen::detail
             if (CardStrip* cards = strip(); cards && !sCards.empty())
             {
                 cards->scrollTo(sCards.size() - 1);     // the new card is the last one
-            }
-            if (!key.empty())
-            {
-                later([key]() {
-                    captureThumb(key);
-                    rebuildCards();
-                    if (CardStrip* cards = strip(); cards && !sCards.empty())
-                    {
-                        cards->scrollTo(sCards.size() - 1);
-                    }
-                });
             }
         }
 
@@ -881,6 +689,16 @@ namespace plus::photoscreen::detail
             const S32 right = llmax(left + 1, sS.w - m.right_panel);
             const S32 top   = llmax(gap + 1, m.bottom - gap);
             bottom->setShape(LLRect(left, top, right, gap));
+            // The name bubble hangs BUBBLE_FROM_RIGHT from the panel's right edge, never past its left edge.
+            if (LLView* bubble = bottom->findChildView("name_bubble"))
+            {
+                const LLRect old = bubble->getRect();
+                const S32 bubble_left = llmax(BUBBLE_MIN_LEFT, bottom->getRect().getWidth() - BUBBLE_FROM_RIGHT);
+                if (old.mLeft != bubble_left)
+                {
+                    bubble->setOrigin(bubble_left, old.mBottom);
+                }
+            }
         }
     }
 

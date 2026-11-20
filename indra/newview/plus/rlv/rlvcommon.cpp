@@ -842,8 +842,10 @@ bool RlvUtil::sendBusyMessage(const LLUUID& idTo, const std::string& strMsg, con
         static std::map<LLUUID, F64> s_LastResponse;
         const F64 tmNow = LLFrameTimer::getTotalSeconds();
 
+        // A guard: the clock behind getTotalSeconds() is monotonic since mono-clock (research/362) and does not go back, but if it did,
+        // an entry from "the future" lets the response through and is replaced, instead of holding it back
         auto itLast = s_LastResponse.find(idTo);
-        if ( (s_LastResponse.end() != itLast) && (tmNow - itLast->second < RLV_AUTORESPONSE_INTERVAL) )
+        if ( (s_LastResponse.end() != itLast) && (tmNow >= itLast->second) && (tmNow - itLast->second < RLV_AUTORESPONSE_INTERVAL) )
         {
             RLV_DEBUGS << "Held back an automatic response to " << idTo << RLV_ENDL;
             return false;
@@ -853,7 +855,7 @@ bool RlvUtil::sendBusyMessage(const LLUUID& idTo, const std::string& strMsg, con
         {
             // Forget everyone whose interval has run out
             for (auto itEntry = s_LastResponse.begin(); itEntry != s_LastResponse.end(); )
-                itEntry = (tmNow - itEntry->second >= RLV_AUTORESPONSE_INTERVAL) ? s_LastResponse.erase(itEntry) : std::next(itEntry);
+                itEntry = ( (tmNow < itEntry->second) || (tmNow - itEntry->second >= RLV_AUTORESPONSE_INTERVAL) ) ? s_LastResponse.erase(itEntry) : std::next(itEntry);
         }
         s_LastResponse[idTo] = tmNow;
     }
@@ -878,10 +880,16 @@ namespace
         U32  mCount = 0;
         bool mLogged = false;
 
+        // This second is over, or the clock went back before its start (a guard: monotonic since mono-clock, research/362, it does not go back)
+        bool isOver(F64 tmNow) const
+        {
+            return (tmNow < mStart) || (tmNow - mStart >= 1.0);
+        }
+
         // Starts a new second if this one is over; true while fewer than nMax were counted
         bool hasRoom(F64 tmNow, U32 nMax)
         {
-            if (tmNow - mStart >= 1.0)
+            if (isOver(tmNow))
             {
                 mStart = tmNow;
                 mCount = 0;
@@ -917,7 +925,7 @@ bool RlvUtil::checkReplyBudget(const LLUUID& idObject)
         {
             // Keep the table small: forget every object whose second is over
             for (auto itEntry = s_ObjectReplies.begin(); itEntry != s_ObjectReplies.end(); )
-                itEntry = (tmNow - itEntry->second.mStart >= 1.0) ? s_ObjectReplies.erase(itEntry) : std::next(itEntry);
+                itEntry = (itEntry->second.isOver(tmNow)) ? s_ObjectReplies.erase(itEntry) : std::next(itEntry);
         }
 
         pObjectWindow = &s_ObjectReplies[idObject];

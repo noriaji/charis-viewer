@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The right-click menu of a key chip in Motion Between Poses (plus/posermotion/motionfloater_keys.cpp:
+     Plus.PoserMotion.Key.Action / .Enable). -->
+<context_menu
+ layout="topleft"
+ name="plus_poser_motion_key_menu">
+    <menu_item_call label="Update with the Current Pose" layout="topleft" name="update">
+        <menu_item_call.on_click function="Plus.PoserMotion.Key.Action" parameter="update" />
+        <menu_item_call.on_enable function="Plus.PoserMotion.Key.Enable" parameter="update" />
+    </menu_item_call>
+    <menu_item_call label="Duplicate" layout="topleft" name="duplicate">
+        <menu_item_call.on_click function="Plus.PoserMotion.Key.Action" parameter="duplicate" />
+        <menu_item_call.on_enable function="Plus.PoserMotion.Key.Enable" parameter="duplicate" />
+    </menu_item_call>
+    <menu_item_call label="Delete" layout="topleft" name="delete">
+        <menu_item_call.on_click function="Plus.PoserMotion.Key.Action" parameter="delete" />
+    </menu_item_call>
+    <menu_item_separator layout="topleft" />
+    <menu_item_call label="Delete All Keys..." layout="topleft" name="clear">
+        <menu_item_call.on_click function="Plus.PoserMotion.Key.Action" parameter="clear" />
+    </menu_item_call>
+</context_menu>

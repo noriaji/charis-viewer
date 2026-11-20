@@ -40,7 +40,7 @@ namespace
 
     constexpr F64 REPORT_SECONDS = 5.0;
 
-    const char* const STEP_NAMES[STEP_COUNT] =
+    const char* const STEP_NAMES[] =
     {
         "deselect", "gestures and agent", "object list update", "gltf",
         "setup", "avatar prepare", "avatars", "animesh", "volumes", "other objects",
@@ -49,8 +49,14 @@ namespace
         "stepped", "skipped", "update drawable",
         "too slow", "texture loading", "character", "motions", "misc", "appearance animation",
         "loading effect", "name tag", "render complexity", "visualParamWeightsAreDefault",
+        "graywire", "extent refresh", "pixel area", "offscreen light check", "base idleUpdate", "lazy attach",
+        "drawable move", "voice", "voice visualizer", "name tag position", "lip sync", "wind and water", "catch up attachments", "debug info",
         "updateMove async", "updateMove moved list",
+        "entry lookup", "band", "check of full avatars", "check of impostors", "check of avatars out of view",
+        "bounds", "keep materialized", "listed attachments", "bakes", "attachment walk", "attachment wait",
+        "wireframe walk", "state change", "seen whole", "updateClass",
     };
+    static_assert(sizeof(STEP_NAMES) / sizeof(STEP_NAMES[0]) == STEP_COUNT, "a name for each census step");
 
     struct Window
     {
@@ -92,6 +98,47 @@ namespace
         sWindowTicks = __rdtsc();
         sWindowNanoseconds = now_nanoseconds();
         sWindowOpen = true;
+    }
+
+    // The "graywire" step of the avatars cut (research/339 §29): the light part every avatar does every frame, the band, and the
+    // periodic check (by what the avatar is, with how many were checked a frame) with the steps inside it. The sub-steps nest in
+    // graywire, so the light part and the rest of the check are what they leave. updateClass is the texture update's (not in it).
+    template <typename Us, typename Calls, typename Item>
+    void report_graywire(std::ostringstream& out, const Us& us, const Calls& calls, const Item& item)
+    {
+        using namespace plus::idlecensus;
+        const Step checks[] = { GW_HEAVY_FULL, GW_HEAVY_IMPOSTOR, GW_HEAVY_OFFSCREEN };
+        const Step inside[] = { GW_NOTE_BOUNDS, GW_KEEP, GW_LISTED, GW_BAKES, GW_SCAN, GW_WAITS, GW_HOLD, GW_FLIP, GW_SEEN };
+        F64 check_us = 0.0;
+        F64 checked = 0.0;
+        for (const Step s : checks)
+        {
+            check_us += us(s);
+            checked += calls(s);
+        }
+        F64 inside_us = 0.0;
+        for (const Step s : inside)
+        {
+            inside_us += us(s);
+        }
+        out << "; graywire " << us(AV_GRAYWIRE) << " (" << calls(AV_GRAYWIRE) << ") = light part "
+            << us(AV_GRAYWIRE) - us(GW_BAND) - check_us << " (of which";
+        item(GW_ENTRY, " ");
+        out << ") + ";
+        item(GW_BAND, "");
+        out << " + checks " << check_us << " (" << checked << " avatars checked a frame:";
+        item(GW_HEAVY_FULL, " ");
+        item(GW_HEAVY_IMPOSTOR, ", ");
+        item(GW_HEAVY_OFFSCREEN, ", ");
+        out << "); in the checks:";
+        const char* sep = " ";
+        for (const Step s : inside)
+        {
+            item(s, sep);
+            sep = ", ";
+        }
+        out << ", check rest " << check_us - inside_us << "; ";
+        item(GW_CLASS, "");
     }
 
     void report()
@@ -148,7 +195,39 @@ namespace
         item(plus::idlecensus::AV_NAME_TAG, ", ");
         item(plus::idlecensus::AV_COMPLEXITY, ", ");
         item(plus::idlecensus::AV_VPARAM_DEFAULT, ", ");
+        item(plus::idlecensus::AV_GRAYWIRE, ", idle update rest: ");
+        item(plus::idlecensus::AV_EXTENT, ", ");
+        item(plus::idlecensus::AV_PIXEL_AREA, ", ");
+        item(plus::idlecensus::AV_OFFSCREEN_LIGHT, ", ");
+        item(plus::idlecensus::AV_BASE_IDLE, ", ");
+        item(plus::idlecensus::AV_LAZY_ATTACH, ", ");
+        item(plus::idlecensus::AV_DRAWABLE_MOVE, ", ");
+        item(plus::idlecensus::AV_VOICE, ", ");
+        item(plus::idlecensus::AV_VOICE_VIS, ", ");
+        item(plus::idlecensus::AV_NAME_POS, ", ");
+        item(plus::idlecensus::AV_LIPSYNC, ", ");
+        item(plus::idlecensus::AV_WIND, ", ");
+        item(plus::idlecensus::AV_CATCHUP, ", ");
+        item(plus::idlecensus::AV_DEBUG_INFO, ", ");
         item(plus::idlecensus::MOVE_ASYNC, ", ");
+        {
+            // Apart steps of an avatar's idle update (none holds another: the base idleUpdate holds updateDrawable, the
+            // character holds the motions, misc and catch up hold the attachments' updateMove async; those are not added again): what they leave of the avatars' total.
+            const Step apart[] = { plus::idlecensus::AV_TOO_SLOW, plus::idlecensus::AV_TEXTURE_LOADING, plus::idlecensus::AV_CHARACTER,
+                plus::idlecensus::AV_MISC, plus::idlecensus::AV_APPEARANCE, plus::idlecensus::AV_LOADING, plus::idlecensus::AV_NAME_TAG,
+                plus::idlecensus::AV_COMPLEXITY, plus::idlecensus::AV_GRAYWIRE, plus::idlecensus::AV_EXTENT, plus::idlecensus::AV_PIXEL_AREA,
+                plus::idlecensus::AV_OFFSCREEN_LIGHT, plus::idlecensus::AV_BASE_IDLE, plus::idlecensus::AV_LAZY_ATTACH,
+                plus::idlecensus::AV_DRAWABLE_MOVE, plus::idlecensus::AV_VOICE, plus::idlecensus::AV_VOICE_VIS, plus::idlecensus::AV_NAME_POS, plus::idlecensus::AV_LIPSYNC, plus::idlecensus::AV_WIND,
+                plus::idlecensus::AV_CATCHUP, plus::idlecensus::AV_DEBUG_INFO };
+            F64 covered = 0.0;
+            for (const Step s : apart)
+            {
+                covered += us(s);
+            }
+            const F64 total = us(plus::idlecensus::IDLE_AVATAR) + us(plus::idlecensus::IDLE_ANIMESH);
+            out << ", avatar idle total " << total << " (avatars + animesh) = apart steps " << covered << " + left over " << total - covered;
+        }
+        report_graywire(out, us, calls, item);
         out << "; idle move:";
         item(plus::idlecensus::MOVE_LIST, " ");
         U64 steps = 0;
@@ -190,6 +269,15 @@ namespace plus::idlecensus
         }
         sWindow.ticks[step] += ticks;
         ++sWindow.calls[step];
+    }
+
+    Step graywireHeavyStep(LLVOAvatar* avatar)
+    {
+        if (!avatar->isVisible())
+        {
+            return GW_HEAVY_OFFSCREEN;
+        }
+        return avatar->getUpdatePeriod() > 1 ? GW_HEAVY_IMPOSTOR : GW_HEAVY_FULL;
     }
 
     void ObjectScope::start(LLViewerObject* objectp)

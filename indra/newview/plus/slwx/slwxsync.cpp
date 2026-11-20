@@ -151,7 +151,7 @@ namespace plus::slwx::sync
     double now()
     {
         // Frozen: the UTC of the moment the world stopped (the clock minus the seconds since).
-        const double t = (double)LLTimer::getTotalSeconds() + (double)gUTCOffset;
+        const double t = (double)LLTimer::getWallSeconds() + (double)gUTCOffset;
         return plus::freeze::isFrozen() ? t - (double)plus::freeze::frozenSeconds() : t;
     }
 }

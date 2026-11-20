@@ -83,6 +83,15 @@
 // <plus>
 #include "plus/selffirst/selffirst.h"
 #include "plus/httpautotune/httpautotune.h"
+#include "lldiskcache.h"    // research/337 (D): the cache file's name, for its new file's head
+#include <chrono>
+#include <thread>
+#if LL_WINDOWS
+#include "llwin32headers.h" // research/337 (D): MoveFileExW
+#else
+#include <fcntl.h>          // research/337 (D): open with O_EXCL
+#include <unistd.h>         // research/337 (D): link
+#endif
 // </plus>
 
 #include "boost/iostreams/device/array.hpp"
@@ -926,6 +935,192 @@ void write_preamble(LLFileSystem &file, S32 header_bytes, S32 flags)
     file.write((U8*)&header_bytes, sizeof(U32));
     file.write((U8*)&flags, sizeof(U32));
 }
+
+// <plus> research/337 (D): the asset cache is shared by every viewer of the user (a second start writes it too), and a
+// file's flags say which parts are in it. A flag should not be there before its part.
+//
+// A part (an LOD, the skin, the convex hull, the physics shape) goes into the file before the preamble's flags that say
+// it is there: another viewer that reads the file between the two, or this one after a crash between them, then finds
+// no flag (and fetches the part again) instead of a flag over zeros. What this orders is this thread's own part and
+// its flags only:
+// - the flags (flags > 0: a bit newly set) follow the part's write once the file could be opened for it
+//   (LLFileSystem::write tells nothing more: a part cut off by a full disk is still followed by its flags, as before);
+// - the bits are set under mHeaderMutex before the parts are written, and the mesh pool has several threads, so the
+//   flags another thread writes meanwhile can carry the bit of a part this one has not written yet (until it has).
+// In both cases the readers' checks (a part that is all zeros, or does not parse: "cache mismatch") fetch it again.
+static void plus_write_mesh_part(LLFileSystem& file, S32 offset, const U8* data, S32 size, S32 header_bytes, U32 flags)
+{
+    file.seek(offset, 0);
+    if (file.write(data, size) && flags > 0)
+    {
+        file.seek(0, 0);
+        write_preamble(file, header_bytes, flags);
+    }
+}
+
+// The head of a new cache file (the preamble, the header's bytes and the zeros the parts are written over later). It is
+// put in place only while the name is free, so two viewers that fetch the same new mesh at once do not lay the second
+// one's zeros over parts the first one has written meanwhile, under flags that say they are there: written whole to a
+// file of this process and thread, then moved to the name only if the name is still free. A file there already is
+// kept when it holds this header (another viewer's; its parts and flags stay); one that does not (damaged, cut off, an
+// older layout) is written over in place, as the old way did. When the new file cannot be moved into place and the name
+// is still free (a scanner holding the temporary file, say), it is written in place too, as before. Nothing is written
+// when the memory or the temporary file cannot be had: the mesh's header is fetched again the next time.
+enum class PlusMeshHead
+{
+    placed,         // the new file is in place
+    kept,           // a file with this header was there already
+    rewritten,      // written in place (the old way): another head was there, or the new file could not be moved
+    not_written,    // no memory, the temporary file could not be written, or the write in place could not open the file
+};
+
+// The new file at path, only while the name is free: written whole to a file of this process and thread first, then
+// moved to the name without replacing (MoveFileExW without MOVEFILE_REPLACE_EXISTING; a hard link elsewhere), which
+// fails when the name has been taken meanwhile. On Windows a move refused for another reason is tried again, up to
+// PLUS_MOVE_ATTEMPTS times PLUS_MOVE_WAIT_MS apart. Where hard links cannot be made (exFAT, FAT, some network shares)
+// the name is made with an exclusive create and the contents written into it (still never over another's file; a
+// reader may see it while it is written, and its checks fetch the mesh again then).
+enum class PlusPlaced
+{
+    placed,         // the new file is at path
+    taken,          // another file is at path now
+    cannot_write,   // the temporary file (or the exclusive one) could not be written
+    cannot_move,    // written, but could not be put at path, which was free
+};
+static PlusPlaced plus_place_new_file(const std::string& path, const U8* contents, S32 bytes)
+{
+    constexpr int PLUS_MOVE_ATTEMPTS = 5;
+    constexpr int PLUS_MOVE_WAIT_MS = 10;
+    // (the name keeps the cache's prefix: one a crash leaves behind is counted and purged with the cache's files)
+    std::ostringstream temp_name;
+    temp_name << path << ".charis-tmp." << LLApp::getPid() << '.' << std::this_thread::get_id() << ".tmp";
+    const std::string temp = temp_name.str();
+    bool written = false;
+    {
+        llofstream out(temp, std::ios::binary | std::ios::trunc);
+        out.write((const char*)contents, bytes);
+        out.close();
+        written = !out.fail();
+    }
+    if (!written)
+    {
+        LLFile::remove(temp, ENOENT);
+        return PlusPlaced::cannot_write;
+    }
+#if LL_WINDOWS
+    const std::wstring wide_temp = ll_convert<std::wstring>(temp);
+    const std::wstring wide_path = ll_convert<std::wstring>(path);
+    for (int attempt = 1; ; ++attempt)
+    {
+        if (MoveFileExW(wide_temp.c_str(), wide_path.c_str(), 0))
+        {
+            return PlusPlaced::placed;  // (the move took the temporary name away)
+        }
+        const DWORD error = GetLastError();
+        if (error == ERROR_ALREADY_EXISTS || error == ERROR_FILE_EXISTS || attempt >= PLUS_MOVE_ATTEMPTS)
+        {
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(PLUS_MOVE_WAIT_MS));
+    }
+    LLFile::remove(temp, ENOENT);
+    return LLFile::isfile(path) ? PlusPlaced::taken : PlusPlaced::cannot_move;
+#else
+    const int linked = link(temp.c_str(), path.c_str());
+    const int link_error = linked == 0 ? 0 : errno;
+    LLFile::remove(temp, ENOENT);   // (a link leaves the temporary name)
+    if (linked == 0)
+    {
+        return PlusPlaced::placed;
+    }
+    if (link_error == EEXIST)
+    {
+        return PlusPlaced::taken;
+    }
+    // no hard links here: the name is made only if it is free, then written
+    const int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, 0666);
+    if (fd < 0)
+    {
+        return errno == EEXIST ? PlusPlaced::taken : PlusPlaced::cannot_move;
+    }
+    S64 done = 0;
+    while (done < bytes)
+    {
+        const ssize_t now = write(fd, contents + done, (size_t)(bytes - done));
+        if (now < 0 && errno == EINTR)
+        {
+            continue;
+        }
+        if (now <= 0)
+        {
+            break;
+        }
+        done += now;
+    }
+    const bool closed = close(fd) == 0;
+    if (done < bytes || !closed)
+    {
+        unlink(path.c_str());   // this one's own (made with O_EXCL): a cut-off head must not stay
+        return PlusPlaced::cannot_write;
+    }
+    return PlusPlaced::placed;
+#endif
+}
+
+// True when the file at path holds head's version, header size and header bytes (the first `compared` bytes but the
+// flags, which are the file's own) and has room for the parts (`bytes`).
+static bool plus_holds_head(const std::string& path, const U8* head, S32 compared, S32 bytes)
+{
+    std::unique_ptr<U8[]> there(new(std::nothrow) U8[compared]);
+    return there
+        && LLFile::size(path) >= bytes
+        && LLFile::read(path, there.get(), 0, compared) == compared
+        && memcmp(there.get(), head, 2 * sizeof(U32)) == 0
+        && memcmp(there.get() + CACHE_PREAMBLE_SIZE, head + CACHE_PREAMBLE_SIZE, compared - CACHE_PREAMBLE_SIZE) == 0;
+}
+
+static PlusMeshHead plus_write_mesh_head(const LLUUID& mesh_id, S32 header_bytes, U32 flags, const U8* data, S32 data_size, S32 bytes)
+{
+    // as the old way wrote it: the preamble, all of data, zeros up to bytes
+    const S32 total = llmax(bytes, CACHE_PREAMBLE_SIZE + data_size);
+    std::unique_ptr<U8[]> head(new(std::nothrow) U8[total]);
+    if (!head)
+    {
+        return PlusMeshHead::not_written;
+    }
+    memset(head.get(), 0, total);
+    memcpy(head.get(), &CACHE_PREAMBLE_VERSION, sizeof(U32));
+    memcpy(head.get() + sizeof(U32), &header_bytes, sizeof(U32));
+    memcpy(head.get() + 2 * sizeof(U32), &flags, sizeof(U32));
+    memcpy(head.get() + CACHE_PREAMBLE_SIZE, data, data_size);
+
+    const std::string path = LLDiskCache::metaDataToFilepath(mesh_id, LLAssetType::AT_MESH);
+    bool in_place = false;  // the new file could not be moved to the free name: written there in place, as before
+    if (!LLFile::isfile(path))
+    {
+        const PlusPlaced placed = plus_place_new_file(path, head.get(), total);
+        if (placed == PlusPlaced::placed)
+        {
+            return PlusMeshHead::placed;
+        }
+        if (placed == PlusPlaced::cannot_write)
+        {
+            return PlusMeshHead::not_written;
+        }
+        in_place = placed == PlusPlaced::cannot_move && !LLFile::isfile(path);
+        if (in_place)
+        {
+            LL_INFOS_ONCE(LOG_MESH) << "a new mesh cache file could not be moved into place: written in place, as before (research/337 D)" << LL_ENDL;
+        }
+    }
+    if (!in_place && plus_holds_head(path, head.get(), CACHE_PREAMBLE_SIZE + llmin(header_bytes, data_size), bytes))
+    {
+        return PlusMeshHead::kept;
+    }
+    LLFileSystem file(mesh_id, LLAssetType::AT_MESH, LLFileSystem::READ_WRITE);
+    return file.write(head.get(), total) ? PlusMeshHead::rewritten : PlusMeshHead::not_written;
+}
+// </plus>
 
 LLMeshRepoThread::LLMeshRepoThread()
 : LLThread("mesh repo"),
@@ -3795,31 +3990,20 @@ void LLMeshHeaderHandler::processData(LLCore::BufferArray * /* body */, S32 /* b
             // only allocate as much space in the cache as is needed for the local cache
             data_size = llmin(data_size, bytes);
 
-            LLFileSystem file(mesh_id, LLAssetType::AT_MESH, LLFileSystem::READ_WRITE);
-            if (file.getMaxSize() >= bytes)
+            // <plus> research/337 (D): the preamble, the header and the zeros up to bytes go in as one new file, and
+            // only while there is none (was: written over the file in place, three writes, then the header, then the zeros)
+            const PlusMeshHead wrote = plus_write_mesh_head(mesh_id, header_bytes, header.getFlags(), data, data_size, bytes);
+            if (wrote == PlusMeshHead::placed || wrote == PlusMeshHead::rewritten)
             {
-                LLMeshRepository::sCacheBytesWritten += data_size;
+                LLMeshRepository::sCacheBytesWritten += data_size + CACHE_PREAMBLE_SIZE;
                 ++LLMeshRepository::sCacheWrites;
-
-                // write preamble
-                U32 flags = header.getFlags();
-                write_preamble(file, header_bytes, flags);
-
-                // write header
-                file.write(data, data_size);
-
-                S32 remaining = bytes - file.tell();
-                if (remaining > 0)
-                {
-                    U8* block = new(std::nothrow) U8[remaining];
-                    if (block)
-                    {
-                        memset(block, 0, remaining);
-                        file.write(block, remaining);
-                        delete[] block;
-                    }
-                }
             }
+            else if (wrote == PlusMeshHead::kept)
+            {
+                LL_INFOS_ONCE(LOG_MESH) << "a mesh's cache file was written by another viewer first: kept (research/337 D; more at debug level)" << LL_ENDL;
+                LL_DEBUGS(LOG_MESH) << "cache file of mesh " << mesh_id << " already holds its header: kept" << LL_ENDL;
+            }
+            // </plus>
         }
         else
         {
@@ -3892,13 +4076,7 @@ void LLMeshLODHandler::processLod(U8* data, S32 data_size)
                     // todo: handle else because we shouldn't have requested twice?
                 }
             }
-            if (flags > 0)
-            {
-                write_preamble(file, header_bytes, flags);
-            }
-
-            file.seek(offset, 0);
-            file.write(data, size);
+            plus_write_mesh_part(file, offset, data, size, header_bytes, flags);   // <plus> research/337 (D): the part, then its flag (was: the flags, then the part) </plus>
             LLMeshRepository::sCacheBytesWritten += size;
             ++LLMeshRepository::sCacheWrites;
         }
@@ -4015,13 +4193,7 @@ void LLMeshSkinInfoHandler::processSkin(U8* data, S32 data_size)
                     // todo: handle else because we shouldn't have requested twice?
                 }
             }
-            if (flags > 0)
-            {
-                write_preamble(file, header_bytes, flags);
-            }
-
-            file.seek(offset, 0);
-            file.write(data, size);
+            plus_write_mesh_part(file, offset, data, size, header_bytes, flags);   // <plus> research/337 (D): the part, then its flag (was: the flags, then the part) </plus>
         }
     }
     else
@@ -4134,13 +4306,7 @@ void LLMeshDecompositionHandler::processData(LLCore::BufferArray * /* body */, S
                     // todo: handle else because we shouldn't have requested twice?
                 }
             }
-            if (flags > 0)
-            {
-                write_preamble(file, header_bytes, flags);
-            }
-
-            file.seek(offset, 0);
-            file.write(data, size);
+            plus_write_mesh_part(file, offset, data, size, header_bytes, flags);   // <plus> research/337 (D): the part, then its flag (was: the flags, then the part) </plus>
         }
     }
     else
@@ -4207,13 +4373,7 @@ void LLMeshPhysicsShapeHandler::processData(LLCore::BufferArray * /* body */, S3
                     // todo: handle else because we shouldn't have requested twice?
                 }
             }
-            if (flags > 0)
-            {
-                write_preamble(file, header_bytes, flags);
-            }
-
-            file.seek(offset, 0);
-            file.write(data, size);
+            plus_write_mesh_part(file, offset, data, size, header_bytes, flags);   // <plus> research/337 (D): the part, then its flag (was: the flags, then the part) </plus>
         }
     }
     else

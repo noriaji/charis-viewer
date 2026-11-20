@@ -117,7 +117,7 @@ namespace plus::photoscreen::detail
 
     struct Card
     {
-        std::string label, tip, thumb;  // thumb: the key of the small picture ("" none)
+        std::string label, tip;
         bool        current   = false;
         bool        deletable = false;
         std::function<void()> click, remove;

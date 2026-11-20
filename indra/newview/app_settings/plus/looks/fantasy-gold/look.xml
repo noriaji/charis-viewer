@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Fantasy Gold</string><key>ja</key><string>おとぎ話の金色</string></map>
+    <key>description</key>
+    <map><key>en</key><string>A warm golden storybook tone with deep, rich color.</string><key>ja</key><string>金色がかった、物語の挿絵のような色。濃く豊かに。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>233</integer>
+    <key>group</key><string>mood</string>
+  </map>
+</llsd>

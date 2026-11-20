@@ -54,6 +54,8 @@
 #include "message.h"
 #include "llcorehttputil.h"
 #include "plus/rlv/rlvhooks.h" // <plus> rlv (plus/rlv) </plus>
+#include "llcombobox.h" // <plus> contactsets (research/333) </plus>
+#include "plus/contactsets/peoplehooks.h" // <plus> contactsets (research/333) </plus>
 
 //#include "llsdserialize.h"
 
@@ -77,6 +79,13 @@ static void rlvUpdateNearMeTab(LLFloater* picker)
         pTabs->enableTabButton(pTabs->getIndexForPanel(pNearMePanel), fRlvEnable);
         if ( (!fRlvEnable) && (pTabs->getCurrentPanel() == pNearMePanel) )
             pTabs->selectTabByName("SearchPanel");
+        // contactsets: a set can hold people who are around, so its tab goes with "Near me" (research/333)
+        if (LLPanel* pContactSetsPanel = picker->findChild<LLPanel>("ContactSetsPanel"))
+        {
+            pTabs->enableTabButton(pTabs->getIndexForPanel(pContactSetsPanel), fRlvEnable);
+            if ( (!fRlvEnable) && (pTabs->getCurrentPanel() == pContactSetsPanel) )
+                pTabs->selectTabByName("SearchPanel");
+        }
     }
 }
 // </plus>
@@ -102,6 +111,7 @@ LLFloaterAvatarPicker* LLFloaterAvatarPicker::show(select_callback_t callback,
     floater->mNearMeListComplete = false;
     floater->mCloseOnSelect = closeOnSelect;
     floater->mExcludeAgentFromSearchResults = skip_agent;
+    floater->refreshContactSets(); // <plus> contactsets: the sets may have changed since the picker was last shown (research/333) </plus>
 
     if (!closeOnSelect)
     {
@@ -157,6 +167,13 @@ bool LLFloaterAvatarPicker::postBuild()
     friends->setDoubleClickCallback(boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
     getChild<LLUICtrl>("Friends")->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onList, this));
 
+    // <plus> contactsets: the "Contact Sets" tab (Firestorm FIRE-34809) (plus/contactsets/peopletab) (research/333)
+    getChild<LLComboBox>("ContactSetSelector")->setCommitCallback([this](LLUICtrl*, const LLSD&) { populateContactSetMembers(mAllowMultiple); });
+    LLScrollListCtrl* contact_set_members = getChild<LLScrollListCtrl>("ContactSetMembers");
+    contact_set_members->setDoubleClickCallback(boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
+    contact_set_members->setCommitCallback(boost::bind(&LLFloaterAvatarPicker::onList, this));
+    // </plus>
+
     childSetAction("ok_btn", boost::bind(&LLFloaterAvatarPicker::onBtnSelect, this));
     getChildView("ok_btn")->setEnabled(false);
     childSetAction("cancel_btn", boost::bind(&LLFloaterAvatarPicker::onBtnClose, this));
@@ -193,6 +210,10 @@ void LLFloaterAvatarPicker::setOkBtnEnableCb(validate_callback_t cb)
 
 void LLFloaterAvatarPicker::onTabChanged()
 {
+    // <plus> contactsets: (research/333)
+    if (getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel() == getChild<LLPanel>("ContactSetsPanel"))
+        refreshContactSets();
+    // </plus>
     getChildView("ok_btn")->setEnabled(isSelectBtnEnabled());
     rlvUpdateNearMeTab(this); // <plus> rlv: @shownames (research/248 E13) </plus>
 }
@@ -263,6 +284,12 @@ void LLFloaterAvatarPicker::onBtnSelect()
         {
             list = getChild<LLScrollListCtrl>("Friends");
         }
+        // <plus> contactsets: (research/333)
+        else if (acvtive_panel_name == "ContactSetsPanel")
+        {
+            list = getChild<LLScrollListCtrl>("ContactSetMembers");
+        }
+        // </plus>
 
         if(list)
         {
@@ -275,6 +302,7 @@ void LLFloaterAvatarPicker::onBtnSelect()
     getChild<LLScrollListCtrl>("SearchResults")->deselectAllItems(true);
     getChild<LLScrollListCtrl>("NearMe")->deselectAllItems(true);
     getChild<LLScrollListCtrl>("Friends")->deselectAllItems(true);
+    getChild<LLScrollListCtrl>("ContactSetMembers")->deselectAllItems(true); // <plus> contactsets (research/333) </plus>
     if(mCloseOnSelect)
     {
         mCloseOnSelect = false;
@@ -402,6 +430,11 @@ void LLFloaterAvatarPicker::draw()
         // simulate list changes.
         onList();
         timer.start();
+
+        // <plus> contactsets: the names of the shown set as the name cache gets them (research/333)
+        if (!mContactSetNamesComplete && getChild<LLTabContainer>("ResidentChooserTabs")->getCurrentPanel() == getChild<LLPanel>("ContactSetsPanel"))
+            populateContactSetMembers(false);
+        // </plus>
     }
 
     LLFloater::draw();
@@ -427,6 +460,12 @@ bool LLFloaterAvatarPicker::visibleItemsSelected() const
     {
         return getChild<LLScrollListCtrl>("Friends")->getFirstSelectedIndex() >= 0;
     }
+    // <plus> contactsets: (research/333)
+    else if (active_panel == getChild<LLPanel>("ContactSetsPanel"))
+    {
+        return getChild<LLScrollListCtrl>("ContactSetMembers")->getFirstSelectedIndex() >= 0;
+    }
+    // </plus>
     return false;
 }
 
@@ -613,7 +652,28 @@ void LLFloaterAvatarPicker::setAllowMultiple(bool allow_multiple)
     getChild<LLScrollListCtrl>("SearchResults")->setAllowMultipleSelection(allow_multiple);
     getChild<LLScrollListCtrl>("NearMe")->setAllowMultipleSelection(allow_multiple);
     getChild<LLScrollListCtrl>("Friends")->setAllowMultipleSelection(allow_multiple);
+    // <plus> contactsets: (research/333)
+    getChild<LLScrollListCtrl>("ContactSetMembers")->setAllowMultipleSelection(allow_multiple);
+    mAllowMultiple = allow_multiple;
+    // </plus>
 }
+
+// <plus> contactsets: the "Contact Sets" tab (Firestorm FIRE-34809; Charis lists the people of the set, all of
+// them selected when more than one can be picked) (plus/contactsets/peopletab) (research/333)
+void LLFloaterAvatarPicker::refreshContactSets()
+{
+    plus::contactsets::fillPickerSets(getChild<LLComboBox>("ContactSetSelector"));
+    populateContactSetMembers(mAllowMultiple);
+}
+
+void LLFloaterAvatarPicker::populateContactSetMembers(bool select_all)
+{
+    mContactSetNamesComplete = plus::contactsets::fillPickerMembers(getChild<LLComboBox>("ContactSetSelector"),
+        getChild<LLScrollListCtrl>("ContactSetMembers"), mExcludeAgentFromSearchResults ? gAgentID : LLUUID::null,
+        select_all ? plus::contactsets::PickerSelection::ALL : plus::contactsets::PickerSelection::KEEP);
+    onList();
+}
+// </plus>
 
 LLScrollListCtrl* LLFloaterAvatarPicker::getActiveList()
 {
@@ -636,6 +696,12 @@ LLScrollListCtrl* LLFloaterAvatarPicker::getActiveList()
     {
         list = getChild<LLScrollListCtrl>("Friends");
     }
+    // <plus> contactsets: (research/333)
+    else if (acvtive_panel_name == "ContactSetsPanel")
+    {
+        list = getChild<LLScrollListCtrl>("ContactSetMembers");
+    }
+    // </plus>
     return list;
 }
 
@@ -896,6 +962,12 @@ bool LLFloaterAvatarPicker::isSelectBtnEnabled()
         {
             list = getChild<LLScrollListCtrl>("Friends");
         }
+        // <plus> contactsets: (research/333)
+        else if (acvtive_panel_name == "ContactSetsPanel")
+        {
+            list = getChild<LLScrollListCtrl>("ContactSetMembers");
+        }
+        // </plus>
 
         if(list)
         {

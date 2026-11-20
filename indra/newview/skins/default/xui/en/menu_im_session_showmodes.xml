@@ -35,6 +35,16 @@
          function="IMSession.Menu.ShowModes.Enable"
          parameter="IMShowTime" />
     </menu_item_check>
+    <!-- plus chat-time-local -->
+    <menu_item_check name="PlusChatTimeLocal" label="Show local time">
+        <menu_item_check.on_click
+         function="ToggleControl"
+         parameter="PlusChatTimeLocal" />
+        <menu_item_check.on_check
+         function="CheckControl"
+         parameter="PlusChatTimeLocal" />
+    </menu_item_check>
+    <!-- /plus -->
     <menu_item_check name="IMShowNamesForP2PConv" label="Show names in one-to-one conversations">
         <menu_item_check.on_click
          function="IMSession.Menu.Action"
@@ -46,4 +56,28 @@
          function="IMSession.Menu.ShowModes.Enable"
          parameter="IMShowNamesForP2PConv" />    
     </menu_item_check>      
+    <!-- plus chat-channel-select (from Firestorm) -->
+    <menu_item_check name="show_channel_selection" label="Show channel selection">
+        <menu_item_check.on_click
+         function="ToggleControl"
+         parameter="FSShowChatChannel" />
+        <menu_item_check.on_check
+         function="CheckControl"
+         parameter="FSShowChatChannel" />
+        <menu_item_check.on_visible
+         function="IMSession.Menu.ShowModes.Visible"
+         parameter="show_channel_selection" />
+    </menu_item_check>
+    <menu_item_check name="show_send_button" label="Show chat type / send button">
+        <menu_item_check.on_click
+         function="ToggleControl"
+         parameter="FSShowChatType" />
+        <menu_item_check.on_check
+         function="CheckControl"
+         parameter="FSShowChatType" />
+        <menu_item_check.on_visible
+         function="IMSession.Menu.ShowModes.Visible"
+         parameter="show_send_button" />
+    </menu_item_check>
+    <!-- /plus -->
 </toggleable_menu>

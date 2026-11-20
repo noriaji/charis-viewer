@@ -68,12 +68,34 @@ if (DEFINED ENV{VULKAN_SDK} AND WINDOWS)
       ${CMAKE_CURRENT_LIST_DIR}/llvkswapchain.cpp
       ${CMAKE_CURRENT_LIST_DIR}/llvktexcompress.cpp
       ${CMAKE_CURRENT_LIST_DIR}/llvktaa.cpp
+      ${CMAKE_CURRENT_LIST_DIR}/llvkmotion.cpp
       ${CMAKE_CURRENT_LIST_DIR}/llvktracker.cpp
       ${CMAKE_CURRENT_LIST_DIR}/llvkupscale.cpp
       ${CMAKE_CURRENT_LIST_DIR}/llvkvolumetric.cpp
+      ${CMAKE_CURRENT_LIST_DIR}/llvkvramdiag.cpp
       ${CMAKE_CURRENT_LIST_DIR}/llvkwetlook.cpp
       ${CMAKE_CURRENT_LIST_DIR}/llvkwindows.cpp
       )
+
+  # Zstandard 1.5.7's decompressor, unchanged (thirdparty/zstd, BSD-3-Clause; the shader bundle's modules are
+  # zstd frames, research/363). Only the decoder: no threads, no assembly, no legacy formats.
+  set(llvulkan_ZSTD_DIR ${CMAKE_CURRENT_LIST_DIR}/thirdparty/zstd/lib)
+  set(llvulkan_ZSTD_SOURCE_FILES
+      ${llvulkan_ZSTD_DIR}/common/debug.c
+      ${llvulkan_ZSTD_DIR}/common/entropy_common.c
+      ${llvulkan_ZSTD_DIR}/common/error_private.c
+      ${llvulkan_ZSTD_DIR}/common/fse_decompress.c
+      ${llvulkan_ZSTD_DIR}/common/xxhash.c
+      ${llvulkan_ZSTD_DIR}/common/zstd_common.c
+      ${llvulkan_ZSTD_DIR}/decompress/huf_decompress.c
+      ${llvulkan_ZSTD_DIR}/decompress/zstd_ddict.c
+      ${llvulkan_ZSTD_DIR}/decompress/zstd_decompress.c
+      ${llvulkan_ZSTD_DIR}/decompress/zstd_decompress_block.c
+      )
+  list(APPEND llvulkan_SOURCE_FILES ${llvulkan_ZSTD_SOURCE_FILES})
+  set_source_files_properties(${llvulkan_ZSTD_SOURCE_FILES} PROPERTIES
+      COMPILE_DEFINITIONS "ZSTD_DISABLE_ASM=1;ZSTD_LEGACY_SUPPORT=0"
+      SKIP_PRECOMPILE_HEADERS ON)
 
   set(llvulkan_HEADER_FILES
       ${CMAKE_CURRENT_LIST_DIR}/llvkattribpool.h
@@ -109,6 +131,7 @@ if (DEFINED ENV{VULKAN_SDK} AND WINDOWS)
       ${CMAKE_CURRENT_LIST_DIR}/llvkscenetable.h
       ${CMAKE_CURRENT_LIST_DIR}/scene_cull.comp
       ${CMAKE_CURRENT_LIST_DIR}/llvktaa.h
+      ${CMAKE_CURRENT_LIST_DIR}/llvkmotion.h
       ${CMAKE_CURRENT_LIST_DIR}/llvktracker.h
       ${CMAKE_CURRENT_LIST_DIR}/llvktranslate.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkupscale.h
@@ -121,6 +144,7 @@ if (DEFINED ENV{VULKAN_SDK} AND WINDOWS)
       ${CMAKE_CURRENT_LIST_DIR}/llvktexcompress.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkbc7.glsl.inl
       ${CMAKE_CURRENT_LIST_DIR}/llvkvolumetric.h
+      ${CMAKE_CURRENT_LIST_DIR}/llvkvramdiag.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkwetlook.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkwindows.h
       ${CMAKE_CURRENT_LIST_DIR}/thirdparty/vk_mem_alloc.h

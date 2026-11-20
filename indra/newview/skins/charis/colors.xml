@@ -43,6 +43,8 @@
   <color name="PsSliderEmpty" value="0.2118 0.2431 0.302 1" />
   <color name="PsKnobTop" value="0.8157 0.8549 0.9412 1" />
   <color name="PsKnobBottom" value="0.6667 0.7137 0.8157 1" />
+  <color name="PsKnobTopPressed" value="1 1 1 1" />
+  <color name="PsKnobBottomPressed" value="0.8275 0.8627 0.9412 1" />
   <color name="PsSliderTick" value="0.2902 0.3333 0.4 1" />
   <color name="PsValueFill" value="0.0471 0.0706 0.1059 1" />
   <color name="PsDefaultBtnColor" value="0.5569 0.5961 0.6353 1" />
@@ -130,6 +132,15 @@
   <color name="PsShortcutFill" value="0.0549 0.0667 0.098 0.7" />
   <color name="PsShortcutOnLeft" value="0.1686 0.3176 0.5216 0.9" />
   <color name="PsShortcutOnRight" value="0.1176 0.2196 0.3451 0.9" />
+  <color name="PsTlFill" value="0.0549 0.0667 0.098 1" />
+  <color name="PsTlBorder" value="0.1647 0.2039 0.2745 1" />
+  <color name="PsTlRuler" value="0.5569 0.5961 0.6353 0.45" />
+  <color name="PsTlTick" value="0.5569 0.5961 0.6353 0.7" />
+  <color name="PsTlHold" value="0.5569 0.5961 0.6353 0.35" />
+  <color name="PsTlScroll" value="0.5569 0.5961 0.6353 0.5" />
+  <color name="PsTlSmooth" value="0.3961 0.5804 0.7765 1" />
+  <color name="PsTlLinear" value="0.3765 0.4118 0.4471 1" />
+  <color name="PsTlFail" value="0.8863 0.3216 0.2902 1" />
 
   <!-- Official names the Charis look changes -->
   <color name="DkGray" reference="PsGround" />

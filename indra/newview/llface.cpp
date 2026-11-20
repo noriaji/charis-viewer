@@ -59,6 +59,13 @@
 #include "llskinningutil.h"
 #include "llrhigl.h"
 #include "plus/texanim/texanim.h" // <plus> research/194 11 </plus>
+#include "plus/imagescensus/imagescensus.h" // <plus> research/348 images-census </plus>
+// <plus> research/348 1-a (rigged-joint-list)
+#include "llrhi.h"
+#include "llrigginginfo.h"
+#include <chrono>
+#include <cstring>
+// </plus>
 #include "llscenerecords.h" // <plus> research/197 stage 2 </plus>
 
 #define LL_MAX_INDICES_COUNT 1000000
@@ -2236,8 +2243,8 @@ F32 LLFace::getTextureVirtualSize()
 {
     LL_PROFILE_ZONE_SCOPED_CATEGORY_TEXTURE;
 
-    F32 radius;
-    F32 cos_angle_to_view_dir;
+    F32 radius = 0.f;                   // <plus> research/342: calcPixelArea returns at once while the area is fresh </plus>
+    F32 cos_angle_to_view_dir = 0.f;    // <plus> (it left these unset; they go on to adjustPartialOverlapPixelArea) </plus>
     bool in_frustum = calcPixelArea(cos_angle_to_view_dir, radius);
 
 
@@ -2301,12 +2308,52 @@ namespace
     // </plus>
 }
 
+// <plus> research/342 (images-trim): how much longer than PIXEL_AREA_UPDATE_PERIOD a rigged face's area stays fresh. An
+// avatar drawn as an impostor never draws its own rigged faces (the picture is taken every few seconds), so the area of
+// those faces (a walk over the rigged joints, 3 to 5 us a face, 85% of the texture list's time in a crowd) is worked out
+// every PlusRiggedFaceImpostorPeriod seconds (at most 2) instead of every 0.1 s. Any other avatar (on screen, off screen,
+// yourself) keeps the 0.1 s; an avatar back to a full body at once takes its faces' area up again (pixelAreaFresh). 0 (or
+// 0.1 and under, or not a number): as before. The avatar's own check reads mUpdatePeriod only (any thread, main waiting).
+namespace
+{
+    // The extension is stamped as a time this far past the frame's: past the noise of a normal stamp (0.01 s)
+    constexpr F32 EXTENDED_MARK = 0.02f;
+
+    bool avatar_is_impostor_period(const LLVOAvatar* avatar)
+    {
+        // (an animesh's control avatar has a period of its own, while it is drawn as its wearer is: never extended)
+        return avatar && !avatar->isControlAvatar() && !avatar->isSelf() && const_cast<LLVOAvatar*>(avatar)->getUpdatePeriod() > 1;
+    }
+
+    F32 rigged_face_extra_period(const LLVOAvatar* avatar)
+    {
+        static LLCachedControl<F32> period(gSavedSettings, "PlusRiggedFaceImpostorPeriod", 0.5f);
+        const F32 seconds = period;
+        if (!std::isfinite(seconds) || !avatar_is_impostor_period(avatar))
+        {
+            return 0.f;
+        }
+        const F32 extra = llmin(seconds, 2.f) - PIXEL_AREA_UPDATE_PERIOD;
+        // the phase noise, 10% of the period, as for a normal stamp
+        return extra > EXTENDED_MARK ? extra + ll_frand() * extra * 0.1f : 0.f;
+    }
+}
+// </plus>
+
 // LLRHI (research/65): pixelAreaFresh, nextPixelAreaUpdate and calcPixelAreaPure
 // are not inlined so calcPixelArea and the texture list's threads run the same
 // instructions (the viewer builds with /fp:fast).
 RHI_NO_INLINE bool LLFace::pixelAreaFresh(F32 frame_time) const
 {
-    return frame_time - mLastPixelAreaUpdate < PIXEL_AREA_UPDATE_PERIOD;
+    if (frame_time - mLastPixelAreaUpdate >= PIXEL_AREA_UPDATE_PERIOD)
+    {
+        return false;
+    }
+    // <plus> research/342: a stamp made for an impostor avatar's rigged face (past the frame's time) holds only while the
+    // avatar stays an impostor: back to a full body, the face's area is worked out again at the next visit
+    return mLastPixelAreaUpdate - frame_time <= EXTENDED_MARK || !isState(LLFace::RIGGED) ||
+           avatar_is_impostor_period(mVObjp.notNull() ? mVObjp->getAvatar() : nullptr);
+    // </plus>
 }
 
 //static
@@ -2415,6 +2462,396 @@ RHI_NO_INLINE void LLFace::calcPixelAreaPure(const PixelAreaCamera& camera, F32&
     }
 }
 
+// <plus> research/348 1-a (rigged-joint-list): a rigged face's area walk visits only the joints its table says it is
+// rigged to (the table's list, PlusRigJointList), not all LL_CHARACTER_MAX_ANIMATED_JOINTS entries. The same joints in
+// the same rising order with the same steps for each, so the box and everything worked out from it are the same, bit
+// for bit (LLRHI_RIGGED_AREA_CHECK=1 compares them with the official walk kept apart). Main thread.
+namespace
+{
+    static_assert(LL_CHARACTER_MAX_ANIMATED_JOINTS <= (U32)PlusRigJointList::CAPACITY, "a joint list holds every joint number");
+
+    // PlusRiggedAreaCache: 0 = the official walk over every entry, 1 and over = the joint list (2 is 1 until the boxes are
+    // kept, research/348 1-b, which is not built).
+    bool rigged_joint_lists_on()
+    {
+        static LLCachedControl<S32> mode(gSavedSettings, "PlusRiggedAreaCache", 2);
+        return mode >= 1;
+    }
+
+    // The joints of a face's table for its area walk: the table's list, made here on the first walk after the table is
+    // built (needsUpdate cleared and entries there: LLSkinningUtil::updateRiggingInfo, which also runs on the mesh
+    // thread, where the setting cannot be read; a table that is gone has no entries and is never built again). Null:
+    // walk every entry (the setting is 0, the table is not built, or no list could be made).
+    const PlusRigJointList* rigged_joint_list(LLJointRiggingInfoTab& tab)
+    {
+        if (!rigged_joint_lists_on())
+        {
+            return nullptr;
+        }
+        if (const PlusRigJointList* list = tab.plusJointList())
+        {
+            return list;
+        }
+        if (tab.needsUpdate() || tab.size() == 0)
+        {
+            return nullptr;
+        }
+        return tab.plusBuildJointList();
+    }
+
+    // One joint of the area walk (the official loop's body): the joint's box in joint space taken to the world by its
+    // matrix (built again there if it is dirty) and added to minp / maxp. False: the avatar has no such joint.
+    bool add_rigged_joint_box(LLVOAvatar* avatar, S32 joint_num, LLJointRiggingInfo& joint_info, LLVector4a& minp, LLVector4a& maxp,
+                              plus::imagescensus::RiggedWalk& census)
+    {
+        census.beforeJoint(joint_num);  // research/348 images-census: reads the joint's flags, before its matrix is asked for
+        LLJoint* joint = avatar->getJoint(joint_num);
+        if (joint)
+        {
+            LLMatrix4a worldMat;
+            worldMat.loadu((F32*)&joint->getWorldMatrix().mMatrix[0][0]);
+
+            LLVector4a extents[2];
+
+            matMulBoundBox(worldMat, joint_info.getRiggedExtents(), extents);
+
+            minp.setMin(minp, extents[0]);
+            maxp.setMax(maxp, extents[1]);
+        }
+        census.afterJoint();
+        return joint != nullptr;
+    }
+
+// LLRHI_RIGGED_AREA_CHECK=1 (diagnostic, read once): each rigged face's area is worked out by calcPixelArea, then once more
+// by the official steps kept apart here (the walk over every entry, getJoint, getWorldMatrix, the projection), and the two
+// are compared bit for bit: the box, the pixel area, the importance, in view, the return value, cos and radius (not the
+// update time, which has a random part). Run after calcPixelArea, every joint it visited is clean; a joint the official
+// walk needs that is still dirty is not built again (nothing is changed) and the face is counted as "dirty at check", not
+// compared: the walk missed a joint the official one visits. The face's joint list is also checked against its table
+// (exactly the rigged entries in rising order; "list" counts those that differ, which the results alone may not show).
+// The faces checked are split by how their walk went (Walk): with a list, with nothing to walk (no table entries: the
+// official walk does nothing either) or over every entry (the setting is 0, or a built table without a list: lost speed).
+// A VKPerf line every 10 s; checked 0 is no pass. Main thread.
+namespace rigged_check
+{
+    const bool sOn = LLRHI::envSet("LLRHI_RIGGED_AREA_CHECK");
+    bool sInside = false;   // calcPixelArea is working out the face being checked
+
+    constexpr F64 REPORT_SECONDS = 10.0;
+    constexpr U32 MISMATCH_LINES = 8;   // mismatches written out one by one, in a session
+
+    struct Inside
+    {
+        Inside() { sInside = true; }
+        ~Inside() { sInside = false; }
+        Inside(const Inside&) = delete;
+        Inside& operator=(const Inside&) = delete;
+    };
+
+    // Whether the face's walk had a joint list, and if not, why (the reasons with no entries to walk come first).
+    enum Walk : U8
+    {
+        W_LISTED = 0,           // the joint list
+        W_NO_AVATAR,            // no avatar (or its drawable) or no volume: nothing walked
+        W_NEVER_BUILT,          // a table never built (no vertices, weights or skin): no entries
+        W_GONE,                 // a table cleared after it was built (resizeVertices, never built again): no entries
+        W_SETTING_OFF,          // PlusRiggedAreaCache 0: every entry walked
+        W_NOT_BUILT,            // entries there, needsUpdate still set: every entry walked (not expected)
+        W_BUILT_NO_LIST,        // a built table with no list (it could not be made): every entry walked (not expected)
+        W_COUNT
+    };
+
+    struct Values
+    {
+        LLVector4a box[2];
+        F32 pixel_area = 0.f;
+        F32 importance = 0.f;
+        F32 cos_angle_to_view_dir = 0.f;
+        F32 radius = 0.f;
+        bool in_view = false;
+        bool ret = false;
+        bool has_extents = false;   // false: the face's box is zero and nothing else was worked out
+        Walk walk = W_NO_AVATAR;    // how the face's walk went (W_LISTED: the table has a joint list in use)
+        bool list_differs = false;  // ... which is not the table's rigged entries in rising order
+    };
+
+    struct Counts
+    {
+        U64 checked = 0;
+        U64 walks[W_COUNT] = {};    // of those, by how the walk went
+        U64 box = 0;            // mismatches of the box (or of whether there was one)
+        U64 ret = 0;            // ... of the return value (the box the same)
+        U64 projection = 0;     // ... of the area, importance, in view, cos or radius (the box and the return the same)
+        U64 dirty = 0;          // not compared: a joint the official walk needs was dirty
+        U64 list = 0;           // faces whose joint list is not the table's rigged entries (counted whether compared or not)
+    };
+    Counts sCounts;
+    U32 sMismatchLines = 0;
+    std::chrono::steady_clock::time_point sLastReport = std::chrono::steady_clock::now();
+
+    bool same_bits(F32 a, F32 b)
+    {
+        return std::memcmp(&a, &b, sizeof(F32)) == 0;
+    }
+
+    bool same_box(const LLVector4a* a, const LLVector4a* b)
+    {
+        // x, y and z: what the box's readers use
+        return std::memcmp(a[0].getF32ptr(), b[0].getF32ptr(), 3 * sizeof(F32)) == 0 &&
+               std::memcmp(a[1].getF32ptr(), b[1].getF32ptr(), 3 * sizeof(F32)) == 0;
+    }
+
+    // Whether a table's joint list holds exactly its entries that are rigged to their joint, in rising order (an extra
+    // joint or a missing one may leave the box the same while the walk builds other joints' matrices again).
+    bool list_matches_table(const LLJointRiggingInfoTab& tab, const PlusRigJointList& list)
+    {
+        U32 k = 0;
+        for (S32 i = 0; i < tab.size(); i++)
+        {
+            if (tab[i].isRiggedTo())
+            {
+                if (k >= list.count || list.joints[k] != i)
+                {
+                    return false;
+                }
+                ++k;
+            }
+        }
+        return k == list.count;
+    }
+
+    // The official steps of LLFace::calcPixelArea for a rigged face (with research/285's view cone and as the face's
+    // area is due), kept apart from it: reads only. False: a joint needed was dirty (nothing is worked out; out.walk
+    // and out.list_differs are set).
+    bool official_area(const LLFace& face, F32 bounding_sphere_radius, Values& out)
+    {
+        LLViewerObject* vobj = face.getViewerObject();
+        LLVOAvatar* avatar = vobj ? vobj->getAvatar() : nullptr;
+        bool hasRiggedExtents = false;
+        LLVector4a& minp = out.box[0];
+        LLVector4a& maxp = out.box[1];
+        minp = LLVector4a(FLT_MAX, FLT_MAX, FLT_MAX);
+        maxp = LLVector4a(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+        if (avatar && avatar->mDrawable)
+        {
+            LLVolume* volume = vobj->getVolume();
+            if (volume)
+            {
+                LLVolumeFace& vol_face = volume->getVolumeFace(face.getTEOffset());
+                auto& rigInfo = vol_face.mJointRiggingInfoTab;
+                const PlusRigJointList* list = rigged_joint_lists_on() ? rigInfo.plusJointList() : nullptr;
+                if (list)
+                {
+                    out.walk = W_LISTED;
+                }
+                else if (rigInfo.size() == 0)
+                {
+                    out.walk = rigInfo.needsUpdate() ? W_NEVER_BUILT : W_GONE;
+                }
+                else if (!rigged_joint_lists_on())
+                {
+                    out.walk = W_SETTING_OFF;
+                }
+                else
+                {
+                    out.walk = rigInfo.needsUpdate() ? W_NOT_BUILT : W_BUILT_NO_LIST;
+                }
+                out.list_differs = list && !list_matches_table(rigInfo, *list);
+
+                for (S32 i = 0; i < rigInfo.size(); i++)
+                {
+                    auto& jointInfo = rigInfo[i];
+                    if (jointInfo.isRiggedTo())
+                    {
+                        LLJoint* joint = avatar->getJoint(i);
+
+                        if (joint)
+                        {
+                            if (joint->mDirtyFlags & LLJoint::MATRIX_DIRTY)
+                            {
+                                return false;   // getWorldMatrix would build it again
+                            }
+                            LLMatrix4a worldMat;
+                            worldMat.loadu((F32*)&joint->getWorldMatrix().mMatrix[0][0]);
+
+                            LLVector4a extents[2];
+
+                            matMulBoundBox(worldMat, jointInfo.getRiggedExtents(), extents);
+
+                            minp.setMin(minp, extents[0]);
+                            maxp.setMax(maxp, extents[1]);
+                            hasRiggedExtents = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!hasRiggedExtents)
+        {
+            minp = maxp = LLVector4a(0.f, 0.f, 0.f);
+            out.ret = false;
+            return true;
+        }
+        out.has_extents = true;
+
+        LLVector4a center;
+        LLVector4a size;
+        center.setAdd(maxp, minp);
+        center.mul(0.5f);
+        size.setSub(maxp, minp);
+        size.mul(0.5f);
+
+        LLViewerCamera* camera = LLViewerCamera::getInstance();
+
+        F32 size_squared = size.dot3(size).getF32();
+        LLVector4a lookAt;
+        LLVector4a t;
+        t.load3(camera->getOrigin().mV);
+        lookAt.setSub(center, t);
+
+        F32 dist = lookAt.getLength3().getF32();
+        dist = llmax(dist-size.getLength3().getF32(), 0.001f);
+
+        lookAt.normalize3fast() ;
+
+        F32 app_angle = atanf((F32) sqrt(size_squared) / dist);
+        out.radius = app_angle*LLDrawable::sCurPixelAngle;
+        out.pixel_area = out.radius*out.radius * 3.14159f;
+
+        LLVector4a x_axis;
+        x_axis.load3(camera->getXAxis().mV);
+        out.cos_angle_to_view_dir = lookAt.dot3(x_axis).getF32();
+
+        out.in_view = dist < bounding_sphere_radius
+                      || LLFace::inViewCone(LLFace::PixelAreaCamera::current(), dist, out.cos_angle_to_view_dir, (F32)sqrt(size_squared) / dist);
+
+        if (face.hasMedia())
+        {
+            if (!camera->AABBInFrustum(center, size))
+            {
+                out.importance = 0.f;
+                out.ret = false;
+                return true;
+            }
+            if (out.cos_angle_to_view_dir > camera->getCosHalfFov())
+            {
+                out.cos_angle_to_view_dir = 1.0f;
+            }
+            else
+            {
+                LLVector4a d;
+                d.setSub(lookAt, x_axis);
+
+                if (dist * dist * d.dot3(d) < size_squared)
+                {
+                    out.cos_angle_to_view_dir = 1.0f;
+                }
+            }
+        }
+
+        if (dist < bounding_sphere_radius)
+        {
+            out.cos_angle_to_view_dir = 1.0f;
+            out.importance = 1.0f;
+        }
+        else
+        {
+            out.importance = LLFace::calcImportanceToCamera(out.cos_angle_to_view_dir, dist);
+        }
+        out.ret = true;
+        return true;
+    }
+
+    void report()
+    {
+        const auto now = std::chrono::steady_clock::now();
+        if (std::chrono::duration<F64>(now - sLastReport).count() < REPORT_SECONDS)
+        {
+            return;
+        }
+        sLastReport = now;
+        const Counts& c = sCounts;
+        const U64* w = c.walks;
+        LL_INFOS("VKPerf") << "rigged area check (" << REPORT_SECONDS << " s): checked " << c.checked << " (with a joint list " << w[W_LISTED]
+                           << "; nothing to walk: no avatar or volume " << w[W_NO_AVATAR] << ", table never built "
+                           << w[W_NEVER_BUILT] << ", table gone " << w[W_GONE] << "; every entry walked: setting 0 "
+                           << w[W_SETTING_OFF] << ", table not built " << w[W_NOT_BUILT] << ", built table with no list "
+                           << w[W_BUILT_NO_LIST] << "), mismatches "
+                           << (c.box + c.ret + c.projection) << " (box " << c.box << ", return " << c.ret
+                           << ", area/importance/in view/cos/radius " << c.projection << "), dirty at check " << c.dirty << ", list " << c.list
+                           << (c.checked == 0 ? " - nothing compared, not a pass" : "") << LL_ENDL;
+        sCounts = Counts();
+    }
+
+    // What differs between calcPixelArea's results (its return value, cos and radius as given back, the face's own values
+    // as written) and the official steps' (counted), or null.
+    const char* mismatch(const LLFace& face, bool ret, F32 pixel_area, F32 importance, F32 cos_angle_to_view_dir, F32 radius,
+                         const Values& official)
+    {
+        if (!same_box(face.mRiggedExtents, official.box))
+        {
+            ++sCounts.box;      // (the rest is not compared: without a box, cos and radius were not given back)
+            return "box";
+        }
+        if (ret != official.ret)
+        {
+            ++sCounts.ret;
+            return "return";
+        }
+        // past the box all of them are given back (also by a media face out of the frustum)
+        if (official.has_extents &&
+            (!same_bits(pixel_area, official.pixel_area) || !same_bits(importance, official.importance) ||
+             face.mRhiInView != official.in_view || !same_bits(cos_angle_to_view_dir, official.cos_angle_to_view_dir) ||
+             !same_bits(radius, official.radius)))
+        {
+            ++sCounts.projection;
+            return "area/importance/in view/cos/radius";
+        }
+        return nullptr;
+    }
+
+    // calcPixelArea has worked out the rigged face: compare with the official steps.
+    void compare(const LLFace& face, F32 bounding_sphere_radius, bool ret, F32 pixel_area, F32 importance, F32 cos_angle_to_view_dir,
+                 F32 radius)
+    {
+        Values official;
+        const bool compared = official_area(face, bounding_sphere_radius, official);
+        const bool listed = official.walk == W_LISTED;
+        sCounts.list += official.list_differs ? 1 : 0;
+        if (!compared)
+        {
+            ++sCounts.dirty;
+        }
+        else
+        {
+            ++sCounts.checked;
+            ++sCounts.walks[official.walk];
+            const char* what = mismatch(face, ret, pixel_area, importance, cos_angle_to_view_dir, radius, official);
+            if (what && sMismatchLines < MISMATCH_LINES)
+            {
+                ++sMismatchLines;
+                LL_INFOS("VKPerf") << "rigged area check: mismatch (" << what << ") object "
+                                   << (face.getViewerObject() ? face.getViewerObject()->getID() : LLUUID::null) << " face "
+                                   << face.getTEOffset() << (listed ? " with" : " without") << " a joint list: area "
+                                   << pixel_area << " / " << official.pixel_area << ", importance " << importance << " / "
+                                   << official.importance << ", return " << ret << " / " << official.ret << LL_ENDL;
+            }
+        }
+        if (official.list_differs && sMismatchLines < MISMATCH_LINES)
+        {
+            ++sMismatchLines;
+            LL_INFOS("VKPerf") << "rigged area check: the joint list differs from its table, object "
+                               << (face.getViewerObject() ? face.getViewerObject()->getID() : LLUUID::null) << " face "
+                               << face.getTEOffset() << LL_ENDL;
+        }
+        report();
+    }
+} // namespace rigged_check
+} // namespace
+// </plus>
+
 bool LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
 {
     // this is an expensive operation and the result is valid (enough) for several frames
@@ -2425,6 +2862,20 @@ bool LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
     }
 
     LL_PROFILE_ZONE_SCOPED_CATEGORY_FACE;
+
+    // <plus> research/348 1-a (LLRHI_RIGGED_AREA_CHECK): a rigged face worked out as below, then compared with the
+    // official steps (rigged_check)
+    if (rigged_check::sOn && !rigged_check::sInside && isState(LLFace::RIGGED))
+    {
+        bool result;
+        {
+            rigged_check::Inside inside;
+            result = calcPixelArea(cos_angle_to_view_dir, radius);
+        }
+        rigged_check::compare(*this, mBoundingSphereRadius, result, mPixelArea, mImportanceToCamera, cos_angle_to_view_dir, radius);
+        return result;
+    }
+    // </plus>
 
     if (!isState(LLFace::RIGGED) && !hasMedia())
     {
@@ -2445,6 +2896,7 @@ bool LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
     //get area of circle around face
     LLVector4a center;
     LLVector4a size;
+    F32 extra_period = 0.f;     // <plus> research/342: a rigged face of an impostor avatar stays fresh longer </plus>
 
     if (isState(LLFace::RIGGED))
     {
@@ -2461,6 +2913,7 @@ bool LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
                 LLVolumeFace& face = volume->getVolumeFace(mTEOffset);
 
                 auto& rigInfo = face.mJointRiggingInfoTab;
+                plus::imagescensus::RiggedWalk census(avatar);  // <plus> research/348 images-census: counts only (LLRHI_IMAGES_CENSUS) </plus>
 
                 if (rigInfo.needsUpdate())
                 {
@@ -2468,7 +2921,9 @@ bool LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
                     const LLMeshSkinInfo* skin = vo_volume->getSkinInfo();
                     if (skin)
                     {
+                        census.infoBegin();     // <plus> research/348 images-census </plus>
                         LLSkinningUtil::updateRiggingInfo(skin, avatar, face);
+                        census.infoEnd();       // <plus> research/348 images-census </plus>
                     }
                 }
 
@@ -2478,28 +2933,37 @@ bool LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
                 minp = LLVector4a(FLT_MAX, FLT_MAX, FLT_MAX);
                 maxp = LLVector4a(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 
+                // <plus> research/348 1-a (rigged-joint-list): the joints of the table's list (the walk's own, in its order)
+                if (const PlusRigJointList* joints = rigged_joint_list(rigInfo))
+                {
+                    for (U32 k = 0; k < joints->count; ++k)
+                    {
+                        const S32 i = joints->joints[k];
+                        if (add_rigged_joint_box(avatar, i, rigInfo[i], minp, maxp, census))
+                        {
+                            hasRiggedExtents = true;
+                        }
+                    }
+                }
+                else
+                {
+                // </plus>
                 for (S32 i = 0; i < rigInfo.size(); i++)
                 {
                     auto& jointInfo = rigInfo[i];
                     if (jointInfo.isRiggedTo())
                     {
-                        LLJoint* joint = avatar->getJoint(i);
-
-                        if (joint)
+                        // <plus> research/348 1-a: the body shared with the list's walk (add_rigged_joint_box; the
+                        // images census's beforeJoint / afterJoint inside)
+                        if (add_rigged_joint_box(avatar, i, jointInfo, minp, maxp, census))
                         {
-                            LLMatrix4a worldMat;
-                            worldMat.loadu((F32*)&joint->getWorldMatrix().mMatrix[0][0]);
-
-                            LLVector4a extents[2];
-
-                            matMulBoundBox(worldMat, jointInfo.getRiggedExtents(), extents);
-
-                            minp.setMin(minp, extents[0]);
-                            maxp.setMax(maxp, extents[1]);
                             hasRiggedExtents = true;
                         }
+                        // </plus>
                     }
                 }
+                } // <plus> research/348 1-a </plus>
+                census.end(hasRiggedExtents);   // <plus> research/348 images-census </plus>
             }
         }
 
@@ -2511,6 +2975,7 @@ bool LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
             return false;
         }
 
+        extra_period = rigged_face_extra_period(avatar);    // <plus> research/342: once the face is worked out </plus>
         center.setAdd(mRiggedExtents[1], mRiggedExtents[0]);
         center.mul(0.5f);
         size.setSub(mRiggedExtents[1], mRiggedExtents[0]);
@@ -2549,7 +3014,7 @@ bool LLFace::calcPixelArea(F32& cos_angle_to_view_dir, F32& radius)
     mPixelArea = radius*radius * 3.14159f;
 
     // remember last update time, add 10% noise to avoid all faces updating at the same time
-    mLastPixelAreaUpdate = nextPixelAreaUpdate();
+    mLastPixelAreaUpdate = nextPixelAreaUpdate() + extra_period;    // <plus> research/342: + extra_period </plus>
 
     LLVector4a x_axis;
     x_axis.load3(camera->getXAxis().mV);

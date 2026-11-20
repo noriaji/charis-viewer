@@ -159,12 +159,15 @@ namespace plus::camerapath
         Spec               sRun;
         int                sRunNumber = 0;     // counts every run since the viewer started
         double             sStart = 0.0;
+        double             sPrevNow = 0.0;     // the time of the run's last frame (sampleFrame)
         double             sLapSeconds = 0.0;
         int                sLap = 0;
         U64                sRegion = 0;
         std::vector<float> sLapFrames;
         std::vector<float> sMeasured;
         std::vector<Setting> sSaved;           // the values the run's settings had before it
+        bool               sHideUiBefore = true;   // the window's "hide the UI and HUD while playing" before the run (applySettings())
+        bool               sHideUiSet    = false;  // applySettings() set it off: restoreSettings() puts sHideUiBefore back
         std::string        sBenchScene;        // the test scene the runs built (cleared with the queue)
 
         std::string clean(std::string text)
@@ -350,6 +353,14 @@ namespace plus::camerapath
         // as it was, so a viewer closed in the middle of a run keeps the user's).
         void applySettings()
         {
+            // A run is measured as it always was: the UI and HUD stay, or the daily numbers (research/153) would
+            // change with this feature (research/365). Put back by restoreSettings().
+            if (!sHideUiSet)
+            {
+                sHideUiBefore = camerapath::hideUIWhilePlaying();
+                sHideUiSet    = true;
+            }
+            camerapath::setHideUIWhilePlaying(false);
             sSaved.clear();
             for (const Setting& setting : sRun.settings)
             {
@@ -363,6 +374,11 @@ namespace plus::camerapath
 
         void restoreSettings()
         {
+            if (sHideUiSet)
+            {
+                camerapath::setHideUIWhilePlaying(sHideUiBefore);
+                sHideUiSet = false;
+            }
             for (auto it = sSaved.rbegin(); it != sSaved.rend(); ++it)
             {
                 if (LLControlVariable* control = gSavedSettings.getControl(it->name))
@@ -725,6 +741,7 @@ namespace plus::camerapath
             }
             sActive = true;
             sStart  = LLTimer::getTotalSeconds();
+            sPrevNow = sStart;
             sLap    = 0;
             const LLViewerRegion* region = gAgent.getRegion();
             sRegion = region ? region->getHandle() : 0;
@@ -812,8 +829,18 @@ namespace plus::camerapath
                 abortRun("region_changed");
                 return;
             }
+            // A guard (the timer is monotonic since mono-clock, research/362, so this does not happen): a clock set back, even a little (an NTP
+            // step), would count a lap again and wrap the frame time around to a huge value, so such a run is
+            // dropped before this frame is counted, rather than written with wrong laps
+            const F64 now = LLTimer::getTotalSeconds();
+            if (now < sPrevNow)
+            {
+                abortRun("clock_went_back");
+                return;
+            }
+            sPrevNow = now;
             sLapFrames.push_back(LLFrameTimer::getFrameDeltaTimeF32() * 1000.f);
-            const int lap = (int)((LLTimer::getTotalSeconds() - sStart) / sLapSeconds);
+            const int lap = (int)((now - sStart) / sLapSeconds);
             if (lap != sLap)
             {
                 endLap();

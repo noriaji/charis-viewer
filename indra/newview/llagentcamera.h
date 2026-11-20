@@ -206,6 +206,12 @@ public:
     void            updateFlycam(F32 delta_time);
     void            setFlycamKeyInput(U8 channel, F32 value) { mFlycamKeyboardInput[channel] = value; }
     void            setFlycamKeyUnroll(bool unroll) { mFlycamKeyboardUnrollRequested = unroll; }
+    // <plus> plus/flycamsens (flycam-level, the 0 key): the flycam turns level over 'duration' seconds
+    // (LLFlycam::startLevel()), its own roll (a 3D mouse's, a game pad's) and the tilt on top (plus/camroll's
+    // PlusCameraRoll) both: the tilt is folded into the flycam's attitude and set to 0, so the picture turns from where
+    // it is, without a jump. Nothing while the flycam is off.
+    void            levelFlycam(F32 duration);
+    // </plus>
     // Snapshots the live LLViewerCamera transform into the flycam. Used both
     // when entering flycam (see toggleFlycam()) and whenever an input source
     // (e.g. the NDOF joystick regaining focus) needs to recalibrate its own
@@ -527,9 +533,7 @@ private:
 /**                    Keys
  **                                                                            **
  *******************************************************************************/
-public:
-    void            storeCameraPosition();
-    void            loadCameraPosition();
+
 };
 
 extern LLAgentCamera gAgentCamera;

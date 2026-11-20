@@ -40,6 +40,7 @@
 #include "llhttpnode.h"
 #include "llnotificationsutil.h"
 #include "llui.h"                   // getLanguage()
+#include "plus/contactsets/contactsets.h" // <plus> contactsets (research/333) </plus>
 
 namespace LLViewerDisplayName
 {
@@ -203,7 +204,7 @@ class LLDisplayNameUpdate : public LLHTTPNode
         args["OLD_NAME"] = old_display_name;
         args["SLID"] = av_name.getUserName();
         args["NEW_NAME"] = av_name.getDisplayName();
-        LLNotificationsUtil::add("DisplayNameUpdate", args);
+        if (!plus::contactsets::onDisplayNameUpdate(agent_id, args)) LLNotificationsUtil::add("DisplayNameUpdate", args); // <plus> contactsets: with an alias, asks to remove it instead (plus/contactsets) </plus>
         if (agent_id == gAgent.getID())
         {
             LLViewerDisplayName::sNameChangedSignal();

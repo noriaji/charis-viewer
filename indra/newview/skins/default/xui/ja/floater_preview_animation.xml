@@ -6,6 +6,9 @@
 	<text name="desc txt">
 		説明：
 	</text>
+	<!-- plus animquick (research/332) -->
+	<check_box label="この窓を残す" name="pin" tool_tip="クイックプレビューがオンの時: 別のアニメをダブルクリックしても、この窓を閉じずに残します。外すと、次のダブルクリックでこの窓が使い回されます。"/>
+	<!-- /plus -->
 	<text name="adv_trigger">
 		アドバンス
 	</text>

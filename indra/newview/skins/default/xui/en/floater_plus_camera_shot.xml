@@ -13,7 +13,7 @@
  can_minimize="true"
  can_close="true"
  legacy_header_height="18"
- height="380"
+ height="400"
  width="380"
  layout="topleft"
  name="plus_camera_shot"
@@ -25,8 +25,8 @@
     <floater.string name="shot_err_subject">That avatar cannot be seen now. Press Refresh and choose again.</floater.string>
     <floater.string name="shot_err_flycam">The flycam (3D mouse) is moving the camera. Turn it off first.</floater.string>
     <floater.string name="shot_err_mouselook">The camera is in mouselook. Leave mouselook first.</floater.string>
-    <floater.string name="shot_idle">Ready. Esc ends a shot and returns the camera to your avatar.</floater.string>
-    <floater.string name="shot_running">Shooting... [PERCENT]%</floater.string>
+    <floater.string name="shot_idle">Ready. Esc stops a camera move and returns the camera to your avatar.</floater.string>
+    <floater.string name="shot_running">Running... [PERCENT]%</floater.string>
     <text
      type="string"
      length="1"
@@ -265,7 +265,7 @@
      top="318"
      width="80"
      name="btn_stop"
-     tool_tip="Ends the shot where the camera is" />
+     tool_tip="Stops the camera move where the camera is" />
     <button
      follows="left|top"
      height="22"
@@ -275,7 +275,18 @@
      top="318"
      width="120"
      name="btn_back"
-     tool_tip="Puts the camera and the angle as they were when the last shot began, for another take" />
+     tool_tip="Puts the camera and the angle as they were when the last camera move began, for another take" />
+    <check_box
+     follows="left|top"
+     height="16"
+     initial_value="true"
+     label="Hide the UI and HUD while running"
+     layout="topleft"
+     left="8"
+     top="344"
+     width="364"
+     name="hide_ui"
+     tool_tip="Hides the menu, toolbars, floaters, the navigation and status bars and the HUD attachments while a camera move runs, and shows them again when it ends. Never moves the camera or the avatar. This window hides too: press Esc to stop." />
     <text
      type="string"
      length="1"
@@ -285,7 +296,7 @@
      layout="topleft"
      left="8"
      right="-8"
-     top="346"
+     top="366"
      word_wrap="true"
      name="status">
         Ready.

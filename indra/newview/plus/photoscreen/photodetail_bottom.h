@@ -1,7 +1,7 @@
 /**
  * @file photodetail_bottom.h
  * @brief The bottom of the detailed photo screen: the strip of presets (camera positions, poses, scenes,
- *        my presets) as cards with small pictures.
+ *        my presets) as cards of words only (no pictures).
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Second Life Viewer Source Code

@@ -114,7 +114,7 @@ namespace plus::rlv
     // send_chat_from_viewer() (llfloaterimnearbychat.cpp, B1): @sendchat (text hidden), @redirchat / @rediremote (text
     // redirected), @sendchannel(_except), the chat volume, the debug channel. May change text and type. True: not sent.
     bool filterSentChat(std::string& utf8_out_text, EChatType& type, int channel);
-    // LLFloaterIMNearbyChat::sendChatFromViewer() (B2): the volume of public chat and gestures (@chatwhisper, @chatnormal, @chatshout)
+    // LLFloaterIMNearbyChat::sendChatToChannel() (B2; called by sendChatFromViewer() and by the window's own send): the volume of public chat and gestures (@chatwhisper, @chatnormal, @chatshout)
     EChatType checkChatVolume(EChatType type);
     // (B2) false while chat (an emote) is redirected: the talking animation is not played
     bool allowsChatAnimation(const std::string& utf8_text);

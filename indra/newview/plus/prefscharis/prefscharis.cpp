@@ -58,6 +58,7 @@
 #include "llfloaterpreferencesgraphicsadvanced.h"
 #include "llfloaterreg.h"
 #include "llframetimer.h"
+#include "llnotificationsutil.h"
 #include "llscrolllistitem.h"
 #include "lluictrl.h"
 #include "llviewercontrol.h"
@@ -92,6 +93,7 @@ namespace plus::prefscharis
             { "display",  "page_display" },
             { "graphics", "page_graphics" },
             { "controls", "page_controls" },
+            { "people",   "page_people" },  // the contact sets' notices and colours (research/333)
             { "ai",       "page_ai" },
             { "rlva",     "page_rlva" },
             { "other",    "page_other" },
@@ -402,6 +404,18 @@ namespace plus::prefscharis
             LLUICtrl::CommitCallbackRegistry::defaultRegistrar().add("Plus.PrefsCharis.Show",
                                                                      [](LLUICtrl*, const LLSD&) { showTab(); });
             plus::presets::addGraphicsLevelListener([](U32) { doOnIdleOneTime(&rememberSettingsAgain); });
+            // research/371 (vram-ui): turning the VRAM override on says what it does (it is a test setting)
+            if (LLControlVariable* control = gSavedSettings.getControl("FSOverrideVRAMDetection").get())
+            {
+                control->getSignal()->connect(
+                    [](LLControlVariable*, const LLSD& value, const LLSD&)
+                    {
+                        if (value.asBoolean())
+                        {
+                            LLNotificationsUtil::add("PlusVRAMOverrideWarning");
+                        }
+                    });
+            }
         }
 
         plus::FeatureRegistration sRegistration({ "prefscharis", &init });

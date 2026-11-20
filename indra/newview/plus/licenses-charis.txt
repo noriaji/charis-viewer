@@ -14,10 +14,11 @@ This file adds to licenses.txt (the notices of the official viewer and its
 libraries, next to this file). It holds what licenses.txt does not:
   1. code, icons and data Charis Viewer took from other projects, and
      notes on its own parts that follow other projects
-  2. the Vulkan libraries Charis Viewer is built with
+     (including the notes on the models the viewer fetches, not ships)
+  2. the Vulkan libraries Charis Viewer is built with (and Zstandard, which reads the shader bundle)
   3. bundled libraries not listed in licenses.txt (CEF, OpenJPEG, OpenAL
-     Soft, VLC, Velopack), and the libraries in the translation and
-     subtitle helpers
+     Soft, VLC, Velopack, RmlUi with robin_hood and itlib), and the
+     libraries in the translation, subtitle and motion helpers
   4. the notice for the Second Life viewer artwork (CC BY-SA 3.0)
   5. the full texts: Apache License 2.0, GNU LGPL 2.1
 The license files of the bundled packages, one per package, are in the
@@ -40,9 +41,12 @@ Firestorm Viewer (Phoenix Firestorm Project), GNU LGPL 2.1 only:
   - Quick Preferences (WoLf Loonie, Zi Ree, Ansariel Hiller, Cinder Biscuits)
   - Area Search (Techwolf Lupindo; menu by Ansariel Hiller)
   - Radar (Ansariel Hiller, Arrehn Oberlander)
+  - Contact sets (Greg Hendrickson / LordGregGreg Back, Cinder Roxley)
   - chat keyword alerts (The Phoenix Firestorm Project, Inc.)
   - Local Mesh (Vaalith Jinn; glTF importer by Beq Janus)
   - Protect folder (Ansariel Hiller)
+  - the LSL bridge's way of making and wearing the pose bridge (The Phoenix
+    Firestorm Project, Inc.; fslslbridge.cpp; plus/lslbridge/ORIGIN.md)
   - the inventory's custom filter tabs (PanteraPolnocy; FIRE-35598, FIRE-36831;
     the idea of a tabbed inventory comes from the Catznip viewer)
   - RLVa, the RestrainedLove API support (Kitty Barnett; GNU LGPL 2.1; the code
@@ -113,8 +117,10 @@ OpenJPEG (see section 3), BSD 2-clause, for slj2k:
 
 Looks (app_settings/plus/looks), made for Charis Viewer:
 
-The looks in this folder (look.xml, lut.cube, lut.png in each subfolder)
-were made for Charis Viewer by tools/looks/make_looks.py.
+The looks in this folder (look.xml, lut.cube in each subfolder)
+were made for Charis Viewer by tools/looks/make_looks.py (autumn-street:
+tools/make-look-autumn.py; studio-mute: tools/make-look-studio.py; the
+"pack" looks: tools/make-looks-pack.py).
 
 To the extent possible under law, the authors have waived all copyright and
 related or neighboring rights to them: CC0 1.0 Universal,
@@ -226,8 +232,35 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+NVIDIA MotionBricks (NVIDIA Corporation), CC BY 4.0, for the SOMA skeleton
+of the poser's Motion Between Poses:
+  plus/posermotion/somatables.h holds the joint names, parents, bone offsets,
+  rest rotations and relaxed hand pose of the SOMA skeleton that the motion
+  model works on, taken from
+  motionbricks/assets/human/soma_base_skel_minimal_no_root.usd of
+  https://github.com/NVlabs/motionbricks (commit 54fc563, v0.2.0; the file's
+  SHA-256 4ab93d78a0f1c06d3bcbedee5ceebb5d9d5b002fd0a88638e9399ed80b61871d).
+  SOMA skeleton from NVIDIA MotionBricks (c) 2026 NVIDIA CORPORATION &
+  AFFILIATES, under the Creative Commons Attribution 4.0 International
+  license, https://creativecommons.org/licenses/by/4.0/
+  It is changed: the numbers were extracted from the file and turned from
+  centimetres into metres and into the axes the viewer uses, the finger
+  joints were put on the file's RelaxedHands pose, and the jaw and the eyes
+  were given no rotation to their parent. The changes were made by Charis
+  Viewer contributors, 2026. The data comes with no warranty.
+
+NVIDIA MotionBricks SOMA motion model (mmm_v6_soma_fp32.onnx), NVIDIA Open Model
+Agreement, for the poser's Motion Between Poses:
+  The model is not part of this viewer. It is fetched, only when you press the
+  fetch button in the Motion Between Poses window, from the releases of
+  https://github.com/noriaji/charis-models (release motion-1), as an unmodified
+  copy of the file in https://github.com/NVlabs/motionbricks (v0.2.0, commit
+  54fc563). Licensed by NVIDIA Corporation under the NVIDIA Open Model
+  Agreement; the full text is in that release (NVIDIA-Open-Model-Agreement.txt)
+  and at https://www.nvidia.com/en-us/agreements/enterprise-software/nvidia-open-model-agreement/
+
 ==============================================================================
-2. Vulkan libraries (from the Vulkan SDK 1.4.363.0 by LunarG, and VMA)
+2. Vulkan libraries (from the Vulkan SDK 1.4.363.0 by LunarG, VMA, and Zstandard)
 ==============================================================================
 
 Vulkan-Headers (Khronos Group), Apache License 2.0 or MIT:
@@ -341,6 +374,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+Zstandard 1.5.7 (Meta), BSD-3-Clause (the project is dual licensed BSD / GPLv2; Charis Viewer uses it under
+the BSD license), not from the SDK: its decompressor sources are in indra/llvulkan/thirdparty/zstd,
+unchanged, and compiled into the viewer (the shader bundle's modules are zstd frames). Source:
+https://github.com/facebook/zstd/releases/tag/v1.5.7, zstd-1.5.7.tar.gz, SHA-256
+eb33e51f49a15e023950cd7825ca74a4a2b43db8354825ac24fc1b7ee09e6fa3; the checksum of each file
+taken is in indra/llvulkan/thirdparty/zstd/SHA256SUMS.
+
+Copyright (c) Meta Platforms, Inc. and affiliates. All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+ * Neither the name Facebook, nor Meta, nor the names of its contributors may
+   be used to endorse or promote products derived from this software without
+   specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 ==============================================================================
 3. Bundled libraries not listed in licenses.txt
 ==============================================================================
@@ -411,6 +478,88 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
+
+------------------------------------------------------------------------------
+RmlUi 6.3, MIT license: its core and FreeType font engine are compiled into
+the viewer (the UI documents of plus/rmlui). Source: indra/newview/plus/rmlui/
+thirdparty/RmlUi-6.3, unchanged, from https://github.com/mikke89/RmlUi tag 6.3
+(commit ba95ffe8bfb6370efb2cdcca927eaad4710c5413; ORIGIN.md there):
+------------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2008-2014 CodePoint Ltd, Shift Technology Ltd, and contributors
+Copyright (c) 2019-2026 The RmlUi Team, and contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+RmlUi's core holds two libraries of others, both MIT license:
+
+robin_hood unordered map & set (https://github.com/martinus/robin-hood-hashing):
+
+Licensed under the MIT License <http://opensource.org/licenses/MIT>.
+SPDX-License-Identifier: MIT
+Copyright (c) 2018-2020 Martin Ankerl <http://martin.ankerl.com>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+itlib (https://github.com/iboB/itlib):
+
+MIT License
+
+Copyright(c) 2016-2019 Chobolabs Inc.
+Copyright(c) 2020-2023 Borislav Stanimirov
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files(the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and / or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions :
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT.IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ------------------------------------------------------------------------------
 OpenJPEG 2.5.4 (openjp2.dll), BSD 2-clause:
@@ -1251,22 +1400,27 @@ library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
 
 ------------------------------------------------------------------------------
-The local translation and voice subtitle helpers (charis-translate.exe,
-charis-subtitle.exe) and vcomp140.dll, next to the viewer
+The local translation, voice subtitle and motion helpers (charis-translate.exe,
+charis-subtitle.exe, charis-motion.exe), vcomp140.dll and charis-onnxruntime.dll,
+next to the viewer
 ------------------------------------------------------------------------------
 
-Charis Viewer helpers (translate/subtitle): charis-translate.exe (local
-translation) and charis-subtitle.exe (voice subtitles) are programs of
-Charis Viewer (Copyright Charis Viewer contributors), under the GNU LGPL
-2.1 only (the text is in section 5). Their source code is tools/helpers/
-in the Charis Viewer repository (https://github.com/noriaji/charis-viewer),
-published with the viewer's source. The
-viewer starts them as separate programs for its translation and subtitle
-windows; they send nothing anywhere.
-The translation and Whisper models are not shipped: the viewer fetches them
-when asked to, and their licenses are where they are fetched
-(https://github.com/noriaji/charis-models). The libraries built into the
-helpers, unchanged:
+Charis Viewer helpers (translate/subtitle/motion): charis-translate.exe
+(local translation), charis-subtitle.exe (voice subtitles) and
+charis-motion.exe (the motion between two poses in the poser) are programs
+of Charis Viewer (Copyright Charis Viewer contributors), under the GNU LGPL
+2.1 only (the text is in section 5), except for the NVIDIA part of
+charis-motion.exe below. Their source code is tools/helpers/ in the Charis
+Viewer repository (https://github.com/noriaji/charis-viewer), published with
+the viewer's source. The viewer starts them as separate programs, from its
+own folder only, for its translation, subtitle and motion windows; they send
+nothing anywhere (charis-motion.exe and charis-onnxruntime.dll load no network
+library).
+The translation, Whisper and motion models are not shipped: the viewer
+fetches them when asked to, and their licenses are where they are fetched
+(https://github.com/noriaji/charis-models; the notice for the motion model is in
+section 1). The libraries built into the
+helpers, unchanged unless it is said:
 
 charis-translate.exe:
   CTranslate2 4.5.0, MIT license (the same text as XeGTAO's in section 1,
@@ -1312,10 +1466,39 @@ charis-subtitle.exe:
   (the same text, with this copyright line):
     Copyright (c) 2023 Jeffrey Quesnelle and Bowen Peng.
 
-vcomp140.dll, the OpenMP runtime both helpers use: Microsoft Visual C++ 2022
-redistributable (14.44.35112), distributed under the Visual Studio license
-terms for redistributable code, as msvcp140.dll and vcruntime140.dll next to
-it are.
+charis-motion.exe:
+  The code that prepares the motion model's input and turns its output into
+  frames (src/soma_codec.h and src/soma_codec.cpp in tools/helpers/charis-motion)
+  is a port of the pre- and post-processing kernels of NVIDIA MotionBricks,
+  https://github.com/NVlabs/motionbricks (commit 54fc563, v0.2.0), under the
+  Apache License 2.0 (section 5), not the LGPL:
+    Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+  It is changed: ported from Python (Warp) to C++ by Charis Viewer
+  contributors, 2026; each of those files says so at its top, as the Apache
+  License requires. The joint names and parents in src/soma_tables.h are the
+  SOMA skeleton of the same project: SOMA skeleton from NVIDIA MotionBricks
+  (c) 2026 NVIDIA CORPORATION & AFFILIATES, under the Creative Commons
+  Attribution 4.0 International license,
+  https://creativecommons.org/licenses/by/4.0/ (changed: only the names and
+  the parent of each joint are taken, the finger joints collapsed). The
+  data comes with no warranty.
+  ONNX Runtime 1.23.2 (charis-onnxruntime.dll, CPU, Windows x64: Microsoft's
+  own signed onnxruntime.dll, unchanged except for the file name), MIT
+  license (the same text as XeGTAO's in section 1, with this copyright
+  line):
+    Copyright (c) Microsoft Corporation
+    https://github.com/microsoft/onnxruntime
+  charis-onnxruntime.dll has third-party code built into it: its notices
+  (Microsoft's ThirdPartyNotices.txt of that release) are in the file
+  licenses/onnxruntime-ThirdPartyNotices.txt next to this file, and with the
+  helpers on the release page. It needs the Microsoft Visual C++ runtime
+  (msvcp140.dll, msvcp140_1.dll, vcruntime140.dll, vcruntime140_1.dll,
+  next to the viewer).
+
+vcomp140.dll, the OpenMP runtime the translation and subtitle helpers use:
+Microsoft Visual C++ 2022 redistributable (14.44.35112), distributed under
+the Visual Studio license terms for redistributable code, as msvcp140.dll
+and vcruntime140.dll next to it are.
 
 cpuinfo:
 

@@ -50,6 +50,7 @@
 #include "llfile.h"
 #include "llrhi.h"
 #include "llrhidrawlist.h"
+#include "llrhiframe.h"
 #include "llrhipass.h"
 #include "llrhiscene.h"
 #include "llstring.h"
@@ -295,7 +296,6 @@ namespace
         { "LLRHI_DIRECT", &LLRHI::sDirect },
         { "LLRHI_OIT", &LLRHI::sOIT },
         { "LLRHI_CULL_THREADS", &LLRHI::sCullThreads },
-        { "LLRHI_RENDER_THREAD", &LLRHI::sRenderThread },
         { "LLRHI_GPU_TIMING", &LLRHI::sGPUTiming },
         { "LLRHI_FRAME_COST", &LLRHI::sFrameCost },
         { "LLRHI_PERIODIC_LOGS", &LLRHI::sPeriodicLogs },
@@ -303,6 +303,8 @@ namespace
 
     // The scene's log lines start so (llscenerecords.cpp).
     constexpr char SCENE_MARKER[] = "retained scene";
+    // The render thread's log lines start so (llvkrender.cpp).
+    constexpr char RENDER_THREAD_MARKER[] = "render thread (research/208 S2";
 
     json::value envValue(const char* env)
     {
@@ -339,6 +341,7 @@ namespace
             row["env"]  = "LLRHI_SCENE";
             row["set"]  = envValue("LLRHI_SCENE");
             row["mode"] = LLRHI::sceneModeName(LLRHI::sceneMode());
+            row["off_for_device"] = LLRHI::sceneIsOffForDevice();   // research/218 vk-s2f-2: unset, and the GPU lacks what it draws with
             if (LLRHI::sScene)
             {
                 row["drawing"]  = LLRHI::sScene->drawing(); // auto: on once its clean frames are in
@@ -359,6 +362,19 @@ namespace
             row["verify"] = *s.verify;
             row["auto"]   = *s.autoMode;
             rows.push_back({ std::move(row), s.marker });
+        }
+        {
+            // research/218 vk-s2f-2: auto when unset; where auto went (comparing, recording, off for the run).
+            json::object row;
+            row["env"]    = "LLRHI_RENDER_THREAD";
+            row["set"]    = envValue("LLRHI_RENDER_THREAD");
+            row["mode"]   = LLRHI::renderThreadModeName(LLRHI::renderThreadMode());
+            row["on"]     = LLRHI::sRenderThread;   // renderthread.toggle
+            if (LLRHI::sRenderThreadProgress)
+            {
+                row["state"] = LLRHI::sRenderThreadProgress();
+            }
+            rows.push_back({ std::move(row), RENDER_THREAD_MARKER });
         }
         {
             json::object row;

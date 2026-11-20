@@ -56,6 +56,9 @@ namespace
         MODE_BILINEAR = 2,  // the official divisor's stretch, to compare
         MODE_COUNT
     };
+    // The temporal modes (research/373): 3 FSR 3.1, 4 DLSS. Not accepted yet (MODE_COUNT stays: modeSetting() gives
+    // MODE_OFF for them) -- the callers below are ready for them, their values come with the backends.
+    constexpr U32 MODE_TEMPORAL_FIRST = 3;
 
     constexpr F32 MIN_SCALE = 0.5f;         // FSR 1's "performance" (2x on each side)
     constexpr F32 FULL_SCALE = 0.995f;      // at or above: the full size (nothing upscaled)
@@ -97,6 +100,11 @@ namespace
         static LLCachedControl<U32> mode(gSavedSettings, SETTING_MODE, MODE_OFF);
         const U32 value = mode();
         return value < MODE_COUNT ? value : MODE_OFF;
+    }
+
+    bool isTemporalMode(U32 mode)
+    {
+        return mode >= MODE_TEMPORAL_FIRST;
     }
 
     F32 scaleSetting()
@@ -307,7 +315,36 @@ namespace plus::upscale
 
     U32 effectiveAAType(U32 fsaa_type)
     {
-        return sActive ? llmax(fsaa_type, 1u) : fsaa_type;
+        if (!sActive)
+        {
+            return fsaa_type;
+        }
+        // A temporal mode takes the jittered picture as it is (FXAA/SMAA would blur what it gathers); FSR 1 wants an anti-aliased one.
+        return isTemporalMode(modeSetting()) ? 0u : llmax(fsaa_type, 1u);
+    }
+
+    bool temporalAhead(U32& width, U32& height, F32& ratio)
+    {
+        if (!sActive || !isTemporalMode(modeSetting()) || !sMadeX || !sMadeY)
+        {
+            return false;
+        }
+        // tu-fsr3 adds whether the backend has a history to mix with (its reset flag / drawn last frame); until then no
+        // mode reaches this (modeSetting() never gives one). The main-view-only conditions are plus/temporal's.
+        const LLPipeline::RenderTargetPack& main = gPipeline.mMainRT;
+        if (!main.width || !main.height)
+        {
+            return false;
+        }
+        width = sMadeX;
+        height = sMadeY;
+        ratio = llmax(1.f, (F32)main.width / (F32)sMadeX);      // the window's size over the drawn one
+        return true;
+    }
+
+    bool temporalSelected()
+    {
+        return isTemporalMode(modeSetting());
     }
 
     bool replacesCAS()

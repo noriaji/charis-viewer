@@ -126,6 +126,7 @@ public:
     void resetAllItemsFilters();
 
     void findLinks(const LLUUID& item_id, const std::string& item_name);
+    void doCustomAction(const LLSD& command_name) { onCustomAction(command_name); } // <plus> invctxfs: context menu "Find All Links" (Inventory.CustomAction from LLInventoryPanel) </plus>
 
     void onViewModeClick();
     void toggleViewMode();

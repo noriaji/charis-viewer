@@ -6044,9 +6044,11 @@ std::string LLVKScene::deviceGaps(const VkPhysicalDeviceFeatures& features, bool
         gap(std::to_string(records) + " draws per indirect draw (maxDrawIndirectCount " + std::to_string(limits.maxDrawIndirectCount) +
             "; LLRHI_SCENE)");
     }
-    if (limits.maxPerStageDescriptorStorageBuffers < BINDINGS || limits.maxDescriptorSetStorageBuffers < BINDINGS)
+    // The choice's set (BINDINGS) and the expand's (EXPAND_BINDINGS, research/205 H5), each one stage's.
+    const U32 storage_buffers = llmax(BINDINGS, EXPAND_BINDINGS);
+    if (limits.maxPerStageDescriptorStorageBuffers < storage_buffers || limits.maxDescriptorSetStorageBuffers < storage_buffers)
     {
-        gap(std::to_string(BINDINGS) + " storage buffers per stage (this GPU allows " +
+        gap(std::to_string(storage_buffers) + " storage buffers per stage (this GPU allows " +
             std::to_string(llmin(limits.maxPerStageDescriptorStorageBuffers, limits.maxDescriptorSetStorageBuffers)) + "; LLRHI_SCENE)");
     }
     if (limits.maxStorageBufferRange < record_bytes)

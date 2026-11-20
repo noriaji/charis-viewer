@@ -121,6 +121,15 @@ public:
     /// <returns>The unique, per-session, per-character motion identity.</returns>
     LLAssetID motionId() const { return mMotionID; }
 
+    // <plus> research/374 review 1: a number of this object, new for every FSPosingMotion made (never repeats, never 0).
+    // The motion id is not enough to know a motion again: flushAllMotions() deletes every motion of an avatar and
+    // starts a new one under the same id, and pointers into the old joint poses are then dangling.
+    U64 instanceSerial() const { return mInstanceSerial; }
+    // All the joint poses (the skeleton's joints and the collision volumes). The list is made in onInitialize() and
+    // does not grow, so pointers into it live as long as this object does.
+    std::vector<FSJointPose>& jointPoses() { return mJointPoses; }
+    // </plus>
+
     /// <summary>
     /// Gets whether all starting rotations are zero.
     /// </summary>
@@ -193,7 +202,35 @@ public:
     /// </remarks>
     bool motionAnimatesJoints(const std::vector<S32>& recapturedJointNumbers);
 
+    // <plus> Motion Between Poses (plus/posermotion, research/324 section 2.7): while a scope lives, the motion it
+    // was made for draws each joint at its target at once (no easing towards it), so a clip written frame by frame
+    // is drawn as written, whatever the frame rate. The scope keeps the motion's id only (never a pointer to it),
+    // so it may outlive the motion. Nested scopes must end last in, first out (each gives back the value from before
+    // it, which is right only then): the assert catches another order.
+    class SnapToTargetScope
+    {
+    public:
+        explicit SnapToTargetScope(const FSPosingMotion& motion) : mPrevious(sSnapMotionId), mMine(motion.motionId())
+        {
+            sSnapMotionId = mMine;
+        }
+        ~SnapToTargetScope()
+        {
+            llassert(sSnapMotionId == mMine); // last in, first out
+            sSnapMotionId = mPrevious;
+        }
+        SnapToTargetScope(const SnapToTargetScope&)            = delete;
+        SnapToTargetScope& operator=(const SnapToTargetScope&) = delete;
+
+    private:
+        LLUUID mPrevious;
+        LLUUID mMine;
+    };
+    // </plus>
+
 private:
+    static LLUUID sSnapMotionId; // <plus> the motion that draws its targets at once (SnapToTargetScope); null: none </plus>
+
     /// <summary>
     /// The axial difference considered close enough to be the same.
     /// </summary>
@@ -238,6 +275,10 @@ private:
     /// The collection of joint poses this motion uses to pose the joints of the character this is animating. 
     /// </summary>
     std::vector<FSJointPose> mJointPoses;
+    // <plus> research/374 review 1
+    static inline U64 sInstanceCounter = 0;
+    U64               mInstanceSerial = ++sInstanceCounter;
+    // </plus>
 
     /// <summary>
     /// Removes the current joint state for the supplied joint, and adds a new one.

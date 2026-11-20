@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The RmlUi test window's XUI twin (development; plus/rmlui/rmldemo.cpp, research/364 3.5): the same contents with
+     psui's parts and the official widgets, to compare the cost of the two. Heights in the body (under the 18 px
+     header): title 8 + 44, count 60 + 40, check 108 + 30, slider 146 + 31, text 185 + 33, switches 226 + 40,
+     state 272 + 18, list label 292 + 18, list 314 + 216, margin 12 = 542. -->
+<floater
+  name="plus_rml_demo_xui"
+  title="RmlUi Test Window, XUI Twin (Development)"
+  can_close="true"
+  can_minimize="true"
+  can_resize="true"
+  height="560"
+  layout="topleft"
+  legacy_header_height="18"
+  min_height="420"
+  min_width="420"
+  positioning="cascading"
+  reuse_instance="false"
+  save_rect="true"
+  single_instance="true"
+  width="420">
+  <string name="list_item">Row [N]</string>
+  <string name="colour_switched">Colour switched.</string>
+  <string name="size_switched">Text size switched.</string>
+  <plus_ps_box
+    name="body"
+    kind="panel"
+    follows="all"
+    layout="topleft"
+    left="0"
+    top="18"
+    width="420"
+    height="542">
+    <plus_ps_label
+      name="heading"
+      kind="title"
+      follows="left|top|right"
+      layout="topleft"
+      left="14"
+      top="8"
+      width="392"
+      height="44"
+      label="RmlUi test window (XUI twin)" />
+    <plus_ps_button
+      name="b_count"
+      follows="left|top"
+      layout="topleft"
+      left="14"
+      top="60"
+      width="180"
+      height="40"
+      label="Count"
+      tool_tip="Adds one to the number beside the button." />
+    <plus_ps_label
+      name="clicks_value"
+      kind="white"
+      follows="left|top|right"
+      layout="topleft"
+      left="206"
+      top="60"
+      width="200"
+      height="40"
+      label="0" />
+    <plus_ps_check
+      name="c_option"
+      follows="left|top|right"
+      layout="topleft"
+      left="14"
+      top="108"
+      width="392"
+      height="30"
+      label="An option"
+      tool_tip="A check box (it changes nothing)." />
+    <plus_ps_slider
+      name="s_amount"
+      follows="left|top|right"
+      layout="topleft"
+      left="14"
+      top="146"
+      width="392"
+      height="31"
+      label="Amount"
+      min_value="0"
+      max_value="100"
+      increment="1"
+      decimal_digits="0"
+      initial_value="50"
+      tool_tip="A slider: its value box follows." />
+    <plus_ps_label
+      name="text_label"
+      kind="label"
+      follows="left|top"
+      layout="topleft"
+      left="14"
+      top="185"
+      width="124"
+      height="33"
+      label="Text" />
+    <plus_ps_box
+      name="text_box"
+      kind="glass"
+      follows="left|top|right"
+      layout="topleft"
+      left="150"
+      top="185"
+      width="256"
+      height="33">
+      <line_editor
+        name="t_text"
+        follows="left|top|right"
+        layout="topleft"
+        left="6"
+        top="5"
+        width="244"
+        height="22"
+        max_length_chars="64"
+        commit_on_focus_lost="false"
+        tool_tip="Type here. Japanese input (the IME) works too." />
+    </plus_ps_box>
+    <plus_ps_button
+      name="b_colour"
+      follows="left|top"
+      layout="topleft"
+      left="14"
+      top="226"
+      width="190"
+      height="40"
+      label="Switch Colour"
+      tool_tip="The RmlUi window sets a CSS variable; here it only says so." />
+    <plus_ps_button
+      name="b_size"
+      follows="left|top|right"
+      layout="topleft"
+      left="216"
+      top="226"
+      width="190"
+      height="40"
+      label="Switch Text Size"
+      tool_tip="The RmlUi window switches a CSS variable; here it only says so." />
+    <plus_ps_label
+      name="status"
+      kind="sub"
+      follows="left|top|right"
+      layout="topleft"
+      left="14"
+      top="272"
+      width="392"
+      height="18"
+      label="" />
+    <plus_ps_label
+      name="list_label"
+      kind="hint"
+      follows="left|top|right"
+      layout="topleft"
+      left="14"
+      top="292"
+      width="392"
+      height="18"
+      label="1000 rows (the official list draws the visible ones)." />
+    <scroll_list
+      name="list"
+      draw_heading="false"
+      follows="all"
+      layout="topleft"
+      left="14"
+      top="314"
+      width="392"
+      height="216">
+      <scroll_list.columns
+        name="name"
+        dynamic_width="true" />
+    </scroll_list>
+  </plus_ps_box>
+</floater>

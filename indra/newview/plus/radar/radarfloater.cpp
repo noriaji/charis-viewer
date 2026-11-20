@@ -37,15 +37,17 @@
 //   PlusRadarNameFormat, PlusRadarLimitRange, PlusRadarRange, PlusRadarShowMuted,
 //   PlusRadarReport*           see radar.cpp; the settings tab has a control for each
 //
-// Left out of Firestorm's: the minimap above the list, the marks on the minimap, the voice
-// level, notes and age alert columns, contact set colors, derendering and the actions for
-// land and estate managers (the official viewer has none of these actions to call).
+// The name is in its contact set's colour with FSContactSetsColorizeRadar on (plus/contactsethooks,
+// research/333). Left out of Firestorm's: the minimap above the list, the marks on the minimap, the
+// voice level, notes and age alert columns, derendering and the actions for land and estate managers
+// (the official viewer has none of these actions to call).
 
 #include "llviewerprecompiledheaders.h"
 
 #include "radar.h"
 #include "plus.h"
 #include "plus/camerashot/camerashot.h"
+#include "plus/contactsethooks/cshooks.h"
 #include "plus/rlv/rlvhooks.h"
 
 #include <cstdlib>
@@ -294,6 +296,7 @@ namespace plus::radar
                 const std::string sort_column = mList->getSortColumnName();
                 const bool sort_ascending     = mList->getSortAscending();
                 mList->deleteAllItems();
+                mSetColoredRows.clear();
                 mList->clearColumns();
 
                 const U32 shown = gSavedSettings.getU32(SETTING_COLUMNS);
@@ -389,6 +392,19 @@ namespace plus::radar
                         // RLVa @shownames: a friend is not told by the bold either (FSRadar::updateRadarList()).
                         const bool bold = entry.friendship && !nameHidden(entry.id);
                         cell->setFontStyle(static_cast<U8>((bold ? LLFontGL::BOLD : 0) | (entry.muted ? LLFontGL::ITALIC : 0)));
+                        // The contact set colour (FSContactSetsColorizeRadar; not under @shownames, cshooks). A cell
+                        // keeps a colour once given one (LLScrollListText), so a row that had a set colour and has none
+                        // now gets the list's text colour; the others keep the list's own (selected rows differ).
+                        LLColor4 set_color;
+                        if (plus::cshooks::colorFor(entry.id, ContactSetType::RADAR, set_color))
+                        {
+                            cell->setColor(set_color);
+                            mSetColoredRows.insert(entry.id);
+                        }
+                        else if (mSetColoredRows.erase(entry.id))
+                        {
+                            cell->setColor(other_color);
+                        }
                     }
                     else if (name == "range")
                     {
@@ -452,6 +468,7 @@ namespace plus::radar
                     {
                         mList->deleteSingleItem(index);
                     }
+                    mSetColoredRows.erase(id);
                 }
 
                 bool changed = !gone.empty();
@@ -787,6 +804,7 @@ namespace plus::radar
             LLSearchEditor* mQuickFilter = nullptr;
             std::string     mFilter;    // lower case
             LLHandle<LLContextMenu> mMenuHandle;
+            uuid_set_t      mSetColoredRows;    // rows whose name cell has a contact set colour (styleRow())
         };
 
         void init()

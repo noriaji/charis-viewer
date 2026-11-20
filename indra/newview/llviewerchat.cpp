@@ -40,6 +40,7 @@
 // <plus> keywords: chat keyword alerts (plus/keywords)
 #include "plus/keywords/keywords.h"
 // </plus>
+#include "plus/contactsethooks/cshooks.h" // <plus> contactsets: set colours of the chat (research/333) </plus>
 
 // LLViewerChat
 LLViewerChat::font_change_signal_t LLViewerChat::sChatFontChangedSignal;
@@ -73,6 +74,13 @@ void LLViewerChat::getChatColor(const LLChat& chat, LLUIColor& r_color, F32& r_c
                     {
                         r_color = LLUIColorTable::instance().getColor("AgentChatColor");
                     }
+                    // <plus> contactsets: the set colour of the speaker (FSContactSetsColorizeChat; not under @shownames) (research/333)
+                    LLColor4 plus_cs_color;
+                    if (plus::cshooks::colorFor(chat.mFromID, ContactSetType::CHAT, plus_cs_color))
+                    {
+                        r_color = LLUIColor(plus_cs_color);
+                    }
+                    // </plus>
                 }
                 break;
             case CHAT_SOURCE_OBJECT:

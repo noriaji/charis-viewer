@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ctime>
 #include <map>
 #include <set>
 
@@ -1004,6 +1005,73 @@ namespace plus::photomode
         return names;
     }
 
+    // The second a preset was saved ("saved": a date, or seconds; absent in a preset of an earlier build).
+    // 0 when it is not known or not a time that can be shown.
+    static F64 savedSeconds(const LLSD& saved)
+    {
+        F64 seconds = 0.0;
+        if (saved.isDate())
+        {
+            seconds = saved.asDate().secondsSinceEpoch();
+        }
+        else if (saved.isInteger())
+        {
+            seconds = (F64)saved.asInteger();
+        }
+        return seconds > 0.0 && seconds < 4.0e9 ? seconds : 0.0;
+    }
+
+    std::string myPresetsStamp()
+    {
+        std::string stamp;
+        for (const LLSD& preset : llsd::inArray(gSavedSettings.getLLSD(SETTING_PRESETS)))
+        {
+            stamp += preset["name"].asString() + '@' + std::to_string((long long)savedSeconds(preset["saved"])) + '|';
+        }
+        return stamp;
+    }
+
+    // "10/30 18:42" (this year) or "2025/10/30 18:42" (another): the time a preset was saved, for the second
+    // line of its card. "" for a time that cannot be shown.
+    static std::string savedText(std::time_t when)
+    {
+        std::tm local {};
+#if LL_WINDOWS
+        if (localtime_s(&local, &when) != 0)
+        {
+            return std::string();
+        }
+#else
+        if (!localtime_r(&when, &local))
+        {
+            return std::string();
+        }
+#endif
+        const std::time_t now = std::time(nullptr);
+        std::tm today {};
+#if LL_WINDOWS
+        const bool have_today = localtime_s(&today, &now) == 0;
+#else
+        const bool have_today = localtime_r(&now, &today) != nullptr;
+#endif
+        char text[32];
+        const char* format = have_today && today.tm_year == local.tm_year ? "%m/%d %H:%M" : "%Y/%m/%d %H:%M";
+        return std::strftime(text, sizeof(text), format, &local) ? std::string(text) : std::string();
+    }
+
+    std::string myPresetSavedText(const std::string& name)
+    {
+        for (const LLSD& preset : llsd::inArray(gSavedSettings.getLLSD(SETTING_PRESETS)))
+        {
+            if (preset["name"].asString() == name)
+            {
+                const F64 seconds = savedSeconds(preset["saved"]);
+                return seconds > 0.0 ? savedText((std::time_t)seconds) : std::string();
+            }
+        }
+        return std::string();
+    }
+
     bool saveMyPreset(const std::string& name)
     {
         if (name.empty())
@@ -1021,6 +1089,7 @@ namespace plus::photomode
         LLSD entry;
         entry["name"]   = name;
         entry["values"] = values;
+        entry["saved"]  = LLSD::Date(LLDate::now());
 
         LLSD kept = LLSD::emptyArray();
         for (const LLSD& preset : llsd::inArray(gSavedSettings.getLLSD(SETTING_PRESETS)))

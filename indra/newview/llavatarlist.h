@@ -108,6 +108,12 @@ public:
     void setRlvCheckShowNames(bool fRlvCheckShowNames);
     static std::string getNameForDisplay(const LLUUID& avatar_id, const LLAvatarName& av_name, bool show_complete_name, bool force_complete_name, bool rlv_check_shownames);
     // </plus>
+    // <plus> contactsets: names in their contact set's colour (FSContactSetsColorizeFriends; the friends lists, the contact
+    // set tab), the contact set tab's look; the names built again at the next draw (research/333)
+    void setUseContactSetColors(bool use_colors);
+    void setUseContactSetListStyle(bool use_style);
+    void refreshNames();
+    // </plus>
 
 protected:
     void refresh();
@@ -140,6 +146,13 @@ private:
     // <plus> rlv: @shownames (research/248 E8)
     bool mRlvCheckShowNames = false;
     unsigned int mRlvShowNamesGeneration = 0; // plus::rlv::showNamesGeneration() as of the last update
+    // </plus>
+    // <plus> contactsets (research/333)
+    bool mUseContactSetColors = false;
+    bool mUseContactSetListStyle = false;
+    boost::signals2::scoped_connection mContactSetsChanged;         // plus::cshooks::onChanged(), while colours are used
+    boost::signals2::scoped_connection mContactSetsColorizeChanged; // FSContactSetsColorizeFriends, while colours are used
+    void forEachItem(const std::function<void(LLAvatarListItem*)>& fn); // the items there are now
     // </plus>
 
     LLTimer*                mLITUpdateTimer; // last interaction time update timer

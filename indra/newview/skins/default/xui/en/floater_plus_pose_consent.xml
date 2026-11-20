@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Who may pose my avatar (plus/poseconsent/poseconsentfloater.cpp, research/336 4.1): the people we allowed to pose
+     our avatar on their own screen, with Withdraw. Opens by itself (without the focus) when someone is allowed;
+     Preferences > Privacy opens it too. Heights (1080 base): the title 18, then in the box: 10 + note 56 (ja: 3 lines)
+     + 6 + list (the rest) + 6 + buttons 40 + 12. At the minimum height 240: the list is 240 - 18 - 130 = 92 (3 rows).
+     Width: 14 + two buttons of 160 with 8 between + 14 = 356; the minimum 356. The third row (Stop Reflect, 328 wide) is 44 below the first (top 274): the box is 44 higher (326), the minimum height 240 + 44 = 284 (the list keeps its 92). -->
+<floater
+ can_close="true"
+ can_minimize="true"
+ can_resize="true"
+ height="344"
+ layout="topleft"
+ legacy_header_height="18"
+ min_height="284"
+ min_width="356"
+ name="plus_pose_consent"
+ positioning="cascading"
+ reuse_instance="true"
+ save_rect="true"
+ single_instance="true"
+ title="Who may pose my avatar"
+ width="356">
+    <floater.string name="nobody">Nobody may pose your avatar now.</floater.string>
+    <floater.string name="loading">(name loading)</floater.string>
+    <floater.string name="withdraw_waiting_row">[NAME] (withdraw waiting)</floater.string>
+    <floater.string name="reflect_row">[NAME] (poses shown on your screen)</floater.string>
+    <floater.string name="reflect_now_row">[NAME] (their pose is on you now)</floater.string>
+    <plus_ps_box
+     name="body"
+     follows="all"
+     height="326"
+     kind="panel"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="356">
+        <plus_ps_text
+         name="note"
+         follows="left|top|right"
+         height="56"
+         kind="hint"
+         layout="topleft"
+         left="14"
+         length="1"
+         mouse_opaque="false"
+         top="10"
+         type="string"
+         width="328"
+         wrap="true">
+These people may pose your avatar on their own screen, for this session. Those marked may also show their poses on your avatar: "Stop Reflect" ends only that.
+        </plus_ps_text>
+        <plus_ps_box
+         name="list_box"
+         follows="all"
+         height="152"
+         kind="glass"
+         layout="topleft"
+         left="14"
+         top="72"
+         width="328">
+            <scroll_list
+             name="granted_list"
+             background_visible="false"
+             draw_heading="false"
+             follows="all"
+             height="148"
+             layout="topleft"
+             left="2"
+             multi_select="true"
+             top="2"
+             width="324">
+                <column
+                 name="name"
+                 dynamic_width="true"
+                 label="Name" />
+            </scroll_list>
+        </plus_ps_box>
+        <plus_ps_button
+         name="withdraw_btn"
+         follows="left|bottom"
+         height="40"
+         label="Withdraw"
+         layout="topleft"
+         left="14"
+         tool_tip="Stop letting the selected people pose your avatar (and show their poses on it)"
+         top="230"
+         width="160" />
+        <plus_ps_button
+         name="reflect_stop_btn"
+         follows="left|bottom"
+         height="40"
+         label="Stop Reflect"
+         layout="topleft"
+         left="14"
+         tool_tip="Stop the selected people's poses from showing on your own avatar. They may still pose your avatar on their own screen."
+         top="274"
+         width="328" />
+        <plus_ps_button
+         name="withdraw_all_btn"
+         follows="left|bottom"
+         height="40"
+         label="Withdraw all"
+         layout="topleft"
+         left="182"
+         tool_tip="Stop letting anyone pose your avatar"
+         top="230"
+         width="160" />
+    </plus_ps_box>
+</floater>

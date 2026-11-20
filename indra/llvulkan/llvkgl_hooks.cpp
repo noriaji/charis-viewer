@@ -537,10 +537,12 @@ namespace
         bind_framebuffer(GL_FRAMEBUFFER, framebuffer);
         if (framebuffer)
         {
-            static const GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
+            static const GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+                                              GL_COLOR_ATTACHMENT4 };
+            static_assert(sizeof(buffers) / sizeof(buffers[0]) == LLVKMirror::MAX_COLORS, "a draw buffer for each colour attachment");
             if (color_count)
             {
-                draw_buffers((GLsizei)llmin(color_count, 4u), buffers);
+                draw_buffers((GLsizei)llmin(color_count, LLVKMirror::MAX_COLORS), buffers);
                 read_buffer(GL_COLOR_ATTACHMENT0);
             }
             else

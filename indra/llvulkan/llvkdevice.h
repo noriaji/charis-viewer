@@ -81,6 +81,8 @@ public:
     // Indirect draws: several per call, and a first instance other than 0.
     bool hasMultiDrawIndirect() const { return mMultiDrawIndirect; }
     bool hasDrawIndirectFirstInstance() const { return mDrawIndirectFirstInstance; }
+    // geometryShader, enabled whenever the GPU has it: a fragment shader that reads gl_PrimitiveID needs it (research/370).
+    bool hasGeometryShader() const { return mGeometryShader; }
     // vkCmdDrawIndexedIndirectCount (Vulkan 1.2 drawIndirectCount).
     bool hasDrawIndirectCount() const { return mDrawIndirectCount; }
     // What the alpha shader's early out needs (research/54, LLRHI::sAlphaFast):
@@ -300,6 +302,12 @@ public:
     // it falls as much as the use when memory other than texture images goes
     // (research/285 compact-hysteresis: no use to run down to).
     bool vramBudget(U64& image_bytes, U64& usage, U64& budget, bool* floored = nullptr);
+    // research/371 (vram-core): hold the driver's budget of a GPU with VRAM of its own to `bytes` (0: no cap), to test
+    // the low-VRAM paths on a larger card (LLRHI::sVRAMOverrideMB). Only the budget is lowered, never the use: a
+    // policy, nothing is refused. A GPU that shares the PC's memory is held to the value by setSharedMemoryBudget
+    // already. Call before the scene and the compactions read the budget (llvkgl_glquery's detection does).
+    void setVramCap(U64 bytes) { mVramCap.store(bytes, std::memory_order_relaxed); }
+    U64 vramCap() const { return mVramCap.load(std::memory_order_relaxed); }
     // igpu-safe: the GPU has no VRAM of its own (integrated, virtual, CPU);
     // bytes: the share of the PC's memory it may take (llvkgl_glquery's VRAM
     // estimate). From then on vramBudget counts every heap against it, and new
@@ -436,6 +444,7 @@ private:
     bool mFragmentStores = false;
     bool mMultiDrawIndirect = false;
     bool mDrawIndirectFirstInstance = false;
+    bool mGeometryShader = false;
     bool mDrawIndirectCount = false;
     bool mAlphaEarlyOut = false;
     bool mFragmentSubgroupBasic = false;
@@ -466,6 +475,7 @@ private:
     bool mMemoryBudget = false;     // VK_EXT_memory_budget enabled
     std::atomic<U64> mImageBytes{ 0 };  // createImage's images, less forgetImage's (research/78)
     std::atomic<U64> mSharedBudget{ 0 };    // setSharedMemoryBudget; 0: a discrete GPU (igpu-safe)
+    std::atomic<U64> mVramCap{ 0 };         // setVramCap (research/371); 0: none
     // Written by the render thread (setFrame), read by any thread inside the
     // logs' locks: atomic, relaxed (only a stamp, fix-round71 3).
     std::atomic<U32> mFrame{ 0 };

@@ -47,6 +47,12 @@
 #include "llfile.h"
 #include "lltimer.h"
 #include "lldir.h"
+// <plus> research/337 (E)
+#include "llapp.h"
+#include <chrono>
+#include <sstream>
+#include <thread>
+// </plus>
 
 #if LL_RELEASE_WITH_DEBUG_INFO || LL_DEBUG
 #define CONTROL_ERRS LL_ERRS("ControlErrors")
@@ -974,7 +980,86 @@ U32 LLControlGroup::loadFromFileLegacy(const std::string& filename, bool require
     return validitems;
 }
 
+// <plus> research/337 (E): saveToFile's write
+namespace
+{
+    enum class PlusSave
+    {
+        replaced,   // the file has the new contents
+        disk_full,  // the temporary file was made but not all of it reached the disk: removed, the file is as it was
+        old_way,    // no temporary file could be made, or the move was refused each time: the caller writes in place
+                    // (saveToFile) or saves nothing (saveToFileReplacing)
+    };
+
+    constexpr int PLUS_REPLACE_ATTEMPTS = 5;    // a reader (another viewer, a virus scanner) may hold the file a moment
+    constexpr int PLUS_REPLACE_WAIT_MS = 10;
+
+    // The temporary name is plus::tempPathFor()'s ("<file>.<process id>.tmp"): two viewers saving the same file do not
+    // share it, and plus::removeStaleTemps() clears ones a crash left (once a session for settings.xml, the account's
+    // settings and ignorable_dialogs.xml (the warnings) when the viewer is in-world, and for a file plus::saveSettingsFile() saves). The saves
+    // of one file in a process are made one at a time (the main thread's).
+    PlusSave plus_save_replacing(const std::string& filename, const std::string& contents)
+    {
+        if (filename.empty())
+        {
+            return PlusSave::old_way;   // (which says that it cannot open it, as before)
+        }
+        const std::string temp = filename + "." + std::to_string(LLApp::getPid()) + ".tmp";
+        {
+            llofstream out(temp.c_str(), std::ios::out | std::ios::trunc);
+            if (!out.is_open())
+            {
+                LL_WARNS("Settings") << "Could not make " << temp << " to save the settings in" << LL_ENDL;
+                return PlusSave::old_way;
+            }
+            out << contents;
+            out.close();    // the data reaches the disk here: a failure shows only now
+            if (out.fail())
+            {
+                LLFile::remove(temp, ENOENT);
+                return PlusSave::disk_full;
+            }
+        }
+        // (std::filesystem::rename with an error code, as LLFile::rename does, but without its warning at each refusal:
+        // one line with the last reason)
+        const fsyspath from(temp);
+        const fsyspath to(filename);
+        std::error_code ec;
+        for (int attempt = 1; ; ++attempt)
+        {
+            std::filesystem::rename(from, to, ec);
+            if (!ec)
+            {
+                return PlusSave::replaced;
+            }
+            if (attempt >= PLUS_REPLACE_ATTEMPTS)
+            {
+                break;
+            }
+            std::this_thread::sleep_for(std::chrono::milliseconds(PLUS_REPLACE_WAIT_MS));
+        }
+        LLFile::remove(temp, ENOENT);
+        LL_WARNS("Settings") << "Could not replace " << filename << " with the saved settings (" << ec.message()
+                             << ", " << PLUS_REPLACE_ATTEMPTS << " tries)" << LL_ENDL;
+        return PlusSave::old_way;
+    }
+}
+// </plus>
+
 U32 LLControlGroup::saveToFile(const std::string& filename, bool nondefault_only)
+{
+    return plusSaveToFile(filename, nondefault_only, PlusWhenRefused::write_in_place);  // <plus> research/337 (E): the work below </plus>
+}
+
+// <plus> research/337 (E)
+U32 LLControlGroup::saveToFileReplacing(const std::string& filename, bool nondefault_only)
+{
+    return plusSaveToFile(filename, nondefault_only, PlusWhenRefused::keep_old);
+}
+
+// saveToFile()'s body below (was saveToFile itself), with what to do when filename cannot be replaced
+// </plus>
+U32 LLControlGroup::plusSaveToFile(const std::string& filename, bool nondefault_only, PlusWhenRefused when_refused)   // <plus> research/337 (E): was saveToFile(filename, nondefault_only) </plus>
 {
     LL_PROFILE_ZONE_SCOPED;
     LLSD settings;
@@ -995,11 +1080,40 @@ U32 LLControlGroup::saveToFile(const std::string& filename, bool nondefault_only
             ++num_saved;
         }
     }
+    // <plus> research/337 (E): written whole to "<file>.<process id>.tmp" and moved over the file (the old way below
+    // cut the file to nothing and wrote it in place, so a crash or a full disk meanwhile, or another viewer saving or
+    // reading the same file at that moment, met a cut-off file). A full disk leaves the file as it was. Only when no
+    // temporary file can be made, or the move is refused each time, the old way writes it in place - or, for
+    // saveToFileReplacing() (keep_old), the file is left as it was and nothing is saved.
+    std::ostringstream text;
+    LLSDSerialize::toPrettyXML(settings, text);
+    const std::string contents = text.str();
+    const PlusSave plus_saved = plus_save_replacing(filename, contents);
+    if (plus_saved == PlusSave::replaced)
+    {
+        LL_INFOS("Settings") << "Saved to " << filename << LL_ENDL;
+        return num_saved;
+    }
+    if (plus_saved == PlusSave::disk_full)
+    {
+        LL_WARNS("Settings") << "Settings not saved to " << filename << ": not all of it could be written (the file is as it was)" << LL_ENDL;
+        return 0;
+    }
+    if (when_refused == PlusWhenRefused::keep_old)
+    {
+        LL_WARNS("Settings") << "Settings not saved to " << filename << " (the file is as it was)" << LL_ENDL;
+        return 0;
+    }
+    if (!filename.empty())  // (an empty name: the old way below says that it cannot open it)
+    {
+        LL_WARNS("Settings") << "Writing " << filename << " in place (as before)" << LL_ENDL;
+    }
+    // </plus>
     llofstream file;
     file.open(filename.c_str());
     if (file.is_open())
     {
-        LLSDSerialize::toPrettyXML(settings, file);
+        file << contents;   // <plus> research/337 (E): the text made above (was: LLSDSerialize::toPrettyXML(settings, file)) </plus>
         file.close();
         LL_INFOS("Settings") << "Saved to " << filename << LL_ENDL;
     }

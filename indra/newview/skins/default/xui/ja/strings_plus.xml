@@ -63,6 +63,12 @@
 	<string name="PlusCameraPathGo">
 		スタート！
 	</string>
+	<string name="PlusCameraPathPlayingHidden">
+		カメラ演出: 再生（UI と HUD を隠しました。止めるには Esc か J）
+	</string>
+	<string name="PlusCameraPathCountHidden">
+		[NUMBER]　（UI と HUD を隠しました。止めるには Esc か J）
+	</string>
 	<string name="PlusCameraPathExportMove">
 		撮った写真を連番のフォルダに移せませんでした
 	</string>
@@ -70,7 +76,7 @@
 		連番の写真を [FOLDER] に保存しました
 	</string>
 	<string name="PlusPhotoShotErrTake">
-		写真を撮れませんでした（メモリが足りないのかもしれません）。
+		撮影に失敗しました。サイズを小さくしてください。
 	</string>
 	<string name="PlusPhotoShotErrEncode">
 		写真を画像ファイルにできませんでした。
@@ -83,9 +89,6 @@
 	</string>
 	<string name="PlusPhotoShotOnly4K">
 		ここでは GPU のメモリの量を読めないので、4K までの大きさだけ撮れます。
-	</string>
-	<string name="PlusPhotoShotNoMemory">
-		GPU のメモリが足りません。約 [NEEDED] GB 要りますが、空きは [FREE] GB です。
 	</string>
 	<string name="Command_PlusAO_Label">
 		AO
@@ -386,6 +389,9 @@
 	<string name="PhotoScreenDetail_LookNone">
 		ルックなし
 	</string>
+	<string name="PhotoScreenDetail_LookMissing">
+		[NAME]（見つかりません）
+	</string>
 	<string name="PhotoScreenDetail_LookChip">
 		ルック: [NAME]
 	</string>
@@ -485,4 +491,34 @@
 [SERVER_RELEASE_NOTES_URL]</string>
 	<string name="AboutRLV">RestrainedLove API：[RLV_VERSION]</string>
 	<string name="inventory_item_offered_rlv">[NAME] にインベントリのアイテムを渡しました</string>
+	<!-- poseconsent: 他の人をポーズする時の、ポーザーの窓への知らせ（plus/poseconsent、research/336） -->
+	<string name="PlusPoseConsentAccepted">[NAME] がアバターのポーズを許可しました（あなたの画面の中だけです）。</string>
+	<string name="PlusPoseConsentRefused">[NAME] に断られました。10 分たてば、また依頼できます。</string>
+	<string name="PlusPoseConsentAskCancelledBridge">あなたのポーズ用のブリッジが止まったため、[NAME] への依頼を取り消しました。10 分たてば、また依頼できます。</string>
+	<string name="PlusPoseConsentNoAnswer">[NAME] から返事がありませんでした。10 分たてば、また依頼できます。</string>
+	<string name="PlusPoseConsentWithdrawn">[NAME] をポーズする許可が終わりました（相手が取り下げた、またはテレポートなどで移動したため）。ポーズは元に戻しました。</string>
+	<string name="PlusPoseConsentWithdrawnWhileAsking">[NAME] は、あなたの依頼に答える前に取り下げました。まだ何も許可されておらず、ポーズもしていません。</string>
+	<string name="PlusPoseConsentEnded">[NAME] をポーズする許可が終わりました（相手がいなくなった、あなたが相手をミュートした、あなたが移動した、またはあなたのポーズ用のブリッジが止まったため）。ポーズは元に戻しました。</string>
+	<string name="PlusPoseConsentOutOfRange">[NAME] が 50 m より遠くに行ったので、ポーズを元に戻しました。近くに戻れば、またポーズできます。</string>
+	<!-- poseconsent: 自分の側の知らせ（plus/poseconsent。SystemMessageTip で出す） -->
+	<string name="PlusPoseConsentAllowNotSent">[NAME] を許可しましたが、相手に伝えられませんでした（ポーズ用のブリッジが動いていません）。許可はされていません。相手は 10 分たてば、また依頼できます。</string>
+	<string name="PlusPoseConsentAllowBusy">[NAME] を許可しましたが、今は送れませんでした（ポーズ用のブリッジが混んでいるか、準備中です）。ブリッジが送れるようになると確認がまた出るので、その時にもう一度「許可する」を押してください。</string>
+	<string name="PlusPoseConsentAllowNeverSent">[NAME] への許可は、送れないまま依頼が終わりました（時間切れ、相手が取り消した・離れた・いなくなった、設定やブロックで受けない相手になった、あなたが移動した、またはポーズ用のブリッジが止まったため）。許可はしていません。</string>
+	<string name="PlusPoseConsentAllowUnsure">[NAME] への許可が届いたか分かりません（送るのに失敗しました）。相手がポーズできるかもしれないので、「ポーズできる人」の一覧から取り下げられます。</string>
+	<string name="PlusPoseConsentAllowExpired">[NAME] の依頼はもう有効ではありませんでした（時間切れ、相手が 50 m より離れた、または今の設定では受けない相手です）。許可はしていません。</string>
+	<string name="PlusPoseConsentWithdrawNotSentMany">[COUNT] 人に取り下げを伝えられませんでした。[REASON]</string>
+	<string name="PlusPoseConsentReasonBusy">今は送れませんでした。送れるまで自動で送り直します（その間、一覧には「（取り下げ待ち）」と出ます）。少し待って、もう一度「取り下げる」を押すこともできます。</string>
+	<string name="PlusPoseConsentReasonNoBridge">ポーズ用のブリッジが動いていません。ポーズできる人の一覧には「（取り下げ待ち）」として残し、ブリッジが戻ったら一人ずつ自動で取り下げを送ります。</string>
+	<!-- posereflect: 同意の段 2（plus/poseconsent、research/374b）。SystemMessageTip で表示。[NAME]: 相手 -->
+	<string name="PlusPoseReflectAccepted">[NAME] が、あなたのポーズを相手の画面にも出すことを許可しました。近くの Charis ビューワにも見せるかは、相手が選んでいます。</string>
+	<string name="PlusPoseReflectRefused">[NAME] は、あなたのポーズを相手の画面に出すことを断りました。しばらくたてば、もう一度依頼できます。</string>
+	<string name="PlusPoseReflectNoAnswer">[NAME] から、ポーズを相手の画面に出す依頼の返事がありませんでした。しばらくたてば、もう一度依頼できます。</string>
+	<string name="PlusPoseReflectEnded">[NAME] の画面へのポーズの反映が終わりました（どちらかが止めた、フレンドでなくなった、相手が離れた・いなくなった、またはポーズ用ブリッジが止まった）。あなたの画面の相手のポーズはそのままです。</string>
+	<string name="PlusPoseReflectPushing">[NAME] が付けたポーズが、あなたのアバターに出ています（許可済み）。止めるには、自分をポーズできる人の一覧（環境設定 > プライバシー。自動で開きます）で「反映を止める」を押してください。</string>
+	<string name="PlusPoseReflectAllowNeverSent">[NAME] への許可を、依頼が終わる前に送れませんでした。何も許可されていません。</string>
+	<string name="PlusPoseReflectAllowUnsure">[NAME] への許可が届いたかどうか分かりません（送信に失敗しました）。相手のポーズがあなたの画面に出るかもしれません。止めるには、ポーズを許可した人の一覧から取り下げてください。</string>
+	<string name="PlusPoseConsentBlockListFull">[NAME] はブロックできませんでした。ポーズの依頼をブロックした人の一覧がいっぱいです（[COUNT] 人）。依頼は断りました。設定 &gt; プライバシーの「ブロックを全部解除」で空けられます。</string>
+	<string name="plus_full_distance_off">
+		オフ
+	</string>
 </strings>

@@ -33,6 +33,7 @@
 #include "llagent.h"
 #include "llappviewer.h"
 #include "llavatarnamecache.h"
+#include "llcallingcard.h"
 #include "llcheckboxctrl.h"
 #include "llcommonutils.h"
 #include "llcontrolavatar.h"
@@ -41,6 +42,7 @@
 #include "llloadingindicator.h"
 #include "llmutelist.h"
 #include "llnotificationsutil.h"
+#include "llscrolllistcolumn.h" // <plus> research/336: the status column
 #include "llscrolllistctrl.h"
 #include "llsdserialize.h"
 #include "llsliderctrl.h"
@@ -50,6 +52,11 @@
 #include "llmenugl.h" // <plus> the right-click menu of the hand preset list
 #include "lluictrlfactory.h" // <plus>
 #include "lluicolortable.h" // <plus>
+#include "llframetimer.h" // <plus> research/336
+#include "lltrans.h" // <plus> research/336
+#include "rlv/rlvhooks.h" // <plus> research/336: @shownames on the rows of other people
+#include "lslbridge/lslbridge.h" // <plus> research/336: why a person cannot be asked (the bridge's state)
+#include "poseshare/poseshare.h" // <plus> research/374: the Share button, the "sharing" mark of a person
 #include "fstoolcomppose.h"
 #include "llviewercontrol.h"
 #include "llviewerobjectlist.h"
@@ -84,6 +91,22 @@ constexpr std::string_view POSER_UNLOCKPELVISINBVH_SAVE_KEY    = "FSPoserPelvisU
 constexpr std::string_view POSER_SHOWBONEHIGHLIGHTS_SAVE_KEY   = "FSManipShowJointMarkers";
 constexpr char             ICON_SAVE_OK[]                      = "icon_rotation_is_own_work";
 constexpr char             ICON_SAVE_FAILED[]                  = "icon_save_failed_button";
+
+// <plus> other people's avatars with their consent (research/336)
+constexpr F32 NEARBY_METERS          = 50.f; // the model list: avatars and animeshes nearer than this (as Firestorm)
+constexpr F32 OTHERS_KEEP_METERS     = 55.f; // a row of another person stays until this far (5 m over NEARBY_METERS: no
+                                             // row coming and going at the edge); between the two it says "too far"
+constexpr F64 OTHERS_TICK_SECONDS    = 1.0;  // the rows and the buttons of other people are looked at this often
+constexpr F64 CONSENT_NOTICE_SECONDS = 15.0; // a notice of plus::poseconsent stays under the list this long
+// The status column's share of the model list while another person is listed (the XUI's value; 0 otherwise). The
+// model panel is 153x302 in the XUI but the tab container makes it 177x293, and the list (follows all) about 175
+// wide, about 157 with its scroll bar: 0.42 is about 66 px (73 without the bar), room for the longest status,
+// "Not asked" (about 49 px in SansSerifSmall) and "返事待ち" (4 em, about 44 px).
+constexpr F32 STATUS_COLUMN_SHARE    = 0.42f;
+// The strings of floater_fs_poser.xml for each plus::poseconsent::Status, in the enum's order
+constexpr const char* OTHER_STATUS_STRINGS[] = { "other_status_ask", "other_status_pending", "other_status_accepted",
+                                                 "other_status_refused", "other_status_no_answer" };
+// </plus>
 
 }  // namespace
 
@@ -224,6 +247,22 @@ bool FSFloaterPoser::postBuild()
 
     mPosesLoadSavePnl = getChild<LLPanel>("poses_loadSave");
     mStartStopPosingBtn = getChild<LLButton>("start_stop_posing_button");
+    // <plus> other people's avatars with their consent (research/336)
+    mConsentBtn = getChild<LLButton>("consent_button");
+    mConsentBtn->setCommitCallback([this](LLUICtrl*, const LLSD&) { onConsentButton(); });
+    mOwnScreenText = getChild<LLTextBox>("own_screen_only_text");
+    mReflectBtn = getChild<LLButton>("reflect_button"); // research/374b
+    mReflectBtn->setCommitCallback([this](LLUICtrl*, const LLSD&) { onReflectButton(); });
+    mShareBtn = getChild<LLButton>("share_button"); // research/374
+    mShareBtn->setCommitCallback([this](LLUICtrl*, const LLSD&) { onShareButton(); });
+    mShareStatusText = tryGetString("other_status_sharing");
+    mConsentInfoText = getChild<LLTextBox>("consent_info_text");
+    static_assert(std::size(OTHER_STATUS_STRINGS) == std::extent_v<decltype(mOtherStatusText)> &&
+                  std::size(OTHER_STATUS_STRINGS) == static_cast<size_t>(plus::poseconsent::Status::NoAnswer) + 1);
+    for (size_t i = 0; i < std::size(OTHER_STATUS_STRINGS); ++i)
+        mOtherStatusText[i] = tryGetString(OTHER_STATUS_STRINGS[i]);
+    showStatusColumn(false); // until another person is listed
+    // </plus>
     mToggleLoadSavePanelBtn = getChild<LLButton>("toggleLoadSavePanel");
     mBrowserFolderBtn = getChild<LLButton>("open_poseDir_button");
     mLoadPosesBtn = getChild<LLButton>("load_poses_button");
@@ -315,6 +354,10 @@ bool FSFloaterPoser::postBuild()
 
 void FSFloaterPoser::onOpen(const LLSD& key)
 {
+    // <plus> research/336: the consent button and its lines are written again, the rows of other people looked at now
+    mConsentUiKey.mValid = false;
+    mNextOthersTickS     = 0.0;
+    // </plus>
     createUserPoseDirectoryIfNeeded();
     onAvatarsRefresh();
     refreshJointScrollListMembers();
@@ -345,6 +388,7 @@ void FSFloaterPoser::draw()
 {
     LLFloater::draw();
     refreshIKPinsText(); // <plus>
+    tickOthers(); // <plus> research/336: once a second (a clock compare between)
 
     drawOnHoverJointHint();
 }
@@ -447,11 +491,14 @@ void FSFloaterPoser::disableVisualManipulators()
     refreshIKToolButton(); // <plus>
 }
 
-void FSFloaterPoser::setVisualManipulators(LLVOAvatar* avatar)
+void FSFloaterPoser::setVisualManipulators(LLVOAvatar* avatar_in)
 {
-    FSToolCompPose::getInstance()->setAvatar(avatar);
-    FSToolCompPoseTranslate::getInstance()->setAvatar(avatar);
-    FSToolCompPoseIK::getInstance()->setAvatar(avatar); // <plus>
+    // <plus> research/336: the tools take an avatar only as onAvatarSelect() gives them one (the own avatar and owned
+    // animeshes, or another person who allowed it now)
+    LLVOAvatar* avatar = (avatar_in && (havePermissionToAnimateAvatar(avatar_in) || havePermissionToAnimateOtherAvatar(avatar_in)))
+                             ? avatar_in : nullptr;
+    setPoseToolsAvatar(avatar);
+    // </plus>
 
     if (!avatar)
         return;
@@ -496,6 +543,13 @@ std::vector<FSPoserAnimator::FSPoserJoint*> FSFloaterPoser::getSelectedPoserJoin
 
 void FSFloaterPoser::onClose(bool app_quitting)
 {
+    // <plus> research/336: other people's poses never outlive the window, whatever FSPoserStopPosingWhenClosed says
+    // (their consent stays: the window shows it again when opened). The key lets go of the selected person's avatar
+    // (an LLPointer): a closed window does not tick, and the avatar would stay in LLCharacter::sInstances after they
+    // left. onOpen() writes the consent lines again in any case.
+    FSPoserAnimator::forceStopPosingAllOthers();
+    mConsentUiKey = {};
+    // </plus>
     if (gSavedSettings.getBOOL(POSER_STOPPOSINGWHENCLOSED_SAVE_KEY))
     {
         stopPosingAllAvatars();
@@ -507,6 +561,11 @@ void FSFloaterPoser::onClose(bool app_quitting)
     {
         menu->die();
         mHandPresetMenuHandle.markDead();
+    }
+    if (LLContextMenu* menu = mShareMenuHandle.get()) // research/374: the Share menu too
+    {
+        menu->die();
+        mShareMenuHandle.markDead();
     }
     // </plus>
     delete mLoadPoseTimer;
@@ -599,15 +658,19 @@ void FSFloaterPoser::onPoseFileSelect()
         return;
 
     bool enableButtons = mPoserAnimator.isPosingAvatar(avatar);
+    // <plus> research/336: a pose loads onto another person who allowed it, but is saved from the own avatar and owned
+    // animeshes only (havePermissionToAnimateAvatar)
+    const bool enableSaving = enableButtons && havePermissionToAnimateAvatar(avatar);
     mLoadPosesBtn->setEnabled(enableButtons);
-    mSavePosesBtn->setEnabled(enableButtons);
+    mSavePosesBtn->setEnabled(enableSaving);
 
     std::string poseName = item->getColumn(0)->getValue().asString();
     if (poseName.empty())
         return;
 
     LLStringExplicit name = LLStringExplicit(poseName);
-    mPoseSaveNameEditor->setEnabled(enableButtons);
+    mPoseSaveNameEditor->setEnabled(enableSaving);
+    // </plus>
     mPoseSaveNameEditor->setText(name);
 
     bool isDeltaSave = !poseFileStartsFromTeePose(name);
@@ -652,7 +715,9 @@ void FSFloaterPoser::onClickPoseSave()
     }
 
     LLVOAvatar* avatar = getUiSelectedAvatar();
-    if (!havePermissionToAnimateAvatar(avatar) && !havePermissionToAnimateOtherAvatar(avatar))
+    // <plus> research/336: never another person's pose (nor its BVH, written with it): the own avatar and owned animeshes only
+    if (!havePermissionToAnimateAvatar(avatar))
+    // </plus>
     {
         mSavePosesBtn->setImageOverlay(tryGetString(ICON_SAVE_FAILED), mSavePosesBtn->getImageOverlayHAlign());
         return;
@@ -1592,6 +1657,9 @@ void FSFloaterPoser::startPosingSelf()
 
 void FSFloaterPoser::stopPosingAllAvatars()
 {
+    // <plus> research/336: other people too, listed or not (one who left the list, or the region, is still posed)
+    FSPoserAnimator::forceStopPosingAllOthers();
+    // </plus>
     if (!gAgentAvatarp || gAgentAvatarp.isNull() || !mAvatarSelectionScrollList)
         return;
 
@@ -1627,8 +1695,10 @@ void FSFloaterPoser::onPoseStartStop()
         if (!couldAnimateAvatar(avatar))
             return;
 
-        if (!havePermissionToAnimateAvatar(avatar))
+        // <plus> research/336: or another person who allowed it (asked now, not remembered)
+        if (!havePermissionToAnimateAvatar(avatar) && !havePermissionToAnimateOtherAvatar(avatar))
             return;
+        // </plus>
 
         mPoserAnimator.tryPosingAvatar(avatar);
     }
@@ -1673,7 +1743,13 @@ bool FSFloaterPoser::havePermissionToAnimateOtherAvatar(LLVOAvatar* avatar) cons
     if (!avatar || avatar->isDead())
         return false;
 
-    return false;
+    // <plus> research/336: another person (not the own avatar, not an animesh) who accepted a request and is within
+    // reach now. Asked every time, so the poser never keeps a consent of its own.
+    if (!FSPoserAnimator::isOtherPerson(avatar))
+        return false;
+
+    return plus::poseconsent::canPose(avatar->getID());
+    // </plus>
 }
 
 void FSFloaterPoser::poseControlsEnable(bool enable)
@@ -1872,7 +1948,12 @@ void FSFloaterPoser::onToggleRotationFrameButton(const LLUICtrl* toggleButton)
 bool FSFloaterPoser::lastIkDragIsNext(LLVOAvatar* avatar, bool undo) const
 {
     const FSJointPose::UndoBatch* batch = FSJointPose::lastUndoBatch();
-    return batch && avatar && batch->avatar == avatar->getID() && batch->undone != undo;
+    if (!batch || !avatar || batch->avatar != avatar->getID() || batch->undone == undo)
+        return false;
+    // research/374 review 2: the window's motion the drag was made on is still the one standing
+    PoseOwner       owner  = PoseOwner::None;
+    FSPosingMotion* motion = FSPoserAnimator::motionOf(avatar, &owner);
+    return motion && owner == PoseOwner::Window && motion->instanceSerial() == batch->motionSerial;
 }
 
 bool FSFloaterPoser::undoOrRedoIkDrag(LLVOAvatar* avatar, bool undo)
@@ -2107,8 +2188,11 @@ void FSFloaterPoser::setIKToolOn(bool on)
 void FSFloaterPoser::selectPoserTool()
 {
     LLToolset* toolset = LLToolMgr::getInstance()->getCurrentToolset();
-    toolset->selectTool(mIKToolOn ? static_cast<LLTool*>(FSToolCompPoseIK::getInstance())
-                                  : static_cast<LLTool*>(FSToolCompPose::getInstance()));
+    LLTool*    tool = mIKToolOn ? static_cast<LLTool*>(FSToolCompPoseIK::getInstance()) : static_cast<LLTool*>(FSToolCompPose::getInstance());
+    // Only a change: LLToolMgr::setCurrentTool() drops a transient tool (the colour picker's eyedropper, a camera
+    // window, an inventory drag) even for the same tool
+    if (toolset->getSelectedTool() != tool)
+        toolset->selectTool(tool);
 }
 
 // IK drag works on the visual manipulators, so the button can be pressed only while they are on.
@@ -2116,6 +2200,13 @@ void FSFloaterPoser::refreshIKToolButton()
 {
     if (mToggleIKToolBtn && mToggleVisualManipulators)
         mToggleIKToolBtn->setEnabled(mToggleVisualManipulators->getValue().asBoolean());
+}
+
+// research/336: after a change of the selection, the IK button follows it (the tool in use does not: IK works on
+// the own avatar, animeshes and another person who allowed it)
+void FSFloaterPoser::refreshPoserToolForSelection()
+{
+    refreshIKToolButton();
 }
 
 void FSFloaterPoser::onClearIKPins()
@@ -2274,9 +2365,7 @@ void FSFloaterPoser::updateManipWithFirstSelectedJoint(const std::vector<FSPoser
     {
         // <plus> the selected one is gone (or none is selected): the tools let go of it too,
         // so that they do not keep pointers to an avatar that may be freed
-        FSToolCompPose::getInstance()->setAvatar(nullptr);
-        FSToolCompPoseTranslate::getInstance()->setAvatar(nullptr);
-        FSToolCompPoseIK::getInstance()->setAvatar(nullptr);
+        setPoseToolsAvatar(nullptr);
         FSToolCompPose::getInstance()->setJoint(nullptr);
         FSToolCompPoseTranslate::getInstance()->setJoint(nullptr);
         // </plus>
@@ -2339,6 +2428,10 @@ LLVOAvatar* FSFloaterPoser::getUiSelectedAvatar() const
 
     LLUUID selectedAvatarId = cell->getValue().asUUID();
 
+    // <plus> research/336: a row of another person, by the object list (the live one, or none)
+    if (mOtherRows.contains(selectedAvatarId))
+        return FSPoserAnimator::findLiveOther(selectedAvatarId);
+    // </plus>
     return getAvatarByUuid(selectedAvatarId);
 }
 
@@ -2395,16 +2488,23 @@ LLVOAvatar* FSFloaterPoser::getAvatarByUuid(const LLUUID& avatarToFind) const
     if (avatarToFind.isNull())
         return nullptr;
 
+    // <plus> research/336: the live one first. A dead object of the same avatar can stay in sInstances for a while next
+    // to the new one (a person coming back into view): the dead one only when there is no other.
+    LLVOAvatar* dead = nullptr;
     for (LLCharacter* character : LLCharacter::sInstances)
     {
         if (avatarToFind != character->getID())
             continue;
 
         LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(character);
-        return avatar;
+        if (avatar && !avatar->isDead())
+            return avatar;
+        if (!dead)
+            dead = avatar;
     }
 
-    return nullptr;
+    return dead;
+    // </plus>
 }
 
 void FSFloaterPoser::onPositionSet()
@@ -2820,37 +2920,57 @@ void FSFloaterPoser::onAvatarSelect()
 {
     LLVOAvatar* avatar = getUiSelectedAvatar();
     if (!avatar)
+    {
+        // <plus> research/336: a row of another person whose avatar is out of view (kept while asked or allowed, so
+        // that the request can be taken back or the consent ended): nothing can be posed or moved
+        if (getUiSelectedOtherId().notNull())
+        {
+            setPoseToolsAvatar(nullptr);
+            mStartStopPosingBtn->setEnabled(false);
+            mStartStopPosingBtn->setValue(false);
+            mSetToTposeButton->setEnabled(false);
+            poseControlsEnable(false);
+            refreshTextHighlightingOnAvatarScrollList();
+            clearJointHighlighting(); // no avatar: no joint of it is posed
+            setPoseSaveFileTextBoxToUiSelectedAvatarSaveFileName();
+        }
+        refreshPoserToolForSelection();
+        refreshConsentUi();
+        // </plus>
         return;
+    }
 
     bool          isSelf                 = avatar->isSelf();
     bool          haveImplicitPermission = havePermissionToAnimateAvatar(avatar); // self & control avatars you own
     bool          haveExplicitPermission = havePermissionToAnimateOtherAvatar(avatar); // as permissions allow
 
-    if (haveImplicitPermission || haveExplicitPermission)
-    {
-        FSToolCompPose::getInstance()->setAvatar(avatar);
-        FSToolCompPoseTranslate::getInstance()->setAvatar(avatar);
-        FSToolCompPoseIK::getInstance()->setAvatar(avatar); // <plus>
-    }
-    else
-    {
-        FSToolCompPose::getInstance()->setAvatar(nullptr);
-        FSToolCompPoseTranslate::getInstance()->setAvatar(nullptr);
-        FSToolCompPoseIK::getInstance()->setAvatar(nullptr); // <plus>
-    }
+    // <plus> the tools take the avatar one may pose, another person only while they allow it (research/336)
+    setPoseToolsAvatar((haveImplicitPermission || haveExplicitPermission) ? avatar : nullptr);
+    // </plus>
 
     bool arePosingSelected = mPoserAnimator.isPosingAvatar(avatar);
 
-    mStartStopPosingBtn->setEnabled(haveImplicitPermission);
+    // <plus> research/336: another person who allowed it is posed like the own avatar (their pose can always be
+    // stopped), but never saved: saving stays with the own avatar and owned animeshes
+    const bool mayPose = haveImplicitPermission || haveExplicitPermission;
+    mStartStopPosingBtn->setEnabled(mayPose || (arePosingSelected && FSPoserAnimator::isOtherPerson(avatar)));
     mStartStopPosingBtn->setValue(arePosingSelected);
 
-    mSetToTposeButton->setEnabled(haveImplicitPermission && arePosingSelected);
-    poseControlsEnable(arePosingSelected && haveImplicitPermission);
+    mSetToTposeButton->setEnabled(mayPose && arePosingSelected);
+    poseControlsEnable(arePosingSelected && mayPose);
+    if (!haveImplicitPermission)
+    {
+        mSavePosesBtn->setEnabled(false);
+        mPoseSaveNameEditor->setEnabled(false);
+    }
+    // </plus>
 
     refreshTextHighlightingOnAvatarScrollList();
     refreshTextHighlightingOnJointScrollLists();
     onJointTabSelect();
     setPoseSaveFileTextBoxToUiSelectedAvatarSaveFileName();
+    refreshPoserToolForSelection(); // <plus> research/336
+    refreshConsentUi(); // <plus> research/336
 }
 
 uuid_vec_t FSFloaterPoser::getNearbyAvatarsAndAnimeshes() const
@@ -2869,8 +2989,10 @@ uuid_vec_t FSFloaterPoser::getNearbyAvatarsAndAnimeshes() const
 
         bool isSelfOrCtrl = avatar->isControlAvatar() || avatar->isSelf();
 
+        // <plus> research/336: other people have rows of their own, with the consent's status: syncOtherRows()
         if (!isSelfOrCtrl)
             continue;
+        // </plus>
 
         avatar_ids.emplace_back(character->getID());
     }
@@ -2880,13 +3002,19 @@ uuid_vec_t FSFloaterPoser::getNearbyAvatarsAndAnimeshes() const
 
 bool FSFloaterPoser::avatarIsNearbyMe(LLCharacter* character) const
 {
+    return distanceToMe(character) < NEARBY_METERS; // <plus> the distance is distanceToMe()'s </plus>
+}
+
+// <plus> research/336
+F32 FSFloaterPoser::distanceToMe(LLCharacter* character) const
+{
     if (!gAgentAvatarp || gAgentAvatarp.isNull() || !character)
-        return false;
+        return F32_MAX;
 
     LLVector3 separationVector = character->getCharacterPosition() - gAgentAvatarp->getCharacterPosition();
-
-    return separationVector.magVec() < 50.f;
+    return separationVector.magVec();
 }
+// </plus>
 
 uuid_vec_t FSFloaterPoser::getCurrentlyListedAvatarsAndAnimeshes() const
 {
@@ -2933,6 +3061,10 @@ void FSFloaterPoser::onAvatarsRefresh()
 
     for (LLUUID toRemove : avatarsToRemoveFromList)
     {
+        // <plus> research/336: the rows of other people come and go with syncOtherRows() (below)
+        if (mOtherRows.contains(toRemove))
+            continue;
+        // </plus>
         S32 indexToRemove = getAvatarListIndexForUuid(toRemove);
         if (indexToRemove >= 0)
             mAvatarSelectionScrollList->deleteSingleItem(indexToRemove);
@@ -2963,20 +3095,12 @@ void FSFloaterPoser::onAvatarsRefresh()
         if (LLMuteList::getInstance()->isMuted(uuid))
             continue;
 
+        // <plus> research/336: other people are added by syncOtherRows() (below), with their consent's status
         if (!avatar->isSelf())
             continue;
+        // </plus>
 
-        LLSD row;
-        row["columns"][COL_ICON]["column"] = "icon";
-        row["columns"][COL_ICON]["type"]   = "icon";
-        row["columns"][COL_ICON]["value"]  = getIconNameForAvatar(avatar);
-        row["columns"][COL_NAME]["column"] = "name";
-        row["columns"][COL_NAME]["value"]  = av_name.getDisplayName();
-        row["columns"][COL_UUID]["column"] = "uuid";
-        row["columns"][COL_UUID]["value"]  = uuid;
-        row["columns"][COL_SAVE]["column"] = "saveFileName";
-        row["columns"][COL_SAVE]["value"]  = "";
-        LLScrollListItem* item             = mAvatarSelectionScrollList->addElement(row);
+        addAvatarRow(getIconNameForAvatar(avatar), av_name.getDisplayName(), uuid, {}, {}); // <plus> the row is addAvatarRow()'s </plus>
     }
 
     // Add Animesh avatars
@@ -2995,22 +3119,519 @@ void FSFloaterPoser::onAvatarsRefresh()
         if (animeshName.empty())
             continue;
 
-        LLSD row;
-        row["columns"][COL_ICON]["column"] = "icon";
-        row["columns"][COL_ICON]["type"]   = "icon";
-        row["columns"][COL_ICON]["value"]  = iconObjectName;
-        row["columns"][COL_NAME]["column"] = "name";
-        row["columns"][COL_NAME]["value"]  = animeshName;
-        row["columns"][COL_UUID]["column"] = "uuid";
-        row["columns"][COL_UUID]["value"]  = avatar->getID();
-        row["columns"][COL_SAVE]["column"] = "saveFileName";
-        row["columns"][COL_SAVE]["value"]  = "";
-        mAvatarSelectionScrollList->addElement(row);
+        addAvatarRow(iconObjectName, animeshName, avatar->getID(), {}, {}); // <plus> the row is addAvatarRow()'s </plus>
     }
+
+    syncOtherRows(); // <plus> research/336
 
     mAvatarSelectionScrollList->updateLayout();
     refreshTextHighlightingOnAvatarScrollList();
 }
+
+// <plus> one row of the model list (the own avatar, an animesh, another person: research/336)
+void FSFloaterPoser::addAvatarRow(const std::string& iconName, const std::string& name, const LLUUID& id,
+                                  const std::string& status, const std::string& nameTip)
+{
+    LLSD row;
+    row["columns"][COL_ICON]["column"]   = "icon";
+    row["columns"][COL_ICON]["type"]     = "icon";
+    row["columns"][COL_ICON]["value"]    = iconName;
+    row["columns"][COL_NAME]["column"]   = "name";
+    row["columns"][COL_NAME]["value"]    = name;
+    row["columns"][COL_NAME]["tool_tip"] = nameTip;
+    row["columns"][COL_UUID]["column"]   = "uuid";
+    row["columns"][COL_UUID]["value"]    = id;
+    row["columns"][COL_SAVE]["column"]   = "saveFileName";
+    row["columns"][COL_SAVE]["value"]    = "";
+    row["columns"][COL_STATUS]["column"] = "status";
+    row["columns"][COL_STATUS]["value"]  = status;
+    mAvatarSelectionScrollList->addElement(row);
+}
+// </plus>
+
+// <plus> other people's avatars with their consent (research/336) -----------------------------------------------------
+
+bool FSFloaterPoser::otherIsHere(LLVOAvatar* avatar) const
+{
+    return FSPoserAnimator::isOtherPerson(avatar) && !avatar->isDead() && avatar->getRegion() == gAgent.getRegion() &&
+           !LLMuteList::getInstance()->isMuted(avatar->getID());
+}
+
+bool FSFloaterPoser::otherIsAround(LLVOAvatar* avatar, F32 withinMeters) const
+{
+    return otherIsHere(avatar) && distanceToMe(avatar) < withinMeters;
+}
+
+bool FSFloaterPoser::otherIsOutgoing(const LLUUID& id) const
+{
+    const plus::poseconsent::Status status = plus::poseconsent::status(id);
+    return status == plus::poseconsent::Status::Pending || status == plus::poseconsent::Status::Accepted;
+}
+
+bool FSFloaterPoser::otherWasAskedOrCanBe(const LLUUID& id) const
+{
+    // Someone asked (waiting, allowed, refused, no answer), or who can be asked now (plus::poseconsent: the bridge runs,
+    // ...). Without the bridge nobody can be asked: then the list is the one it always was.
+    return plus::poseconsent::status(id) != plus::poseconsent::Status::Ask || plus::poseconsent::canAsk(id);
+}
+
+bool FSFloaterPoser::otherMayBeListed(LLVOAvatar* avatar) const
+{
+    // Waiting or allowed: listed however far (in this region); the others when near enough to be asked
+    if (!otherIsHere(avatar))
+        return false;
+    const LLUUID& id = avatar->getID();
+    return otherIsOutgoing(id) || (distanceToMe(avatar) < NEARBY_METERS && otherWasAskedOrCanBe(id));
+}
+
+bool FSFloaterPoser::otherStaysListed(const LLUUID& id) const
+{
+    // Waiting or allowed: kept while plus::poseconsent holds it (it ends them when the person leaves the region, is
+    // muted, ...), however far and even out of view, so that "Cancel Request" / "End Permission" stay at hand.
+    if (otherIsOutgoing(id))
+        return true;
+
+    // Near enough to be asked, yet cannot be (the bridge went away, the consent ended and it may not be asked again):
+    // the row goes. Between NEARBY_METERS and OTHERS_KEEP_METERS it stays, and says "too far" when selected.
+    LLVOAvatar* avatar = FSPoserAnimator::findLiveOther(id);
+    return otherIsAround(avatar, OTHERS_KEEP_METERS) &&
+           (distanceToMe(avatar) >= NEARBY_METERS || otherWasAskedOrCanBe(id));
+}
+
+bool FSFloaterPoser::otherPersonName(const LLUUID& id, std::string& name) const
+{
+    LLAvatarName av_name;
+    if (!LLAvatarNameCache::get(id, &av_name))
+        return false;
+
+    // The display name with the user name: a display name alone could be anyone's (research/336 4.1)
+    name = av_name.getCompleteName(true, true);
+    if (plus::rlv::enabled())
+        name = plus::rlv::avatarNameForPlus(id, name); // @shownames
+    return true;
+}
+
+bool FSFloaterPoser::makeOtherRow(const LLUUID& id, OtherRow& row) const
+{
+    if (!otherPersonName(id, row.mTip))
+        return false;
+    row.mName = row.mTip; // the column shortens it; the tooltip shows it whole
+
+    const size_t status = static_cast<size_t>(plus::poseconsent::status(id));
+    row.mStatus         = (status < std::size(mOtherStatusText)) ? mOtherStatusText[status] : std::string();
+    // research/374: a person whose shared pose is shown says so where no consent is
+    if (status == static_cast<size_t>(plus::poseconsent::Status::Ask) && plus::poseshare::isReceiving(id))
+        row.mStatus = mShareStatusText;
+    return true;
+}
+
+LLUUID FSFloaterPoser::getUiSelectedOtherId() const
+{
+    LLScrollListItem* item = mAvatarSelectionScrollList->getFirstSelected();
+    LLScrollListCell* cell = item ? item->getColumn(COL_UUID) : nullptr;
+    if (!cell)
+        return LLUUID::null;
+    const LLUUID id = cell->getValue().asUUID();
+    return mOtherRows.contains(id) ? id : LLUUID::null;
+}
+
+void FSFloaterPoser::syncOtherRows()
+{
+    const LLUUID selectedId      = getUiSelectedOtherId();
+    bool         rowsChanged     = false;
+    bool         selectedRemoved = false;
+
+    // Rows that go: their pose goes with them (forceStop: the person may be in another region already)
+    for (auto it = mOtherRows.begin(); it != mOtherRows.end();)
+    {
+        const LLUUID id = it->first;
+        if (otherStaysListed(id))
+        {
+            ++it;
+            continue;
+        }
+
+        if (FSPoserAnimator::isPosingOther(id))
+            FSPoserAnimator::forceStopPosingAvatar(id);
+        S32 index = getAvatarListIndexForUuid(id);
+        if (index >= 0)
+            mAvatarSelectionScrollList->deleteSingleItem(index);
+        selectedRemoved |= (id == selectedId);
+        it          = mOtherRows.erase(it);
+        rowsChanged = true;
+    }
+
+    // Rows that come
+    for (LLCharacter* character : LLCharacter::sInstances)
+    {
+        LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(character);
+        if (!FSPoserAnimator::isOtherPerson(avatar))
+            continue;
+        const LLUUID id = avatar->getID();
+        if (mOtherRows.contains(id) || !otherMayBeListed(avatar))
+            continue;
+
+        OtherRow row;
+        if (!makeOtherRow(id, row))
+            continue; // the name is asked for: the row comes at a later tick
+
+        addAvatarRow(getIconNameForAvatar(avatar), row.mName, id, row.mStatus, row.mTip);
+        mOtherRows.emplace(id, std::move(row));
+        rowsChanged = true;
+    }
+
+    // The people asked or allowed whose avatar is not here (out of draw distance, or the window opened again): from
+    // plus::poseconsent's own list. Its vector is valid until the next call into it: the IDs are copied first.
+    mOutgoingScratch.clear();
+    for (const plus::poseconsent::Outgoing& outgoing : plus::poseconsent::outgoingList())
+        mOutgoingScratch.push_back(outgoing.peer);
+    for (const LLUUID& id : mOutgoingScratch)
+    {
+        if (id.isNull() || mOtherRows.contains(id) || LLMuteList::getInstance()->isMuted(id))
+            continue;
+
+        OtherRow row;
+        if (!makeOtherRow(id, row))
+            continue; // the name is asked for: the row comes at a later tick
+
+        addAvatarRow(getIconNameForAvatar(FSPoserAnimator::findLiveOther(id)), row.mName, id, row.mStatus, row.mTip);
+        mOtherRows.emplace(id, std::move(row));
+        rowsChanged = true;
+    }
+
+    // The statuses move on (waiting -> allowed ...): only a row that changed is written
+    if (!mOtherRows.empty())
+    {
+        for (LLScrollListItem* item : mAvatarSelectionScrollList->getAllData())
+        {
+            LLScrollListCell* idCell = item->getColumn(COL_UUID);
+            if (!idCell)
+                continue;
+            auto shown = mOtherRows.find(idCell->getValue().asUUID());
+            if (shown == mOtherRows.end())
+                continue;
+
+            OtherRow row;
+            if (!makeOtherRow(shown->first, row) || row == shown->second)
+                continue;
+            if (LLScrollListCell* nameCell = item->getColumn(COL_NAME))
+            {
+                nameCell->setValue(row.mName);
+                nameCell->setToolTip(row.mTip);
+            }
+            if (LLScrollListCell* statusCell = item->getColumn(COL_STATUS))
+                statusCell->setValue(row.mStatus);
+            shown->second = std::move(row);
+        }
+    }
+
+    if (rowsChanged)
+    {
+        showStatusColumn(!mOtherRows.empty());
+        mAvatarSelectionScrollList->updateLayout();
+        refreshTextHighlightingOnAvatarScrollList();
+    }
+    if (selectedRemoved && gAgentAvatarp.notNull())
+    {
+        // The selected person left the list: back to the own avatar, so that no button acts on someone not listed
+        setUiSelectedAvatar(gAgentAvatarp->getID());
+        onAvatarSelect();
+    }
+}
+
+void FSFloaterPoser::showStatusColumn(bool show)
+{
+    if (show == mStatusColumnShown)
+        return;
+    mStatusColumnShown = show;
+
+    LLScrollListColumn* nameColumn   = mAvatarSelectionScrollList->getColumn("name");
+    LLScrollListColumn* statusColumn = mAvatarSelectionScrollList->getColumn("status");
+    if (!nameColumn || !statusColumn)
+        return;
+    nameColumn->mRelWidth   = show ? 1.f - STATUS_COLUMN_SHARE : 1.f;
+    statusColumn->mRelWidth = show ? STATUS_COLUMN_SHARE : 0.f;
+    mAvatarSelectionScrollList->updateColumns(true);
+}
+
+void FSFloaterPoser::tickOthers()
+{
+    const F64 now_s = LLFrameTimer::getElapsedSeconds();
+    if (!mOthersDirty && now_s < mNextOthersTickS)
+        return;
+    const bool dirty = mOthersDirty;
+    mOthersDirty     = false;
+    mNextOthersTickS = now_s + OTHERS_TICK_SECONDS;
+    if (!gAgentAvatarp || gAgentAvatarp.isNull())
+        return;
+
+    syncOtherRows();
+    if (dirty)
+        refreshTextHighlightingOnAvatarScrollList(); // a pose was stopped outside the window: no bold row for it
+    if (!mNoticeText.empty() && now_s >= mNoticeUntilS)
+        mNoticeText.clear();
+
+    // The selected person's status may have moved on (allowed, refused, out of reach): the buttons follow. A new or
+    // gone notice, or the first / last pose of another person, only changes the lines under them.
+    const ConsentUiKey key = consentUiKeyNow();
+    if (!key.sameSelection(mConsentUiKey))
+        onAvatarSelect();
+    else if (!(key == mConsentUiKey))
+        refreshConsentUi();
+}
+
+FSFloaterPoser::ConsentBlock FSFloaterPoser::consentBlockFor(const LLUUID& id) const
+{
+    if (id.isNull())
+        return ConsentBlock::None;
+
+    LLVOAvatar* avatar = FSPoserAnimator::findLiveOther(id);
+    if (!avatar)
+        return ConsentBlock::NotInView;
+    if (LLMuteList::getInstance()->isMuted(id))
+        return ConsentBlock::Muted;
+    if (avatar->getRegion() != gAgent.getRegion() || distanceToMe(avatar) >= NEARBY_METERS)
+        return ConsentBlock::TooFar;
+
+    if (otherIsOutgoing(id) || plus::poseconsent::canAsk(id))
+        return ConsentBlock::None;
+    const plus::poseconsent::Status status = plus::poseconsent::status(id);
+    if (status == plus::poseconsent::Status::Refused || status == plus::poseconsent::Status::NoAnswer)
+        return ConsentBlock::Cooldown;
+    // What is left of canAsk(): leaving, the bridge, or the limit of requests out at once
+    if (LLApp::isExiting() || LLAppViewer::instance()->logoutRequestSent())
+        return ConsentBlock::Leaving;
+    if (plus::lslbridge::state() != plus::lslbridge::State::Running)
+        return plus::lslbridge::failedForGood() ? ConsentBlock::BridgeFailed : ConsentBlock::NoBridge;
+    return ConsentBlock::Busy;
+}
+
+FSFloaterPoser::ConsentUiKey FSFloaterPoser::consentUiKeyNow() const
+{
+    ConsentUiKey key;
+    key.mValid         = true;
+    key.mNoticeSerial  = mNoticeText.empty() ? 0 : mNoticeSerial;
+    key.mAnyOtherPosed = !FSPoserAnimator::posedOthers().empty();
+    key.mShareMode     = static_cast<S32>(plus::poseshare::sendMode());
+
+    const LLUUID id = getUiSelectedOtherId();
+    if (id.isNull())
+        return key;
+
+    key.mPeer    = id;
+    LLVOAvatar* avatar = FSPoserAnimator::findLiveOther(id);
+    key.mAvatar  = avatar;
+    key.mPosing  = mPoserAnimator.isPosingAvatar(avatar);
+    key.mStatus  = plus::poseconsent::status(id);
+    key.mCanAsk  = plus::poseconsent::canAsk(id);
+    key.mCanPose = plus::poseconsent::canPose(id);
+    key.mBlock   = consentBlockFor(id);
+    key.mReflectStatus = plus::poseconsent::reflect::status(id);
+    key.mReflectCanAsk = plus::poseconsent::reflect::canAsk(id);
+    key.mReflectFriend = LLAvatarTracker::instance().isBuddy(id);
+    return key;
+}
+
+void FSFloaterPoser::refreshConsentUi()
+{
+    const ConsentUiKey key = consentUiKeyNow();
+    if (key == mConsentUiKey)
+        return;
+    mConsentUiKey = key;
+
+    const bool other = key.mPeer.notNull();
+    mConsentBtn->setVisible(other);
+    // research/374: the Share button takes the place of the consent button while no other person is selected
+    {
+        static const char* const SHARE_LABELS[] = { "share_label_off", "share_label_friends", "share_label_everyone" };
+        mShareBtn->setVisible(!other);
+        if (key.mShareMode >= 0 && key.mShareMode < static_cast<S32>(std::size(SHARE_LABELS)))
+            mShareBtn->setLabel(tryGetString(SHARE_LABELS[key.mShareMode]));
+    }
+    // While another person is selected, and while anyone else is posed (research/336 5: always in view then)
+    mOwnScreenText->setVisible(other || key.mAnyOtherPosed);
+    // research/374b: the reflect button once stage 1 allows (a request out, or on, keeps it too); the line says where
+    // the pose of the selected person shows
+    {
+        const bool reflectOn = other && key.mReflectStatus == plus::poseconsent::Status::Accepted;
+        // Shown while stage 1 allows, or a request is out or on (a refusal or no answer of stage 2 hides it once stage 1 is gone)
+        const bool reflectUi = other && (key.mStatus == plus::poseconsent::Status::Accepted ||
+                                         key.mReflectStatus == plus::poseconsent::Status::Pending || reflectOn);
+        mReflectBtn->setVisible(reflectUi);
+        if (reflectUi)
+        {
+            const char* label = "reflect_ask";
+            const char* tip   = "reflect_ask_tip";
+            if (key.mReflectStatus == plus::poseconsent::Status::Pending)
+            {
+                label = "reflect_pending";
+                tip   = "reflect_pending_tip";
+            }
+            else if (reflectOn)
+            {
+                label = "reflect_on";
+                tip   = "reflect_on_tip";
+            }
+            if (!reflectOn && key.mReflectStatus != plus::poseconsent::Status::Pending && !key.mReflectCanAsk)
+            {
+                // why it cannot be pressed: a cooldown, or too far, no bridge, too many (the consent button says which)
+                const bool cooling = key.mReflectStatus == plus::poseconsent::Status::Refused || key.mReflectStatus == plus::poseconsent::Status::NoAnswer;
+                tip = !key.mReflectFriend ? "reflect_friends_tip" : (cooling ? "reflect_cooldown_tip" : "reflect_cannot_tip");
+            }
+            mReflectBtn->setLabel(tryGetString(label));
+            mReflectBtn->setToolTip(tryGetString(tip));
+            mReflectBtn->setToggleState(reflectOn);
+            mReflectBtn->setEnabled(reflectOn || key.mReflectStatus == plus::poseconsent::Status::Pending || key.mReflectCanAsk);
+        }
+        mOwnScreenText->setText(tryGetString(reflectOn ? "own_screen_text_reflect" : "own_screen_text_only"));
+        mOwnScreenText->setToolTip(tryGetString(reflectOn ? "own_screen_tip_reflect" : "own_screen_tip_only"));
+    }
+    if (other)
+    {
+        // One button, by the status: ask, take the request back, or end the consent
+        const char* label   = "consent_ask";
+        const char* tip     = "consent_ask_tip";
+        bool        enabled = key.mCanAsk;
+        if (key.mStatus == plus::poseconsent::Status::Pending)
+        {
+            label   = "consent_cancel";
+            tip     = "consent_cancel_tip";
+            enabled = true;
+        }
+        else if (key.mStatus == plus::poseconsent::Status::Accepted)
+        {
+            label   = "consent_end";
+            tip     = "consent_end_tip";
+            enabled = true;
+        }
+        mConsentBtn->setLabel(tryGetString(label));
+        mConsentBtn->setToolTip(tryGetString(tip));
+        mConsentBtn->setEnabled(enabled);
+    }
+
+    // The lines under it: a notice of plus::poseconsent, else why the selected person cannot be asked
+    std::string info;
+    std::string infoTip;
+    if (key.mNoticeSerial != 0)
+    {
+        info    = mNoticeText;
+        infoTip = mNoticeText;
+    }
+    else if (other && key.mBlock != ConsentBlock::None)
+    {
+        const char* text = "consent_block_busy";
+        const char* tip  = "consent_block_busy_tip";
+        switch (key.mBlock)
+        {
+            case ConsentBlock::NotInView: text = "consent_block_not_in_view"; tip = "consent_block_not_in_view_tip"; break;
+            case ConsentBlock::Muted:     text = "consent_block_muted";       tip = "consent_block_muted_tip";       break;
+            case ConsentBlock::TooFar:    text = "consent_block_far";         tip = "consent_block_far_tip";         break;
+            case ConsentBlock::Cooldown:  text = "consent_block_cooldown";    tip = "consent_block_cooldown_tip";    break;
+            case ConsentBlock::Leaving:   text = "consent_block_leaving";     tip = "consent_block_leaving_tip";     break;
+            case ConsentBlock::NoBridge:  text = "consent_block_bridge";      tip = "consent_block_bridge_tip";      break;
+            case ConsentBlock::BridgeFailed: text = "consent_block_bridge_failed"; tip = "consent_block_bridge_failed_tip"; break;
+            default: break;
+        }
+        info    = tryGetString(text);
+        infoTip = tryGetString(tip);
+    }
+    mConsentInfoText->setVisible(!info.empty());
+    mConsentInfoText->setText(info);
+    mConsentInfoText->setToolTip(infoTip);
+}
+
+// <plus> research/374: the menu of the Share button, made at each click (a child of the menu holder, as the hand preset
+// menu is). The choices are written by plus::poseshare's callbacks (Plus.PoseShare.*), which also say which one is on.
+void FSFloaterPoser::onShareButton()
+{
+    if (!LLMenuGL::sMenuContainer)
+        return;
+    if (LLContextMenu* old = mShareMenuHandle.get())
+    {
+        old->die();
+        mShareMenuHandle.markDead();
+    }
+    LLContextMenu* menu = LLUICtrlFactory::getInstance()->createFromFile<LLContextMenu>(
+        "menu_fs_poser_share.xml", LLMenuGL::sMenuContainer, LLMenuHolderGL::child_registry_t::instance());
+    if (!menu)
+        return;
+    mShareMenuHandle = menu->getHandle();
+    LLMenuGL::showPopup(mShareBtn, menu, 0, 0);
+    mConsentUiKey = {}; // the label is written again at the next tick, whatever was chosen
+}
+// </plus>
+
+void FSFloaterPoser::onConsentButton()
+{
+    const LLUUID id = getUiSelectedOtherId();
+    if (id.isNull())
+        return;
+
+    // Only a person's press asks: nothing here asks on its own
+    switch (plus::poseconsent::status(id))
+    {
+        case plus::poseconsent::Status::Pending:
+            plus::poseconsent::cancel(id);
+            break;
+        case plus::poseconsent::Status::Accepted:
+            // The pose goes back at once; cancel() ends the consent (its ConsentLost stop is then a no-op). A pose the
+            // person shares of themselves (research/374) is not the consent's: it goes on
+            if (!FSPoserAnimator::isHeldByShare(id))
+                FSPoserAnimator::forceStopPosingAvatar(id);
+            plus::poseconsent::reflect::cancel(id); // research/374b: stage 2 ends with stage 1 (its look would do it within a second)
+            plus::poseconsent::cancel(id);
+            break;
+        default:
+            if (plus::poseconsent::canAsk(id))
+                plus::poseconsent::ask(id);
+            break;
+    }
+    mOthersDirty = true; // the row and the buttons at the next draw
+}
+
+// <plus> research/374b: only a person's press asks, takes the request back, or ends it (stage 2 of the consent)
+void FSFloaterPoser::onReflectButton()
+{
+    const LLUUID id = getUiSelectedOtherId();
+    if (id.isNull())
+        return;
+    switch (plus::poseconsent::reflect::status(id))
+    {
+        case plus::poseconsent::Status::Pending:
+        case plus::poseconsent::Status::Accepted:
+            plus::poseconsent::reflect::cancel(id); // the pose on our screen stays (stage 1 is the window's); only what shows on theirs ends
+            break;
+        default:
+            if (plus::poseconsent::reflect::canAsk(id))
+                plus::poseconsent::reflect::ask(id);
+            break;
+    }
+    mConsentUiKey = {}; // the button is written again at the next tick, whatever was chosen
+}
+// </plus>
+
+void FSFloaterPoser::showConsentNotice(const std::string& stringId, const LLUUID& peer)
+{
+    std::string name;
+    if (peer.isNull() || !otherPersonName(peer, name))
+        name = tryGetString("consent_someone"); // the name is not known (yet): "that person"
+
+    LLStringUtil::format_map_t args;
+    args["[NAME]"] = name;
+    std::string text;
+    if (!LLTrans::findString(text, stringId, args))
+    {
+        LL_WARNS("Posing") << "No text for the consent notice " << stringId << LL_ENDL;
+        return;
+    }
+
+    mNoticeText   = text;
+    mNoticeUntilS = LLFrameTimer::getElapsedSeconds() + CONSENT_NOTICE_SECONDS;
+    if (++mNoticeSerial == 0)
+        mNoticeSerial = 1; // 0 is "no notice"
+    mOthersDirty = true;   // shown at the next draw, not now: this comes from inside plus::poseconsent
+}
+// </plus> -------------------------------------------------------------------------------------------------------------
 
 std::string FSFloaterPoser::getIconNameForAvatar(LLVOAvatar* avatar)
 {
@@ -3058,7 +3679,10 @@ void FSFloaterPoser::refreshTextHighlightingOnAvatarScrollList()
             continue;
 
         LLUUID selectedAvatarId = cell->getValue().asUUID();
-        LLVOAvatar* listAvatar = getAvatarByUuid(selectedAvatarId);
+        // <plus> research/336: a row of another person, by the object list (no walk over every avatar per row)
+        LLVOAvatar* listAvatar = mOtherRows.contains(selectedAvatarId) ? FSPoserAnimator::findLiveOther(selectedAvatarId)
+                                                                       : getAvatarByUuid(selectedAvatarId);
+        // </plus>
 
         ((LLScrollListText*)listItem->getColumn(COL_ICON))->setValue(getIconNameForAvatar(listAvatar));
 
@@ -3079,6 +3703,36 @@ void FSFloaterPoser::refreshTextHighlightingOnJointScrollLists()
     addBoldToScrollList(mMiscJointsScrollList, avatar);
     addBoldToScrollList(mCollisionVolumesScrollList, avatar);
 }
+
+// <plus> research/336
+void FSFloaterPoser::setPoseToolsAvatar(LLVOAvatar* avatar)
+{
+    FSToolCompPose::getInstance()->setAvatar(avatar);
+    FSToolCompPoseTranslate::getInstance()->setAvatar(avatar);
+    FSToolCompPoseIK::getInstance()->setAvatar(avatar);
+}
+// </plus>
+
+// <plus> research/336: the joint lists of a selection without an avatar (another person out of view): none in bold,
+// no icon. addBoldToScrollList() does nothing without an avatar (it returns at once, leaving the bold and the icons
+// of the avatar selected before), so they are cleared here.
+void FSFloaterPoser::clearJointHighlighting()
+{
+    for (LLScrollListCtrl* list : { mBodyJointsScrollList, mFaceJointsScrollList, mHandJointsScrollList, mMiscJointsScrollList,
+                                    mCollisionVolumesScrollList })
+    {
+        if (!list)
+            continue;
+        for (LLScrollListItem* item : list->getAllData())
+        {
+            if (!item->getUserdata())
+                continue;
+            ((LLScrollListText*)item->getColumn(COL_ICON))->setValue(std::string()); // getScrollListIconForJoint(nullptr)
+            ((LLScrollListText*)item->getColumn(COL_NAME))->setFontStyle(LLFontGL::NORMAL);
+        }
+    }
+}
+// </plus>
 
 void FSFloaterPoser::setSavePosesButtonText(bool setAsSaveDiff)
 {
@@ -3821,6 +4475,13 @@ void FSFloaterPoser::onHandEasySave()
         showHandEasyMessage("hand_no_pose", name);
         return;
     }
+    // <plus> research/336: nothing of another person's pose is saved
+    if (!havePermissionToAnimateAvatar(avatar))
+    {
+        showHandEasyMessage("hand_save_not_others", name);
+        return;
+    }
+    // </plus>
 
     const bool right = isHandEasyRight();
     HandRaw    hand;

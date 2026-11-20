@@ -134,6 +134,7 @@ namespace
         { "RenderGlow", false, 0, 0 },
         { "RenderDynamicLOD", false, 0, 0 },
         { "RenderVSyncEnable", false, 0, 0 },
+        { "FSLimitTextureVRAMUsage", false, 0, 0 },     // research/371: RenderMaxVRAMBudget counts only while it is on
     };
 
     // ---- the open set (vk-mcp2) ----
@@ -179,7 +180,7 @@ namespace
         { "PlusCullThreads", true, 0, 4 },
         { "PlusJ2CDecoderThreads", true, 1, 8 },
         { "PlusSubtitleThreads", true, 1, 16 },
-        { "PlusDetachedMaxWindows", true, 1, 8 },
+        { "PlusDetachedMaxWindows", true, 0, 64 },
         { "PlusDetachedMaxFps", true, 0, 240 },
         { "PlusFpsLimit", true, 0, 1000 },
         { "PlusPhotoShotSize", true, 0, 4 },

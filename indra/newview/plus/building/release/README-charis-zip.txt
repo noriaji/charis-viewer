@@ -64,11 +64,13 @@ release build (charis-build.sh, profiler off), checked ${checked}
   テレポートはボタンを押した時だけ）。
 - 登録したまま zip 版のフォルダを消す時は、先に［元に戻す］を押してください。
 
-■ ボイスの字幕と翻訳
-- 字幕と翻訳に使うヘルパー（charis-subtitle.exe・charis-translate.exe と、両方が使う vcomp140.dll）は、
-  ${exe} と同じフォルダに入っています。
-- Whisper と翻訳のモデルは、この zip に入っていません。字幕の窓のボタンで取得するか、
-  %APPDATA%\CharisViewer\subtitle に手で置きます。
+■ ボイスの字幕・翻訳・ポーズ間のモーション生成
+- 字幕・翻訳・モーション生成に使うヘルパー（charis-subtitle.exe・charis-translate.exe・charis-motion.exe と、
+  それが使う vcomp140.dll・charis-onnxruntime.dll）は、${exe} と同じフォルダに入っています。
+  ヘルパーはこのフォルダのものしか起動しません（別の場所に置いても使われません）。
+  charis-onnxruntime.dll の第三者の表示は licenses\onnxruntime-ThirdPartyNotices.txt です。
+- Whisper・翻訳・モーションのモデルは、この zip に入っていません。それぞれの窓のボタンで取得するか、
+  %APPDATA%\CharisViewer\subtitle（字幕と翻訳）、%APPDATA%\CharisViewer\subtitle\motion（モーション。約 758 MB）に手で置きます。
 
 ■ アンインストール
 - 展開したフォルダを、フォルダごと削除してください。
@@ -151,11 +153,14 @@ inside the viewer, use the installer, Setup.exe, instead).
   it teleports only when you press the button).
 - Before deleting the folder of the zip, press "Undo" if you registered the links.
 
-* Voice subtitles and translation
-- The helpers the subtitles and the translation use (charis-subtitle.exe,
-  charis-translate.exe and vcomp140.dll, which both use) are in the folder of ${exe}.
-- The Whisper and translation models are not in this zip. Get them with the button in
-  the subtitle window, or put them by hand in %APPDATA%\CharisViewer\subtitle.
+* Voice subtitles, translation and motion between poses
+- The helpers these use (charis-subtitle.exe, charis-translate.exe, charis-motion.exe, and
+  the vcomp140.dll and charis-onnxruntime.dll they load) are in the folder of ${exe}. The viewer
+  starts a helper from that folder only (one placed anywhere else is not used). The notices of
+  the libraries inside charis-onnxruntime.dll are in licenses\onnxruntime-ThirdPartyNotices.txt.
+- The Whisper, translation and motion models are not in this zip. Get each with the button in
+  its window, or put them by hand in %APPDATA%\CharisViewer\subtitle (subtitles and
+  translation) and %APPDATA%\CharisViewer\subtitle\motion (motion, about 758 MB).
 
 * Uninstalling
 - Delete the unpacked folder.

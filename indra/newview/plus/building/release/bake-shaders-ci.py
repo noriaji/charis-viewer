@@ -926,7 +926,7 @@ def pack_bundle(cache_dirs, work, commit, baseline):
     """WORK/shaders.vkb and WORK/bundle-manifest.tsv; (bundle, header, baseline result)."""
     bundle = os.path.join(work, 'shaders.vkb')
     started = time.monotonic()
-    summary = shaderbundle.pack(cache_dirs, bundle, commit)
+    summary = shaderbundle.pack(cache_dirs, bundle, commit)      # plain modules: the package job compresses (shaderbundle.py recompress)
     if summary['left_out']:
         raise Stop('cache files the bundle would leave out: %s' % ', '.join(
             '%s %d' % kv for kv in sorted(summary['left_out'].items())))

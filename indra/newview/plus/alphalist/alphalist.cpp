@@ -991,7 +991,7 @@ bool LLDrawPoolAlpha::renderAlphaList(U32 mask, bool depth_only, bool rigged, EA
 
             LLSpatialGroup::drawmap_elem_t& draw_info = rigged ? group->mDrawMap[LLRenderPass::PASS_ALPHA_RIGGED] : group->mDrawMap[LLRenderPass::PASS_ALPHA];
 
-            if (LLSceneAlpha::sActive)
+            if (LLSceneAlpha::active())
             {
                 gSceneAlpha.noteGroup(group);   // research/205: the alpha records' census and verify (as renderAlpha)
             }
@@ -1064,7 +1064,7 @@ bool LLDrawPoolAlpha::renderAlphaList(U32 mask, bool depth_only, bool rigged, EA
                         continue;
                     }
 
-                    if (LLSceneAlpha::sActive)
+                    if (LLSceneAlpha::active())
                     {
                         // research/205: the batch drawn now (as renderAlpha)
                         gSceneAlpha.noteBatch(group, params, (size_t)(k - draw_info.begin()), current_shader, LLRHI::sOITPriority);
@@ -1214,7 +1214,7 @@ bool LLDrawPoolAlpha::renderAlphaList(U32 mask, bool depth_only, bool rigged, EA
                     {
                         continue;
                     }
-                    if (LLSceneAlpha::sActive)
+                    if (LLSceneAlpha::active())
                     {
                         // research/205: the batch drawn now (as renderAlpha; the priority the list's draw takes)
                         gSceneAlpha.noteBatch(group, params, (size_t)(k - draw_info.begin()), current_shader, rec.oitPriority());

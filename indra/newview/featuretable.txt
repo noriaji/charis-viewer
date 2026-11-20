@@ -90,6 +90,7 @@ RenderReflectionProbeCount  1   256
 RenderHighPrecisionPostProcess 1 1
 // <plus> Charis' features on the quality levels (research/183; the matters of taste are not here)
 RenderOITMode							1	2
+RenderGrayTextureWireframe				1	1	// the loading wireframe: the official viewer has none, the comparison (list Official) turns it off (research/352)
 PlusUiFrame								1	1
 PlusGtao								1	1
 PlusGtaoQuality							1	3
@@ -112,6 +113,8 @@ PlusSnowAccumulate						1	1
 PlusRainEaves							1	1
 PlusSplash								1	3
 PlusSkinFill							1	3
+PlusJellyDollFlat							1	1
+PlusAvatarSilhouetteDistance			1	100
 PlusHairSway							1	1
 PlusVolumetric							1	0
 PlusVolumetricQuality					1	3
@@ -131,6 +134,7 @@ PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
+PlusAvatarFullDistance			1	100
 // </plus>
 
 //
@@ -178,6 +182,7 @@ RenderReflectionProbeCount  1   1
 RenderHighPrecisionPostProcess 1 0
 // <plus> Charis' features on the quality levels (research/183; the matters of taste are not here)
 RenderOITMode							1	1
+RenderGrayTextureWireframe				1	1
 PlusUiFrame								1	1
 PlusGtao								1	0
 PlusGtaoQuality							1	2
@@ -200,6 +205,8 @@ PlusSnowAccumulate						1	0
 PlusRainEaves							1	0
 PlusSplash								1	0
 PlusSkinFill							1	0
+PlusJellyDollFlat							1	1
+PlusAvatarSilhouetteDistance			1	12
 PlusHairSway							1	0
 PlusVolumetric							1	0
 PlusVolumetricQuality					1	2
@@ -219,6 +226,7 @@ PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
+PlusAvatarFullDistance			1	8
 // </plus>
 
 //
@@ -261,11 +269,12 @@ RenderExposure				1   1
 RenderTonemapType			1   1
 RenderTonemapMix			1   0.7
 RenderDisableVintageMode           1   0
-RenderMaxTextureResolution         1   1024
+RenderMaxTextureResolution         1   512
 RenderReflectionProbeCount  1   32
 RenderHighPrecisionPostProcess 1 0
 // <plus> Charis' features on the quality levels (research/183; the matters of taste are not here)
 RenderOITMode							1	1
+RenderGrayTextureWireframe				1	1
 PlusUiFrame								1	1
 PlusGtao								1	0
 PlusGtaoQuality							1	2
@@ -288,6 +297,8 @@ PlusSnowAccumulate						1	0
 PlusRainEaves							1	0
 PlusSplash								1	0
 PlusSkinFill							1	0
+PlusJellyDollFlat							1	1
+PlusAvatarSilhouetteDistance			1	18
 PlusHairSway							1	0
 PlusVolumetric							1	0
 PlusVolumetricQuality					1	2
@@ -307,6 +318,7 @@ PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
+PlusAvatarFullDistance			1	12
 // </plus>
 
 //
@@ -348,11 +360,12 @@ RenderCASSharpness          1   0
 RenderExposure				1   1
 RenderTonemapType			1   1
 RenderTonemapMix			1   0.7
-RenderMaxTextureResolution  1   2048
+RenderMaxTextureResolution  1   1024
 RenderReflectionProbeCount  1   64
 RenderHighPrecisionPostProcess 1 0
 // <plus> Charis' features on the quality levels (research/183; the matters of taste are not here)
 RenderOITMode							1	1
+RenderGrayTextureWireframe				1	1
 PlusUiFrame								1	1
 PlusGtao								1	0
 PlusGtaoQuality							1	2
@@ -375,6 +388,8 @@ PlusSnowAccumulate						1	0
 PlusRainEaves							1	0
 PlusSplash								1	0
 PlusSkinFill							1	0
+PlusJellyDollFlat							1	1
+PlusAvatarSilhouetteDistance			1	28
 PlusHairSway							1	0
 PlusVolumetric							1	0
 PlusVolumetricQuality					1	2
@@ -394,6 +409,7 @@ PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
+PlusAvatarFullDistance			1	18
 // </plus>
 
 //
@@ -435,12 +451,13 @@ RenderCASSharpness          1   0
 RenderExposure				1   1
 RenderTonemapType			1   1
 RenderTonemapMix			1   0.7
-RenderMaxTextureResolution  1   2048
+RenderMaxTextureResolution  1   1024
 RenderReflectionProbeCount  1   64
 RenderHighPrecisionPostProcess 1 0
 // <plus> Charis' features on the quality levels (research/183; the matters of taste are not here)
 RenderOITMode							1	2
-PlusUiFrame								1	0
+RenderGrayTextureWireframe				1	1
+PlusUiFrame								1	1
 PlusGtao								1	0
 PlusGtaoQuality							1	2
 PlusContactShadows						1	0
@@ -453,7 +470,7 @@ PlusShadowNormalOffset					1	0
 PlusShadowPenumbra						1	0
 PlusVolumetricClouds					1	0
 PlusShadowStabilize						1	0
-PlusShadowSkipFarSmall					1	0
+PlusShadowSkipFarSmall					1	1
 PlusShadowSkipFarSmallDistance			1	48
 PlusShadowSkipFarSmallRadius			1	0.25
 PlusShadowShift							1	0
@@ -462,6 +479,8 @@ PlusSnowAccumulate						1	0
 PlusRainEaves							1	0
 PlusSplash								1	0
 PlusSkinFill							1	0
+PlusJellyDollFlat							1	0
+PlusAvatarSilhouetteDistance			1	45
 PlusHairSway							1	0
 PlusVolumetric							1	0
 PlusVolumetricQuality					1	2
@@ -478,9 +497,10 @@ PlusAvatarReflection					1	0
 PlusMirrorAvatars						1	0
 PlusAlphaEdgeFix						1	0
 PlusTAA									1	0	// off in every level (2026-11-09: the avatar picture breaks up when it moves fast)
-PlusMaterialize							1	0
-PlusMaterializeAvatar				1	0
+PlusMaterialize							1	1
+PlusMaterializeAvatar				1	1
 PlusDerez								1	0
+PlusAvatarFullDistance			1	25
 // </plus>
 
 //
@@ -527,6 +547,7 @@ RenderReflectionProbeCount  1   128
 RenderHighPrecisionPostProcess 1 0
 // <plus> Charis' features on the quality levels (research/183; the matters of taste are not here)
 RenderOITMode							1	2
+RenderGrayTextureWireframe				1	1
 PlusUiFrame								1	1
 PlusGtao								1	1
 PlusGtaoQuality							1	2
@@ -549,6 +570,8 @@ PlusSnowAccumulate						1	1
 PlusRainEaves							1	0
 PlusSplash								1	0
 PlusSkinFill							1	0
+PlusJellyDollFlat							1	0
+PlusAvatarSilhouetteDistance			1	0
 PlusHairSway							1	0
 PlusVolumetric							1	0
 PlusVolumetricQuality					1	2
@@ -568,6 +591,7 @@ PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
+PlusAvatarFullDistance			1	35
 // </plus>
 
 //
@@ -614,6 +638,7 @@ RenderReflectionProbeCount  1   256
 RenderHighPrecisionPostProcess 1 1
 // <plus> Charis' features on the quality levels (research/183; the matters of taste are not here)
 RenderOITMode							1	2
+RenderGrayTextureWireframe				1	1
 PlusUiFrame								1	1
 PlusGtao								1	1
 PlusGtaoQuality							1	3
@@ -636,6 +661,8 @@ PlusSnowAccumulate						1	1
 PlusRainEaves							1	1
 PlusSplash								1	2
 PlusSkinFill							1	1
+PlusJellyDollFlat							1	0
+PlusAvatarSilhouetteDistance			1	0
 PlusHairSway							1	1
 PlusVolumetric							1	0
 PlusVolumetricQuality					1	2
@@ -655,6 +682,7 @@ PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
+PlusAvatarFullDistance			1	50
 // </plus>
 
 //
@@ -701,6 +729,7 @@ RenderReflectionProbeCount  1   256
 RenderHighPrecisionPostProcess 1 1
 // <plus> Charis' features on the quality levels (research/183; the matters of taste are not here)
 RenderOITMode							1	2
+RenderGrayTextureWireframe				1	1
 PlusUiFrame								1	1
 PlusGtao								1	1
 PlusGtaoQuality							1	3
@@ -723,6 +752,8 @@ PlusSnowAccumulate						1	1
 PlusRainEaves							1	1
 PlusSplash								1	2
 PlusSkinFill							1	1
+PlusJellyDollFlat							1	0
+PlusAvatarSilhouetteDistance			1	0
 PlusHairSway							1	1
 PlusVolumetric							1	0
 PlusVolumetricQuality					1	2
@@ -742,6 +773,68 @@ PlusTAA									1	0
 PlusMaterialize							1	1
 PlusMaterializeAvatar				1	1
 PlusDerez								1	1
+PlusAvatarFullDistance			1	0
+// </plus>
+
+// <plus> The comparison with the official viewer (research/352; Preferences > Charis > Development > Comparison).
+// Not a quality level: neither the slider nor the automatic level ever applies it (LLFeatureManager reads every
+// list but applies only "all", the GPU's masks and the seven levels by name). plus/presets' applyComparison()
+// applies MidHigh, then these lines in place of the level's values: each is the smaller of "all" with this GPU's
+// masks and the value here (0 where a mask makes it unavailable), and isComparison() expects the same.
+// Charis' features off (0, -1 the official behaviour, their detail values at the settings' defaults), partial
+// OIT, no loading wireframe (the official viewer draws textures still loading grey), and the official MidHigh's
+// LOD and anisotropic filtering (the levels have Firestorm's), the detail by distance and 256 m.
+list Official
+RenderFarClip							1	256
+RenderVolumeLODFactor					1	1.375
+RenderAnisotropicLevel					1	4
+RenderDynamicLOD						1	1
+RenderGrayTextureWireframe				1	0
+RenderOITMode							1	1
+PlusUiFrame								1	0
+PlusGtao								1	0
+PlusGtaoQuality							1	2
+PlusContactShadows						1	0
+PlusGlare								1	0
+PlusShadowDistance						1	-1
+PlusShadowPrecision						1	-1
+PlusShadowFocus							1	0
+PlusShadowCasterBias					1	0
+PlusShadowNormalOffset					1	0
+PlusShadowPenumbra						1	0
+PlusVolumetricClouds					1	0
+PlusShadowStabilize						1	0
+PlusShadowSkipFarSmall					1	0
+PlusShadowSkipFarSmallDistance			1	48
+PlusShadowSkipFarSmallRadius			1	0.25
+PlusShadowShift							1	0
+PlusRainWetAll							1	0
+PlusSnowAccumulate						1	0
+PlusRainEaves							1	0
+PlusSplash								1	0
+PlusSkinFill							1	0
+PlusJellyDollFlat							1	0
+PlusAvatarSilhouetteDistance			1	0
+PlusHairSway							1	0
+PlusVolumetric							1	0
+PlusVolumetricQuality					1	2
+PlusNightCloudLift						1	0
+PlusSkyStarsTwinkle						1	0
+PlusSkyStarsConstellationBoost			1	0
+PlusSSR									1	0
+PlusSsgi								1	0
+PlusWaterMirror							1	0
+PlusWaterMirrorScale					1	0.5
+PlusWaterMirrorAA						1	0
+PlusSSRDenoise						1	0
+PlusAvatarReflection					1	0
+PlusMirrorAvatars						1	0
+PlusAlphaEdgeFix						1	0
+PlusTAA									1	0
+PlusMaterialize							1	0
+PlusMaterializeAvatar				1	0
+PlusDerez								1	0
+PlusAvatarFullDistance			1	0
 // </plus>
 
 //
@@ -763,6 +856,8 @@ PlusRainWetAll							1	0
 PlusRainEaves							1	0
 PlusSplash								1	0
 PlusSkinFill							1	0
+PlusJellyDollFlat							1	0
+PlusAvatarSilhouetteDistance			1	0
 PlusHairSway							1	0
 PlusVolumetric							1	0
 PlusSSR									1	0
@@ -815,6 +910,8 @@ PlusRainWetAll							1	0
 PlusRainEaves							1	0
 PlusSplash								1	0
 PlusSkinFill							1	0
+PlusJellyDollFlat							1	0
+PlusAvatarSilhouetteDistance			1	0
 PlusHairSway							1	0
 PlusVolumetric							1	0
 PlusSSR									1	0

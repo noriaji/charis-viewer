@@ -28,7 +28,11 @@
 // to 0, so 0 means nothing was drawn there. Texel for texel, no filtering, so
 // the values (and the depth) come back as they were written.
 
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 
 in vec2 tc;
 
@@ -51,6 +55,9 @@ void main()
     }
     frag_data[0] = texelFetch(diffuseRect, texel, 0);
     frag_data[1] = texelFetch(specularRect, texel, 0);
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
     frag_data[2] = norm;
 #if defined(HAS_EMISSIVE)
     frag_data[3] = texelFetch(emissiveRect, texel, 0);

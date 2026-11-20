@@ -50,12 +50,16 @@ namespace plus::safemode
         // A window that can be seen without focus keeps working as in front (plus/background, research/303): a safe start
         // takes the load off, as the official viewer does behind another window.
         { L"LLRHI_BACKGROUND_KEEP", L"0" },
+        // No registry of the Charis viewers on one GPU: no frame rate cap, priority or VRAM share from it (plus/multiinstance, research/337).
+        { L"LLRHI_MULTI_INSTANCE", L"0" },
         // The attribute pool keeps its vertex streams by the LL array an attribute reads (research/293 branch 1).
         { L"LLRHI_VB_SOURCE_STREAMS", L"0" },
         // GPU-driven drawing: DGC, GPU culling, the draw lists and runs (research/46, 124 V5).
         { L"LLRHI_GPU_DRIVEN", L"0" },
         { L"LLRHI_GPU_DRIVEN_DGC", L"0" },
         { L"LLRHI_DRAW_TEMPLATES", L"0" },
+        // The retained scene and its parts (research/197, research/218 vk-s2f-2).
+        { L"LLRHI_SCENE", L"0" },
         // The native shadow, rigged and terrain paths (research/23), merged shadow packets.
         { L"LLRHI_NATIVE_SHADOWS", L"0" },
         { L"LLRHI_NATIVE_RIGGED", L"0" },
@@ -81,6 +85,7 @@ namespace plus::safemode
         { L"LLRHI_VK_BIG_BLOCKS", L"0" },
         // Work on other threads (research/63, 66, 179, 188).
         { L"LLRHI_PRESENT_THREAD", L"0" },
+        { L"LLRHI_RENDER_THREAD", L"0" },       // research/218 vk-s2f-2: auto when unset (research/208 S2)
         { L"LLRHI_AVATAR_THREADS", L"0" },
         { L"LLRHI_SHADOW_RECORD_THREADS", L"0" },
         { L"LLRHI_SHADOW_PACKET_THREADS", L"0" },
@@ -119,6 +124,7 @@ namespace plus::safemode
         { L"LLRHI_ATMOSPHERE", L"0" },
         { L"LLRHI_UPSCALE", L"0" },
         { L"LLRHI_TAA", L"0" },
+        { L"LLRHI_TEMPORAL", L"0" },        // research/373: the G-buffer's motion vectors (tu-motion-v1)
         { L"LLRHI_LOOK", L"0" },
         // VRAM given back while it is short: the GL buffers' copies (research/245, 285; off = PlusBufferCompact off).
         { L"LLRHI_VK_BUFFER_COMPACT", L"0" },
@@ -131,11 +137,27 @@ namespace plus::safemode
     // Settings with no switch of their own, given to a safe start as "--set
     // <name> <value>" (LLAppViewer::initConfiguration: not saved, the user's
     // settings.xml keeps its values).
+    // Not here, as "--set" cannot reach them (a plain name is a global
+    // setting, and the account's file read at login sets a per-account one
+    // again): per-account features that are on by default read active()
+    // themselves (research/149 (P)'s exception). Today plus/lslbridge (the
+    // pose bridge, PlusPoseBridgeEnable: no bridge in a safe start, the
+    // setting kept; research/353).
     inline constexpr Switch SETTINGS[] = {
         { L"PlusVolumetricClouds", L"0" },      // plus/volclouds
         { L"PlusSkyStars", L"0" },              // plus/starfield: the official stars
         { L"PlusJ2CDecoder", L"0" },            // plus/j2cdecoder: OpenJPEG decodes (slj2k is on by default)
+        { L"PlusAvatarFullDistance", L"0" },    // llvoavatar.cpp shouldImpostor: no distance beyond which avatars are impostors, as before (research/343)
         { L"PlusImpostorCapturesPerFrame", L"0" }, // llvoavatar.cpp updateImpostors: no cap on the impostor pictures per frame (the official way, research/319)
+        { L"PlusImpostorCaptureBudgetMs", L"0" }, // llvoavatar.cpp updateImpostors: no time budget on the pictures, as before (research/319)
+        { L"PlusRiggedFaceImpostorPeriod", L"0" }, // llface.cpp calcPixelArea: the rigged faces of impostor avatars updated every 0.1 s as before (research/342)
+        { L"PlusRiggedAreaCache", L"0" },       // llface.cpp calcPixelArea: a rigged face's area walks all joint entries, no joint list (research/348)
+        { L"PlusImpostorFreeze", L"0" },        // llvoavatar.cpp idleUpdateMisc: an impostor's attachments are moved at each detailed update, as before (research/338)
+        { L"PlusAvatarSilhouetteDistance", L"0" }, // llvoavatar.cpp isVisuallyMuted/getOverallAppearance: no avatar is a jelly doll by distance (research/344)
+        { L"PlusJellyDollFlat", L"0" },         // pipeline.cpp generateImpostor: a jelly doll is the official 3D grey figure (research/344)
+        { L"PlusImpostorBridgeDefer", L"0" },   // pipeline.cpp rebuildPriorityGroups: an impostor's attachment groups are built at once, as before (research/340)
+        { L"PlusImpostorCaptureRest", L"0" },   // llvoavatar.cpp updateImpostors: no rest after a long capture, as before (research/340)
+        { L"PlusOffscreenAvatarPeriod", L"1" }, // llvoavatar.cpp idleUpdate: an avatar out of view is updated every frame, as before (research/341)
     };
 
     // The environment variable that marks a safe start (the child), with its

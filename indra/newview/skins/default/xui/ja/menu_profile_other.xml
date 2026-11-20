@@ -16,6 +16,9 @@
 	<menu_item_call label="共有" name="share"/>
 	<menu_item_call label="支払い" name="pay"/>
 	<menu_item_check label="ブロック／解除" name="block_unblock"/>
+	<!-- plus contactsets -->
+	<menu_item_call label="コンタクトセットに追加…" name="add_to_contact_set"/>
+	<!-- /plus -->
 	<menu_item_separator name="separator_copy_options"/>
 	<menu_item_call label="表示名をコピー" name="copy_display_name"/>
 	<menu_item_call label="エージェント名をコピー" name="copy_name"/>

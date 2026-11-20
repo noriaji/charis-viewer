@@ -286,6 +286,15 @@ public:
 
     void            idleUpdateVoiceVisualizer(bool voice_enabled, const LLVector3 &position);
     void            idleUpdateMisc(bool detailed_update);
+    // <plus> research/338: the attachments' positions (the loop of idleUpdateMisc), what keeps an impostor's attachments
+    // moving, and the move for a picture that is due
+    void            idleUpdateAttachments(bool visible);
+    bool            plusHasLiveAttachments();
+    void            plusCatchUpAttachments();
+    // research/341: a frame of an avatar out of view that does only the cheap part (see idleUpdate)
+    bool            plusOffscreenLightFrame();
+    bool            plusKeepsFullUpdate();
+    // </plus>
     virtual void    idleUpdateAppearanceAnimation();
     void            idleUpdateLipSync(bool voice_enabled);
     void            idleUpdateLoadingEffect();
@@ -301,6 +310,7 @@ public:
     void            addNameTagLine(const std::string& line, const LLColor4& color, S32 style, const LLFontGL* font, const bool use_ellipses = false);
     void            idleUpdateRenderComplexity();
     void            idleUpdateDebugInfo();
+    void            idleUpdateComplexitySchedule(); // <plus> research/341: the tail of idleUpdate, also run by a light frame </plus>
     void            accountRenderComplexityForObject(LLViewerObject *attached_object,
                                                      const F32 max_attachment_complexity,
                                                      LLVOVolume::texture_cost_t& textures,
@@ -368,6 +378,14 @@ public:
                                                 * slider in panel_preferences_graphics1.xml */
     static U32      sMaxNonImpostors; // affected by control "RenderAvatarMaxNonImpostors"
     static bool     sLimitNonImpostors; // use impostors for far away avatars
+    // <plus> research/343: sLimitNonImpostors is also on for the distance (PlusAvatarFullDistance, m, 0 = off) that makes
+    // other avatars impostors, and the number of switches by distance since the last pictures
+    static F32      sFullDistance;
+    static U32      sFarSwitches;
+    static constexpr U32 MAX_FAR_SWITCHES = 2;
+    static void     updateFullDistance();
+    static F32      fullDistanceNow();
+    // </plus>
     static F32      sRenderDistance; // distance at which avatars will render.
     static bool     sShowAnimationDebug; // show animation debug info
     static bool     sShowCollisionVolumes;  // show skeletal collision volumes
@@ -577,6 +595,7 @@ private:
     F32         mLastSkinTime; //value of gFrameTimeSeconds at last skin update
 
     S32         mUpdatePeriod;
+    bool        mPlusFarSwitchPending = false; // <plus> research/343: switched to an impostor by distance, its picture is not taken yet </plus>
     S32         mNumInitFaces; //number of faces generated when creating the avatar drawable, does not inculde splitted faces due to long vertex buffer.
 
     // profile handle
@@ -720,6 +739,12 @@ private:
 public:
     virtual bool isImpostor();
     bool        shouldImpostor(const F32 rank_factor = 1.0);
+    // <plus> research/343: the parts of shouldImpostor, and the switch of a full avatar to an impostor by distance
+    bool        shouldImpostorByRank(const F32 rank_factor) const;
+    bool        beyondFullDistance() const;
+    bool        exemptFromFullDistance() const;
+    bool        takeFarSwitch();
+    // </plus>
     bool        needsImpostorUpdate() const;
     const LLVector3& getImpostorOffset() const;
     const LLVector2& getImpostorDim() const;
@@ -735,6 +760,34 @@ public:
     bool        extentsInCameraFrustum() const; // <plus> research/319: its drawable's extents (with its attachments) in the camera's frustum </plus>
     S32         mLastImpostorUpdateReason;
     F32SecondsImplicit mLastImpostorUpdateFrameTime;
+    // <plus> research/338: the attachments of an impostor are moved for a picture request, not at each detailed update.
+    // mPlusImpostorShots counts the pictures taken (generateImpostor); mPlusAttachMovedFor is the count the attachments
+    // were last moved at (U32_MAX: never): the request of the next picture is moved for once.
+    U32         mPlusImpostorShots = 0;
+    U32         mPlusAttachMovedFor = U32_MAX;
+    // research/341: the frame and time of its last full update while out of view (PlusOffscreenAvatarPeriod)
+    S32         mPlusOffscreenLastFullFrame = -1;
+    F32         mPlusOffscreenLastFullTime = 0.f;
+    bool        mPlusExtentPending = false;   // mNeedsExtentUpdate was set on a light frame
+    // </plus>
+    // <plus> research/344: the last picture was taken as a flat silhouette (generateImpostor, PlusJellyDollFlat): one colour
+    // target, no normals. Written only at the end of a picture; read by the plate's shader choice (lldrawpoolavatar.cpp) and
+    // by computeNeedsUpdate (a picture of the other kind is retaken, the old one shown until then).
+    bool        mImpostorIsFlat = false;
+    // Whether jelly dolls are shot flat now: PlusJellyDollFlat, the deferred renderer, not the photo mode, not while the snapshot
+    // window is open or a snapshot is taken. A jelly doll is flat when this holds. Main thread.
+    static bool plusFlatImpostorEnabled();
+    // research/344 J2: beyond PlusAvatarSilhouetteDistance (m; 0 = off) another avatar is a jelly doll (a flat silhouette when
+    // PlusJellyDollFlat is on). It goes in at D and out at D less max(0.1 D, 2 m) (the flag mPlusBeyondSilhouette is its own memory). D is
+    // with the zoom, never less than the full distance. Not for the avatar itself, animesh or UI avatars. Part of isVisuallyMuted
+    // and getOverallAppearance.
+    static F32  silhouetteDistance();
+    bool        beyondSilhouetteDistance() const { return mPlusBeyondSilhouette; }
+    // decided once a frame by the idle (computeUpdatePeriod); the drawing reads the flag (the distance there is the one of
+    // the frame before; the flag is its own memory for the way back)
+    void        updateBeyondSilhouette();
+    bool        mPlusBeyondSilhouette = false;
+    // </plus>
     const LLVector3*  getLastAnimExtents() const { return mLastAnimExtents; }
     void        setNeedsExtentUpdate(bool val) { mNeedsExtentUpdate = val; }
 
@@ -1277,6 +1330,10 @@ private:
     bool            mNameMute;
     bool            mNameAppearance;
     bool            mNameFriend;
+    // <plus> contactsets: the set colour the tag was built with (plus/contactsethooks, research/333)
+    bool            mNameContactSet = false;
+    LLColor4        mNameContactSetColor;
+    // </plus>
     bool            mNameCloud;
     F32             mNameAlpha;
     S32             mRenderGroupTitles;

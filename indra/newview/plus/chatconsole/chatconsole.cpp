@@ -57,6 +57,7 @@
 #include "chatconsole.h"
 
 #include "plus.h"
+#include "plus/uiscope/uiscope.h"
 #include "plus/presets/presets.h"
 #include "plus/photoscreen/photoscreen.h"
 #include "plus/photoscreen/psui/psstyle.h"
@@ -440,7 +441,9 @@ namespace plus::chatconsole
                 if (sEntries.empty() || !gConsole || !inWorld()
                     || plus::presets::snapshotInProgress()
                     || (plus::photoscreen::isActive() && !plus::photoscreen::isSimple())
-                    || gAgent.isDoNotDisturb() || chatWindowOpen())
+                    || gAgent.isDoNotDisturb() || chatWindowOpen()
+                    // the chat window is hidden with the rest: its lines are not for the picture (research/365)
+                    || plus::uiscope::hidingForPlayback())
                 {
                     return;
                 }

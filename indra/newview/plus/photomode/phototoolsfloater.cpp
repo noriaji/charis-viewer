@@ -44,6 +44,7 @@
 #include "plus/photoscreen/photoscreen.h"
 #include "plus/photoscreen/psui/psstyle.h"
 #include "plus/photoscreen/psui/pswidgets.h"
+#include "plus/uiscope/uiscope.h"
 
 #include <algorithm>
 #include <cmath>
@@ -56,6 +57,7 @@
 #include "llfloaterreg.h"
 #include "llfocusmgr.h"
 #include "llfontgl.h"
+#include "llinventorymodel.h"
 #include "llinventorypanel.h"
 #include "llkeyboard.h"
 #include "lllineeditor.h"
@@ -206,6 +208,7 @@ namespace plus::photomode::tools
     PhotoToolsFloater::~PhotoToolsFloater()
     {
         gFocusMgr.releaseFocusIfNeeded(this);
+        gInventory.removeObserver(&mInvWatch);
         mRebuilding = true;
         for (Column& column : mColumns)
         {
@@ -310,11 +313,13 @@ namespace plus::photomode::tools
 
     // Keys that work while this window has the focus, also as a window of its own: 1 to 8 go to the
     // named cameras of the list. Not while a name is typed. While the flycam is on, the digits are its
-    // speed (plus/flycamsens), as with the focus in the world: going to a camera would end the flycam.
+    // speed and 0 levels it (plus/flycamsens), as with the focus in the world: going to a camera would end the flycam.
     bool PhotoToolsFloater::handleKeyHere(KEY key, MASK mask)
     {
         if (mask == MASK_NONE && key >= '0' && key <= '9' && LLViewerJoystick::getInstance()->getOverrideCamera() &&
-            plus::flycamsens::keySens(KEYSTATE_DOWN, (S32)(key - '0')))
+            // the key's repeat while 0 is held does not start the turn to level again (a key binding's held state)
+            (key == '0' ? plus::flycamsens::keyLevel(gKeyboard && gKeyboard->getKeyRepeated(key) ? KEYSTATE_LEVEL : KEYSTATE_DOWN)
+                        : plus::flycamsens::keySens(KEYSTATE_DOWN, (S32)(key - '0'))))
         {
             return true;
         }
@@ -1281,7 +1286,7 @@ namespace plus::photomode::tools
         {
             return getString("look_none");
         }
-        if (!choice.exists || choice.label.empty())
+        if (!choice.exists)
         {
             std::string name = choice.id;
             if (name.rfind("user:", 0) == 0)
@@ -1299,7 +1304,7 @@ namespace plus::photomode::tools
     std::string PhotoToolsFloater::lookComboKey() const
     {
         const std::string current = currentLook();
-        const bool        missing = !current.empty() && plus::look::labelOf(current).empty();
+        const bool        missing = !current.empty() && !plus::look::exists(current);
         return std::to_string(plus::look::generation()) + (missing ? "|" + current : std::string());
     }
 
@@ -1383,7 +1388,9 @@ namespace plus::photomode
     bool photoToolsShown()
     {
         const LLFloater* floater = LLFloaterReg::findInstance(PHOTO_TOOLS_FLOATER);
-        return floater && floater->getVisible() && !floater->isMinimized();
+        // Hidden as part of a group (the camera path's hidden UI, the photo screen) it is still in use: what is seen
+        // and taken stays the photo mode's (the jelly doll's distance, the upscale, the camera's region limits).
+        return floater && (floater->getVisible() || plus::uiscope::holds(floater)) && !floater->isMinimized();
     }
 
     bool inPhotoMode()

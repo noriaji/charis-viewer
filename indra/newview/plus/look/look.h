@@ -39,11 +39,22 @@ namespace plus::look
         std::string id;     // what PlusLook holds: the shipped folder's name, or "user:" and the folder's or file's name
         std::string label;  // look.xml's name in the UI's language, else the folder's name, else the file's name without its extension
         bool        user = false;
+        std::string group;  // a shipped look's look.xml group (portrait, street, film, mood, ...); empty: none, and for a user's look
     };
 
     // The shipped looks in their order, then the user's in the order of their names. The folders are
     // read the first time and again by reload(). Main thread.
     std::vector<Entry> entries();
+    // The group submenus of Charis > Look (menu_plus.xml's LookGroup_<id>) in the menu's order, with their labels in the
+    // UI's language: a look whose group is not here is in the Look menu itself. Empty while the menu is not built.
+    struct Group
+    {
+        std::string id;
+        std::string label;
+    };
+    std::vector<Group> menuGroups();
+    // Whether a look of the folders has this id (a look with no name in look.xml still has its folder's).
+    bool exists(const std::string& id);
     // The label of the look with this id; empty when no look of the folders has it.
     std::string labelOf(const std::string& id);
     // Reads the folders again: the menu is rebuilt and the LUT in use read again at the next idle

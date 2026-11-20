@@ -42,6 +42,7 @@
 #include "lloutputmonitorctrl.h"
 #include "lltooldraganddrop.h"
 #include "plus/rlv/rlvhooks.h" // <plus> rlv (plus/rlv) </plus>
+#include "plus/contactsethooks/cshooks.h" // <plus> contactsets (research/333) </plus>
 
 bool LLAvatarListItem::sStaticInitialized = false;
 S32 LLAvatarListItem::sLeftPadding = 0;
@@ -434,15 +435,62 @@ void LLAvatarListItem::updateAvatarName()
 
 void LLAvatarListItem::setNameInternal(const std::string& name, const std::string& highlight)
 {
+    // <plus> contactsets: the contact set look and colour (research/333)
+    LLStyle::Params plus_cs_style;
+    const LLStyle::Params& name_style = contactSetNameStyle(plus_cs_style);
+    // </plus>
     if(mShowCompleteName && highlight.empty())
     {
-        LLTextUtil::textboxSetGreyedVal(mAvatarName, mAvatarNameStyle, name, mGreyOutUsername);
+        LLTextUtil::textboxSetGreyedVal(mAvatarName, name_style, name, mGreyOutUsername); // <plus> contactsets </plus>
     }
     else
     {
-        LLTextUtil::textboxSetHighlightedVal(mAvatarName, mAvatarNameStyle, name, highlight);
+        LLTextUtil::textboxSetHighlightedVal(mAvatarName, name_style, name, highlight); // <plus> contactsets </plus>
     }
 }
+
+// <plus> contactsets (research/333)
+void LLAvatarListItem::setUseContactSetColors(bool use_colors)
+{
+    mUseContactSetColors = use_colors;
+}
+
+void LLAvatarListItem::setUseContactSetListStyle(bool use_style)
+{
+    mUseContactSetListStyle = use_style;
+}
+
+const LLStyle::Params& LLAvatarListItem::contactSetNameStyle(LLStyle::Params& scratch) const
+{
+    LLColor4 set_color;
+    // Not under @shownames when the list hides names (the colour would tell who it is; cshooks checks RLVa as well).
+    const bool has_set_color = mUseContactSetColors && rlvCanShowName()
+                               && plus::cshooks::colorFor(mAvatarId, ContactSetType::FRIENDS, set_color);
+    if (!mUseContactSetListStyle && !has_set_color)
+    {
+        return mAvatarNameStyle;
+    }
+    scratch = mAvatarNameStyle;
+    if (mUseContactSetListStyle)
+    {
+        // Firestorm's contact set list (FIRE-31733): online in bold, and every name in the online colour.
+        const LLAvatarListItem::Params& params = LLUICtrlFactory::getDefaultParams<LLAvatarListItem>();
+        if (mOnlineStatus == E_ONLINE)
+        {
+            scratch.font = LLFontGL::getFontSansSerifBold();
+        }
+        if (params.online_style.isProvided() && params.online_style().color.isProvided())
+        {
+            scratch.color = params.online_style().color();
+        }
+    }
+    if (has_set_color)
+    {
+        scratch.color = LLUIColor(set_color);
+    }
+    return scratch;
+}
+// </plus>
 
 void LLAvatarListItem::onAvatarNameCache(const LLAvatarName& av_name)
 {

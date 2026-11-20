@@ -235,10 +235,13 @@ namespace plus::texprio
     // against the driver's budget less the rest of VRAM (texture pressure's
     // limit; over 1: over it; 0: not known, the last resort held as it is).
     // bias_all: the discard bias may have risen for another reason than VRAM
-    // (system memory short, plus/memguard, the window in the background, a
-    // VRAM budget the user set): no split then, the bias lowers what is on
+    // (system memory short, plus/memguard, the window in the background; not
+    // the user's texture limit, research/371): no split then, the bias lowers what is on
     // screen too (upstream).
-    void updateClass(F32 fill, bool bias_all);
+    // limit_fill (research/371): fill is against the user's texture limit (FSLimitTextureVRAMUsage) while it holds the textures: the last
+    // resort lowers what is on screen for it too, but the floor on screen (PlusTexOnScreenCoarsest) stays, where for the driver's limit
+    // it gives way from a divisor of 2.
+    void updateClass(F32 fill, bool bias_all, bool limit_fill = false);
     // research/309: the bias split by view is available (the setting and the switches, not bias_all): what the memory
     // guard's Soft state relies on to keep what is on screen as it is. As of the last updateClass (main thread).
     bool splitAvailable();

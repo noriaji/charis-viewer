@@ -25,7 +25,11 @@
 
 /*[EXTRA_CODE_HERE]*/
 
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 
 uniform float minimum_alpha;
 uniform sampler2D diffuseMap;
@@ -72,6 +76,9 @@ void main()
 
     frag_data[0] = vec4(col.rgb, 0.0);
     frag_data[1] = vertex_color.aaaa; // spec
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
     //frag_data[1] = vec4(vec3(vertex_color.a), vertex_color.a+(1.0-vertex_color.a)*vertex_color.a); // spec - from former class3 - maybe better, but not so well tested
     vec3 nvn = normalize(tnorm);
     frag_data[2] = encodeNormal(nvn, vertex_color.a, GBUFFER_FLAG_HAS_ATMOS);

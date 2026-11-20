@@ -43,6 +43,7 @@
 #include "photoscreen_items.h"
 #include "psui/psstyle.h"
 #include "psui/pswidgets.h"
+#include "plus/look/look.h"
 #include "plus/photomode/photolook.h"
 #include "plus/photomode/photomode.h"
 #include "plus/photomode/photoshot.h"
@@ -528,6 +529,13 @@ namespace plus::photoscreen::detail
             }
         };
 
+        // PlusLook as the right column sees it: a look that is gone from the folders is drawn as none, so it is none here.
+        std::string lookInUse()
+        {
+            std::string id = pm::currentLook();
+            return (!id.empty() && !plus::look::exists(id)) ? std::string() : id;
+        }
+
         // A look is on: the colour grading's rows can be used.
         bool lookOn()
         {
@@ -782,11 +790,20 @@ namespace plus::photoscreen::detail
                              }
                              pm::applyLook(std::string());
                          }
-                         else if (!sR.lastLook.empty() || !sR.lookIds.empty())
+                         else
                          {
-                             pm::applyLook(sR.lastLook.empty() ? sR.lookIds.front() : sR.lastLook);
+                             // the last look that was on, or the first of the list, if it is still in the folders
+                             std::string target = sR.lastLook;
+                             for (size_t i = 0; i < sR.lookIds.size() && (target.empty() || !plus::look::exists(target)); ++i)
+                             {
+                                 target = sR.lookIds[i];
+                             }
+                             if (plus::look::exists(target))
+                             {
+                                 pm::applyLook(target);
+                             }
                          }
-                         sR.look = pm::currentLook();
+                         sR.look = lookInUse();
                      },
                      "grading_tip");
 
@@ -813,7 +830,7 @@ namespace plus::photoscreen::detail
                         return 0.f;
                     },
                     [](S32 i) {
-                        if (i >= 0 && (size_t)i < sR.lookIds.size())
+                        if (i >= 0 && (size_t)i < sR.lookIds.size() && plus::look::exists(sR.lookIds[i]))   // the list is made once
                         {
                             pm::applyLook(sR.lookIds[i]);
                             sR.look = sR.lookIds[i];
@@ -894,7 +911,7 @@ namespace plus::photoscreen::detail
             sR.rows.clear();
             sR.built = panel->getHandle();
             sR.contentWidth = 0;
-            sR.look = pm::currentLook();
+            sR.look = lookInUse();
             sR.focusWho = nullptr;
             sR.focusNobody = nullptr;
             sR.focusWhoRow = NO_ROW;
@@ -1167,10 +1184,14 @@ namespace plus::photoscreen::detail
         {
             return;
         }
-        sR.look = pm::currentLook();
+        sR.look = lookInUse();
         if (!sR.look.empty() && sR.look != sR.lastLook)
         {
             sR.lastLook = sR.look;
+        }
+        else if (!sR.lastLook.empty() && sR.look.empty() && !plus::look::exists(sR.lastLook))
+        {
+            sR.lastLook.clear();    // gone from the folders: the switch must not put it on again
         }
         if (sectionShown(SecCamera))
         {

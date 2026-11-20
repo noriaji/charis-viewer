@@ -1601,7 +1601,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, bool depth_only, bool rigged, EAlpha
             {
                 sCensus.setGroup(group, ext);   // research/54: which objects the batches draw
             }
-            if (LLSceneAlpha::sActive) { gSceneAlpha.noteGroup(group); } // <plus> research/205 </plus>
+            if (LLSceneAlpha::active()) { gSceneAlpha.noteGroup(group); } // <plus> research/205 </plus>
 
             // LLRHI (research/41): the group's OIT priority, per batch below.
             const U32 oit_priority = mOIT && !depth_only ? oit_group_priority(group, rigged) : 0;
@@ -1650,7 +1650,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, bool depth_only, bool rigged, EAlpha
                 }
                 if (span_drawn && place < span_end)
                 {
-                    if (LLSceneAlpha::sActive)
+                    if (LLSceneAlpha::active())
                     {
                         gSceneAlpha.noteBatch(group, params, place, current_shader, LLRHI::sOITPriority);
                     }
@@ -1667,7 +1667,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, bool depth_only, bool rigged, EAlpha
                 {
                     initialized_lighting = true;    // as its program's choice below would leave them
                     light_enabled = !params.mFullbright;
-                    if (LLSceneAlpha::sActive)
+                    if (LLSceneAlpha::active())
                     {
                         gSceneAlpha.noteBatch(group, params, (size_t)(k - draw_info.begin()), scene_program, LLRHI::sOITPriority);
                     }
@@ -1823,7 +1823,7 @@ void LLDrawPoolAlpha::renderAlpha(U32 mask, bool depth_only, bool rigged, EAlpha
                 }
 
                 // <plus> research/205: the batch drawn now, its place and OIT priority
-                if (LLSceneAlpha::sActive)
+                if (LLSceneAlpha::active())
                 {
                     gSceneAlpha.noteBatch(group, params, (size_t)(k - draw_info.begin()), current_shader, LLRHI::sOITPriority);
                 }

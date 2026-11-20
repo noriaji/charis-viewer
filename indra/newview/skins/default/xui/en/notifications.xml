@@ -12928,12 +12928,13 @@ are wearing now.
   <!-- /plus -->
 
   <!-- plus: the flycam's how-to, once a session when it goes on (plus/flycammouse/flycamexit.cpp). [LOOK]: by
-       PlusFlycamMouseMode; [KEY]: the keys that leave it. "Do not show again" turns PlusFlycamHint off. -->
+       PlusFlycamMouseMode; [KEY]: the keys that leave it. The same for the keyboard and a 3D mouse: the wheel is the speed
+       for both and its press levels the camera (the number keys are quiet shortcuts of the same: plus/flycamsens). "Do not show again" turns PlusFlycamHint off. -->
   <notification
    icon="notify.tga"
    name="PlusFlycamHint"
    type="notify">
-    Flycam on. [LOOK] Wheel: speed. Shift: faster. W A S D: move. Space / C: up / down. Q / E: tilt. [KEY]: leave.
+    Flycam on. [LOOK] Wheel: speed. Shift: faster. W A S D: move. Space / C: up / down. Q / E: tilt, press the wheel to level. [KEY]: leave.
     <form name="form">
       <button
        default="true"
@@ -12945,6 +12946,71 @@ are wearing now.
        name="DontShowAgain"
        text="Do not show again"/>
     </form>
+  </notification>
+  <!-- /plus -->
+
+  <!-- plus: presets (research/352). Once, after the first login with new Charis values of the quality levels: what
+       was moved ([MESSAGE], panel_plus_presets.xml). Undo gives back each setting that still holds what was written. -->
+  <notification
+   icon="notify.tga"
+   name="PlusLevelsMigrated"
+   type="notify">
+    [MESSAGE]
+    <form name="form">
+      <button
+       default="true"
+       index="0"
+       name="Keep"
+       text="Keep"/>
+      <button
+       index="1"
+       name="Undo"
+       text="Undo"/>
+    </form>
+  </notification>
+  <!-- /plus -->
+
+  <!-- plus: lslbridge. The pose bridge could not be made or kept working (plus/lslbridge/lslbridge.cpp, research/336).
+       Each is shown once a session (again after PlusPoseBridgeEnable is turned off and on), and only when the person
+       turned the bridge on in this session: the bridge is on by default (research/353), and one that started by itself
+       at the login logs its failures only (the poser shows that the bridge is not connected, or could not be made).
+       NoLibrary and NotHere are not tried again; NoSlot (no attachment place to spare) is tried again when the
+       attachments change and leave a place. MakeFailed and GaveUp:
+       the viewer makes a new try by itself, waiting 1, 2, 4 and 8 minutes, then no more; the count starts again
+       (from 1 minute) once the bridge ran again and 10 minutes passed since the last try. -->
+  <notification
+   icon="notifytip.tga"
+   name="PlusLSLBridgeNoLibrary"
+   type="notifytip">
+The pose bridge could not be made: the Library has no object to make it from. Asking others to pose their avatar on your screen, and their asking you, stay unavailable.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="PlusLSLBridgeMakeFailed"
+   type="notifytip">
+Making the pose bridge stopped partway (the inventory or the Library did not answer in time, the script upload or its compiling failed or did not go through in time, the bridge was taken off again and again while its script was put in, the connection to the bridge could not be verified, or the bridge's messages came in a form the viewer does not take). Pose requests between avatars are unavailable for now; the viewer tries again by itself a few times, waiting longer each time.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="PlusLSLBridgeGaveUp"
+   type="notifytip">
+The pose bridge on your HUD does not answer and was given up after 3 repairs (scripts may be off here, something keeps it from being worn, or its contents could not be read). Pose requests between avatars are unavailable for now; the viewer tries again by itself a few times, waiting longer each time.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="PlusLSLBridgeNotHere"
+   type="notifytip">
+The pose bridge works in Second Life only: it is not made on this grid, and pose requests between avatars are unavailable here.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="PlusLSLBridgeNoSlot"
+   type="notifytip">
+The pose bridge was not worn: your avatar has no attachment place to spare (your attachments come first, and the bridge leaves the last place free for you). It is put on by itself once you take an attachment off.
   </notification>
   <!-- /plus -->
 
@@ -13055,6 +13121,271 @@ The name will be verified before the assignment is saved.
      notext="Cancel"
      yestext="Yes, close"
      ignoretext="Confirm before I close a custom inventory filter tab"/>
+  </notification>
+  <!-- /plus -->
+  <!-- plus: contactsets. Contact sets and aliases (plus/contactsets, research/333; Firestorm's names and texts) -->
+  <notification
+   icon="alertmodal.tga"
+   name="AddNewContactSet"
+   type="alertmodal">
+    <tag>contact set</tag>
+Create a new contact set with the name:
+    <tag>confirm</tag>
+    <form name="form">
+      <input name="message" type="text" default="true" max_length_chars="63">
+      New Contact Set
+      </input>
+      <button
+       default="true"
+       index="0"
+       name="Create"
+       text="Create"/>
+      <button
+       index="1"
+       name="Cancel"
+       text="Cancel"/>
+    </form>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="RemoveContactSet"
+   type="alertmodal">
+Are you sure you want to remove [SET_NAME]? You won&apos;t be able to restore it.
+    <tag>contact set</tag>
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Confirm before removing a contact set"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="RemoveContactFromSet"
+   type="alertmodal">
+Are you sure you want to remove [TARGET] from [SET_NAME]?
+    <tag>contact set</tag>
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Confirm before removing someone from a contact set"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="RemoveContactsFromSet"
+   type="alertmodal">
+Are you sure you want to remove these [TARGET] avatars from [SET_NAME]?
+    <tag>contact set</tag>
+    <tag>confirm</tag>
+    <usetemplate
+     ignoretext="Confirm before removing multiple avatars from a contact set"
+     name="okcancelignore"
+     notext="Cancel"
+     yestext="OK"/>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="SetAvatarPseudonym"
+   type="alertmodal">
+    <tag>contact set</tag>
+Enter an alias for [AVATAR]:
+    <tag>confirm</tag>
+    <form name="form">
+      <input name="message" type="text" default="true" max_length_chars="63" />
+      <button
+       default="true"
+       index="0"
+       name="Create"
+       text="Create"/>
+      <button
+       index="1"
+       name="Cancel"
+       text="Cancel"/>
+    </form>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="SetAvatarPseudonymMultiple"
+   type="alertmodal">
+    <tag>contact set</tag>
+Enter an alias for [COUNT] avatars:
+    <tag>confirm</tag>
+    <form name="form">
+      <input name="message" type="text" default="true" max_length_chars="63" />
+      <button
+       default="true"
+       index="0"
+       name="Create"
+       text="Create"/>
+      <button
+       index="1"
+       name="Cancel"
+       text="Cancel"/>
+    </form>
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="RenameContactSetFailure"
+   type="alertmodal">
+    <tag>contact set</tag>
+Could not rename set &apos;[SET]&apos; to &apos;[NEW_NAME]&apos; because a set with the same name already exists or the new name is invalid.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AddToContactSetSingleSuccess"
+   type="notifytip">
+    <tag>contact set</tag>
+[NAME] was added to [SET].
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="AddToContactSetMultipleSuccess"
+   type="notifytip">
+    <tag>contact set</tag>
+[COUNT] avatars were added to [SET].
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="DisplayNameUpdateRemoveAlias"
+   type="notify">
+[OLD_NAME] ([SLID]) is now known as [NEW_NAME].
+You have an alias for them, which is shown in place of [NEW_NAME].
+Would you like to remove it?
+    <tag>contact set</tag>
+    <form name="form">
+      <button
+       index="0"
+       name="Yes"
+       text="Yes"/>
+      <button
+       index="1"
+       name="No"
+       text="No"/>
+    </form>
+  </notification>
+  <!-- /plus -->
+
+  <!-- plus: poseconsent. (PlusPoseReflectAsk below, research/374b: the second stage, to show the poses on their own screen too.)
+       Someone near asks to pose your avatar on their own screen (plus/poseconsent, research/336;
+       Aurora compatible). [NAME]: the display name and user name from the name service, [DISTANCE]: metres. The
+       buttons' order is read by index (0 allow, 1 refuse, 2 refuse and block; PlusPoseReflectAsk has a 3, allow and to those near too). Taken down when the request ends
+       (60 s, cancelled, they left). -->
+  <notification
+   icon="notify.tga"
+   name="PlusPoseConsentAsk"
+   type="notify">
+[NAME], [DISTANCE] m from you, asks to pose your avatar for photos.
+The pose shows only on their own screen: no one else sees it, not even you. It lasts for this session at most, and you can withdraw it at any time.
+    <form name="form">
+      <button
+       index="0"
+       name="Allow"
+       text="Allow"/>
+      <button
+       default="true"
+       index="1"
+       name="Refuse"
+       text="Refuse"/>
+      <button
+       index="2"
+       name="Block"
+       text="Block their requests"/>
+    </form>
+  </notification>
+
+  <notification
+   icon="notify.tga"
+   name="PlusPoseReflectAsk"
+   type="notify">
+[NAME], [DISTANCE] m from you, asks to show the poses they give your avatar on your own screen too (you already allowed them to pose you on their screen).
+If you allow it, the pose they set also appears on your avatar on your screen. Choose whether the Charis Viewers near you may see it too (only when you share your pose). While you pose yourself, yours comes first.
+    <form name="form">
+      <button
+       index="0"
+       name="Allow"
+       text="Allow on my screen only"/>
+      <button
+       index="3"
+       name="AllowAround"
+       text="Allow, and to those near me too"/>
+      <button
+       default="true"
+       index="1"
+       name="Refuse"
+       text="Refuse"/>
+      <button
+       index="2"
+       name="Block"
+       text="Block their requests"/>
+    </form>
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="PlusPoseConsentWithdrawNotSent"
+   type="notifytip">
+[NAME] could not be told that you withdrew: [REASON]
+  </notification>
+
+  <notification
+   icon="alertmodal.tga"
+   name="PlusPoseConsentClearBlocksConfirm"
+   type="alertmodal">
+Unblock everyone you blocked from asking to pose your avatar ([COUNT])? This cannot be undone.
+    <form name="form">
+      <button
+       index="0"
+       name="OK"
+       text="Unblock all"/>
+      <button
+       default="true"
+       index="1"
+       name="Cancel"
+       text="Cancel"/>
+    </form>
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="PlusPoseConsentBlocksAfterLogin"
+   type="notifytip">
+Available after you log in.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="PlusPoseConsentNoBlocks"
+   type="notifytip">
+No one is blocked from asking to pose your avatar.
+  </notification>
+
+  <notification
+   icon="notifytip.tga"
+   name="PlusPoseConsentBlocksCleared"
+   type="notifytip">
+The people you blocked from asking to pose you ([COUNT]) may ask again.
+  </notification>
+  <!-- /plus -->
+  <!-- plus: the VRAM override was turned on (plus/prefscharis; research/371) -->
+  <notification
+   icon="alertmodal.tga"
+   name="PlusVRAMOverrideWarning"
+   type="alertmodal">
+The VRAM override makes the viewer behave as if the GPU had that much video memory after the next restart. The recommended quality, the shadow size and the texture budget change with it, and textures may look coarse. Use it when the video memory is not detected correctly, or to try a PC with little video memory.
+    <usetemplate
+     name="okbutton"
+     yestext="OK"/>
   </notification>
   <!-- /plus -->
 </notifications>

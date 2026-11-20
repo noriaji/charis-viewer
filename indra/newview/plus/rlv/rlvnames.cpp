@@ -184,6 +184,10 @@ namespace
         std::string  mAnonym;
         bool         mHasDisplay = false;   // rlvIsFilterableName()
         bool         mHasLegacy = false;
+        // The name as this viewer shows it when it differs from both (a contact sets alias, plus/contactsets,
+        // research/333): the texts this viewer makes with it are hidden as well (Firestorm's table had the alias)
+        std::string  mShownName;
+        bool         mHasShown = false;
     };
 
     struct NameTable
@@ -231,7 +235,8 @@ namespace
         for (const LLUUID& idAgent : tbl.mScratchIds)
         {
             LLAvatarName avName;
-            if (!LLAvatarNameCache::get(idAgent, &avName))
+            // The real names (others type those): not a contact sets alias of ours (plus/contactsets, research/333)
+            if (!LLAvatarNameCache::getInstance()->getNameWithoutAlias(idAgent, &avName))
             {
                 fIncomplete = true;
                 continue;
@@ -239,10 +244,16 @@ namespace
 
             const std::string strDisplayName = avName.getDisplayName();
             const std::string strLegacyName = avName.getLegacyName();
+            // With the alias, if any (the cache has the name: getNameWithoutAlias() above found it)
+            LLAvatarName avShown;
+            std::string strShownName = (LLAvatarNameCache::get(idAgent, &avShown)) ? avShown.getDisplayName() : strDisplayName;
+            if ( (strShownName == strDisplayName) || (strShownName == strLegacyName) )
+                strShownName.clear();
 
             // Keep the entry if this avatar's names haven't changed
             auto itOld = std::find_if(tbl.mEntries.begin(), tbl.mEntries.end(), [&idAgent](const NameEntry& e) { return e.mId == idAgent; });
-            if ( (tbl.mEntries.end() != itOld) && (itOld->mDisplayName == strDisplayName) && (itOld->mLegacyName == strLegacyName) )
+            if ( (tbl.mEntries.end() != itOld) && (itOld->mDisplayName == strDisplayName) && (itOld->mLegacyName == strLegacyName) &&
+                 (itOld->mShownName == strShownName) )
             {
                 // The cached results are keyed on entry positions, so a reordering counts as a change
                 if (static_cast<size_t>(itOld - tbl.mEntries.begin()) != entries.size())
@@ -260,6 +271,8 @@ namespace
 
             entry.mHasDisplay = rlvIsFilterableName(strDisplayName);
             entry.mHasLegacy = rlvIsFilterableName(strLegacyName);
+            entry.mShownName = strShownName;
+            entry.mHasShown = rlvIsFilterableName(strShownName);
             entries.push_back(std::move(entry));
         }
         if (entries.size() != tbl.mEntries.size())
@@ -305,6 +318,8 @@ namespace
                 patterns.push_back({ &entry.mLegacyName, pAnonym });
             if (entry.mHasDisplay)
                 patterns.push_back({ &entry.mDisplayName, pAnonym });
+            if (entry.mHasShown)
+                patterns.push_back({ &entry.mShownName, pAnonym });
         }
         rlvReplaceNames(strUTF8Text, patterns);
     }

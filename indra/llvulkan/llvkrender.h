@@ -50,8 +50,9 @@ namespace LLVKRecorder
 // translation. Every LLVKRecorder::finish() (the frame's end, a submit and
 // wait in the frame) joins first: the jobs the thread has not taken are
 // recorded by the main thread, a running one is waited for, one that failed is
-// recorded again by the main thread (its stream emptied). A failure turns the
-// thread off for the session.
+// recorded again by the main thread (its stream emptied). A failure (research/218
+// vk-s2f-2: and auto's first difference while it compares) turns the thread
+// off for the session.
 //
 // Who does what
 // - Main thread (under the backend lock): use(), post(), join(), takeReport().
@@ -146,10 +147,11 @@ namespace LLVKRender
     // slot's last frame). For the main thread too (a pass recorded at a join,
     // or without a stream).
     constexpr U32 SECONDARY_SLOTS = 2;      // LLVKMirror::FRAMES_IN_FLIGHT (checked where both are known)
+    constexpr U32 SECONDARY_COLORS = 5;     // LLVKMirror::MAX_COLORS (checked where both are known)
     struct SecondaryTarget
     {
         U32 color_count = 0;
-        VkFormat colors[4] = { VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED };
+        VkFormat colors[SECONDARY_COLORS] = {};     // VK_FORMAT_UNDEFINED
         VkFormat depth = VK_FORMAT_UNDEFINED;
         VkFormat stencil = VK_FORMAT_UNDEFINED;     // the depth's format when the scope has a stencil attachment
     };

@@ -39,6 +39,10 @@
 #include "llpanel.h"
 
 class LLResizeBar;
+// <plus> chat-channel-select
+class LLSpinCtrl;
+class LLButton;
+// </plus>
 
 class LLFloaterIMNearbyChat
     :   public LLFloaterIMSessionTab
@@ -82,6 +86,17 @@ public:
 
     static bool isWordsName(const std::string& name);
 
+    // <plus> chat-bar (plus/chatbar, research/334): what typing in and sending from a nearby chat field does, for
+    // any such field: this floater's (mInputEditor) and the chat bar beside the bottom toolbar share them.
+    // A keystroke: the typing animation, the gesture completion. Sending: the text (with "/number", a gesture,
+    // "/whisper" "/shout") is said, the field emptied, its focus let go when CloseChatOnReturn is on.
+    // selected_channel: the channel of a text without "/number" and where no typing animation is shown when not 0:
+    // this floater's selector (getSelectedChannel(), chat-channel-select); 0 for the chat bar, which always says on
+    // 0 as in Firestorm, whatever the floater's selectors.
+    static void onChatEntryKeystroke(LLChatEntry* editor, S32 selected_channel);
+    static void sendChatFromEntry(LLChatEntry* editor, EChatType type, S32 selected_channel);
+    // </plus>
+
     void showHistory();
 
 protected:
@@ -97,8 +112,16 @@ protected:
     /*virtual*/ void onTearOffClicked();
     /*virtual*/ void onClickCloseBtn(bool app_qutting = false);
 
-    static LLWString stripChannelNumber(const LLWString &mesg, S32* channel);
-    EChatType processChatTypeTriggers(EChatType type, std::string &str);
+    static LLWString stripChannelNumber(const LLWString &mesg, S32* channel, bool* is_set = nullptr); // <plus> is_set: chat-channel-select </plus>
+    // <plus> chat-channel-select / chat-type button (from Firestorm)
+    // sendChatFromViewer() with the channel decided by the caller (the window's own send path uses the selector; other callers do not)
+    static void sendChatToChannel(const LLWString &wtext, const LLWString &out_text, S32 channel, EChatType type, bool animate);
+    EChatType getSelectedChatType() const;
+    S32 getSelectedChannel() const;
+    void updateInputExtras();
+    void onChatTypeChanged();
+    // </plus>
+    static EChatType processChatTypeTriggers(EChatType type, std::string &str); // <plus> chat-bar: static (it reads no member; sendChatFromEntry() is static) </plus>
 
     void displaySpeakingIndicator();
 
@@ -110,8 +133,20 @@ protected:
 
     S32 mExpandedHeight;
 
+    // <plus> chat-channel-select / chat-type button
+    LLPanel*    mChatChannelPanel = nullptr;
+    LLSpinCtrl* mChatChannelSpinner = nullptr;
+    LLPanel*    mChatTypePanel = nullptr;
+    LLComboBox* mChatTypeCombo = nullptr;
+    LLButton*   mSendChatButton = nullptr;
+    boost::signals2::scoped_connection mShowChannelConn;
+    boost::signals2::scoped_connection mShowTypeConn;
+    boost::signals2::scoped_connection mTimeLocalConn;    // chat-time-local: stamp the kept lines again
+    // </plus>
+
 private:
     /*virtual*/ void refresh();
+    void restampArchive();
 
     std::vector<LLChat> mMessageArchive;
 };

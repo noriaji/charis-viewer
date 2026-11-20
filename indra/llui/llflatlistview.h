@@ -110,7 +110,7 @@ public:
         /** allow items to be reordered by dragging them with the mouse */
         Optional<bool> allow_reorder;
 
-        /** colour of the insertion indicator drawn while reordering */
+        /** colour of the highlight drawn on the rows being dragged */ // <plus> reorder-live </plus>
         Optional<LLUIColor> drag_indicator_color;
 
         /** textbox with info message when list is empty*/
@@ -427,23 +427,33 @@ private:
     void armReorderDrag(item_pair_t* item_pair);
     void updateReorderDrag(S32 x, S32 y);
     void finishReorderDrag();
-    void cancelReorderDrag();
-    void clearReorderDragState();
+    void cancelReorderDrag(bool send_ended = true); // <plus> reorder-live: send_ended=false lets the caller send the end call last </plus>
+    void clearReorderDragState(bool send_ended = true); // <plus> reorder-live </plus>
+    void notifyReorderEnded(bool armed); // <plus> reorder-live </plus>
 
     // Builds the set of pairs being dragged (the whole selection when the grabbed
     // row is part of a multi-selection, constrained to the validator's group).
     void buildReorderGroup();
     bool isInReorderGroup(item_pair_t* item_pair) const;
 
-    // The remaining visible pairs (those not being dragged), in visual order.
-    void getReorderRemaining(pairs_list_t& remaining) const;
-    // Number of leading non-dragged items whose centre sits above (x, y).
-    S32 getInsertIndexAt(S32 x, S32 y) const;
+    // <plus> reorder-live
+    // Live preview: moves the dragged rows to the slot under (x, y) while the
+    // button is held; outside the validator's group it restores the original order.
+    void updateReorderPreview(S32 x, S32 y);
+    // Puts the item order back to what it was when the drag started.
+    void restoreReorderOrder();
+    // The start order limited to the rows still present, new rows placed after their predecessor.
+    void getReorderRestoredOrder(pairs_list_t& restored) const;
+    // Nearest visible row by height only (for lists without a validator).
+    item_pair_t* getReorderPairNearestY(S32 x, S32 y) const;
+    // Top and bottom of the grabbed row if the dragged rows took the target's slot (items-panel coordinates).
+    void getReorderGrabbedExtentAfterSwap(item_pair_t* target, bool target_after, S32& top, S32& bottom) const;
+    // True when the rows that were there at the start now sit in another order.
+    bool isReorderChanged() const;
+    // </plus>
     // Row under (x, y), counting the padding above each row, so presses in the
     // inter-row gaps still map to a row instead of falling through.
     item_pair_t* getReorderPairAt(S32 x, S32 y) const;
-    // Clamps an insertion boundary to the validator's contiguous group.
-    S32 constrainInsertIndex(S32 dest_index) const;
     void drawReorderIndicator();
 
     void setItemsNoScrollWidth(S32 new_width) {mItemsNoScrollWidth = new_width - 2 * mBorderThickness;}
@@ -497,7 +507,11 @@ private:
     item_pair_t* mDeferredSelectPair; // collapse selection to this on mouse-up if no drag
     S32 mReorderMouseDownX;
     S32 mReorderMouseDownY;
-    S32 mReorderInsertIndex;        // current drop boundary among the remaining (non-dragged) items
+    // <plus> reorder-live
+    bool mReorderOutOfRange;        // cursor is outside the allowed range: drop reverts the order
+    pairs_list_t mReorderOrigOrder; // item order when the drag started, restored on revert
+    item_pair_t* mReorderSwapLockPair; // row just swapped with: no swap until the cursor leaves it (only compared, never used)
+    // </plus>
     LLUIColor mDragIndicatorColor;
     reorder_signal_t mReorderCallback;
     reorder_validate_signal_t mReorderValidateCallback;

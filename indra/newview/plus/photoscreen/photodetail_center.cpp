@@ -40,6 +40,7 @@
 #include "photodetail_state.h"
 #include "photoscreen.h"
 #include "plus/flycammouse/flycammouse.h"
+#include "plus/look/look.h"
 #include "plus/photomode/photolook.h"
 #include "plus/photomode/photomode.h"
 #include "plus/photomode/photoshot.h"
@@ -220,21 +221,46 @@ namespace plus::photoscreen::detail
                 return true;
             }
 
-            // The width for the chosen row's text (from the tick, when the row changed); the row of chips is laid
-            // out again.
-            void fit()
+            // The width for the chosen row's text (from the tick, when the row or the count of rows changed). True: the
+            // natural width changed; the caller lays the chips out again (once for all of them), which sets the width
+            // (setWidthCap).
+            bool fit()
             {
                 const S32 index = getCurrentIndex();
                 const S32 count = getItemCount();
                 if (index == mFitIndex && count == mFitCount)
                 {
-                    return;
+                    return false;
                 }
                 mFitIndex = index;
                 mFitCount = count;
-                namespace st = psui::style;
                 const LLWString text = utf8str_to_wstring(getSelectedItemLabel());
-                S32 width = st::CHIP_PAD * 2 + (mFont ? mFont->getWidth(text.c_str()) : 0);
+                const S32 natural = minWidth() + (mFont ? mFont->getWidth(text.c_str()) : 0);
+                if (natural == mNaturalW)
+                {
+                    return false;
+                }
+                mNaturalW = natural;
+                applyWidth();
+                return true;
+            }
+
+            // The rows were made again (the look chip): the text and the width are taken again at the next fit and draw,
+            // also when the chosen row's position and the count of rows are the same as before.
+            void forgetShown()
+            {
+                mShownIndex = mFitIndex = -2;
+                mShownCount = mFitCount = -1;
+            }
+
+            // The width the text wants; before the first fit, the width as made.
+            S32 naturalWidth() const { return mNaturalW >= 0 ? mNaturalW : getRect().getWidth(); }
+
+            // The least width that still shows the icon (and the chevron).
+            S32 minWidth() const
+            {
+                namespace st = psui::style;
+                S32 width = st::CHIP_PAD * 2;
                 if (mIcon.notNull())
                 {
                     width += st::CHIP_ICON + st::CHIP_GAP;
@@ -243,14 +269,15 @@ namespace plus::photoscreen::detail
                 {
                     width += st::CHIP_GAP + st::COMBO_CHEVRON;
                 }
-                if (width != getRect().getWidth())
-                {
-                    reshape(width, getRect().getHeight());
-                    if (psui::PsRow* row = dynamic_cast<psui::PsRow*>(getParent()))
-                    {
-                        row->arrange();
-                    }
-                }
+                return width;
+            }
+
+            // The most the layout lets this chip be: a long row's text is cut with dots, and a narrow world squeezes
+            // the chips.
+            void setWidthCap(S32 cap)
+            {
+                mCap = cap;
+                applyWidth();
             }
 
             void draw() override
@@ -264,6 +291,7 @@ namespace plus::photoscreen::detail
                     mShownIndex = index;
                     mShownCount = count;
                     mShown = utf8str_to_wstring(getSelectedItemLabel());
+                    mShownW = mFont ? mFont->getWidth(mShown.c_str()) : 0;
                 }
                 const bool open = mList && mList->getVisible();
                 const F32  w = F32(getRect().getWidth());
@@ -288,8 +316,13 @@ namespace plus::photoscreen::detail
                     x += F32(st::CHIP_ICON + st::CHIP_GAP);
                 }
                 const F32 right_room = F32(st::CHIP_PAD) + (mHasChevron ? F32(st::CHIP_GAP + st::COMBO_CHEVRON) : 0.f);
-                psui::drawText(mFont, mShown, x, h * 0.5f, psui::faded(st::TEXT_WHITE, a), LLFontGL::LEFT, LLFontGL::VCENTER,
-                               llmax(0, S32(w - x - right_room)), true);
+                // A place narrower than the dots (and than the text) shows no text: the dots would run over the chevron.
+                const S32 text_room = llmax(0, S32(w - x - right_room));
+                if (text_room >= mShownW || text_room >= mEllipsisW)
+                {
+                    psui::drawText(mFont, mShown, x, h * 0.5f, psui::faded(st::TEXT_WHITE, a), LLFontGL::LEFT, LLFontGL::VCENTER,
+                                   text_room, true);
+                }
                 if (mHasChevron)
                 {
                     psui::drawIcon(mChevron.get(), w - F32(st::CHIP_PAD) - F32(st::COMBO_CHEVRON) * 0.5f, h * 0.5f,
@@ -316,6 +349,7 @@ namespace plus::photoscreen::detail
                 mFont(psui::font(psui::style::FONT_BUTTON)),
                 mHasChevron(p.chevron)
             {
+                mEllipsisW = mFont ? mFont->getWidth(utf8str_to_wstring("...").c_str()) : 0;
             }
 
         private:
@@ -324,15 +358,36 @@ namespace plus::photoscreen::detail
             bool mHasChevron;
             bool mHover = false;
             LLWString mShown;
+            S32 mShownW = 0, mEllipsisW = 0;
             S32 mShownIndex = -2, mShownCount = -1;
             S32 mFitIndex = -2, mFitCount = -1;
+            S32 mNaturalW = -1;
+            S32 mCap = 100000;
+
+            void applyWidth()
+            {
+                if (mNaturalW < 0)
+                {
+                    return;
+                }
+                const S32 width = llmax(minWidth(), llmin(mNaturalW, mCap));
+                if (width != getRect().getWidth())
+                {
+                    reshape(width, getRect().getHeight());
+                }
+            }
         };
 
         LLDefaultChildRegistry::Register<ChipCombo> sChipComboRegistration("plus_ps_chip_combo");
 
         constexpr const char* CHIP_NAMES[] = { "chip_look", "chip_res", "chip_aspect", "chip_grid" };
 
-        void fillChips(LLPanel* top)
+        // What the look chip's rows were made from: the looks of the folders (plus::look::generation()) and the id of
+        // the look in use when it is not among them (then the last row says it was not found).
+        unsigned    sLookChipGeneration = 0;
+        std::string sLookChipMissing;
+
+        void fillLookChip(LLPanel* top, const std::string& missing)
         {
             LLComboBox* look = top->getChild<LLComboBox>("chip_look");
             look->removeall();
@@ -346,6 +401,24 @@ namespace plus::photoscreen::detail
                     sS.lookIds.push_back(choice.id);
                 }
             }
+            if (!missing.empty())
+            {
+                // not in lookIds: choosing this row does nothing (the commit looks the index up in lookIds)
+                LLStringUtil::format_map_t args;
+                args["[NAME]"] = missing.rfind("user:", 0) == 0 ? missing.substr(5) : missing;
+                look->add(str("LookMissing", args), LLSD(index));
+            }
+            if (ChipCombo* chip = top->findChild<ChipCombo>("chip_look"))
+            {
+                chip->forgetShown();
+            }
+            sLookChipGeneration = plus::look::generation();
+            sLookChipMissing    = missing;
+        }
+
+        void fillChips(LLPanel* top)
+        {
+            fillLookChip(top, std::string());
             LLComboBox* size = top->getChild<LLComboBox>("chip_res");
             size->removeall();
             for (int i = 0; i < pm::SHOT_SIZE_COUNT; ++i)
@@ -382,20 +455,35 @@ namespace plus::photoscreen::detail
             setComboIfChanged(top->getChild<LLComboBox>("chip_aspect"), LLSD((S32)aspect));
             setComboIfChanged(top->getChild<LLComboBox>("chip_grid"), LLSD(guide_on ? llclamp((S32)guide_kind, 0, GRID_KINDS) : 0));
             const std::string now = pm::currentLook();
-            for (size_t i = 0; i < sS.lookIds.size(); ++i)
+            const bool gone = !now.empty() && !plus::look::exists(now);
+            if (plus::look::generation() != sLookChipGeneration || gone != !sLookChipMissing.empty() || (gone && now != sLookChipMissing))
+            {
+                fillLookChip(top, gone ? now : std::string());    // looks read again, or the look in use is gone: the rows follow
+            }
+            S32 shown = gone ? (S32)sS.lookIds.size() : -1;    // the "not found" row is the one after the looks
+            for (size_t i = 0; i < sS.lookIds.size() && !gone; ++i)
             {
                 if (sS.lookIds[i] == now)
                 {
-                    setComboIfChanged(top->getChild<LLComboBox>("chip_look"), LLSD((S32)i));
+                    shown = (S32)i;
                     break;
                 }
             }
+            if (shown >= 0)
+            {
+                setComboIfChanged(top->getChild<LLComboBox>("chip_look"), LLSD(shown));
+            }
+            bool widths_changed = false;
             for (const char* name : CHIP_NAMES)
             {
                 if (ChipCombo* chip = top->findChild<ChipCombo>(name))
                 {
-                    chip->fit();
+                    widths_changed |= chip->fit();
                 }
+            }
+            if (widths_changed)
+            {
+                relayoutChips();    // once for all the chips
             }
         }
 
@@ -497,13 +585,132 @@ namespace plus::photoscreen::detail
     // Inside the world at its top left (research/221 8.), up to the histogram's frame at the top right.
     namespace
     {
-        // The chips' row inside the world, at its top left (left of the histogram's frame).
+        constexpr S32 CHIP_SPACING  = 10;   // between the chips of a line (the code places them; the XML only names them)
+        constexpr S32 CHIP_LINE_GAP = 8;    // between two lines of chips
+
+        LLRect sChipsRect;                  // the panel's rectangle from the last layoutTop (the chat and topTaken read it)
+
+        // Where each chip stands and how wide it is. The chips go in one line while they fit; else they wrap: the first
+        // line may reach up to the exit button at the top right, the lines beside the histogram's frame stay left of it,
+        // and a line under the frame may reach as far as the first. Never more lines than the world's height leaves
+        // room for (the chat input and the read-out stand at its bottom); when the text does not fit so, the chips are
+        // made narrower, all by the same cap, their text cut with dots. A click reaches a child only inside its
+        // parent's rectangle, so the panel is made as large as the lines.
+        struct ChipsPlan
+        {
+            static constexpr int MAX = 4;
+            ChipCombo* view[MAX]  = {};
+            S32        width[MAX] = {};
+            S32        line[MAX]  = {};
+            S32        x[MAX]     = {};
+            int        count      = 0;
+            S32        lines      = 1;
+            S32        width_all  = 0;
+            S32        cap        = 0;      // the most a chip may be wide
+            LLView*    row        = nullptr;
+        };
+
+        // planChips() searches the widest cap that fits by halving, which needs "fits" to hold for every cap under one
+        // that fits. That holds while (1) the first line has the most room (first_room >= other_room: the exit button
+        // is narrower than the histogram's frame with its gap) and (2) the second and later lines never come out under
+        // the frame, where the room would grow again (the last line starts above the frame's bottom).
+        static_assert(HIST_W + WORLD_INSET >= EXIT_SIZE + EXIT_GAP,
+                      "the first line of chips is not the widest: planChips()'s search is no longer monotone");
+        static_assert((ChipsPlan::MAX - 1) * (CHIP_ROW_H + CHIP_LINE_GAP) < EXIT_SIZE + EXIT_GAP + HIST_H,
+                      "a line of chips under the histogram's frame: planChips()'s search is no longer monotone");
+
+        ChipsPlan planChips()
+        {
+            ChipsPlan plan;
+            LLPanel* top = sS.top.get();
+            plan.row = top ? top->findChildView("chips", false) : nullptr;
+            if (!plan.row)
+            {
+                return plan;
+            }
+            for (const char* name : CHIP_NAMES)
+            {
+                ChipCombo* chip = plan.row->findChild<ChipCombo>(name, false);
+                if (chip && plan.count < ChipsPlan::MAX)
+                {
+                    plan.view[plan.count++] = chip;
+                }
+            }
+            const S32 left        = sS.world.mLeft + WORLD_INSET;
+            const S32 first_room  = llmax(0, sS.world.mRight - WORLD_INSET - EXIT_SIZE - EXIT_GAP - left);
+            const S32 other_room  = llmax(0, sS.world.mRight - WORLD_INSET - HIST_W - WORLD_INSET - left);
+            const S32 hist_top    = EXIT_SIZE + EXIT_GAP;       // under the chips' top
+            const S32 hist_bottom = hist_top + HIST_H;
+            const S32 stack_room  = sS.world.getHeight() - WORLD_INSET - CHAT_BOTTOM;
+            const S32 max_lines   = llclamp((stack_room + CHIP_LINE_GAP) / (CHIP_ROW_H + CHIP_LINE_GAP), 1, ChipsPlan::MAX);
+
+            auto room_for = [&](S32 line) {
+                const S32 line_top = line * (CHIP_ROW_H + CHIP_LINE_GAP);
+                const bool beside_frame = line_top + CHIP_ROW_H > hist_top && line_top < hist_bottom;
+                return beside_frame ? other_room : first_room;
+            };
+            // The chips at widths up to `cap`, wrapped where a line is full. True: every chip stands inside its line's
+            // room and the lines are no more than the world's height leaves room for.
+            auto layout = [&](S32 cap) {
+                bool fits = true;
+                S32 x = 0, line = 0;
+                plan.cap       = cap;
+                plan.width_all = 0;
+                for (int i = 0; i < plan.count; ++i)
+                {
+                    const S32 w = llmax(plan.view[i]->minWidth(), llmin(plan.view[i]->naturalWidth(), cap));
+                    if (x > 0 && x + w > room_for(line))
+                    {
+                        ++line;
+                        x = 0;
+                    }
+                    fits = fits && w <= room_for(line) && line < max_lines;
+                    plan.width[i]  = w;
+                    plan.line[i]   = line;
+                    plan.x[i]      = x;
+                    plan.width_all = llmax(plan.width_all, x + w);
+                    x += w + CHIP_SPACING;
+                }
+                plan.lines = line + 1;
+                return fits;
+            };
+
+            // The widest cap at which they fit: the text as it is while there is room (more lines before cut text),
+            // else cut with dots. Where not even the icons' width fits, the icons wrap as far as they must (a chip
+            // that can be clicked over the frame before one that is out of the world). A cap under a chip's least width
+            // leaves that chip at its least width (layout), so the search goes down to 0.
+            S32 low = 0, high = first_room, best = -1;
+            while (low <= high)
+            {
+                const S32 mid = (low + high) / 2;
+                if (layout(mid))
+                {
+                    best = mid;
+                    low = mid + 1;
+                }
+                else
+                {
+                    high = mid - 1;
+                }
+            }
+            layout(best >= 0 ? best : 0);
+            return plan;
+        }
+
+        // The chips' lines inside the world, at its top left.
+        LLRect chipsRectOf(const ChipsPlan& plan)
+        {
+            const S32 left   = sS.world.mLeft + WORLD_INSET;
+            const S32 high   = sS.world.mTop - WORLD_INSET;
+            const S32 width  = plan.count > 0 ? plan.width_all
+                                              : llmax(0, sS.world.mRight - WORLD_INSET - HIST_W - WORLD_INSET - left);
+            const S32 height = plan.lines * CHIP_ROW_H + (plan.lines - 1) * CHIP_LINE_GAP;
+            return LLRect(left, high, left + width, high - height);
+        }
+
         LLRect chipsRect()
         {
-            const S32 left  = sS.world.mLeft + WORLD_INSET;
-            const S32 right = llmax(left, sS.world.mRight - WORLD_INSET - HIST_W - WORLD_INSET);
-            const S32 high  = sS.world.mTop - WORLD_INSET;
-            return LLRect(left, high, right, high - CHIP_ROW_H);
+            return sChipsRect;
         }
 
         // The histogram's frame at the top right of the world, under the exit button (its place in panel_plus_photoscreen_hud.xml).
@@ -517,9 +724,32 @@ namespace plus::photoscreen::detail
 
     void layoutTop(const Margins&)
     {
-        if (LLPanel* top = sS.top.get())
+        LLPanel* top = sS.top.get();
+        if (!top)
         {
-            top->setShape(chipsRect());
+            return;
+        }
+        const ChipsPlan plan = planChips();
+        sChipsRect = chipsRectOf(plan);
+        top->setShape(sChipsRect);
+        if (!plan.row)
+        {
+            return;
+        }
+        plan.row->setShape(LLRect(0, sChipsRect.getHeight(), sChipsRect.getWidth(), 0));
+        for (int i = 0; i < plan.count; ++i)
+        {
+            plan.view[i]->setWidthCap(plan.cap);    // the width the plan counted with
+            plan.view[i]->setOrigin(plan.x[i], sChipsRect.getHeight() - (plan.line[i] + 1) * CHIP_ROW_H - plan.line[i] * CHIP_LINE_GAP);
+        }
+    }
+
+    void relayoutChips()
+    {
+        if (sS.shown)
+        {
+            layoutTop(Margins());
+            layoutHud();
         }
     }
 
@@ -552,7 +782,7 @@ namespace plus::photoscreen::detail
             {
                 width = llclamp(badge->getRect().mLeft - CHAT_BADGE_GAP - WORLD_INSET, 0, width);
             }
-            const S32 height = llclamp(sS.world.getHeight() - CHAT_BOTTOM - CHAT_TOP_ROOM, 0, CHAT_MAX_H);
+            const S32 height = llclamp(sS.world.getHeight() - CHAT_BOTTOM - CHAT_TOP_ROOM - llmax(0, chipsRect().getHeight() - CHIP_ROW_H), 0, CHAT_MAX_H);
             hud::setChatRect(sS.hudDraw.get(), LLRect(WORLD_INSET, CHAT_BOTTOM + height, WORLD_INSET + width, CHAT_BOTTOM));
             if (LLView* box = hud->findChildView("chat_box", false))     // the input inside follows its width
             {

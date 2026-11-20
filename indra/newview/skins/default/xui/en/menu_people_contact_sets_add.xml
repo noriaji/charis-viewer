@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Charis: the + button of the Contact Sets tab of the People window (plus/contactsets/peopletab,
+     research/333). From Firestorm's menu_people_contact_sets_add.xml. -->
+<toggleable_menu
+ left="0"
+ bottom="0"
+ mouse_opaque="false"
+ name="menu_people_contact_sets_add"
+ visible="false">
+  <menu_item_call
+   label="New Set..."
+   name="add_set">
+      <menu_item_call.on_click
+       function="ContactSet.Action"
+       parameter="add_set" />
+  </menu_item_call>
+  <menu_item_call
+   label="Add People..."
+   name="add_contact">
+      <menu_item_call.on_click
+       function="ContactSet.Action"
+       parameter="add_contact" />
+      <menu_item_call.on_enable
+       function="ContactSet.Enable"
+       parameter="has_mutable_set" />
+  </menu_item_call>
+</toggleable_menu>

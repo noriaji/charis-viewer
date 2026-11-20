@@ -56,6 +56,10 @@ namespace plus::camroll
     // (the flycam starts from it, the tilt goes on again with applyFlycam(), and does not show twice).
     LLQuaternion flycamStart();
 
+    // The other way: the flycam's attitude 'flycam' with the tilt on top (the setting), as applyFlycam() turns the
+    // camera. For LLAgentCamera::levelFlycam() (the 0 key), which folds the tilt into the flycam and sets it to 0.
+    LLQuaternion withTilt(const LLQuaternion& flycam);
+
     // The hooks where the camera is reset (resetView, resetCameraOrbit, switchCameraPreset): level again.
     void reset();
 

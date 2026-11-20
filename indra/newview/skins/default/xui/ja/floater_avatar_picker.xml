@@ -54,6 +54,17 @@
 				<columns label="ユーザ名" name="username"/>
 			</scroll_list>
 		</panel>
+		<!-- plus contactsets -->
+		<panel label="コンタクトセット" name="ContactSetsPanel">
+			<text name="SelectContactSetLabel">
+				コンタクトセットを選ぶ：
+			</text>
+			<scroll_list name="ContactSetMembers">
+				<columns label="名前" name="name"/>
+				<columns label="ユーザ名" name="username"/>
+			</scroll_list>
+		</panel>
+		<!-- /plus -->
 	</tab_container>
 	<button label="ＯＫ" label_selected="ＯＫ" name="ok_btn"/>
 	<button label="キャンセル" label_selected="キャンセル" name="cancel_btn"/>

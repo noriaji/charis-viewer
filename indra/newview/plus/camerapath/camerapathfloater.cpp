@@ -334,6 +334,7 @@ namespace plus::camerapath
                 mShakeSeed   = getChild<LLSpinCtrl>("shake_seed");
                 mCountdown   = getChild<LLSpinCtrl>("countdown");
                 mShowRoute   = getChild<LLCheckBoxCtrl>("show_route");
+                mHideUi      = getChild<LLCheckBoxCtrl>("hide_ui");
                 mFps     = getChild<LLComboBox>("export_fps");
                 mTilt    = getChild<LLSliderCtrl>("tilt");
                 mLevel   = getChild<LLButton>("btn_level");
@@ -576,6 +577,7 @@ namespace plus::camerapath
                     }
                 });
                 mShowRoute->setCommitCallback([](LLUICtrl* ctrl, const LLSD&) { camerapath::setShowRoute(ctrl->getValue().asBoolean()); });
+                mHideUi->setCommitCallback([](LLUICtrl* ctrl, const LLSD&) { camerapath::setHideUIWhilePlaying(ctrl->getValue().asBoolean()); });
                 getChild<LLButton>("btn_export")->setCommitCallback([this](LLUICtrl*, const LLSD&) {
                     std::string error;
                     if (camerapath::startExport(mFps->getValue().asInteger(), error))
@@ -605,6 +607,7 @@ namespace plus::camerapath
                 mStop->setCommitCallback([](LLUICtrl*, const LLSD&) { camerapath::stop(); });
 
                 mShowRoute->setValue(camerapath::showRoute());
+                mHideUi->setValue(camerapath::hideUIWhilePlaying());
                 mFps->selectNthItem(1);   // 30 frames/s
                 refresh();
                 return true;
@@ -1057,6 +1060,7 @@ namespace plus::camerapath
             LLSpinCtrl*       mShakeSeed = nullptr;
             LLSpinCtrl*       mCountdown = nullptr;
             LLCheckBoxCtrl*   mShowRoute = nullptr;
+            LLCheckBoxCtrl*   mHideUi = nullptr;
             LLComboBox*       mFps = nullptr;
             LLSliderCtrl*     mTilt = nullptr;
             LLButton*         mLevel = nullptr;

@@ -45,6 +45,9 @@
 #include "llfloaterreg.h"  // HACK for destinations guide on startup
 #include "llviewercontrol.h"  // HACK for destinations guide on startup
 #include "llinventorymodel.h" // HACK to disable starter avatars button for NUX
+// <plus> chat-bar: the chat bar beside the bottom toolbar (plus/chatbar, research/334)
+#include "plus/chatbar/chatbarlayout.h"
+// </plus>
 
 LLToolBarView* gToolBarView = NULL;
 
@@ -562,6 +565,10 @@ void LLToolBarView::draw()
                                             && (mToolbars[i]->hasButtons()
                                             || isToolDragged()));
     }
+    // <plus> chat-bar: the bottom toolbar is in a panel of its own beside the chat bar (panel_toolbar_view.xml); the
+    // bottom panel holding both is shown and sized here (plus/chatbar, research/334)
+    plus::chatbar::syncBottomPanel(mBottomToolbarPanel, mToolbars[LLToolBarEnums::TOOLBAR_BOTTOM], mShowToolbars);
+    // </plus>
 
     // Draw drop zones if drop of a tool is active
     if (isToolDragged())

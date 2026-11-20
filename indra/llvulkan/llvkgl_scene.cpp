@@ -320,8 +320,9 @@ namespace
     // with target.stencil).
     LLVKRender::SecondaryTarget secondary_formats(const LLVKMirror::Target& target)
     {
+        static_assert(LLVKRender::SECONDARY_COLORS == LLVKMirror::MAX_COLORS, "a secondary buffer inherits every colour attachment");
         LLVKRender::SecondaryTarget out;
-        out.color_count = llmin(target.color_count, 4u);
+        out.color_count = llmin(target.color_count, LLVKRender::SECONDARY_COLORS);
         for (U32 i = 0; i < out.color_count; ++i)
         {
             out.colors[i] = target.colors[i] ? target.color_formats[i] : VK_FORMAT_UNDEFINED;
@@ -456,7 +457,7 @@ namespace
         {
             return false;
         }
-        for (U32 i = 0; i < a.color_textures && i < 4; ++i)
+        for (U32 i = 0; i < a.color_textures && i < LLVKMirror::MAX_COLORS; ++i)
         {
             if (a.colors[i] != b.colors[i])
             {

@@ -62,6 +62,7 @@
 #include "plus/focuslock/focuslock.h"
 #include "plus/photomode/photoshot.h"
 #include "plus/shortcutbar/shortcutbar.h"
+#include "plus/uiscope/uiscope.h"
 
 #include <cmath>
 #include <vector>
@@ -100,7 +101,6 @@ namespace plus::photoscreen
     {
         constexpr char SETTING_SIMPLE[]  = "PlusPhotoScreenSimple";
         constexpr char SETTING_ASPECT[]  = "PlusPhotoShotAspect";
-        constexpr char SETTING_HIDE_UI[] = "HideUIControls";
 
         // The frame of the detailed mode (RAIL_W .. FRAME_SCALE_MAX) is in the table of sizes,
         // photodetail_layout.h.
@@ -116,17 +116,6 @@ namespace plus::photoscreen
         {
             const std::string& name = floater->getName();
             return name == "nearby_chat" || name == "im_container";
-        }
-
-        // What View > Hide UI does back (LLViewToggleUI::confirm()), without its question.
-        void undoHideUiControls()
-        {
-            if (gSavedSettings.getBOOL(SETTING_HIDE_UI))
-            {
-                gViewerWindow->setUIVisibility(true);
-                LLPanelStandStopFlying::getInstance()->setVisible(true);
-                gSavedSettings.setBOOL(SETTING_HIDE_UI, false);
-            }
         }
 
         // The sizes of the frame for a window w x h (false: the simple mode, or too small for a frame).
@@ -217,115 +206,47 @@ namespace plus::photoscreen
             friend class LLUICtrlFactory;
         };
 
-        // The UI that was shown when the photo screen went in, and what it hid. Its destructor shows
-        // those again: every way out of the mode is the deletion of this object. Views are held by
-        // handle: one that is gone by then (log out) is skipped.
+        // The UI that was shown when the photo screen went in, and what it hid: plus/uiscope does the hiding (the
+        // camera path's hidden UI uses it too, so the two hand each other what they hid when one is played in the
+        // other). Its destructor shows those again: every way out of the mode is the deletion of this object.
         class UiScope
         {
         public:
-            UiScope() : mHud(LLPipeline::sShowHUDAttachments)
+            UiScope() : mScope(options())
             {
-                undoHideUiControls();
                 // The shortcut bar decides its own showing every idle (its setting, the UI shown), so it is
                 // held off by its flag, not hidden here; let go, it shows again only if it would anyway.
                 plus::shortcutbar::setSuppressed(true);
-                hideSingles();
-                hideFloaters(gFloaterView);
-                hideFloaters(gPlusDetachedFloaterView);
             }
 
-            ~UiScope() { restore(); }
+            ~UiScope()
+            {
+                mScope.release();
+                plus::shortcutbar::setSuppressed(false);
+            }
 
             UiScope(const UiScope&)            = delete;
             UiScope& operator=(const UiScope&) = delete;
 
-            // The bars and the menu: every frame, as the official code may show them again (the switch of
-            // View > Hide UI, a setting that shows the navigation bar). What is not shown is left alone.
-            void hideSingles()
-            {
-                hide(gMenuBarView);
-                hide(LLNavigationBar::getInstance());
-                hide(LLPanelTopInfoBar::getInstance());
-                if (gStatusBar)
-                {
-                    hide(gStatusBar->getParent());  // the container of the status bar, as setUIVisibility()
-                }
-                if (gToolBarView)
-                {
-                    gToolBarView->setToolBarsVisible(false);    // as setUIVisibility(): the flag of the bars, the same every frame
-                    mToolbars = true;
-                }
-                // The chiclet bar (conversations and the notification well's unread count) is a sibling of the
-                // toolbars, so setToolBarsVisible() above does not reach it; hide it here, restored with the rest.
-                if (gViewerWindow)
-                {
-                    hide(gViewerWindow->getChicletContainer());
-                }
-            }
+            // Every frame: View > Hide UI is undone, and the bars and the menu are hidden again if the official code
+            // showed them (a setting that shows the navigation bar).
+            void tick() { mScope.tick(); }
 
-            void restore()
-            {
-                // in the order the hiding was done
-                for (LLHandle<LLView>& handle : mViews)
-                {
-                    if (LLView* view = handle.get())
-                    {
-                        view->setVisible(true);
-                    }
-                }
-                mViews.clear();
-                for (LLHandle<LLFloater>& handle : mFloaters)
-                {
-                    if (LLFloater* floater = handle.get())
-                    {
-                        floater->setVisible(true);
-                    }
-                }
-                mFloaters.clear();
-                if (mToolbars && gToolBarView)
-                {
-                    gToolBarView->setToolBarsVisible(true);
-                }
-                mToolbars = false;
-                plus::shortcutbar::setSuppressed(false);
-                // RLVa: a locked HUD that came while in the mode is not left hidden
-                LLPipeline::sShowHUDAttachments = mHud || (plus::rlv::enabled() && plus::rlv::hasLockedHUD());
-            }
+            // Let go already (the quit observer): the mode is to end too.
+            bool released() const { return mScope.released(); }
 
         private:
-            void hide(LLView* view)
+            static plus::uiscope::Options options()
             {
-                if (view && view->getVisible())
-                {
-                    mViews.push_back(view->getHandle());
-                    view->setVisible(false);
-                }
+                plus::uiscope::Options o;
+                o.staysShown = &staysShown;
+                o.hud        = plus::uiscope::Hud::Restore;   // not hidden here (its button), put back to what it was
+                o.ownsHideUi = true;                           // View > Hide UI is not for in here
+                o.windowsOnlyAtEntry = true;                   // what is opened in here is the user's
+                return o;
             }
 
-            // Once, at the entry: a floater the user opens in here (the 360 snapshot, a notification)
-            // is theirs to see.
-            void hideFloaters(LLFloaterView* view)
-            {
-                if (!view)
-                {
-                    return;
-                }
-                const LLView::child_list_t children = *view->getChildList();    // setVisible() may call back
-                for (LLView* child : children)
-                {
-                    LLFloater* floater = dynamic_cast<LLFloater*>(child);
-                    if (floater && floater->getVisible() && !staysShown(floater))
-                    {
-                        mFloaters.push_back(floater->getHandle());
-                        floater->setVisible(false);
-                    }
-                }
-            }
-
-            std::vector<LLHandle<LLView>>    mViews;
-            std::vector<LLHandle<LLFloater>> mFloaters;
-            bool mToolbars = false;
-            bool mHud;
+            plus::uiscope::Scope mScope;
         };
 
         // Not deleted at the end of the process on purpose (a static destructor after the UI is gone
@@ -564,18 +485,14 @@ namespace plus::photoscreen
                 sTickRegistered = false;
                 return true;
             }
-            if (mustLeave())
+            // released(): a quit was asked for (plus/uiscope lets go first), and may be cancelled: the mode ends then too
+            if (mustLeave() || sScope->released())
             {
                 leave();
                 sTickRegistered = false;
                 return true;
             }
-            static LLCachedControl<bool> hide_ui(gSavedSettings, SETTING_HIDE_UI, false);
-            if (hide_ui)
-            {
-                undoHideUiControls();   // View > Hide UI is not for in here
-            }
-            sScope->hideSingles();
+            sScope->tick();
             refreshExitEnabled();
 
             // In mouselook the world is the whole window (the official code does not ask for our rectangle):

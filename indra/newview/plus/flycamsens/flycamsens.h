@@ -1,6 +1,6 @@
 /**
  * @file flycamsens.h
- * @brief Sensitivity of the 3D mouse (flycam) on the number keys.
+ * @brief The flycam's number keys: 1-9 its sensitivity, 0 levels it.
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -27,24 +27,32 @@
 #include "llkeyboard.h"
 
 #include <functional>
+#include <string>
 
-// While the flycam (the 3D mouse's camera) is on, the number keys 1-9 set how fast it moves and turns,
-// and 0 puts it back to the normal speed. The digit is a step of PlusFlycamSensSteps (the multipliers,
-// slowest first). Nothing is drawn: the camera's own speed shows it. With the flycam off the keys are
-// not taken, so a digit does what it did before. A control that takes text keeps its digits.
-// moveFlycam() (llviewerjoystick.cpp) scales its six move / turn axes by multiplier(); the zoom axis is
-// left alone, and the user's own FlycamAxisScale* stay as they are under it.
+// Number keys as quiet shortcuts of the flycam's speed and level (kept; not named in the flycam's how-to): while the
+// flycam is on, 1-9 set the speed to that level of PlusFlycamSpeedLevels and 0 turns the camera level. The speed is
+// the one setting the mouse wheel steps and a 3D mouse and the keyboard flycam fly by, and the wheel's press is the 0
+// key (plus/flycammouse: onWheel(), onMiddleClick(), setSpeedLevel(), levelNow()); these keys only call those. With
+// the flycam off the keys are not taken, so a digit does what it did before. A control that takes text keeps its digits.
 namespace plus::flycamsens
 {
-    // The keyboard actions "flycam_sens_1" ... "flycam_sens_9" and "flycam_sens_reset".
+    // The keyboard actions "flycam_sens_1" ... "flycam_sens_9" (digit 1-9; another digit is not taken): the speed
+    // becomes that level's factor.
     bool keySens(EKeystate state, S32 digit);
 
-    // The factor on the flycam's move / turn axes (PlusFlycamSens, kept between sessions).
-    F32 multiplier();
+    // The keyboard action "flycam_level" (the 0 key): the flycam turns level in a quarter of a second, the
+    // direction it looks in kept (LLAgentCamera::levelFlycam()); its own roll and the tilt on top (Q / E, the
+    // photo tools') both go. The flycam's input waits for the turn (LLFlycam::integrate(), as for the official
+    // unroll); the key again starts the turn again from where it is. Taken while the flycam is on.
+    bool keyLevel(EKeystate state);
+
+    // One of the commands above (bindKeys()): a key the user's key bindings give to one of them stays theirs.
+    bool isOwnCommand(const std::string& command);
 
     // The keys 1-9 and 0 in every mode a flycam can be used in, on top of the user's own key bindings.
-    // A digit the user's file gives to another command keeps it: bind puts keySens in front of that
-    // command, which gets the key whenever keySens returns false (llviewerinput.cpp, loadBindingsXML).
+    // A digit the user's file gives to another command keeps it: bind puts keySens (keyLevel for 0) in front
+    // of that command, which gets the key whenever ours returns false (llviewerinput.cpp, loadBindingsXML);
+    // given to one of ours (isOwnCommand()), the key is left to the file's choice.
     using BindKey = std::function<bool(S32 mode, KEY key, MASK mask, const char* command)>;
     void bindKeys(const BindKey& bind);
 }

@@ -5,17 +5,19 @@
 #   - settings_plus.xml の設定が全部ここに 1 行ずつある（新しい設定を足したら、ここにも足す）
 #   - render の設定（official render の行も）は、featuretable.txt の list all と 7 段（Low, LowMid, Mid, MidHigh,
 #     High, HighUltra, Ultra）の全部に行がある（research/183: 段を動かした時に前の段の値が残らない。新しい render の
-#     設定を足したら、all に上限、7 段に値を足す。MidHigh は「オフ／公式の動作」の値）。数値の型（Boolean / S32 /
-#     U32 / F32）で Persist 1、all の値 ≧ 各段の値
+#     設定を足したら、all に上限、7 段と list Official に値を足す。list Official（公式との比較用の隠しの一覧。段ではない）が
+#     「オフ／公式の動作」の値。render の設定は all・7 段・Official の 8 つに値を書く。MidHigh は Charis の中高（research/352））。
+#     数値の型（Boolean / S32 / U32 / F32）で Persist 1、all の値 ≧ 各段（と Official）の値
 #   - taste（好み）の設定は featuretable.txt の Charis の行（<plus> の中）に無い（段を動かしても変えない）
 #   - sub の設定の主スイッチ（3 列目）は render か taste か公式の設定（transient の主スイッチは Persist 0）
-#   - featuretable.txt の Charis の行（Plus* と RenderOITMode）は、どれもここで render か sub
+#   - featuretable.txt の Charis の行（Plus*・RenderOITMode・RenderGrayTextureWireframe。list Official は公式の比較の 4 行も）は、
+#     公式の比較の 4 行のほかは、どれもここで render か sub
 #   - 公式の settings.xml / settings_per_account.xml に Charis が足した設定・既定を変えた設定（最新の公式リリースの
 #     タグとの差）が、ここに official として載っている
 #
 # 分類（1 列目）:
 #   render    描画・毎フレームの処理・計測に効く Charis の機能。画質の段（featuretable.txt）が値を決める。
-#             MidHigh（公式との比較の段）では「オフ／公式の動作」（値は research/183 §2.1）
+#             公式との比較（featuretable.txt の隠しの list Official。段ではない）では「オフ／公式の動作」（research/352）
 #   taste     描画に効くが好みの物（ルック・天気・レンズフレア・影の柔らかさ・星など）。段は触らない
 #   sub       render / taste の機能の細かい値。主スイッチ（3 列目）がオフなら効かない
 #   backend   Charis の速さの仕組み（Vulkan のバックエンド、変換スレッド、DGC、テクスチャの読み込み）。
@@ -30,17 +32,29 @@
 # 書式: <分類> <設定名> [<主スイッチ>]    / official <分類> <設定名> <説明>
 ui        FSManipRotateJointUseNaturalDirection
 ui        FSManipRotateJointTargetSize
+ui        FSShowChatChannel
+ui        FSShowChatType
+ui        PlusShowChatBar
 ui        FSManipShowJointMarkers
 ui        FSPoserOnSaveConfirmOverwrite
 ui        FSPoserPelvisUnlockedForBvhSave
 ui        FSPoserSaveExternalFileAlso
 ui        FSPoserStopPosingWhenClosed
 ui        FSPoserTrackpadSensitivity
+ui        PlusPoseAskPolicy
+ui        PlusPoseShareMode
+ui        PlusPoseShareReceive
+transient PlusPoseConsentSettable    # 設定画面のポーズの欄を、ログインした後だけ有効にする（保存しない）
 ui        PlusPoserIKKeepFloor
 ui        PlusPoserIKRanges
+ui        PlusPoserMotionThreads
+diag      PlusPoserMotionLog
+ui        PlusDestinationsPageLang
 ui        PlusPoserMcpEnabled
 ui        PlusPoserMcpPort
 ui        PlusPoserMcpKeepToken
+ui        PlusPoseBridgeEnable
+ui        PlusPoseBridgeItem
 ui        PlusPoserMcpAllowUiSnapshot
 render    PlusHairSway
 sub       PlusHairSwayStrength PlusHairSway
@@ -67,7 +81,20 @@ sub       PlusSsgiThickness PlusSsgi
 diag      PlusSsgiDebug
 diag      PlusSkinSssDebug
 render    PlusSkinFill
-backend   PlusImpostorCapturesPerFrame        # インポスター撮影の上限。画質ではなく処理の仕組みで、公式と比べる段（MidHigh）でも効かせたまま（research/319）
+render    PlusAvatarSilhouetteDistance        # この距離（m）より遠い人を灰色の人形（ジェリードール。PlusJellyDollFlat なら単色の人影）にする。アニメは止まる。0＝オフ。Mid 以下と中〜高（45 m）に入る。比較用（Official）は 0（research/344・352）
+render    PlusJellyDollFlat                   # ジェリードール（複雑すぎる人・描画しない設定の人・距離で人形になった人）を、陰影のない単色の人影にする。軽量（Mid 以下）だけ入り、中〜高と比較用（Official）は立体の灰色のまま（research/344・352）
+backend   PlusAvatarIdleInterval            # 他人の名札の確認の間隔（フレーム、最大 16）。名前・称号・離席・ミュートなどの表示の変化が最大 N−1 フレーム遅れる（research/319）
+ui        PlusAvatarFullDistanceMigrated    # PlusAvatarFullDistance に、使っている段の値を 1 回だけ書いた印（research/343）
+ui        PlusJellyDollMigrated             # PlusJellyDollFlat と PlusAvatarSilhouetteDistance に、使っている段の値を 1 回だけ書いた印（research/344）
+render    PlusAvatarFullDistance            # この距離（m）より遠い人を板（インポスター）で描く。0＝オフ（人数の上限だけ）。中〜高は 25 m、比較用（Official）は 0（公式の動作、research/343・352）
+backend   PlusImpostorCaptureBudgetMs         # インポスター撮影の 1 フレームの時間の予算。着いたばかりの人混みで数秒固まらない代わりに、絵が揃うまで数フレーム〜1 秒かかる（research/319）
+backend   PlusRiggedFaceImpostorPeriod     # 画質ではなく処理の仕組み。インポスターで描かれる人の付け物（リグ付き）の面積の更新を 0.1 秒から 0.5 秒おきに。その人が全身描画に戻れば面積はすぐ計算し直す。インポスターの間は従来より最大およそ 0.5 秒長く古い面積のまま（research/342）
+backend   PlusRiggedAreaCache              # 画質ではなく処理の仕組み。付け物（リグ付き）の面の面積を、その面が効く関節の一覧だけでたどって出す（216 個の表を端から見ない）。同じ関節を同じ順に計算するので結果はビット単位で同じ。0＝従来（research/348）
+backend   PlusImpostorFreeze                # インポスターの人の付け物は絵を撮る時だけ動かす。付け物の位置の更新が絵の直前まで遅れる（research/338）
+backend   PlusImpostorBridgeDefer           # インポスターの人の付け物のジオメトリは、撮影するか全身で描く時まで作らない。到着直後の固まりがなくなる代わりに、全身に切り替わる時や、振り向いて撮影される時に、その人の付け物をまとめて作るのでそのフレームが少し重くなることがある（research/340）
+backend   PlusImpostorCaptureRest           # 撮影が予算を超えた分だけ、次の撮影を休む。着いたばかりの人混みで毎フレーム長いフレームになる代わりに、数フレームおきに長いフレームになり、絵が揃うまでの時間は延びる（research/340）
+backend   PlusOffscreenAvatarPeriod         # 画面外の人（座っていない・名札が描かれていない・画面の端の近くでない）の毎フレームの更新を数フレームに 1 回にする。ポーズは元から動いていない。見えていない位置・付け物が最大 0.12 秒遅れる（research/341）
+backend   PlusImpostorCapturesPerFrame        # インポスター撮影の上限。画質ではなく処理の仕組みで、公式との比較（list Official）でも効かせたまま（research/319）
 taste     PlusWetLook
 sub       PlusWetPuddles PlusWetLook
 sub       PlusWetAvatars PlusWetLook
@@ -106,6 +133,8 @@ ui        PlusDetachAutoOnDrag
 marker    PlusGraphicPreset
 marker    PlusGraphicPresetRevision
 ui        PlusPresetMigrated
+ui        PlusLevelsRevision          # 画質の段の Charis の値を変えた時の 1 回だけの移行の版（版 1: 中〜高に距離と実体化、UI のフレーム、遠い小さな物の影を省く設定を入れた。取り込みでは元の値、無ければ 0。research/352）
+ui        PlusLevelsMigrationWrites   # 版の移行が書いた設定の前の値と書いた値。ログイン後の通知の「元に戻す」に使い、通知を出す時に空にする。取り込まない（research/352）
 snapshot  PlusSnapshotBoost
 transient PlusCloudShaftsScene    # research/253 9: ワンクリック「雲間の光の筋」。保存しない（値の一致から作り直す）
 ui        PlusCloudShaftsSceneBefore    # 同、書く前の値（元に戻す用）
@@ -247,6 +276,7 @@ ui        PlusPhotoKeysVersion
 ui        PlusPhotoKeysCommands
 ui        PlusIgnoreSimCameraConstraint
 ui        PlusPhotoSkyLibraryFavorites
+ui        PlusPhotoEnvListFlat
 ui        PlusPhotoSkyListOpen
 ui        PlusPhotoWaterListOpen
 ui        PlusPhotoWaterLibraryFavorites
@@ -272,7 +302,7 @@ backend   PlusSelfFirst
 backend   PlusTexViewPriority               # 画面内のテクスチャを先に読む（research/285 tex-view-priority、2026-11-06）
 backend   PlusTexFetchRetryUnknownTries     # 403 など「不明」の失敗を再要求する回数（既定 1。research/305）
 backend   PlusTexFetchRetry                # 一時的な失敗のテクスチャを再要求し、missing の旗を立てない（research/299 tex-fetch-retry、2026-11-07）
-backend   PlusTexOnScreenCoarsest           # 画面内のテクスチャが止まってよい一番粗い段（既定 4。research/303）。見た目を変える設定だが PlusTexViewPriority と同じ扱いで backend（MidHigh の比較でも効く）
+backend   PlusTexOnScreenCoarsest           # 画面内のテクスチャが止まってよい一番粗い段（既定 4。research/303）。見た目を変える設定だが PlusTexViewPriority と同じ扱いで backend（公式との比較（list Official）でも効く）
 backend   PlusTexFarFloorPx                 # 画像の無い物の vsize の下限（research/285・215 §9）
 backend   PlusFetchAutoTune
 backend   PlusMediaReap                     # 使っていないメディアのプラグインを早く終わらせる（2026-11-01）
@@ -400,10 +430,12 @@ ui        PlusKeywordsColor
 ui        PlusKeywordsPlaySound
 ui        PlusKeywordsSound
 ui        PlusKeywordsToast
+ui        PlusRmlUiWindows
 ui        PlusChatConsoleOn
 ui        PlusInvFolderIcons
 ui        PlusChatConsolePersistTime
 ui        PlusChatConsoleMaxLines
+ui        PlusChatTimeLocal
 ui        PlusBorderless
 ui        PlusUiShowButton
 ui        PlusPrefsCharisTab
@@ -411,7 +443,12 @@ ui        PlusShortcutBarShow
 ui        PlusShortcutBarBackground
 ui        PlusFpsCornerOn
 ui        PlusFpsCornerPosition
+ui        PlusAnimQuickPreview
+transient PlusAnimQuickInworld
 taste     PlusFpsLimit
+taste     PlusMultiBackgroundFps
+taste     PlusMultiBackgroundPriority
+taste     PlusMultiShareVRAM
 taste     PlusBackgroundKeepVisible
 sub       PlusBackgroundHiddenStop PlusBackgroundKeepVisible
 diag      PlusHitchLogMs
@@ -419,8 +456,7 @@ diag      PlusExitTimeLog
 diag      PlusExitWatchdog
 diag      PlusExitWatchdogSeconds
 render    PlusRainWetAll
-ui        PlusFlycamSens
-ui        PlusFlycamSensSteps
+ui        PlusFlycamSpeedLevels
 ui        PlusFlycamHint
 ui        PlusFlycamMouseMode
 ui        PlusFlycamKeepView
@@ -442,6 +478,9 @@ backend   PlusBufferCompactIdle
 backend   PlusMemGuard
 backend   PlusMemGuardFreeMB
 backend   PlusMemGuardSoftOnly
+backend   FSLimitTextureVRAMUsage
+backend   FSOverrideVRAMDetection
+backend   FSForcedVideoMemory
 ui        PlusImportSettingsPending
 ui        PlusSLURLCheckAtStart
 taste     PlusHideOtherLandObjects
@@ -473,7 +512,7 @@ taste     PlusFireflies
 sub       PlusFireflyColor PlusFireflies
 sub       PlusFireflyBrightness PlusFireflies
 sub       PlusFireflyHeight PlusFireflies
-# 崩壊の演出（research/257）。既定オン（2026-10-31 決定）。画質の段は MidHigh（公式との比較）だけオフ。細かい値は段に入れない
+# 崩壊の演出（research/257）。既定オン（2026-10-31 決定）。画質の段は中〜高と、公式との比較（list Official）だけオフ。細かい値は段に入れない
 render    PlusDerez
 sub       PlusDerezSeconds PlusDerez
 sub       PlusDerezMaxDistance PlusDerez
@@ -488,7 +527,7 @@ taste     PlusUpscale
 taste     PlusUpscaleScale
 taste     PlusUpscaleSharpness
 # TAA（research/185）。画質の段が決める（2026-11-09 決定: 全段オフ。アバターが激しく動くと絵が乱れるため。2026-10-31 は中以降オンだった）。
-# 公式相当の比較（presets.cpp の applyComparison）もオフにする。細かい値（sub）は段に入れず既定のまま
+# 比較用の list Official も 0。細かい値（sub）は段に入れず既定のまま
 render    PlusTAA
 sub       PlusTAABlend PlusTAA
 sub       PlusTAAJitter PlusTAA
@@ -498,7 +537,7 @@ sub       PlusTAAThinGaps PlusTAA
 official render    RenderOITMode  # Charis が settings.xml に足した。OIT（0 = 公式の並べ替えアルファ）
 official snapshot  RenderOITSnapshotFull  # Charis が settings.xml に足した。スナップショットの時だけ
 official taste     ThrottleBandwidthKBPS  # Charis が settings.xml と llviewerthrottle.cpp で既定を 3000 → 4000 にした（回線の太さ。画質の段では変えない）
-official taste     RenderGrayTextureWireframe  # Charis が settings.xml に足した。読み込み前のテクスチャを灰色でなくワイヤーフレームで描く
+official render    RenderGrayTextureWireframe  # Charis が settings.xml に足した。読み込み前のテクスチャを灰色でなくワイヤーフレームで描く。段は全部 1、公式との比較（list Official）は 0（公式にワイヤーフレームの表示は無い）。research/352
 official ui        EnableSelectionHints  # Charis が既定を 1 から 0 に変えた。物を選ぶ・つかむ時に手で指す（上体をひねる）動きを止める。プライバシー画面のチェック
 official ui        ShowSelectionBeam  # Charis が既定を 1 から 0 に変えた。選択・編集中だけ（比較中は選択しない）
 official ui        ShowHoverTips  # Charis が既定を 1 から 0 に変えた。ワールド内でマウスを乗せた物の情報表示（ホバーチップ）
@@ -517,6 +556,7 @@ backend   PlusFastLogin
 backend   PlusFastLoginEarlyUCC
 backend   PlusFastTeleport
 taste     PlusDisableTeleportScreens
+ui        PlusWorldMapRegionInfo
 diag      PlusLoginTimeline
 ui        RestrainedLove
 ui        RestrainedLoveDebug
@@ -545,3 +585,10 @@ ui        RestrainedLoveForbidGiveToRLV
 ui        RLVaBlockedCommands
 ui        RLVaLoginLastLocation
 ui        RLVaDebugDeprecateExplicitPoint
+ui        FSContactSetsColorizeMiniMap
+ui        FSContactSetsColorizeNameTag
+ui        FSContactSetsColorizeRadar
+ui        FSContactSetsColorizeChat
+ui        FSContactSetsColorizeFriends
+ui        FSContactSetsNotificationToast
+ui        FSContactSetsNotificationNearbyChat

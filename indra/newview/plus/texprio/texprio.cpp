@@ -523,8 +523,11 @@ namespace
     }
 
     // The divisor on screen (LastResort). fill: the textures against the
-    // limit (0: not known).
-    void updateLastResort(F32 fill)
+    // limit (0: not known). limit_fill (research/371): fill is against the user's
+    // texture limit: it counts the images' sizes alone, so the pools' free room
+    // (slack, which the driver's budget counts and an image going down does not
+    // give back) is not a reason to wait.
+    void updateLastResort(F32 fill, bool limit_fill)
     {
         static const bool allowed = LLRHI::envDefaultOn("LLRHI_TEX_VIEW_LAST_RESORT");
         LastResort& l = sLastResort;
@@ -553,7 +556,7 @@ namespace
             const U64 on_bytes = r.bytes[TIER_NEAR] + r.bytes[TIER_VIEW];
             const bool off_down = sRoundDone && on_bytes > 0 && (F64)r.bytes[TIER_OFF] < LAST_RESORT_OFF_SHARE * (F64)on_bytes;
             const bool may_start = divisor > 1.f || l.ended_at <= 0.f || time - l.ended_at >= l.cooldown;
-            if (time - l.over_since >= LAST_RESORT_WAIT && off_down && l.slack_small && may_start)
+            if (time - l.over_since >= LAST_RESORT_WAIT && off_down && (l.slack_small || limit_fill) && may_start)     // <plus> research/371 </plus>
             {
                 if (divisor <= 1.f)     // a new start: the wait after it doubles when it came again soon
                 {
@@ -795,7 +798,7 @@ bool scaleDownFirst(LLViewerFetchedTexture* tex)
     return sFree && tierOf(tex) == TIER_OFF;
 }
 
-void updateClass(F32 fill, bool bias_all)
+void updateClass(F32 fill, bool bias_all, bool limit_fill)
 {
     static LLCachedControl<bool> setting(gSavedSettings, "PlusTexViewPriority", true);
     static LLCachedControl<U32> floor_px(gSavedSettings, "PlusTexFarFloorPx", 8);
@@ -825,18 +828,18 @@ void updateClass(F32 fill, bool bias_all)
     sValues.split = on && env_bias && !bias_all;
     sSplitAvailable = on && env_bias;
     sValues.off_divisor = (F32)llroundf(powf(4.f, bias - 1.f)) * (pressure >= 2 ? OFF_STAGE_2_SCALE : 1.f);
-    updateLastResort(fill);
+    updateLastResort(fill, limit_fill);
 
     // research/303: what is on screen does not settle for the first 600 bytes (level 5). It gives way only when
     // the VRAM budget really lowers what is on screen: the last resort from a divisor of 2 (research/285
     // section 2.3), or a bias that is up for another reason than VRAM (bias_all: system memory, memguard,
-    // minimised, the user's own VRAM budget) at 2 and up (where upstream starts to lower it). (Upstream's isUpdateFrozen() is never true.)
+    // minimised; not the texture limit FSLimitTextureVRAMUsage, research/371: it is a budget like the driver's and leaves this floor) at 2 and up (where upstream starts to lower it). (Upstream's isUpdateFrozen() is never true.)
     static LLCachedControl<U32> coarsest(gSavedSettings, "PlusTexOnScreenCoarsest", 4);
     static const bool env_coarsest = LLRHI::envDefaultOn("LLRHI_TEX_ONSCREEN_COARSEST");
     const U32 wanted = coarsest();
     // (upstream lowers what is on screen from a bias of 2: below it the faces in view keep their size)
     const bool memory_bias = bias_all && bias >= 2.f;
-    sOnScreenCoarsest = (on && env_coarsest && wanted > 0 && wanted < (U32)MAX_DISCARD_LEVEL && sValues.on_divisor < 2.f && !memory_bias)
+    sOnScreenCoarsest = (on && env_coarsest && wanted > 0 && wanted < (U32)MAX_DISCARD_LEVEL && (sValues.on_divisor < 2.f || limit_fill) && !memory_bias)     // <plus> research/371: the user's limit keeps the floor </plus>
                             ? (S32)llmax(wanted, FLOOR_LEVEL_MIN)
                             : (S32)MAX_DISCARD_LEVEL;
 

@@ -40,8 +40,12 @@ namespace plus::photoscreen::detail
     // The chat input and the icons over the world (once, when the panels are made).
     void bindHudPanel();
 
-    // The chips' place inside the world (the frame `m` is not used: they are inside the world's rectangle).
+    // The chips' place inside the world (the frame `m` is not used: they are inside the world's rectangle); in lines
+    // when the world is too narrow for one.
     void layoutTop(const Margins& m);
+
+    // The chips are placed again (a chip's text changed its width) with the chat that keeps under them.
+    void relayoutChips();
 
     // The panel over the world on the world's rectangle, with the chat's width and height.
     void layoutHud();

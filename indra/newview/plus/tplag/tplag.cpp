@@ -128,7 +128,7 @@ namespace
                          "(of them over the target %u), room under %.0f s %u/%u, texture pressure >= 2 %u/%u, memguard %u/%u, none %u",
                          c.hold_sys_free, c.first_sys_free, c.hold_over, c.first_over, c.hold_over_above, BIAS_ROOM_SECONDS, c.hold_room,
                          c.first_room, c.hold_pressure, c.first_pressure, c.hold_guard, c.first_guard, c.hold_none);
-        line += llformat("; bias_all frames: system memory short within 60 s %u, memguard holds %u, RenderMaxVRAMBudget set %u",
+        line += llformat("; bias_all frames: system memory short within 60 s %u, memguard holds %u; frames with a texture limit holding the textures (FSLimitTextureVRAMUsage) %u",
                          c.ball_sys, c.ball_guard, c.ball_manual);
         line += llformat("; low edges %u (system memory %u); bias raised by %.2f while the memory guard was low, %.2f while system memory was short "
                          "(official), %.2f while over the target; lowered by %.2f; fixed by the window in the background by %.2f",
@@ -140,10 +140,21 @@ namespace
         {
             return line + "; last frame: no frame counted";
         }
-        line += llformat("; last frame: bias %.2f, textures+vertex %.0f MB (vertex %.0f), settings target %.0f MB, driver-side target %.0f MB (%s limits), "
-                         "over %.1f%%, free sys mem %.0f MB (the fall needs more than %.0f), RenderMaxVRAMBudget %u, pressure %d, bias_all %d",
-                         l.bias, l.used_mb, l.vertex_mb, l.settings_target_mb, l.real_target_mb,
-                         !l.real_budget ? "settings" : (l.real_target_mb < l.settings_target_mb ? "driver" : "settings"),
+        // research/337 (multi-coord, review 3 low-3): with plus/multiinstance's VRAM share, its target too, and "share limits" when it
+        // is the lowest (over % is against it then). Without a share the line is as it was.
+        const char* limits = !l.real_budget ? "settings" : (l.real_target_mb < l.settings_target_mb ? "driver" : "settings");
+        std::string share_text;
+        if (l.share_target_mb > 0.f)
+        {
+            share_text = llformat(", VRAM share target %.0f MB", l.share_target_mb);
+            if (l.share_target_mb < l.settings_target_mb && (!l.real_budget || l.share_target_mb < l.real_target_mb))
+            {
+                limits = "share";
+            }
+        }
+        line += llformat("; last frame: bias %.2f, textures+vertex %.0f MB (vertex %.0f), settings target %.0f MB, driver-side target %.0f MB%s (%s limits), "
+                         "over %.1f%%, free sys mem %.0f MB (the fall needs more than %.0f), texture limit %u MB (FSLimitTextureVRAMUsage; 0: off or over the other limits), pressure %d, bias_all %d",
+                         l.bias, l.used_mb, l.vertex_mb, l.settings_target_mb, l.real_target_mb, share_text.c_str(), limits,
                          l.over_pct * 100.f, l.sys_free_mb, l.fall_free_mb, l.max_vram_budget_mb, l.pressure, l.bias_all ? 1 : 0);
         return line;
     }
@@ -408,7 +419,7 @@ namespace
         c.held_budget += f.budget_held ? 1 : 0;
         c.ball_sys += f.bias_all && f.sys_raised ? 1 : 0;
         c.ball_guard += f.bias_all && f.guard_held ? 1 : 0;
-        c.ball_manual += f.bias_all && f.max_vram_budget_mb > 0 ? 1 : 0;
+        c.ball_manual += f.max_vram_budget_mb > 0 ? 1 : 0;     // research/371: the texture limit holding the textures (no longer a reason for bias_all)
         const bool first = t.prev < 0.f;
         const F32 before = first ? f.bias : t.prev;
         const bool was_bg_before = t.prev_background;

@@ -439,6 +439,16 @@
          function="Inventory.DoToSelected"
          parameter="copy" />
     </menu_item_call>
+    <!-- plus invctxfs: Copy Name -->
+    <menu_item_call
+     label="Copy Name"
+     layout="topleft"
+     name="Copy Name">
+        <menu_item_call.on_click
+         function="Inventory.DoToSelected"
+         parameter="copy_name" />
+    </menu_item_call>
+    <!-- /plus -->
     <menu_item_call
      label="Paste"
      layout="topleft"
@@ -455,6 +465,16 @@
          function="Inventory.DoToSelected"
          parameter="paste_link" />
     </menu_item_call>
+    <!-- plus invctxfs: Find All Links -->
+    <menu_item_call
+     label="Find All Links"
+     layout="topleft"
+     name="Find Links">
+        <menu_item_call.on_click
+         function="Inventory.CustomAction"
+         parameter="find_links" />
+    </menu_item_call>
+    <!-- /plus -->
     <menu_item_call
      label="Replace Links"
      layout="topleft"
@@ -983,6 +1003,16 @@
     <menu_item_call.on_click
      function="Inventory.DoToSelected"
      parameter="unprotect_folder" />
+  </menu_item_call>
+  <!-- /plus -->
+  <!-- plus invctxfs: Reload Folder -->
+  <menu_item_call
+   label="Reload Folder"
+   layout="topleft"
+   name="ReloadFolder">
+    <menu_item_call.on_click
+     function="Inventory.DoToSelected"
+     parameter="reload_folder" />
   </menu_item_call>
   <!-- /plus -->
   <menu_item_call

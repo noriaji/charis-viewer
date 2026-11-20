@@ -110,6 +110,7 @@ public:
     std::string getName() const { return mName; }
     const std::string getFlagsString() const { return LLViewerRegion::regionFlagsToString(mRegionFlags); }
     const std::string getAccessString() const { return LLViewerRegion::accessToString((U8)mAccess); }
+    U8 getAccess() const { return (U8)mAccess; } // <plus> worldmapinfo: lets the map cache the localized strings </plus>
 
     const S32 getAgentCount() const;                // Compute the total agents count
     LLPointer<LLViewerFetchedTexture> getLandForSaleImage();    // Get the overlay image, fetch it if necessary

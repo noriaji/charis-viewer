@@ -40,6 +40,7 @@
 #include "llworldpassstate.h"   // gCubeSnapshot
 #include "pipeline.h"
 #include "plus/materialize/materialize.h"
+#include "plus/idlecheap/idlecensus.h"   // <plus> research/339 §29: the census cuts GrayWire::updateAvatar </plus>
 // <plus> research/299: a texture waiting for a retry is the gray stand-in
 #include "plus/texprio/fetchretry.h"
 #include "plus/texprio/texprio.h"        // research/302: noteGrayDrawn
@@ -2314,6 +2315,7 @@ namespace GrayWire
 
     void updateClass()
     {
+        plus::idlecensus::Scope plus_census(plus::idlecensus::GW_CLASS); // <plus> research/339 §29: once a frame, from the texture update </plus>
         plus::materialize::tick(gFrameTimeSeconds);  // research/278: the bands' clock, PlusMaterializeLog
         updateMaskWatch();  // research/284: after the clock (the bands that waited for an analysis)
         if (sLookKey && gFrameCount - sLookMadeFrame >= LOOK_REMAKE_FRAMES && sLookKey != plus::materialize::lookKey())
@@ -2413,21 +2415,34 @@ namespace GrayWire
         }
         // research/243: the agent's avatar while it loads (drawsLoading draws it
         // then) is a wireframe as a whole; looked at again at once when that changes.
+        // <plus> research/339 §29: the census cuts this function (nested in the avatar idle's graywire step)
+        plus::idlecensus::Scope plus_entry(plus::idlecensus::GW_ENTRY);
         const bool loading_on = loadingOn() && !avatar->isUIAvatar() && !avatar->isControlAvatar();
         const bool loading = loading_on && avatar->isSelf() && !avatar->isFullyLoaded();
         AvatarEntry& entry = sAvatars[avatar];
+        plus_entry.stop();
         if (entry.band_start >= 0.f)
         {
+            plus::idlecensus::Scope plus_band(plus::idlecensus::GW_BAND);
             updateAvatarBand(avatar, entry);    // research/259
         }
+        // </plus>
         if (entry.checked && gFrameCount - entry.checked < CHECK_EVERY_FRAMES && loading == entry.loading)
         {
             return;
         }
+        plus::idlecensus::Scope plus_check(plus::idlecensus::GW_HEAVY_FULL); // <plus> research/339 §29: the periodic check </plus>
+        if (LLRHI::sIdleCensus)
+        {
+            plus_check.relabel(plus::idlecensus::graywireHeavyStep(avatar)); // <plus> research/339 §29 </plus>
+        }
         entry.checked = gFrameCount ? gFrameCount : 1;
         entry.loading = loading;
         entry.self = avatar->isSelf();
-        noteBounds(avatar, entry);  // research/289 (L5)
+        {
+            plus::idlecensus::Scope plus_bounds(plus::idlecensus::GW_NOTE_BOUNDS); // <plus> research/339 §29 </plus>
+            noteBounds(avatar, entry);  // research/289 (L5)
+        }
         const bool avatar_band = plus::materialize::avatarOn();
         if (!avatar_band)
         {
@@ -2435,7 +2450,10 @@ namespace GrayWire
         }
         if (entry.materialized && avatar_band)
         {
-            keepMaterialized(avatar, entry, loading, loading_on);   // research/281
+            {
+                plus::idlecensus::Scope plus_keep(plus::idlecensus::GW_KEEP); // <plus> research/339 §29 </plus>
+                keepMaterialized(avatar, entry, loading, loading_on);   // research/281
+            }
             if (avatar->isSelf())
             {
                 sSelfWire.store(false, std::memory_order_relaxed);
@@ -2444,11 +2462,13 @@ namespace GrayWire
         }
         if (!avatar->isSelf() && !avatar->isControlAvatar() && !avatar->isUIAvatar() && avatar_band)
         {
+            plus::idlecensus::Scope plus_listed(plus::idlecensus::GW_LISTED); // <plus> research/339 §29 </plus>
             noteListedAttachments(avatar, entry);   // research/277 A: from its first look (a wait may follow)
         }
         // A body bake being fetched keeps the wireframe up to FETCHED_GIVE_UP_SECONDS
         // (a fetch that stalls does not hold the avatar as a wireframe for good).
         bool bakes_gray = false;
+        plus::idlecensus::Scope plus_bakes(plus::idlecensus::GW_BAKES); // <plus> research/339 §29 </plus>
         if (loading_on && bakesHaveGray(avatar))
         {
             const F32 now = LLViewerTexture::sCurrentTime;
@@ -2462,6 +2482,7 @@ namespace GrayWire
         {
             entry.bakes_since = -1.f;
         }
+        plus_bakes.stop(); // <plus> research/339 §29 </plus>
         // A wireframe as a whole while it loads, a body bake is fetched, an attachment's texture is gray, or
         // (research/277 A) it waits for its attachments. research/277: not for the last two while its band
         // sweeps it: an attachment that turns gray then (one that came late) is a wireframe on its own batches
@@ -2470,14 +2491,24 @@ namespace GrayWire
         bool gray = loading || bakes_gray;
         if (!gray && entry.band_start < 0.f)
         {
-            gray = scanAttachments(avatar, Walk::SCAN) || waitsForAttachments(avatar, entry);
+            {
+                plus::idlecensus::Scope plus_scan(plus::idlecensus::GW_SCAN); // <plus> research/339 §29 </plus>
+                gray = scanAttachments(avatar, Walk::SCAN);
+            }
+            if (!gray)
+            {
+                plus::idlecensus::Scope plus_waits(plus::idlecensus::GW_WAITS); // <plus> research/339 §29 </plus>
+                gray = waitsForAttachments(avatar, entry);
+            }
         }
         if (gray)
         {
+            plus::idlecensus::Scope plus_hold(plus::idlecensus::GW_HOLD); // <plus> research/339 §29 </plus>
             scanAttachments(avatar, Walk::HOLD_WIRE);  // every attachment's batch on the GL path, where the Scope draws it
         }
         if (gray != entry.gray)
         {
+            plus::idlecensus::Scope plus_flip(plus::idlecensus::GW_FLIP); // <plus> research/339 §29 </plus>
             entry.gray = gray;
             if (gray)
             {
@@ -2495,10 +2526,14 @@ namespace GrayWire
                                                                : plus::materialize::bandClock();
             }
         }
-        else if (!gray && avatar_band && seenWhole(avatar, entry))
+        else if (!gray && avatar_band)
         {
-            entry.materialized = true;  // research/281: whole without a wireframe
-            entry.own_flash_from = plus::materialize::bandClock();
+            plus::idlecensus::Scope plus_seen(plus::idlecensus::GW_SEEN); // <plus> research/339 §29 </plus>
+            if (seenWhole(avatar, entry))
+            {
+                entry.materialized = true;  // research/281: whole without a wireframe
+                entry.own_flash_from = plus::materialize::bandClock();
+            }
         }
         if (avatar->isSelf())
         {

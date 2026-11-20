@@ -57,6 +57,8 @@ namespace plus::psui::style
             { "PsSliderEmpty",          &detail::Colors::SLIDER_EMPTY },
             { "PsKnobTop",              &detail::Colors::KNOB_TOP },
             { "PsKnobBottom",           &detail::Colors::KNOB_BOTTOM },
+            { "PsKnobTopPressed",       &detail::Colors::KNOB_TOP_PRESSED },
+            { "PsKnobBottomPressed",    &detail::Colors::KNOB_BOTTOM_PRESSED },
             { "PsSliderTick",           &detail::Colors::SLIDER_TICK },
             { "PsValueFill",            &detail::Colors::VALUE_FILL },
             { "PsDefaultBtnColor",      &detail::Colors::DEFAULT_BTN_COLOR },
@@ -144,6 +146,15 @@ namespace plus::psui::style
             { "PsShortcutFill",         &detail::Colors::SHORTCUT_FILL },
             { "PsShortcutOnLeft",       &detail::Colors::SHORTCUT_ON_LEFT },
             { "PsShortcutOnRight",      &detail::Colors::SHORTCUT_ON_RIGHT },
+            { "PsTlFill",               &detail::Colors::TL_FILL },
+            { "PsTlBorder",             &detail::Colors::TL_BORDER },
+            { "PsTlRuler",              &detail::Colors::TL_RULER },
+            { "PsTlTick",               &detail::Colors::TL_TICK },
+            { "PsTlHold",               &detail::Colors::TL_HOLD },
+            { "PsTlScroll",             &detail::Colors::TL_SCROLL },
+            { "PsTlSmooth",             &detail::Colors::TL_SMOOTH },
+            { "PsTlLinear",             &detail::Colors::TL_LINEAR },
+            { "PsTlFail",               &detail::Colors::TL_FAIL },
         };
     }
 

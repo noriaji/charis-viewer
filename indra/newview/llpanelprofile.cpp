@@ -83,6 +83,9 @@
 // <plus> rlv: RLVa (plus/rlv) (research/248)
 #include "plus/rlv/rlvhooks.h"
 // </plus>
+// <plus> contactsets: the avatar's contact sets and "Add to Contact Set" (plus/contactsets/peopletab) (research/333)
+#include "plus/contactsets/peoplehooks.h"
+// </plus>
 
 static LLPanelInjector<LLPanelProfileSecondLife> t_panel_profile_secondlife("panel_profile_secondlife");
 static LLPanelInjector<LLPanelProfileWeb> t_panel_web("panel_profile_web");
@@ -822,6 +825,7 @@ void LLPanelProfileSecondLife::onOpen(const LLSD& key)
     bool allow_edit = own_profile && mAllowEdit;
 
     mGroupList->setShowNone(!own_profile);
+    plus::contactsets::showProfileSets(this, avatar_id); // <plus> contactsets: Firestorm FIRE-32401 (research/333) </plus>
 
     childSetVisible("notes_panel", !allow_edit);
     childSetVisible("settings_panel", allow_edit);
@@ -1467,6 +1471,12 @@ void LLPanelProfileSecondLife::onCommitMenu(const LLSD& userdata)
     {
         LLAvatarActions::removeFriendDialog(agent_id);
     }
+    // <plus> contactsets: (plus/contactsets/peopletab) (research/333)
+    else if (item_name == "add_to_contact_set")
+    {
+        plus::contactsets::showAddToSet(uuid_vec_t{ agent_id });
+    }
+    // </plus>
     else if (item_name == "invite_to_group")
     {
         LLAvatarActions::inviteToGroup(agent_id);

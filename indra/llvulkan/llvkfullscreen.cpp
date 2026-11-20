@@ -106,6 +106,16 @@ void main()
             state.alphaBlendOp = VK_BLEND_OP_ADD;
             state.colorWriteMask &= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
             break;
+        case LLVKFullscreen::Blend::UnderTargetAlpha:
+            state.blendEnable = VK_TRUE;
+            state.srcColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA;
+            state.dstColorBlendFactor = VK_BLEND_FACTOR_DST_ALPHA;
+            state.colorBlendOp = VK_BLEND_OP_ADD;
+            state.srcAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+            state.dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            state.alphaBlendOp = VK_BLEND_OP_ADD;
+            state.colorWriteMask &= VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT;
+            break;
         }
         return state;
     }
@@ -135,29 +145,34 @@ void main()
 
 bool LLVKFullscreen::Pass::TargetKey::operator<(const TargetKey& other) const
 {
-    static_assert(MAX_COLORS == 4, "TargetKey compares four colour formats");
-    return std::tie(colors[0], colors[1], colors[2], colors[3], depth, stencil) <
-           std::tie(other.colors[0], other.colors[1], other.colors[2], other.colors[3], other.depth, other.stencil);
+    for (U32 i = 0; i < MAX_COLORS; ++i)
+    {
+        if (colors[i] != other.colors[i])
+        {
+            return colors[i] < other.colors[i];
+        }
+    }
+    return std::tie(depth, stencil) < std::tie(other.depth, other.stencil);
 }
 
 bool LLVKFullscreen::Pass::init(const char* name, const char* fragment_glsl, U32 image_count, Blend blend,
                                 VkColorComponentFlags write_mask, const StencilTest& stencil)
 {
-    mBlend = blend;
+    mBlends[0] = blend;
     mColorCount = 1;
     mWriteMasks[0] = write_mask;
     return build(name, fragment_glsl, image_count, stencil);
 }
 
 bool LLVKFullscreen::Pass::initColors(const char* name, const char* fragment_glsl, U32 image_count, U32 color_count,
-                                      const VkColorComponentFlags* write_masks, const StencilTest& stencil)
+                                      const VkColorComponentFlags* write_masks, const StencilTest& stencil, const Blend* blends)
 {
     llassert(color_count >= 1 && color_count <= MAX_COLORS);
-    mBlend = Blend::Replace;
     mColorCount = llclamp(color_count, 1u, MAX_COLORS);
     for (U32 i = 0; i < mColorCount; ++i)
     {
         mWriteMasks[i] = write_masks[i];
+        mBlends[i] = blends ? blends[i] : Blend::Replace;
     }
     return build(name, fragment_glsl, image_count, stencil);
 }
@@ -247,7 +262,7 @@ VkPipeline LLVKFullscreen::Pass::pipeline(const LLVKMirror::Target& target)
     VkPipelineColorBlendAttachmentState blends[MAX_COLORS];
     for (U32 i = 0; i < mColorCount; ++i)
     {
-        blends[i] = blendState(i == 0 ? mBlend : Blend::Replace, mWriteMasks[i]);
+        blends[i] = blendState(mBlends[i], mWriteMasks[i]);
     }
     VkPipelineColorBlendStateCreateInfo color = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
     color.attachmentCount = mColorCount;

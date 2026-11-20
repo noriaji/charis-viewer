@@ -86,7 +86,7 @@ namespace
         {
             return false;
         }
-        for (U32 i = 0; i < 4; ++i)
+        for (U32 i = 0; i < LLVKMirror::MAX_COLORS; ++i)
         {
             if (x.colors[i] != y.colors[i] || x.color_formats[i] != y.color_formats[i] || a.colors[i] != b.colors[i])
             {
@@ -191,7 +191,7 @@ namespace
         }
         const Framebuffer& fb = fb_it->second;
         U32 width = U32_MAX, height = U32_MAX;
-        for (U32 i = 0; i < fb.draw_count && i < 4; ++i)
+        for (U32 i = 0; i < fb.draw_count && i < LLVKMirror::MAX_COLORS; ++i)
         {
             GLenum buffer = fb.draw_buffers[i];
             out.target.color_count = i + 1;
@@ -200,7 +200,7 @@ namespace
                 continue;
             }
             U32 index = buffer - GL_COLOR_ATTACHMENT0;
-            if (index >= 4 || !fb.color[index])
+            if (index >= LLVKMirror::MAX_COLORS || !fb.color[index])
             {
                 continue;
             }
@@ -292,6 +292,38 @@ namespace
         const U32 mask = key[PK_COLOR_MASK];
         return src_rgb | (dst_rgb << 4) | (src_a << 8) | (dst_a << 12) | (eq_rgb << 16) | (eq_a << 19) | (mask << 22);
     }
+
+    // research/381 A: whether a node of this blend word (oit_blend_word's layout), at source alpha 0, leaves the
+    // color as it is, to the last bit: the resolve's blend() then gives back the color behind it. Such a fragment
+    // makes no node while its alpha is at most the threshold (oit_skip_alpha). Per channel group a node writes
+    // (the mask's RGB bits, A bit): added terms only, the source factor 0 at alpha 0 (ZERO, SRC_ALPHA, CONSTANT: the
+    // blend constant is 0; for the alpha group also ONE, ONE_MINUS_SRC_ALPHA, ONE_MINUS_CONSTANT, 1 or less times
+    // the alpha 0), the destination factor 1 at alpha 0 (ONE, ONE_MINUS_SRC_ALPHA, ONE_MINUS_CONSTANT). Left out
+    // (the node stays): SRC_ALPHA_SATURATE (min(s.a, 1 - d.a) is negative where the target's alpha, the glow mark,
+    // is above 1), colour and destination source factors, a destination factor that removes the color behind (ZERO...),
+    // SUBTRACT, MIN, MAX (REVERSE_SUBTRACT is unused), and no blend (ONE, ZERO: replaces).
+    bool oit_blend_inert(U32 blend_word)
+    {
+        const U32 src_rgb = blend_word & 15u;
+        const U32 dst_rgb = (blend_word >> 4) & 15u;
+        const U32 src_a = (blend_word >> 8) & 15u;
+        const U32 dst_a = (blend_word >> 12) & 15u;
+        const U32 eq_rgb = (blend_word >> 16) & 7u;
+        const U32 eq_a = (blend_word >> 19) & 7u;
+        const U32 mask = (blend_word >> 22) & 15u;
+        auto zero_at_alpha_0 = [](U32 f, bool alpha_group)
+        {
+            return f == OIT_FACTOR_ZERO || f == OIT_FACTOR_SRC_ALPHA || f == OIT_FACTOR_CONSTANT ||
+                   (alpha_group && (f == OIT_FACTOR_ONE || f == OIT_FACTOR_ONE_MINUS_SRC_ALPHA || f == OIT_FACTOR_ONE_MINUS_CONSTANT));
+        };
+        auto one_at_alpha_0 = [](U32 f)
+        {
+            return f == OIT_FACTOR_ONE || f == OIT_FACTOR_ONE_MINUS_SRC_ALPHA || f == OIT_FACTOR_ONE_MINUS_CONSTANT;
+        };
+        const bool rgb = (mask & 7u) == 0 || (eq_rgb == OIT_EQ_ADD && zero_at_alpha_0(src_rgb, false) && one_at_alpha_0(dst_rgb));
+        const bool alpha = (mask & 8u) == 0 || (eq_a == OIT_EQ_ADD && zero_at_alpha_0(src_a, true) && one_at_alpha_0(dst_a));
+        return rgb && alpha;
+    }
 } // namespace
 
     // Everything get_pipeline creates a pipeline from is in its key, but the
@@ -300,7 +332,7 @@ namespace
     void make_pipeline_recipe(const Program& program, const std::vector<U32>& key, VkPrimitiveTopology prim, const OITVariant* oit,
                               PipelineRecipe& recipe)
     {
-        const U32 color_count = llmin(key[PK_COLOR_COUNT], 4u);
+        const U32 color_count = llmin(key[PK_COLOR_COUNT], LLVKMirror::MAX_COLORS);
         // After the color formats, 3 words a vertex input, then 2 for device
         // generated commands or 1 for OIT (their lengths never meet).
         const size_t rest = key.size() - PK_COLOR_FORMATS - color_count;
@@ -317,6 +349,10 @@ namespace
         }
         recipe.oit_constants[0] = oit ? oit_blend_word(key) : 0u;
         recipe.oit_constants[1] = oit && split ? 1u : 0u;
+        // research/381 A: the alpha up to which a fragment of an inert blend makes no node (-1: every fragment does).
+        const F32 skip = oit && oit_skip_alpha() >= 0.f && oit_blend_inert(recipe.oit_constants[0]) ? oit_skip_alpha() : -1.f;
+        static_assert(sizeof(F32) == sizeof(U32), "oit_constants holds the skip threshold's bits");
+        memcpy(&recipe.oit_constants[2], &skip, sizeof(skip));
 
         recipe.inputs.clear();
         for (size_t w = PK_COLOR_FORMATS + color_count; w + 3 <= key.size() - tail; w += 3)

@@ -222,7 +222,11 @@ bool llrhiQuadAll(bool b)
 #endif
 
 #else
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 #endif
 
 uniform sampler2D diffuseMap;  //always in sRGB space
@@ -394,7 +398,8 @@ void main()
     // (or are helpers) stops: alpha 0 under the draw's SOURCE_ALPHA,
     // ONE_MINUS_SOURCE_ALPHA (color) and ZERO, ONE_MINUS_SOURCE_ALPHA (alpha)
     // leaves the target as it was, and an OIT node with alpha 0 leaves the
-    // resolve's color as it was too (so the node is still written, as are depth
+    // resolve's color as it was too (the node is still written unless the OIT
+    // variant skips it, LLRHI_OIT_SKIP_ALPHA, research/381; so are depth
     // writes where the pass has them: return, not discard). The quad goes
     // together, so the lights' lightFunc taps see the derivatives they did.
     vec3 npos = normalize(-pos.xyz);
@@ -562,6 +567,9 @@ void main()
 
     frag_data[0] = max(vec4(diffcol.rgb, emissive), vec4(0));        // gbuffer is sRGB for legacy materials
     frag_data[1] = max(vec4(spec.rgb, glossiness), vec4(0));           // XYZ = Specular color. W = Specular exponent.
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
     frag_data[2] = encodeNormal(norm, env, flag);   // XY = Normal.  Z = Env. intensity. W = 1 skip atmos (mask off fog)
 
 #if defined(HAS_EMISSIVE)

@@ -958,6 +958,7 @@ size_t LLTextureCache::update(F32 max_time_ms)
         writeUpdatedEntries() ;
     }
 
+    plusLogIndexChecks();   // <plus> research/337 (C) </plus>
     return res;
 }
 
@@ -1188,6 +1189,125 @@ bool LLTextureCache::plusKnownMissing(const LLUUID& id)
 }
 // </plus>
 
+// <plus> research/337 (C)
+// openAndReadEntry's check of the entry read back at idx (mHeaderMutex locked): true when it is not to be used for id.
+// The texture has been let go of then and the caller returns -1 (a miss: it is fetched again).
+bool LLTextureCache::plusDropStaleEntry(const LLUUID& id, S32 idx, const Entry& entry)
+{
+    const bool other = entry.mID != id;
+    const bool valid = entry.mImageSize > entry.mBodySize;
+    if (!other && (valid || !mReadOnly))
+    {
+        return false;   // this texture's (a writer's that is no longer valid goes on to the old way's "corrupted entry")
+    }
+    if (mReadOnly)
+    {
+        // A second start: the first one has given this position to another texture, or let go of this one, since this
+        // start read the index. Its files are the first one's: nothing is removed (the old way's corrupted entry would
+        // remove the body file, which the first one may have written again for a new position); only this start's copy
+        // of the index forgets the texture.
+        (other ? mPlusIndexOther : mPlusIndexFreed).fetch_add(1, std::memory_order_relaxed);
+        plusForgetTexture(id);
+        return true;
+    }
+    // A writer whose own index does not match its texture.entries (a damaged file): this texture is removed as a
+    // corrupted entry is, but not through removeEntry, which acts on the entry's texture (the other one) and would free
+    // a position that may be that one's. The position is not freed here; the next readHeaderCache sorts it out.
+    LL_DEBUGS("TextureCache") << "index position " << idx << " holds another texture's entry" << LL_ENDL;
+    mPlusIndexOther.fetch_add(1, std::memory_order_relaxed);
+    removeCachedTexture(id);
+    return true;
+}
+
+// The index (mHeaderIDMap) and the body sizes forget the texture; no file is touched (mHeaderMutex locked).
+void LLTextureCache::plusForgetTexture(const LLUUID& id)
+{
+    size_map_t::iterator size = mTexturesSizeMap.find(id);
+    if (size != mTexturesSizeMap.end())
+    {
+        mTexturesSizeTotal -= size->second;
+        mTexturesSizeMap.erase(size);
+    }
+    LLMutexLock lock(&mHeaderIDMapMutex);
+    mHeaderIDMap.erase(id);
+}
+
+// readFromFastCache's check in a read-only start (main thread): the fast cache's record at idx has no texture id, so the
+// entry at idx in texture.entries (one small read of the first one's file, not under mHeaderMutex: this start never
+// writes it) has to be this texture's and valid. False: the record is not used; nothing is forgotten here (the cache
+// thread's look-up does that when the texture is fetched, which the missing first image now asks for). A writer's index
+// and files agree: true without a read.
+bool LLTextureCache::plusFastEntryIsFor(const LLUUID& id, U32 idx)
+{
+    if (!mReadOnly)
+    {
+        return true;
+    }
+    Entry entry;
+    const S64 offset = (S64)sizeof(EntriesInfo) + (S64)idx * (S64)sizeof(Entry);
+    const bool mine = LLFile::read(mHeaderEntriesFilePath, (void*)&entry, offset, (S64)sizeof(Entry)) == (S64)sizeof(Entry)
+                   && entry.mID == id && entry.mImageSize > entry.mBodySize;
+    mPlusFastChecked.fetch_add(1, std::memory_order_relaxed);
+    if (!mine)
+    {
+        mPlusFastOther.fetch_add(1, std::memory_order_relaxed);
+    }
+    return mine;
+}
+
+// update's (main thread, every call): one look at the frame timer, and the counts' line once a window.
+void LLTextureCache::plusLogIndexChecks()
+{
+    const F64 now = LLFrameTimer::getTotalSeconds();
+    if (mPlusIndexLogAt == 0.0)
+    {
+        mPlusIndexLogAt = now;      // the first window (the counts from before it go into it)
+        return;
+    }
+    const F64 window_seconds = now - mPlusIndexLogAt;
+    if (window_seconds < PLUS_INDEX_LOG_SECONDS)
+    {
+        return;
+    }
+    mPlusIndexLogAt = now;
+    const U32 reads = mPlusIndexReads.exchange(0, std::memory_order_relaxed);
+    const U32 writes = mPlusIndexWrites.exchange(0, std::memory_order_relaxed);
+    const U32 other = mPlusIndexOther.exchange(0, std::memory_order_relaxed);
+    const U32 freed = mPlusIndexFreed.exchange(0, std::memory_order_relaxed);
+    const U32 fast = mPlusFastChecked.exchange(0, std::memory_order_relaxed);
+    const U32 fast_other = mPlusFastOther.exchange(0, std::memory_order_relaxed);
+    mPlusIndexOtherTotal += other;
+    mPlusIndexFreedTotal += freed;
+    mPlusFastOtherTotal += fast_other;
+    if (mReadOnly)
+    {
+        // A window with nothing read says nothing (the start's line tells that it is counted). With nothing found, only
+        // the first PLUS_INDEX_LOG_FIRST windows that read are logged (the zeros of research/337 M6), then only finds.
+        const bool found = other + freed + fast_other > 0;
+        if ((reads > 0 || fast > 0) && (found || mPlusIndexWindowsLogged < PLUS_INDEX_LOG_FIRST))
+        {
+            if (!found)
+            {
+                ++mPlusIndexWindowsLogged;
+            }
+            LL_INFOS("TextureCache") << "read-only index check (research/337 C), last " << (S32)window_seconds << " s: " << reads
+                                     << " entries read, " << other << " another texture's, " << freed << " no longer valid; "
+                                     << fast << " fast cache records, " << fast_other << " not this texture's (since the start "
+                                     << mPlusIndexOtherTotal << ", " << mPlusIndexFreedTotal << " and " << mPlusFastOtherTotal << ")"
+                                     << (found || mPlusIndexWindowsLogged < PLUS_INDEX_LOG_FIRST ? "" : "; from now on only windows that find one")
+                                     << LL_ENDL;
+        }
+    }
+    else if (other > 0)
+    {
+        LL_WARNS("TextureCache") << "index check (research/337 C), last " << (S32)window_seconds << " s: " << other << " of "
+                                 << reads << " entries read and " << writes << " looked up for a write were another texture's "
+                                 << "(texture.entries does not match the index): removed as corrupted (since the start "
+                                 << mPlusIndexOtherTotal << ")" << LL_ENDL;
+    }
+}
+// </plus>
+
 //debug
 bool LLTextureCache::isInCache(const LLUUID& id)
 {
@@ -1360,6 +1480,14 @@ S64 LLTextureCache::initCache(ELLPath location, S64 max_size, bool texture_cache
     llassert_always(getPending() == 0) ; //should not start accessing the texture cache before initialized.
     openFastCache(true);
     plusOpenPosFiles();     // <plus> research/306 (P3a) </plus>
+    // <plus> research/337 (C): what the index check's lines will say (a missing line then means none, not "not counted")
+    LL_INFOS("TextureCache") << "index check (research/337 C): "
+                             << (mReadOnly ? "read-only start: an entry (or a fast cache record) that is no longer this texture's is skipped, a line a "
+                                           : "writer: an entry that is not its texture's is removed as corrupted, a warning a ")
+                             << (S32)PLUS_INDEX_LOG_SECONDS
+                             << (mReadOnly ? " s window while the cache is read (the first windows, then only ones that find one)" : " s window only when one is found")
+                             << LL_ENDL;
+    // </plus>
 
     return max_size; // unused cache space
 }
@@ -1513,6 +1641,13 @@ S32 LLTextureCache::openAndReadEntry(const LLUUID& id, Entry& entry, bool create
         {
             readEntryFromHeaderImmediately(idx, entry) ;
         }
+        // <plus> research/337 (C): the entry has to be this texture's (both reads above: the kept-open file's too)
+        (create ? mPlusIndexWrites : mPlusIndexReads).fetch_add(1, std::memory_order_relaxed);
+        if (idx >= 0 && plusDropStaleEntry(id, idx, entry))
+        {
+            return -1;
+        }
+        // </plus>
         if(entry.mImageSize <= entry.mBodySize)//it happens on 64-bit systems, do not know why
         {
             LL_WARNS() << "corrupted entry: " << id << " entry image size: " << entry.mImageSize << " entry body size: " << entry.mBodySize << LL_ENDL ;
@@ -2386,6 +2521,12 @@ LLPointer<LLImageRaw> LLTextureCache::readFromFastCache(const LLUUID& id, S32& d
 
         offset = iter->second;
     }
+    // <plus> research/337 (M1): a read-only start's index may be older than the first one's files
+    if (!plusFastEntryIsFor(id, offset))
+    {
+        return NULL;
+    }
+    // </plus>
     offset *= TEXTURE_FAST_CACHE_ENTRY_SIZE;
 
     // <plus> research/306 (P3a): the kept-open file (one read of the record), else the old way below
@@ -2618,15 +2759,7 @@ void LLTextureCache::addCompleted(Responder* responder, bool success)
 //called after mHeaderMutex is locked.
 void LLTextureCache::removeCachedTexture(const LLUUID& id)
 {
-    if(mTexturesSizeMap.find(id) != mTexturesSizeMap.end())
-    {
-        mTexturesSizeTotal -= mTexturesSizeMap[id] ;
-        mTexturesSizeMap.erase(id);
-    }
-    {
-        LLMutexLock lock(&mHeaderIDMapMutex);
-        mHeaderIDMap.erase(id);
-    }
+    plusForgetTexture(id);  // <plus> research/337 (C): the index and the sizes (was the same, written out here) </plus>
     LLFile::remove(getTextureFileName(id));
 }
 

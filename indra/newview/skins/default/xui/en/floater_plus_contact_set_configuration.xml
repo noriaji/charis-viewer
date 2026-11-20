@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- A contact set's settings (plus/contactsets/fsfloatercontactsetconfiguration.cpp, research/333; from Firestorm's
+     floater_fs_contact_set_configuration.xml, its names kept). Opened as fs_contact_set_config with the set's name
+     as its key (plus::contactsets::showSetConfig). Not resizable.
+     Size (1080 base): 800 x 588, the body 570 high under the title bar (18). Two columns:
+       left (14, 392 wide): 12 + "Contact set" 24 + 4 + the name 33 (its button 40 at 36) + 8 + the colour 32
+         + 4 + two checks 30 + 30 + 10 + "All sets" 24 + 4 + the colour 32 + 10 + "Online notices" 24 + three checks
+         3 x 30 + 10 + "Colors" 24 + five checks 5 x 30 = 558, + 12 = 570.
+       right (420, 366 wide): 12 + three times (the check 30 + 4 + the text box 140 + 12) = 570.
+     The swatches are the official widget in a glass box (52 x 32, the swatch 44 x 24 at 4 / 4), their names 8 to
+     the right. ja: the longest check (left, 25 characters, about 330) fits in 392, the right ones (23, about
+     300) in 366.
+     The colours commit when the picker is closed with OK (can_apply_immediately false): each commit saves the
+     file. -->
+<floater
+ name="floater_fs_contact_set_configure"
+ title="Contact set settings"
+ width="800"
+ height="588"
+ layout="topleft"
+ legacy_header_height="18"
+ positioning="cascading"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true">
+    <floater.string name="title">[NAME] settings</floater.string>
+
+    <plus_ps_box
+     name="body"
+     kind="panel"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="800"
+     height="570">
+        <!-- ==== left: this set ==== -->
+        <plus_ps_text
+         name="set_label"
+         kind="white"
+         type="string"
+         length="1"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="12"
+         width="392"
+         height="24">
+            Contact set:
+        </plus_ps_text>
+        <plus_ps_box
+         name="set_name_box"
+         kind="glass"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="40"
+         width="284"
+         height="33">
+            <line_editor
+             name="set_name_editor"
+             bg_color="Transparent"
+             commit_on_focus_lost="false"
+             cursor_color="PsTextWhite"
+             follows="left|top|right"
+             height="25"
+             layout="topleft"
+             left="4"
+             max_length_chars="63"
+             text_color="PsTextWhite"
+             text_pad_left="6"
+             text_tentative_color="PsTextDim"
+             top="4"
+             use_bg_color="true"
+             width="276">
+                <line_editor.border
+                 visible="false" />
+            </line_editor>
+        </plus_ps_box>
+        <plus_ps_button_compat
+         name="rename_btn"
+         label="Rename"
+         tool_tip="Give the set the name typed at the left"
+         follows="left|top"
+         layout="topleft"
+         left="306"
+         top="36"
+         width="100"
+         height="40" />
+        <plus_ps_box
+         name="set_swatch_box"
+         kind="glass"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         mouse_opaque="false"
+         top="84"
+         width="52"
+         height="32">
+            <color_swatch
+             name="set_swatch"
+             can_apply_immediately="false"
+             follows="left|top"
+             height="24"
+             label_height="0"
+             layout="topleft"
+             left="4"
+             tool_tip="Click to choose the color"
+             top="4"
+             width="44">
+                <color_swatch.caption_text
+                 height="0" />
+            </color_swatch>
+        </plus_ps_box>
+        <plus_ps_text
+         name="set_color_label"
+         type="string"
+         length="1"
+         follows="left|top"
+         layout="topleft"
+         left="74"
+         top="88"
+         width="332"
+         height="24">
+            Color of this set
+        </plus_ps_text>
+        <plus_ps_check_compat
+         name="show_set_notifications"
+         label="Show when they log in or out"
+         tool_tip="The online notices of the people in this set (with the two switches under Online notices)"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="120"
+         width="392"
+         height="30" />
+        <plus_ps_check_compat
+         name="sort_by_online_status"
+         label="Sort by online status"
+         tool_tip="In the People window's Contact Sets tab, the people online first"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="150"
+         width="392"
+         height="30" />
+
+        <!-- ==== left: all sets ==== -->
+        <plus_ps_text
+         name="global_label"
+         kind="white"
+         type="string"
+         length="1"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="190"
+         width="392"
+         height="24">
+            All sets:
+        </plus_ps_text>
+        <plus_ps_box
+         name="global_swatch_box"
+         kind="glass"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         mouse_opaque="false"
+         top="218"
+         width="52"
+         height="32">
+            <color_swatch
+             name="global_swatch"
+             can_apply_immediately="false"
+             follows="left|top"
+             height="24"
+             label_height="0"
+             layout="topleft"
+             left="4"
+             tool_tip="Click to choose the color"
+             top="4"
+             width="44">
+                <color_swatch.caption_text
+                 height="0" />
+            </color_swatch>
+        </plus_ps_box>
+        <plus_ps_text
+         name="global_color_label"
+         type="string"
+         length="1"
+         follows="left|top"
+         layout="topleft"
+         left="74"
+         tool_tip="New sets start with this color. A set of this color colors no one"
+         top="222"
+         width="332"
+         height="24">
+            Default color (it colors no one)
+        </plus_ps_text>
+        <plus_ps_text
+         name="label_online"
+         type="string"
+         length="1"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="260"
+         width="392"
+         height="24">
+            Online notices:
+        </plus_ps_text>
+        <plus_ps_check_compat
+         name="ChatOnlineNotification"
+         control_name="ChatOnlineNotification"
+         label="All friends' online notices as toasts"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="284"
+         width="392"
+         height="30" />
+        <plus_ps_check_compat
+         name="FSContactSetsNotificationToast"
+         control_name="FSContactSetsNotificationToast"
+         disabled_control="ChatOnlineNotification"
+         label="Sets that show them: as toasts"
+         tool_tip="Only for the sets with &quot;Show when they log in or out&quot; (with all friends' toasts on, they all have them already)"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="314"
+         width="392"
+         height="30" />
+        <plus_ps_check_compat
+         name="FSContactSetsNotificationNearbyChat"
+         control_name="FSContactSetsNotificationNearbyChat"
+         label="Sets that show them: in nearby chat"
+         tool_tip="Only for the sets with &quot;Show when they log in or out&quot;"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="344"
+         width="392"
+         height="30" />
+        <plus_ps_text
+         name="label_colors"
+         type="string"
+         length="1"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="384"
+         width="392"
+         height="24">
+            Show the set colors in:
+        </plus_ps_text>
+        <plus_ps_check_compat
+         name="FSContactSetsColorizeMiniMap"
+         control_name="FSContactSetsColorizeMiniMap"
+         label="The minimap's dots"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="408"
+         width="392"
+         height="30" />
+        <plus_ps_check_compat
+         name="FSContactSetsColorizeNameTag"
+         control_name="FSContactSetsColorizeNameTag"
+         label="Name tags"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="438"
+         width="392"
+         height="30" />
+        <plus_ps_check_compat
+         name="FSContactSetsColorizeRadar"
+         control_name="FSContactSetsColorizeRadar"
+         label="The radar and the nearby people list"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="468"
+         width="392"
+         height="30" />
+        <plus_ps_check_compat
+         name="FSContactSetsColorizeChat"
+         control_name="FSContactSetsColorizeChat"
+         label="Chat"
+         tool_tip="Their lines in nearby chat and IMs"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="498"
+         width="392"
+         height="30" />
+        <plus_ps_check_compat
+         name="FSContactSetsColorizeFriends"
+         control_name="FSContactSetsColorizeFriends"
+         label="The friends list"
+         follows="left|top"
+         layout="topleft"
+         left="14"
+         top="528"
+         width="392"
+         height="30" />
+
+        <!-- ==== right: this set's autoresponses ==== -->
+        <plus_ps_check_compat
+         name="set_autoresponse_busy_enabled"
+         label="Own Do Not Disturb reply for this set"
+         tool_tip="While you are in Do Not Disturb, the people in this set get this reply instead of the usual one"
+         follows="left|top"
+         layout="topleft"
+         left="420"
+         top="12"
+         width="366"
+         height="30" />
+        <plus_ps_box
+         name="busy_box"
+         kind="glass"
+         follows="left|top"
+         layout="topleft"
+         left="420"
+         top="46"
+         width="366"
+         height="140">
+            <text_editor
+             name="set_autoresponse_busy"
+             bg_readonly_color="Transparent"
+             bg_writeable_color="Transparent"
+             commit_on_focus_lost="true"
+             follows="all"
+             layout="topleft"
+             left="4"
+             max_length="1023"
+             text_color="PsTextWhite"
+             text_readonly_color="PsTextDim"
+             top="4"
+             use_ellipses="false"
+             width="358"
+             height="132"
+             word_wrap="true" />
+        </plus_ps_box>
+        <plus_ps_check_compat
+         name="set_autoresponse_mode_enabled"
+         label="Own autoresponse for this set"
+         tool_tip="While your autoresponse is on, the people in this set get this message instead of the usual one"
+         follows="left|top"
+         layout="topleft"
+         left="420"
+         top="198"
+         width="366"
+         height="30" />
+        <plus_ps_box
+         name="mode_box"
+         kind="glass"
+         follows="left|top"
+         layout="topleft"
+         left="420"
+         top="232"
+         width="366"
+         height="140">
+            <text_editor
+             name="set_autoresponse_mode"
+             bg_readonly_color="Transparent"
+             bg_writeable_color="Transparent"
+             commit_on_focus_lost="true"
+             follows="all"
+             layout="topleft"
+             left="4"
+             max_length="1023"
+             text_color="PsTextWhite"
+             text_readonly_color="PsTextDim"
+             top="4"
+             use_ellipses="false"
+             width="358"
+             height="132"
+             word_wrap="true" />
+        </plus_ps_box>
+        <plus_ps_check_compat
+         name="set_autoresponse_nonfriends_enabled"
+         label="Own reply to non-friends for this set"
+         tool_tip="While your autoresponse to non-friends is on, the people of this set who are not friends get this message"
+         follows="left|top"
+         layout="topleft"
+         left="420"
+         top="384"
+         width="366"
+         height="30" />
+        <plus_ps_box
+         name="nonfriends_box"
+         kind="glass"
+         follows="left|top"
+         layout="topleft"
+         left="420"
+         top="418"
+         width="366"
+         height="140">
+            <text_editor
+             name="set_autoresponse_nonfriends"
+             bg_readonly_color="Transparent"
+             bg_writeable_color="Transparent"
+             commit_on_focus_lost="true"
+             follows="all"
+             layout="topleft"
+             left="4"
+             max_length="1023"
+             text_color="PsTextWhite"
+             text_readonly_color="PsTextDim"
+             top="4"
+             use_ellipses="false"
+             width="358"
+             height="132"
+             word_wrap="true" />
+        </plus_ps_box>
+    </plus_ps_box>
+</floater>

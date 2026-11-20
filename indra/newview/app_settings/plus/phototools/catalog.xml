@@ -1535,8 +1535,8 @@
 <key>look</key><boolean>0</boolean>
 <key>label_en</key><string>3D Mouse: Keep Level</string>
 <key>label_ja</key><string>3D マウス: 水平を保つ</string>
-<key>tip_en</key><string>Keeps the horizon level while you move the camera with the 3D mouse.</string>
-<key>tip_ja</key><string>3D マウスでカメラを動かしても、水平が傾かないようにします。</string>
+<key>tip_en</key><string>Keeps the horizon level while you move the camera with the 3D mouse. While it is on, a roll of the 3D mouse goes back to level.</string>
+<key>tip_ja</key><string>3D マウスでカメラを動かしても、水平が傾かないようにします。オンの間は、3D マウスで傾けても水平に戻ります。</string>
 </map>
 <map>
 <key>setting</key><string>JoystickAxis6</string>

@@ -1,0 +1,89 @@
+<rml>
+<!-- The chat keywords window (plus/keywords/keywordsrml.cpp, research/380). Its words are "[[name]]": the <string>s
+     of floater_plus_keywords_rml.xml (en, ja). The contract with the C++ (a name on each side):
+       data model "keywords" (plus::rmlui::SettingsModel, keywordsrml.cpp's entries):
+         on in_chat in_im own_name speaker match_case whole fold change_color play_sound toast   bool  PlusKeywords*
+         list sound                                                                              text  (committed by Enter / the focus leaving)
+         colour                                                                                  "#rrggbb", read only (the picker writes it)
+         try_result                                                                              the try-out's answer (keywordsrml.cpp)
+       ids the C++ listens to: list, sound, try (text fields), colour, sound_preview, sound_default (clicks).
+       ime-blur="keep" on list, sound and try: an IME composition still open when the field loses the focus stays in it
+       and is committed with the rest (the XUI line editor did the same; rmlime.h).
+     The layout is the XUI window's own (a 16dp row, 22dp fields, the same gaps): the style is charis.rcss's
+     "compact settings windows". A row whose setting is off wears class "off" (the disabled step) and its parts
+     are disabled; the sound field follows play_sound only, as it did in the XUI window. -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare" data-model="keywords">
+    <div class="kw">
+        <div class="line">
+            <input type="checkbox" id="c_on" data-checked="on"/>
+            <label for="c_on">[[on]]</label>
+        </div>
+        <div class="line sub" style="margin-top: 4dp" data-class-off="!on">
+            <input type="checkbox" id="c_in_chat" data-checked="in_chat" data-attrif-disabled="!on"/>
+            <label for="c_in_chat">[[in_chat]]</label>
+        </div>
+        <div class="line sub" style="margin-top: 4dp" data-class-off="!on">
+            <input type="checkbox" id="c_in_im" data-checked="in_im" data-attrif-disabled="!on"/>
+            <label for="c_in_im">[[in_im]]</label>
+        </div>
+        <div class="line" style="margin-top: 10dp">
+            <span class="text-only">[[list_label]]</span>
+        </div>
+        <div class="line tall" style="margin-top: 2dp" data-class-off="!on">
+            <input type="text" class="text" id="list" maxlength="2048" ime-blur="keep" data-attr-value="list" data-attrif-disabled="!on"/>
+        </div>
+        <div class="line sub" style="margin-top: 8dp" data-class-off="!on">
+            <input type="checkbox" id="c_own_name" data-checked="own_name" data-attrif-disabled="!on"/>
+            <label for="c_own_name">[[own_name]]</label>
+        </div>
+        <div class="line sub" style="margin-top: 4dp" data-class-off="!on">
+            <input type="checkbox" id="c_speaker" data-checked="speaker" data-attrif-disabled="!on"/>
+            <label for="c_speaker">[[speaker]]</label>
+        </div>
+        <div class="line sub" style="margin-top: 4dp" data-class-off="!on">
+            <input type="checkbox" id="c_case" data-checked="match_case" data-attrif-disabled="!on"/>
+            <label for="c_case">[[case]]</label>
+        </div>
+        <div class="line sub" style="margin-top: 4dp" data-class-off="!on">
+            <input type="checkbox" id="c_whole" data-checked="whole" data-attrif-disabled="!on"/>
+            <label for="c_whole">[[whole]]</label>
+        </div>
+        <div class="line sub" style="margin-top: 4dp" data-class-off="!on">
+            <input type="checkbox" id="c_fold" data-checked="fold" data-attrif-disabled="!on"/>
+            <label for="c_fold">[[fold]]</label>
+        </div>
+        <div class="line" style="margin-top: 12dp" data-class-off="!on">
+            <div class="line" style="width: 158dp">
+                <input type="checkbox" id="c_change_color" data-checked="change_color" data-attrif-disabled="!on"/>
+                <label for="c_change_color">[[change_color]]</label>
+            </div>
+            <button id="colour" class="swatch" data-style-background-color="colour" data-attrif-disabled="!on"></button>
+        </div>
+        <div class="line" style="margin-top: 6dp" data-class-off="!on">
+            <input type="checkbox" id="c_play_sound" data-checked="play_sound" data-attrif-disabled="!on"/>
+            <label for="c_play_sound">[[play_sound]]</label>
+        </div>
+        <div class="line tall" style="margin-top: 2dp">
+            <span class="text-only" style="margin-left: 16dp; width: 90dp">[[sound_label]]</span>
+            <input type="text" class="text" id="sound" style="margin-left: 4dp; width: 226dp" maxlength="64" ime-blur="keep" data-attr-value="sound" data-class-off="!play_sound" data-attrif-disabled="!play_sound"/>
+            <button id="sound_preview" class="inline" style="margin-left: 4dp; width: 40dp" title="[[tip_preview]]">[[sound_play]]</button>
+            <button id="sound_default" class="inline" style="margin-left: 2dp; width: 44dp" title="[[tip_reset]]">[[sound_reset]]</button>
+        </div>
+        <div class="line" style="margin-top: 10dp" data-class-off="!on">
+            <input type="checkbox" id="c_toast" data-checked="toast" data-attrif-disabled="!on"/>
+            <label for="c_toast">[[toast]]</label>
+        </div>
+        <div class="line" style="margin-top: 14dp">
+            <span class="text-only">[[try_label]]</span>
+        </div>
+        <div class="line tall" style="margin-top: 2dp">
+            <input type="text" class="text" id="try" maxlength="512" ime-blur="keep"/>
+        </div>
+        <p class="result" style="margin-top: 4dp">{{ try_result }}</p>
+    </div>
+</body>
+</rml>

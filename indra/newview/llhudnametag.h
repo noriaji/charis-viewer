@@ -141,6 +141,7 @@ public:
     static void addPickable(std::set<LLViewerObject*> &pick_list);
     static void reshape();
     static void setDisplayText(bool flag) { sDisplayText = flag ; }
+    static bool getDisplayText() { return sDisplayText; }    // <plus> plus/uiscope: what to put back after hiding the tags </plus>
 
 protected:
     LLHUDNameTag(const U8 type);

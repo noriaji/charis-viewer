@@ -76,6 +76,7 @@
 class LLColor3;
 class LLControlGroup;
 class LLSettingsSky;
+class LLUUID;
 class LLViewerRegion;
 
 namespace plus
@@ -124,11 +125,15 @@ namespace plus
     // registerFloaters() calls it too (once only: later calls do nothing).
     void declareSettings();
 
-    // LLControlGroup::saveToFile(), written next to path first and moved over it
-    // only once it reads back whole: a crash or a full disk while saving leaves
-    // the old file, not a cut-off one (which would read back as no settings).
-    // For the saves features make while running; the official ones (quit) stay.
-    // Returns what saveToFile() returns (the number saved), 0 when not written.
+    // LLControlGroup::saveToFileReplacing(), which writes next to path first and
+    // moves it over (research/337 E): a crash or a full disk while saving leaves
+    // the old file, not a cut-off one (which would read back as no settings), and
+    // when no temporary file can be made or the move is refused each time (another
+    // viewer reading path), path stays as it was too: it is never written in place.
+    // After a save that saved something, the leftovers of crashed saves of path go
+    // (removeStaleTemps()). For the saves features make while running; the official
+    // ones (quit) call saveToFile(), which writes in place in those cases. Returns
+    // the number saved, 0 when not written (or nothing to save).
     // gSavedSettings ends a photo-tools compare first (its "as they were" values
     // are not the user's: fix-round49), as the quit does.
     U32 saveSettingsFile(LLControlGroup& group, const std::string& path, bool nondefault_only);
@@ -143,7 +148,10 @@ namespace plus
     // not written for an hour. Only when path is in the viewer's own user folder (user_settings,
     // the accounts; not the cache, whose place the user picks): never in a folder the user
     // picked. Once per file in a session (the folder is read then, not at every save).
-    // replaceFile() calls it after a good save.
+    // replaceFile() and saveSettingsFile() call it after a good save, and once in-world
+    // it is called (on the "General" thread pool) for settings.xml, the account's
+    // settings and ignorable_dialogs.xml (the warnings), which the quit saves with
+    // saveToFile(). Any thread.
     void removeStaleTemps(const std::string& path);
 
     // What replaceFile() / writeFileReplacing() did: the file replaced, or why not (each feature
@@ -190,10 +198,29 @@ namespace plus
     // sensitivity), which add their own rule for the modifier keys. Main thread.
     bool textHasKeyboard();
 
+    // Our own folder in the inventory root, where the features keep what they make (plus/ao's sets,
+    // plus/lslbridge's pose bridge): no folder of another viewer is made in the inventory.
+    constexpr char CHARIS_FOLDER_NAME[] = "#Charis";
+
+    // The folder called name directly in parent (found: its id, null when there is none). True once that is
+    // certain (it is there, or the parent's contents are all known); false while they are being fetched (the
+    // fetch is asked for: call again later). Main thread.
+    bool findChildFolder(const LLUUID& parent, const std::string& name, LLUUID& found);
+
+    // Makes CHARIS_FOLDER_NAME in the inventory root and calls done(its id; null: it could not be made). When it
+    // is there already, done is called at once. A call while it is being made waits for the same answer, so two
+    // features (plus/ao, plus/lslbridge) never make two of it. For callers that found it missing with
+    // findChildFolder() (it is looked at again here). Main thread; done may be called before this returns.
+    void makeCharisFolder(std::function<void(const LLUUID&)> done);
+
 #if LL_WINDOWS
     // This program's full path, as Windows has it (GetModuleFileNameW: not looked up on PATH or in the
     // current folder, not normalised). Empty on failure. Any thread, also before the viewer is set up.
     std::wstring ownExePath();
+
+    // This process's OS user (its token's) as an SID string ("S-1-5-21-..."), for access lists that let
+    // that user alone in (SDDL "D:P(A;;<rights>;;;<sid>)"). Empty on failure. Any thread.
+    std::wstring userSidText();
 #endif
 
     // Declare a UI image the way textures.xml does. file_name is relative to

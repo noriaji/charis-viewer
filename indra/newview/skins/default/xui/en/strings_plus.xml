@@ -31,15 +31,16 @@
   <string name="PlusCameraPathStopped">Camera path: stopped</string>
   <string name="PlusCameraPathCount">[NUMBER]</string>
   <string name="PlusCameraPathGo">Go!</string>
+  <string name="PlusCameraPathPlayingHidden">Camera path: playing. UI and HUD hidden. Esc or J stops.</string>
+  <string name="PlusCameraPathCountHidden">[NUMBER]  (UI and HUD hidden. Esc or J stops.)</string>
   <string name="PlusCameraPathExportMove">A picture could not be moved into the folder of the frames.</string>
   <string name="PlusCameraPathExportDone">The pictures of the frames are in [FOLDER]</string>
   <!-- photomode: why a picture of the photo button was not taken or cannot be (plus/photomode/photoshot.cpp) -->
-  <string name="PlusPhotoShotErrTake">The picture could not be taken (not enough memory?).</string>
+  <string name="PlusPhotoShotErrTake">The photo could not be taken. Please choose a smaller size.</string>
   <string name="PlusPhotoShotErrEncode">The picture could not be encoded.</string>
   <string name="PlusPhotoShotErrSave">The picture could not be saved to [PATH]</string>
   <string name="PlusPhotoShotTooLarge">The viewer takes at most [MAX] pixels on a side.</string>
   <string name="PlusPhotoShotOnly4K">The GPU memory cannot be read here, so only sizes up to 4K are allowed.</string>
-  <string name="PlusPhotoShotNoMemory">Not enough GPU memory: about [NEEDED] GB are needed, [FREE] GB are free.</string>
   <!-- ao: the toolbar button (app_settings/commands_plus.xml) -->
   <string name="Command_PlusAO_Label">AO</string>
   <string name="Command_PlusAO_Tooltip">Animation overrider: replaces your stand, walk, sit and other default animations</string>
@@ -161,6 +162,7 @@
   <string name="PhotoScreenDetail_Grid6">6 x 6</string>
   <string name="PhotoScreenDetail_Grid7">Horizon</string>
   <string name="PhotoScreenDetail_LookNone">No look</string>
+  <string name="PhotoScreenDetail_LookMissing">[NAME] (not found)</string>
   <string name="PhotoScreenDetail_LookChip">Look: [NAME]</string>
   <string name="PhotoScreenDetail_PartEyes">Eyes</string>
   <string name="PhotoScreenDetail_PartChest">Chest</string>
@@ -213,4 +215,34 @@
 [SERVER_RELEASE_NOTES_URL]</string>
   <string name="AboutRLV">RestrainedLove API: [RLV_VERSION]</string>
   <string name="inventory_item_offered_rlv">Inventory item offered to [NAME]</string>
+  <!-- poseconsent: the notices for the poser window when posing someone else (plus/poseconsent, research/336).
+       [NAME]: the other person's name. -->
+  <string name="PlusPoseConsentAccepted">[NAME] allowed you to pose their avatar (on your screen only).</string>
+  <string name="PlusPoseConsentRefused">[NAME] declined. You can ask again in 10 minutes.</string>
+  <string name="PlusPoseConsentAskCancelledBridge">Your pose bridge stopped working, so your request to [NAME] was taken back. You can ask again in 10 minutes.</string>
+  <string name="PlusPoseConsentNoAnswer">[NAME] did not answer. You can ask again in 10 minutes.</string>
+  <string name="PlusPoseConsentWithdrawn">The permission to pose [NAME] ended (they withdrew it, or they moved away, e.g. by teleport). Their pose was undone.</string>
+  <string name="PlusPoseConsentWithdrawnWhileAsking">[NAME] withdrew before answering your request. Nothing was allowed, and nothing was posed.</string>
+  <string name="PlusPoseConsentEnded">The permission to pose [NAME] ended (they left, were muted, you moved, or your pose bridge stopped working). Their pose was undone.</string>
+  <string name="PlusPoseConsentOutOfRange">[NAME] is more than 50 m away: their pose was undone. You can pose them again when they come closer.</string>
+  <!-- poseconsent: our own side's tips (plus/poseconsent), shown through SystemMessageTip -->
+  <string name="PlusPoseConsentAllowNotSent">You allowed [NAME], but they could not be told (your pose bridge is not working). Nothing was allowed: they can ask again in 10 minutes.</string>
+  <string name="PlusPoseConsentAllowBusy">You allowed [NAME], but it could not be sent just now (your pose bridge is busy or getting ready). The request comes back once the bridge can send: press Allow again then.</string>
+  <string name="PlusPoseConsentAllowNeverSent">Your permission for [NAME] could not be sent before their request ended (it timed out, they cancelled it, moved away or left, your settings or block list no longer take them, you moved, or your pose bridge stopped). Nothing was allowed.</string>
+  <string name="PlusPoseConsentAllowUnsure">It is not known whether your permission reached [NAME] (sending it failed). They may be able to pose your avatar: you can withdraw it from the list of who may pose you.</string>
+  <string name="PlusPoseConsentAllowExpired">[NAME]'s request was no longer valid (it timed out, they moved more than 50 m away, or your settings no longer take it). Nothing was allowed.</string>
+  <string name="PlusPoseConsentWithdrawNotSentMany">[COUNT] people could not be told that you withdrew: [REASON]</string>
+  <string name="PlusPoseConsentReasonBusy">sending failed just now. Each withdraw is sent again by itself until it gets through (the list shows "(withdraw waiting)" meanwhile); you can also wait a little and press Withdraw again.</string>
+  <string name="PlusPoseConsentReasonNoBridge">your pose bridge is not working. They stay on the list of who may pose you (as "(withdraw waiting)"), and each withdraw is sent by itself once the bridge is back.</string>
+  <!-- posereflect: stage 2 of the consent (plus/poseconsent, research/374b), shown through SystemMessageTip. [NAME]: the other person -->
+  <string name="PlusPoseReflectAccepted">[NAME] allowed you to show your poses on their screen too. They chose whether the Charis Viewers near them may see them too.</string>
+  <string name="PlusPoseReflectRefused">[NAME] declined to have your poses shown on their screen. You can ask again in a little while.</string>
+  <string name="PlusPoseReflectNoAnswer">[NAME] did not answer your request to show your poses on their screen. You can ask again in a little while.</string>
+  <string name="PlusPoseReflectEnded">Showing your poses on [NAME]'s screen ended (they or you ended it, you stopped being friends, they moved away or left, or your pose bridge stopped working). Their pose on your screen is unchanged.</string>
+  <string name="PlusPoseReflectPushing">[NAME]'s pose is now shown on your avatar (you allowed it). To stop it, press "Stop Reflect" in the list of people who may pose you (Preferences > Privacy; it opens by itself).</string>
+  <string name="PlusPoseReflectAllowNeverSent">Your permission for [NAME] could not be sent before their request ended. Nothing was allowed.</string>
+  <string name="PlusPoseReflectAllowUnsure">It is not known whether your permission for [NAME] reached them (sending it failed). Their poses may show on your screen: withdraw the permission to pose you to end it.</string>
+  <string name="PlusPoseConsentBlockListFull">[NAME] was not blocked: the list of people blocked from asking to pose you is full ([COUNT]). Their request was refused. Unblock everyone in Preferences &gt; Privacy to make room.</string>
+  <!-- research/343: the value text of the distance slider (Preferences > Graphics) -->
+  <string name="plus_full_distance_off">Off</string>
 </strings>

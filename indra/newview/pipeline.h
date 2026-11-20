@@ -92,6 +92,11 @@ extern LLTrace::BlockTimerStatHandle FTM_RENDER_UI_HUD;
 extern LLTrace::BlockTimerStatHandle FTM_RENDER_UI_3D;
 extern LLTrace::BlockTimerStatHandle FTM_RENDER_UI_2D;
 
+// <plus> research/319 cpu-census: set by display() around the main view's stateSort (with LLRHI_FRAME_COST=2 or the
+// render thread census) so that pipeline.cpp cuts it into finer FrameCost sections; false otherwise
+extern bool gPlusStateSortMarks;
+// </plus>
+
 class LLPipeline
 {
 public:
@@ -301,6 +306,21 @@ public:
     // may take this frame before built groups that may wait (see there) wait for a
     // later frame; < 0: no limit (LLRHI_PRIORITY_BUDGET). Starts the frame's count.
     void setPriorityRebuildBudget(F32 seconds);
+    // <plus> research/340: bridge groups of an impostor avatar's attachments wait (still IN_BUILD_Q1) in mGroupCaptureWait
+    // until the avatar is captured or drawn in full. setPriorityRebuildBudget copies PlusImpostorBridgeDefer into
+    // mImpostorBridgeDefer once a frame; generateImpostor sets mImpostorCapture (the avatar being captured) while it runs.
+    LLVOAvatar* captureWaitOwner(LLSpatialGroup* group) const;
+    struct CaptureWait
+    {
+        LLPointer<LLSpatialGroup> group;
+        LLVOAvatar* owner;      // refreshed by each frame's scan; compared during a capture, never dereferenced then
+    };
+    void releaseCaptureWaits();
+    bool mImpostorBridgeDefer = false;
+    LLVOAvatar* mImpostorCapture = nullptr;
+    std::vector<CaptureWait> mGroupCaptureWait;
+    U32 mCaptureWaitScanFrame = 0;
+    // </plus>
     F32 mPriorityRebuildBudget = -1.f;
     F32 mPriorityRebuildSpent = 0.f;    // this frame, in the queue's loop (also what had to build)
     bool mPriorityRebuiltAny = false;   // a group that may wait was built this frame
@@ -1219,6 +1239,7 @@ protected:
     LLDrawable::drawable_list_t     mBuildQ1; // priority
     LLSpatialGroup::sg_vector_t     mGroupQ1; //priority
 
+    LLSpatialGroup::sg_vector_t     mGroupLater;     // <plus> research/340: rebuildPriorityGroups' groups that keep their place, kept to avoid an allocation per call </plus>
     LLSpatialGroup::sg_vector_t     mGroupSaveQ1; // a place to save mGroupQ1 until it is safe to unref
 
     LLSpatialGroup::sg_vector_t     mMeshDirtyGroup; //groups that need rebuildMesh called

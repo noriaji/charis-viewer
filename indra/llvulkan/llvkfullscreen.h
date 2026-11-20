@@ -46,6 +46,7 @@ namespace LLVKFullscreen
         Add,                // added to the target's RGB (alpha kept)
         Min,                // the smaller of the two, per channel
         PremultipliedOver,  // RGB laid over the target's: src + dst * (1 - src alpha) (alpha kept)
+        UnderTargetAlpha,   // RGB kept as much as the target's alpha says, the rest taken: src * (1 - dst alpha) + dst * dst alpha (alpha kept)
     };
 
     // A stencil test the pass's pipelines bake in: the pass draws only where
@@ -64,7 +65,7 @@ namespace LLVKFullscreen
 
     constexpr U32 MAX_IMAGES = 8;
     // Colour attachments a pass may write at once (a G-buffer; LLVKMirror::Target's colors).
-    constexpr U32 MAX_COLORS = 4;
+    constexpr U32 MAX_COLORS = LLVKMirror::MAX_COLORS;
 
     // A GL texture the pass samples, in the layout it is in during the pass.
     // Or, with view set, an image of the backend's own (not a GL texture:
@@ -89,11 +90,13 @@ namespace LLVKFullscreen
                   VkColorComponentFlags write_mask = WRITE_RGBA, const StencilTest& stencil = StencilTest());
 
         // The same for a pass that writes several colour attachments at once
-        // (a G-buffer): output location i goes to attachment i as it is
-        // (Blend::Replace) through write_masks[i]. color_count: 1..MAX_COLORS;
-        // the pass draws only on targets with exactly that many attachments.
+        // (a G-buffer): output location i goes to attachment i through
+        // write_masks[i], as it is (Blend::Replace) or by blends[i] (null: all
+        // Replace). color_count: 1..MAX_COLORS; the pass draws only on targets
+        // with exactly that many attachments.
         bool initColors(const char* name, const char* fragment_glsl, U32 image_count, U32 color_count,
-                        const VkColorComponentFlags* write_masks, const StencilTest& stencil = StencilTest());
+                        const VkColorComponentFlags* write_masks, const StencilTest& stencil = StencilTest(),
+                        const Blend* blends = nullptr);
 
         // Records the pass on target (as beginPass gave it): the uniforms go
         // to the frame's ring, the images are bound at bindings 1..count.
@@ -109,7 +112,7 @@ namespace LLVKFullscreen
     private:
         struct TargetKey
         {
-            VkFormat colors[MAX_COLORS] = { VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED };
+            VkFormat colors[MAX_COLORS] = {};      // VK_FORMAT_UNDEFINED
             VkFormat depth = VK_FORMAT_UNDEFINED;
             bool stencil = false;
             bool operator<(const TargetKey& other) const;
@@ -123,9 +126,9 @@ namespace LLVKFullscreen
         const char* mName = "";
         VkShaderModule mFragment = VK_NULL_HANDLE;
         U32 mImageCount = 0;
-        Blend mBlend = Blend::Replace;      // attachment 0's (the others are written as they are)
+        Blend mBlends[MAX_COLORS] = {};     // each attachment's (Blend::Replace)
         U32 mColorCount = 1;
-        VkColorComponentFlags mWriteMasks[MAX_COLORS] = { WRITE_RGBA, WRITE_RGBA, WRITE_RGBA, WRITE_RGBA };
+        VkColorComponentFlags mWriteMasks[MAX_COLORS] = { WRITE_RGBA };   // attachment 0's; init and initColors set each one used
         StencilTest mStencil;
         VkDescriptorSetLayout mSetLayout = VK_NULL_HANDLE;
         VkPipelineLayout mLayout = VK_NULL_HANDLE;

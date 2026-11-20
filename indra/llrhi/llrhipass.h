@@ -59,11 +59,14 @@
 // which the pass's first draw would do anyway).
 namespace LLRHI
 {
+    // The colour attachments a target may have (the G-buffer with its motion vectors, research/373; LLVKMirror::MAX_COLORS).
+    constexpr U32 PASS_MAX_COLORS = 5;
+
     // The render target of a pass, as LLRenderTarget holds it.
     struct PassTarget
     {
         U32 framebuffer = 0;        // the GL framebuffer the viewer bound for the pass (0: not known)
-        U32 colors[4] = {};         // GL names of its colour attachments, in draw buffer order
+        U32 colors[PASS_MAX_COLORS] = {};   // GL names of its colour attachments, in draw buffer order
         U32 color_count = 0;
         U32 depth = 0;              // GL name of its own depth texture (0: none, or another target's shared)
         U32 width = 0;

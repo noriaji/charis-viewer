@@ -92,6 +92,11 @@ private:
     void setAllowMultiple(bool allow_multiple);
     LLScrollListCtrl* getActiveList();
 
+    // <plus> contactsets: the "Contact Sets" tab (Firestorm FIRE-34809) (plus/contactsets/peopletab) (research/333)
+    void refreshContactSets();                       // the sets, then the people of the chosen one
+    void populateContactSetMembers(bool select_all); // the people of the chosen set
+    // </plus>
+
     void drawFrustum();
     virtual void draw();
     virtual bool handleKeyHere(KEY key, MASK mask);
@@ -101,6 +106,10 @@ private:
     bool                mNearMeListComplete;
     bool                mCloseOnSelect;
     bool                mExcludeAgentFromSearchResults;
+    // <plus> contactsets: (research/333)
+    bool                mAllowMultiple = false;          // as setAllowMultiple() was told: all of a chosen set is selected
+    bool                mContactSetNamesComplete = true; // false while a name of the shown set is not in the name cache
+    // </plus>
     LLHandle <LLView>   mFrustumOrigin;
     F32                 mContextConeOpacity;
     F32                 mContextConeInAlpha;

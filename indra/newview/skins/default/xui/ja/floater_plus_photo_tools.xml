@@ -68,6 +68,7 @@
 	<floater.string name="aspect_2x3">2:3（縦）</floater.string>
 	<floater.string name="shot_dims">[W]×[H]  約 [MP] メガピクセル</floater.string>
 	<floater.string name="shot_dims_no">[W]×[H]  約 [MP] メガピクセル。撮れません: [WHY]</floater.string>
+	<floater.string name="shot_dims_split">[W]×[H]  約 [MP] メガピクセル。GPU のメモリが少ないため、分割して撮ることがあります（時間がかかることがあります）。</floater.string>
 	<floater.string name="shot_ok">保存しました: [FILE]（[W]×[H]、[KB] KB、[S] 秒）</floater.string>
 	<floater.string name="shot_fail">撮影できませんでした。[WHY]</floater.string>
 	<floater.string name="shot_none">まだ撮っていません。</floater.string>
@@ -78,7 +79,8 @@
 	<floater.string name="shot_btn_taking">撮影中…</floater.string>
 	<floater.string name="shot_btn_wait">待機中（[S] 秒）</floater.string>
 	<floater.string name="shot_btn_wait_memory">待機中…</floater.string>
-	<floater.string name="why_memory">GPU のメモリが足りません（必要 約 [NEED] GB、空き [FREE] GB）。</floater.string>
+	<floater.string name="why_split">この大きさには GPU のメモリが心もとないため（目安 約 [NEED] GB、今の空き [FREE] GB）、分割して撮ることがあります。その分、時間がかかることがあります。</floater.string>
+	<floater.string name="size_split">・分割</floater.string>
 	<floater.string name="why_side">ビューワが撮れるのは 1 辺 7680 ピクセルまでです。</floater.string>
 	<floater.string name="why_unknown">GPU のメモリが読めないため、4K までしか撮れません。</floater.string>
 	<floater.string name="fav_missing">[NAME]（見つかりません）</floater.string>
@@ -103,6 +105,19 @@
 	<floater.string name="sky_list_open">空を選ぶ ▼</floater.string>
 	<floater.string name="water_list_open">水面を選ぶ ▼</floater.string>
 	<floater.string name="env_list_close">閉じる ▲</floater.string>
+	<floater.string name="env_view_to_flat">一覧表示</floater.string>
+	<floater.string name="env_view_to_tree">ツリー表示</floater.string>
+	<floater.string name="env_view_to_flat_tip">すべてを名前順の 1 本の一覧で表示します</floater.string>
+	<floater.string name="env_view_to_tree_tip">インベントリとライブラリのフォルダの表示に戻します（一覧では、行をクリックで掛け、矢印キーで順に進みます）</floater.string>
+	<floater.string name="env_flat_none">まだありません（インベントリを読み込み中かもしれません）。</floater.string>
+	<floater.string name="env_flat_library">（ライブラリ）</floater.string>
+	<floater.string name="env_flat_inventory">（インベントリ）</floater.string>
+	<floater.string name="env_flat_library_in">（ライブラリ: [FOLDER]）</floater.string>
+	<floater.string name="env_flat_folder">（[FOLDER]）</floater.string>
+	<floater.string name="env_prev_fav">前のお気に入り</floater.string>
+	<floater.string name="env_next_fav">次のお気に入り</floater.string>
+	<floater.string name="env_prev_flat">一覧の前のもの</floater.string>
+	<floater.string name="env_next_flat">一覧の次のもの</floater.string>
 	<floater.string name="gaze_open">－ 目の調整</floater.string>
 	<floater.string name="look_none">なし（元の色）</floater.string>
 	<floater.string name="look_missing">[NAME]（見つかりません）</floater.string>
@@ -118,6 +133,7 @@
 	<floater.string name="look_recent_empty">ここで使ったルックが並びます。</floater.string>
 	<floater.string name="look_none_found">ルックが見つかりません。</floater.string>
 	<floater.string name="look_fav_full">お気に入りのルックが 100 件あります。先に 1 件外してください。</floater.string>
+	<floater.string name="look_fav_pruned">なくなったルック [COUNT] 件をお気に入りから外しました。</floater.string>
 	<floater.string name="look_reloaded">ルックを読み直しました（同梱 [SHIPPED]、自分 [USER]）。</floater.string>
 	<floater.string name="compare_label">比べる</floater.string>
 	<floater.string name="compare_label_latched">今に戻す</floater.string>

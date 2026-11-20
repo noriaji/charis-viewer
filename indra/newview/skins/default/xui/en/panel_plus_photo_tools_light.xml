@@ -154,6 +154,16 @@
                  width="110"
                  name="btn_sky_fav_sort"
                  tool_tip="Put the favorite skies in the order of their names" />
+                <!-- All tab only: the tree or a plain list (PlusPhotoEnvListFlat); the label is set in the code -->
+                <button
+                 follows="right|top"
+                 height="22"
+                 label="List View"
+                 layout="topleft"
+                 right="-4"
+                 top="46"
+                 width="110"
+                 name="btn_sky_view_toggle" />
                 <filter_editor
                  follows="left|top|right"
                  height="22"
@@ -209,6 +219,25 @@
                  item_pad="0"
                  visible="false"
                  name="sky_recent_list" />
+                <scroll_list
+                 background_visible="true"
+                 draw_border="true"
+                 draw_heading="false"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="98"
+                 bottom="-30"
+                 visible="false"
+                 name="sky_all_list">
+                    <scroll_list.columns
+                     name="star"
+                     width="20" />
+                    <scroll_list.columns
+                     dynamic_width="true"
+                     name="name" />
+                </scroll_list>
                 <button
                  follows="left|bottom"
                  height="22"
@@ -367,6 +396,15 @@
                  width="110"
                  name="btn_water_fav_sort"
                  tool_tip="Put the favorite water settings in the order of their names" />
+                <button
+                 follows="right|top"
+                 height="22"
+                 label="List View"
+                 layout="topleft"
+                 right="-4"
+                 top="46"
+                 width="110"
+                 name="btn_water_view_toggle" />
                 <filter_editor
                  follows="left|top|right"
                  height="22"
@@ -422,6 +460,25 @@
                  item_pad="0"
                  visible="false"
                  name="water_recent_list" />
+                <scroll_list
+                 background_visible="true"
+                 draw_border="true"
+                 draw_heading="false"
+                 follows="all"
+                 layout="topleft"
+                 left="4"
+                 right="-4"
+                 top="98"
+                 bottom="-30"
+                 visible="false"
+                 name="water_all_list">
+                    <scroll_list.columns
+                     name="star"
+                     width="20" />
+                    <scroll_list.columns
+                     dynamic_width="true"
+                     name="name" />
+                </scroll_list>
                 <button
                  follows="left|bottom"
                  height="22"

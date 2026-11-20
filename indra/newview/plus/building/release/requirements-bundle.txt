@@ -1,0 +1,17 @@
+# python zstandard for the shader bundle (shaderbundle.py recompress / check of a compressed bundle; format 2,
+# research/363), pinned with its SHA-256 (pip --require-hashes --only-binary :all: --no-deps). Only the package job
+# of release-package.yml installs it (the bake job, where third-party code runs, has none: it hands over plain
+# modules, and check --stored-only reads them without zstandard).
+# Windows 64-bit wheels of CPython 3.9 to 3.14. The digests were taken from
+# https://pypi.org/pypi/zstandard/0.25.0/json ("urls" -> "digests" -> "sha256" of each wheel; 2026-11-16).
+# To move to another version, take the digests of the new version the same way.
+# The same bundle needs the same zstandard version: frames and the trained dictionary can differ between versions
+# (a bundle made by another version still reads and checks the same).
+
+zstandard==0.25.0 \
+    --hash=sha256:37daddd452c0ffb65da00620afb8e17abd4adaae6ce6310702841760c2c26860 \
+    --hash=sha256:ea9d54cc3d8064260114a0bbf3479fc4a98b21dffc89b3459edd506b69262f6e \
+    --hash=sha256:daab68faadb847063d0c56f361a289c4f268706b598afbf9ad113cbe5c38b6b2 \
+    --hash=sha256:ffef5a74088f1e09947aecf91011136665152e0b4b359c42be3373897fb39b01 \
+    --hash=sha256:1f830a0dac88719af0ae43b8b2d6aef487d437036468ef3c2ea59c51f9d55fd5 \
+    --hash=sha256:c19bcdd826e95671065f8692b5a4aa95c52dc7a02a4c5a0cac46deb879a017a2

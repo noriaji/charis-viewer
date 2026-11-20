@@ -372,6 +372,7 @@ LLFloaterPreference::LLFloaterPreference(const LLSD& key)
     mCommitCallbackRegistrar.add("Pref.AvatarImpostorsEnable",  boost::bind(&LLFloaterPreference::onAvatarImpostorsEnable, this));
     mCommitCallbackRegistrar.add("Pref.UpdateIndirectMaxNonImpostors", boost::bind(&LLFloaterPreference::updateMaxNonImpostors, this));
     mCommitCallbackRegistrar.add("Pref.UpdateIndirectMaxComplexity",    boost::bind(&LLFloaterPreference::updateMaxComplexity, this));
+    mCommitCallbackRegistrar.add("Pref.UpdateFullDistance",    boost::bind(&LLFloaterPreference::updateDistanceSlider, this, _2)); // <plus> research/343, 344: the parameter names the slider and its setting </plus>
     mCommitCallbackRegistrar.add("Pref.RenderOptionUpdate",     boost::bind(&LLFloaterPreference::onRenderOptionEnable, this));
     mCommitCallbackRegistrar.add("Pref.WindowedMod",            boost::bind(&LLFloaterPreference::onCommitWindowedMode, this));
     mCommitCallbackRegistrar.add("Pref.UpdateSliderText",       boost::bind(&LLFloaterPreference::refreshUI,this));
@@ -1409,6 +1410,8 @@ void LLFloaterPreference::refresh()
     setMaxNonImpostorsText(
         gSavedSettings.getU32("RenderAvatarMaxNonImpostors"),
         getChild<LLTextBox>("IndirectMaxNonImpostorsText", true));
+    setFullDistanceText(gSavedSettings.getF32("PlusAvatarFullDistance"), getChild<LLTextBox>("PlusAvatarFullDistanceText", true)); // <plus> research/343 </plus>
+    setFullDistanceText(gSavedSettings.getF32("PlusAvatarSilhouetteDistance"), getChild<LLTextBox>("PlusAvatarSilhouetteDistanceText", true)); // <plus> research/344 </plus>
     LLAvatarComplexityControls::setText(
         gSavedSettings.getU32("RenderAvatarMaxComplexity"),
         getChild<LLTextBox>("IndirectMaxComplexityText", true));
@@ -1731,6 +1734,41 @@ void LLFloaterPreference::updateMaxNonImpostors()
     LLVOAvatar::updateImpostorRendering(value); // make it effective immediately
     setMaxNonImpostorsText(value, getChild<LLTextBox>("IndirectMaxNonImpostorsText"));
 }
+
+// <plus> research/343, 344: the slider of PlusAvatarFullDistance or PlusAvatarSilhouetteDistance (the setting and the
+// slider's name; the value text is "<name>Text"): 0 = off, else 5 m or more: a smaller value is moved to 5, what the
+// viewer uses
+void LLFloaterPreference::updateDistanceSlider(const LLSD& name)
+{
+    const std::string setting = name.asString();
+    if (setting != "PlusAvatarFullDistance" && setting != "PlusAvatarSilhouetteDistance")
+    {
+        return;
+    }
+    LLSliderCtrl* ctrl = getChild<LLSliderCtrl>(setting, true);
+    F32 value = (F32)ctrl->getValue().asReal();
+    if (value > 0.f && value < 5.f)
+    {
+        value = 5.f;
+        ctrl->setValue(value);
+        gSavedSettings.setF32(setting, value);
+    }
+    setFullDistanceText(value, getChild<LLTextBox>(setting + "Text", true));
+}
+
+// static
+void LLFloaterPreference::setFullDistanceText(F32 value, LLTextBox* text_box)
+{
+    if (value <= 0.f)
+    {
+        text_box->setText(LLTrans::getString("plus_full_distance_off"));
+    }
+    else
+    {
+        text_box->setText(llformat("%.0f m", value));
+    }
+}
+// </plus>
 
 void LLFloaterPreference::updateIndirectMaxNonImpostors(const LLSD& newvalue)
 {

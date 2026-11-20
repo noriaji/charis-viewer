@@ -31,16 +31,6 @@
 #include "llwindow.h"
 #include "stringize.h"
 
-// The official numbers, from VIEWER_VERSION.txt through CMake (BuildVersion.cmake,
-// generated into the build folder). LLVersionInfo no longer returns them.
-#include "llversioninfovars.h"
-
-#if ! defined(LL_VIEWER_VERSION_MAJOR) \
- || ! defined(LL_VIEWER_VERSION_MINOR) \
- || ! defined(LL_VIEWER_VERSION_PATCH)
- #error "Official version information is undefined"
-#endif
-
 namespace plus::version
 {
     static_assert(MAJOR >= 0 && MINOR >= 0 && PATCH >= 0 && STAGE_NUMBER >= 0);
@@ -63,11 +53,6 @@ namespace plus::version
         return std::string(STAGE);
     }
 
-    std::string baseVersion()
-    {
-        return stringize(LL_VIEWER_VERSION_MAJOR, '.', LL_VIEWER_VERSION_MINOR, '.', LL_VIEWER_VERSION_PATCH);
-    }
-
     std::string shortTitle(const std::string& name)
     {
         std::string text = name + " " + shortVersion();
@@ -82,7 +67,7 @@ namespace plus::version
 
     std::string displayVersion(const std::string& name)
     {
-        return shortTitle(name) + stringize(" based on ", BASE_CHANNEL, ' ', baseVersion());
+        return shortTitle(name);
     }
 
     std::string displayVersion()

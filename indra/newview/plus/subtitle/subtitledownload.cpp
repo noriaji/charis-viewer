@@ -90,12 +90,14 @@ namespace plus
 
             mutable std::mutex mutex;
             std::string failure;
+            FailureKind failureKind = FailureKind::None;
 
-            void fail(const std::string& why)
+            void fail(FailureKind kind, const std::string& why)
             {
                 {
                     std::lock_guard<std::mutex> lk(mutex);
                     failure = why;
+                    failureKind = kind;
                 }
                 DeleteFileW(part.c_str());
                 state = int(State::Failed);
@@ -155,18 +157,21 @@ namespace plus
                 }
                 if (overrun)
                 {
-                    fail("the download is larger than the file is expected to be");
+                    fail(FailureKind::Size, "the download is larger than the file is expected to be");
                     return;
                 }
                 if (code != 0)
                 {
-                    fail("curl.exe stopped with code " + std::to_string(code));
+                    // 23: it could not write the .part (a full disk, the folder gone); 63: the server announced more
+                    // than --max-filesize; the rest is the connection or the server
+                    const FailureKind kind = code == 23 ? FailureKind::Disk : code == 63 ? FailureKind::Size : FailureKind::Network;
+                    fail(kind, "curl.exe stopped with code " + std::to_string(code));
                     return;
                 }
                 state = int(State::Verifying);
                 if (fileSize(part) != source.size)
                 {
-                    fail("the downloaded file has the wrong size");
+                    fail(FailureKind::Size, "the downloaded file has the wrong size");
                     return;
                 }
                 // 490 MB take seconds to read: the hash looks at the flag before every piece
@@ -179,12 +184,12 @@ namespace plus
                 }
                 if (sha != source.sha256)
                 {
-                    fail("the downloaded file does not match its SHA-256");
+                    fail(FailureKind::Hash, "the downloaded file does not match its SHA-256");
                     return;
                 }
                 if (!MoveFileExW(part.c_str(), dest.c_str(), MOVEFILE_REPLACE_EXISTING))
                 {
-                    fail("cannot name the file (error " + std::to_string(GetLastError()) + ")");
+                    fail(FailureKind::Disk, "cannot name the file (error " + std::to_string(GetLastError()) + ")");
                     return;
                 }
                 state = int(State::Done);
@@ -326,6 +331,16 @@ namespace plus
             return mImpl->failure;
         }
 
+        ModelDownload::FailureKind ModelDownload::failureKind() const
+        {
+            if (state() != State::Failed)
+            {
+                return FailureKind::None;
+            }
+            std::lock_guard<std::mutex> lk(mImpl->mutex);
+            return mImpl->failureKind;
+        }
+
 #else   // the model download is Windows only (curl.exe of Windows)
 
         struct ModelDownload::Impl {};
@@ -340,6 +355,7 @@ namespace plus
         ModelDownload::State ModelDownload::state() const { return State::Idle; }
         double ModelDownload::fraction() const { return 0.0; }
         std::string ModelDownload::failure() const { return std::string(); }
+        ModelDownload::FailureKind ModelDownload::failureKind() const { return FailureKind::None; }
 
 #endif
     }

@@ -48,6 +48,13 @@ namespace plus::exittime
     // One line, when the clock runs; returns at once otherwise.
     void mark(const char* stage);
 
+    // 'observer' is called at every begin(), first of all, before the official code closes the floaters
+    // (requestQuit): for what must let go of the UI it hides while the floaters are still shown
+    // (plus/uiscope: the saved "open" state of a floater must not be the hidden one). It may be called
+    // more than once in one exit (requestQuit, then the head of cleanup) and must allow that. Main thread; not removed
+    // (plus/uiscope adds its one when its first Scope is made).
+    void addQuitObserver(void (*observer)());
+
     // The quit was cancelled (LLAppViewer::abortQuit): the next quit starts a
     // new clock and reads the setting again.
     void cancel();

@@ -51,6 +51,7 @@
 #include "plus/photoscreen/psui/psstack.h"
 
 #include "llfloater.h"
+#include "llinventoryobserver.h"
 #include "llhandle.h"
 #include "lltimer.h"
 
@@ -370,7 +371,34 @@ namespace plus::photomode::tools
             bool              listOpen = false;
             bool              listsBuilt = false;
             S32               openHeight = 0;   // the section's height as the XUI has it, for when it opens
+            // The All tab as a plain list sorted by name ("<p>_all_list", PlusPhotoEnvListFlat) instead of
+            // the tree. Made only while it is seen (open, All tab, flat). It walks the inventory
+            // (environmentItems()) once (flatAll) and again when the inventory's generation (mInvWatch) changes or the
+            // list was folded; a search or a star only picks from flatAll. The rows are made again only when what
+            // they show (flatSig: the search, the rows, their stars) changed, so the scroll stays.
+            LLScrollListCtrl*     flatList = nullptr;
+            std::vector<SkyEntry> flatAll;           // every sky (or water) of the inventory, by name
+            std::vector<size_t>   flatIdx;           // the rows: indexes into flatAll, in their order
+            std::string           flatSig;
+            LLUUID                flatMarked;        // the item whose row was chosen last (lastApplied then)
+            unsigned              flatInvGen = 0;    // the inventory's generation (mInvWatch) when flatAll was made
+            std::string           flatKey;           // search, favorites' and inventory's generations of the last look
+            std::string           flatTerm;          // the search the rows were made for (the scroll is kept only for the same)
+            bool                  flatBuilt = false; // flatAll is made
+            std::string           stepTips[4];       // the arrows' tips for the tree, from the XUI: btn_ prev, next, btn_home_ prev, next
         };
+        static bool envFlat();
+
+        // Counts up when the inventory changes in a way the plain list shows (a sky or water item added, changed
+        // or renamed, a folder renamed or added, anything removed), so it looks at the inventory again only then,
+        // not for the outfit's links and the like (registered in buildEnv(), taken off in the destructor).
+        class EnvInventoryWatch : public LLInventoryObserver
+        {
+        public:
+            void     changed(U32 mask) override;
+            unsigned generation = 1;
+        };
+        EnvInventoryWatch mInvWatch;
         static std::string ctl(const Picker& picker, const std::string& before, const std::string& after)
         {
             return before + picker.prefix + after;
@@ -386,6 +414,10 @@ namespace plus::photomode::tools
         void     setEnvTab(Picker& picker, int tab);
         void     showEnvList(Picker& picker);
         void     setEnvListOpen(Picker& picker, bool open);
+        void     setEnvFlat(bool flat);
+        void     syncFlat(Picker& picker, bool full);
+        bool     rebuildFlatRows(Picker& picker, const std::string& term);
+        void     stepFlat(Picker& picker, int direction);
         void     rebuildEnvLists(bool force);
         void     rebuildPicker(Picker& picker, bool force);
         LLPanel* makeEnvRow(const SkyEntry& entry, LLFlatListView* list, bool favorites_list);
@@ -479,6 +511,8 @@ namespace plus::photomode::tools
         void        refreshShotState();
         void        showShotResult();
         std::string whyNot(const ShotDims& dims, const ShotMemory& memory);
+        std::string splitNote(const ShotDims& dims, const ShotMemory& memory, bool was_split);
+        std::string sizeSplitMark();
         void        refreshGaze();
         void        refreshFocus(); // the focus lock (plus/focuslock): the Avatar tab's Focus section
 
@@ -492,6 +526,10 @@ namespace plus::photomode::tools
         std::string       mFocusPeopleKey;                 // what that list was filled for
         unsigned          mShotSeen = 0;
         std::string       mShotMenuKey;
+        // The sizes the menu noted as tiled, with the picture's size it was for (the hysteresis of shotWillSplit
+        // holds only while the same picture is meant: a new shape or window size starts from false).
+        struct SplitMemo { bool split = false; int w = 0, h = 0; };
+        SplitMemo         mShotSplit[SHOT_SIZE_COUNT];
         std::string       mSaveDirShown;   // the folder line as written (with its 'default' note)
         // what the photo buttons say: made again only when the state or the seconds of the wait change
         ShotState         mShotStateShown = ShotState::Idle;

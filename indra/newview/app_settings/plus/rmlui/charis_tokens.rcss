@@ -1,0 +1,307 @@
+/* Made by indra/newview/plus/photoscreen/psui/make_ui_tokens.py from tokens.txt (research/239 (12), research/364 2.6).
+   Do not edit: change tokens.txt and run python -I make_ui_tokens.py. */
+
+body
+{
+    /* 0. the ground */
+    --ground: #0c111a;
+    --panel-top: #141b28f5;
+    --panel-bottom: #09111cf5;
+    --panel-mid: #0f1622;
+    --panel-border: #1c2533;
+    --panel-radius: 12dp;
+    --panel-gap: 8dp;
+    --divider-left: #1b232e;
+    --divider-right: #323d4c;
+    --divider-margin: 14dp;
+    --text-white: #f4f7fb;
+    --text-label: #b9c3cf;
+    --text-dim: #8e98a2;
+    --text-sub: #acb7c6;
+    --text-hint: #9eabbb;
+    --icon-light: #d5dde8;
+    --accent: #3c91ef;
+    --accent-line: #83cbff;
+    --focus-ring: #3c91efb2;
+    --world-radius: 10dp;
+    /* states (not in the picture: fixed steps) */
+    --state-hover: 0.06;
+    --state-press: 0.06;
+    --state-disabled: 0.4;
+    /* 1. the rail */
+    --rail: #0b1421;
+    --rail-icon-color: #abb9d2;
+    --rail-text: #b9c3cf;
+    --rail-sel-left: #174f9a;
+    --rail-sel-right: #0e325d;
+    --rail-sel-bar: #83cbff;
+    --rail-sel-text: #e8fbff;
+    --rail-hover: #ffffff0d;
+    --rail-press: #0000001a;
+    --rail-width: 123dp;
+    --rail-tab-height: 83dp;
+    --rail-icon: 26dp;
+    --rail-icon-top: 15dp;
+    --rail-text-top: 49dp;
+    --rail-bar-width: 3dp;
+    /* 2. headings */
+    --head-pad: 14dp;
+    --head-icon: 21dp;
+    --head-icon-right: 19dp;
+    --head-icon-gap: 10dp;
+    --head-chevron: 14dp;
+    --head-icon-color: #d5dde8;
+    --head-chevron-color: #8e98a2;
+    /* 3. small labels */
+    --label: #b9c3cf;
+    /* 4. check boxes */
+    --check-box: 21dp;
+    --check-radius: 4dp;
+    --check-gap: 10dp;
+    --check-mark: 17dp;
+    --check-off: #111b27;
+    --check-border: #343b48;
+    --check-border-hover: #4a5566;
+    --check-on: #5aa0ee;
+    --check-mark-color: #ffffff;
+    --check-text: #c9d1dc;
+    /* 5. sliders */
+    --slider-label-width: 124dp;
+    --slider-gap: 12dp;
+    --slider-track: 4dp;
+    --slider-knob: 16dp;
+    --slider-knob-pressed: 18dp;
+    --slider-fill-left: #7d879e;
+    --slider-fill-right: #b3bccf;
+    --slider-empty: #363e4d;
+    --knob-top: #d0daf0;
+    --knob-bottom: #aab6d0;
+    --knob-top-pressed: #ffffff;
+    --knob-bottom-pressed: #d3dcf0;
+    --slider-track-top: 6dp;
+    --slider-tick: #4a5566;
+    --value-width: 62dp;
+    --value-height: 26dp;
+    --value-radius: 4dp;
+    --value-pad: 8dp;
+    --value-fill: #0c121b;
+    --default-btn-width: 22dp;
+    --default-btn-gap: 8dp;
+    --default-btn-color: #8e98a2;
+    --default-btn-color-hover: #f4f7fb;
+    --default-btn-fill-hover: #ffffff0d;
+    /* 6. switches */
+    --switch-width: 31dp;
+    --switch-height: 17dp;
+    --switch-knob: 12dp;
+    --switch-knob-inset: 2.5dp;
+    --switch-seconds: 0.12s;
+    --switch-on: #408fe6;
+    --switch-off: #363e4d;
+    --switch-knob-on: #ffffff;
+    --switch-knob-off: #8e98a2;
+    /* 7. drop-downs */
+    --combo-radius: 6dp;
+    --combo-pad: 10dp;
+    --combo-chevron: 14dp;
+    --combo-fill: #202a40cc;
+    --combo-border: #3a4458;
+    --list-bg: #141b28;
+    --list-selected: #1a4172;
+    /* 8. chips (12. the buttons in the world use the same box) */
+    --chip-radius: 7dp;
+    --chip-height: 40dp;
+    --chip-pad: 12dp;
+    --chip-icon: 19dp;
+    --chip-gap: 10dp;
+    --chip-fill: #0e1119b2;
+    --chip-icon-color: #d5dde8;
+    /* 9. histogram */
+    --hist-radius: 7dp;
+    --hist-pad: 8dp;
+    --hist-fill: #1a2132bf;
+    --hist-border: #40496499;
+    --hist-r: #e2524a73;
+    --hist-g: #46c06a73;
+    --hist-b: #3d7ff073;
+    --hist-luma: #d9dde68c;
+    --hist-base: #5a6378;
+    /* 11. the exposure read-out */
+    --readout-left: 26dp;
+    --readout-bottom: 24dp;
+    --readout-gap: 24dp;
+    --readout-text: #f8f8fa;
+    --readout-shade: #00000059;
+    /* 12. icon buttons in the world */
+    --iconbtn-icon: 21dp;
+    --iconbtn-hover: 31dp;
+    --iconbtn-color: #f2f7ff;
+    --iconbtn-hover-color: #ffffff1a;
+    /* 13. the right panel */
+    --row-margin: 21dp;
+    /* 14. the shutter strip */
+    --seg-radius: 7dp;
+    --seg-border: #376386;
+    --seg-border-dim: #26354a;
+    --seg-on-left: #2b5185;
+    --seg-on-right: #1e3858;
+    --seg-off: #1d2838;
+    --seg-separator-inset: 6dp;
+    --shutter-ring: #edf4ff;
+    --shutter-top: #f7f9fc;
+    --shutter-bottom: #e4e8f0;
+    --shutter-ring-width: 3.5dp;
+    --shutter-groove: 3.5dp;
+    --shutter-pressed-scale: 0.92;
+    --shutter-busy-seconds: 0.2s;
+    --gear-icon: 26dp;
+    /* 15. cards with a picture */
+    --card-radius: 7dp;
+    --card-picture-width: 65dp;
+    --card-text-gap: 12dp;
+    --card-more-icon: 19dp;
+    --card-fill: #0c1522;
+    --card-border: #2a3342;
+    --placeholder: #141b28;
+    --placeholder-icon: #5a6378;
+    /* 16. buttons */
+    --button-radius: 7dp;
+    --button-fill: #0e1721;
+    --button-border: #333a45;
+    --button-fill-hover: #152030;
+    --button-border-hover: #4a5566;
+    --button-fill-press: #0a111a;
+    /* 17. the bottom strip's tabs */
+    --tab-pad: 14dp;
+    --tab-line: 2dp;
+    --tab-line-inset: 4dp;
+    --tab-glow: 6dp;
+    --tab-text-on: #edfeff;
+    --tab-line-edge: #3c91ef;
+    --tab-line-mid: #a9dafc;
+    --tab-glow-color: #3c91ef40;
+    /* 18. preset cards */
+    --preset-picture-height: 90dp;
+    --preset-text-gap: 8dp;
+    --preset-gap: 12dp;
+    --preset-close: 16dp;
+    --preset-hover-border: #83cbff;
+    --preset-selected-border: #3c91ef;
+    --preset-close-fill: #00000099;
+    --add-fill: #0b121e;
+    --add-border: #242b36;
+    --add-icon: 31dp;
+    /* 18b. words-only cards (the preset strip's; not in the picture, in its style) */
+    --preset-compact-pad: 8dp;
+    --preset-compact-gap: 2dp;
+    --add-compact-icon-x: 14dp;
+    --add-compact-gap: 6dp;
+    /* 19. list rows (the sky and water lists of the scene tab; not in the picture, in its style) */
+    --list-row-height: 30dp;
+    --list-row-pad: 10dp;
+    --list-row-radius: 6dp;
+    --list-row-bar: 3dp;
+    --list-star: 16dp;
+    --list-star-hit: 28dp;
+    --list-row-text: #c9d1dc;
+    --list-star-on: #f2c14e;
+    --list-star-off: #5a6378;
+    /* 20. badges (the conversations tab's unread count; not in the picture, in its style) */
+    --badge-height: 18dp;
+    --badge-pad: 5dp;
+    --badge-max: 9dp;
+    --badge-fill: #3c91ef;
+    --badge-quiet: #363e4d;
+    --badge-text: #ffffff;
+    /* 21. the conversations tab's history (not in the picture, in its style) */
+    --conv-own-text: #acb7c6;
+    --conv-system-text: #8e98a2;
+    /* 22. the names the XUI windows use (colors.xml Ps*; besides PsGround, PsTextWhite ... PsAccent of 0.) */
+    --panel-bg: #0f1622;
+    --field-bg: #0c121b;
+    --field-border: #343b48;
+    --selection-bg: #1a4172;
+    --hover-bg: #ffffff0d;
+    --link-text: #83cbff;
+    --divider-line: #323d4c;
+    /* 23. the skin (skins/charis: the frame of every window and the official parts not replaced yet) */
+    --window-top: #141b28f5;
+    --window-bottom: #09111cf5;
+    --window-border: #1c2533;
+    --window-border-focus: #323d4c;
+    --window-radius: 12dp;
+    --title-icon: #d5dde8;
+    --title-icon-press: #83cbff;
+    --title-icon-size: 16dp;
+    --tooltip-fill: #141b28;
+    --tooltip-border: #1c2533;
+    --tooltip-radius: 6dp;
+    --button-on-top: #2b5185;
+    --button-on-bottom: #1e3858;
+    --button-on-border: #376386;
+    --scroll-thumb: #4a5566;
+    --scroll-track: #0c111a59;
+    --scroll-width: 6dp;
+    --scroll-radius: 3dp;
+    --highlight-bg: #1a4172;
+    --row-hover-bg: #1d2838;
+    /* 24. the shader reload notice (research/250, plus/shaderreload: a chip with a track under its text; not in the picture, in its style) */
+    --reload-pad-y: 9dp;
+    --reload-text-line: 16dp;
+    --reload-bar-gap: 8dp;
+    --reload-margin: 24dp;
+    /* 25. the focus hint (research/264, plus/focuslock/focushint.cpp: a chip at the top of the world while the focus is picked by clicking; not in the picture, in its style) */
+    --focus-hint-margin: 24dp;
+    --focus-hint-gap: 8dp;
+    /* 26. the compatible widgets (research/266 2.1, pscompat.h: the official widgets drawn in this look; not in the picture, in its style) */
+    --button-icon: 19dp;
+    --button-pad: 12dp;
+    --radio-size: 18dp;
+    --radio-dot: 8dp;
+    --spin-arrow-width: 18dp;
+    --spin-arrow: 10dp;
+    --search-hit-fill: #3c91ef2e;
+    --search-hit-ring: #83cbffcc;
+    --search-hit-radius: 6dp;
+    /* 27. tab containers (plus_ps_tabs, research/266 prefs-frame; not in the picture, in its style) */
+    --tabs-rail-width: 150dp;
+    --tabs-row-height: 32dp;
+    --tabs-row-min: 24dp;
+    --tabs-row-gap: 8dp;
+    --tabs-text-pad: 14dp;
+    --tabs-top-height: 36dp;
+    --tabs-top-pad: 14dp;
+    --tabs-top-gap: 10dp;
+    /* 28. the shortcut bar (plus/shortcutbar: the text buttons of the row under the navigation bar, over the world; not in the picture, in its style) */
+    --shortcut-btn-height: 22dp;
+    --shortcut-btn-radius: 6dp;
+    --shortcut-btn-pad: 10dp;
+    --shortcut-btn-gap: 6dp;
+    --shortcut-edge: 6dp;
+    --shortcut-fill: #0e1119b2;
+    --shortcut-on-left: #2b5185e6;
+    --shortcut-on-right: #1e3858e6;
+    /* 29. the timeline strip (research/357, plus/posermotion/motiontimelineview.cpp: the band of the keys and segments in the motion window; not in the picture, in its style) */
+    --tl-radius: 7dp;
+    --tl-fill: #0e1119;
+    --tl-border: #2a3446;
+    --tl-ruler: #8e98a273;
+    --tl-tick: #8e98a2b2;
+    --tl-hold: #8e98a259;
+    --tl-scroll: #8e98a280;
+    --tl-smooth: #6594c6;
+    --tl-linear: #606972;
+    --tl-fail: #e2524a;
+    --tl-seg-radius: 5dp;
+    --tl-hold-radius: 3dp;
+    --tl-handle-radius: 3dp;
+    --tl-label-pad: 6dp;
+    --tl-dot-radius: 3.5dp;
+    /* fonts (the official sizes nearest to the picture's: research/221 "文字") */
+    --font-title: 21.3333dp;
+    --font-head: 14.6667dp;
+    --font-body: 13.3333dp;
+    --font-button: 14.6667dp;
+    --font-small: 12dp;
+    --font-readout: 14.6667dp;
+}

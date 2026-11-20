@@ -170,7 +170,7 @@ RenderExposure				1   1
 RenderTonemapType			1   1
 RenderTonemapMix			1   0.7
 RenderDisableVintageMode           1   0
-RenderMaxTextureResolution         1   1024
+RenderMaxTextureResolution         1   512
 RenderReflectionProbeCount  1   32
 RenderHighPrecisionPostProcess 1 0
 
@@ -212,7 +212,7 @@ RenderCASSharpness          1   0
 RenderExposure				1   1
 RenderTonemapType			1   1
 RenderTonemapMix			1   0.7
-RenderMaxTextureResolution  1   2048
+RenderMaxTextureResolution  1   1024
 RenderReflectionProbeCount  1   64
 RenderHighPrecisionPostProcess 1 0
 
@@ -254,7 +254,7 @@ RenderCASSharpness          1   0
 RenderExposure				1   1
 RenderTonemapType			1   1
 RenderTonemapMix			1   0.7
-RenderMaxTextureResolution  1   2048
+RenderMaxTextureResolution  1   1024
 RenderReflectionProbeCount  1   64
 RenderHighPrecisionPostProcess 1 0
 

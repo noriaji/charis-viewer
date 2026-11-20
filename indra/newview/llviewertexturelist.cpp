@@ -74,6 +74,7 @@
 #include "plus/texprio/texprio.h"   // research/285 (tex-view-priority)
 #include "plus/texprio/fetchflow.h" // research/294 (tex-fetch-flow)
 #include "plus/texprio/fetchretry.h"    // research/299 (tex-fetch-retry)
+#include "plus/imagescensus/imagescensus.h"  // research/348 (images-census)
 // </plus>
 
 ////////////////////////////////////////////////////////////////////////////
@@ -851,6 +852,8 @@ void LLViewerTextureList::updateImages(F32 max_time)
         cleared = false;
     }
 
+    plus::imagescensus::PassScope images_census;    // <plus> research/348 images-census: a frame of this pass (LLRHI_IMAGES_CENSUS) </plus>
+
     LLAppViewer::getTextureFetch()->setTextureBandwidth((F32)LLTrace::get_frame_recording().getPeriodMeanPerSec(LLStatViewer::TEXTURE_NETWORK_DATA_RECEIVED).value());
 
     {
@@ -872,18 +875,22 @@ void LLViewerTextureList::updateImages(F32 max_time)
     // make sure each call below gets at least its "fair share" of time
     F32 min_time = max_time * 0.33f;
     F32 remaining_time = max_time;
+    plus::imagescensus::budget(max_time);   // <plus> research/348 images-census </plus>
 
     //loading from fast cache
+    plus::imagescensus::stage(plus::imagescensus::FAST_CACHE);  // <plus> research/348 images-census </plus>
     remaining_time -= updateImagesLoadingFastCache(remaining_time);
     remaining_time = llmax(remaining_time, min_time);
 
     if (LLRHI::sTextureBudget)
     {
         //handle results from decode threads
+        plus::imagescensus::stage(plus::imagescensus::CREATE);  // <plus> research/348 images-census </plus>
         remaining_time -= updateImagesCreateTextures(remaining_time * 0.6f);
         remaining_time = llmax(remaining_time, min_time);
 
         //dispatch to texture fetch threads
+        plus::imagescensus::stage(plus::imagescensus::URGENT);  // <plus> research/348 images-census </plus>
         remaining_time -= updateImagesUrgent(remaining_time * 0.5f);
         updateImagesFetchTextures(remaining_time);
     }
@@ -894,9 +901,11 @@ void LLViewerTextureList::updateImages(F32 max_time)
         remaining_time = llmax(remaining_time, min_time);
 
         //handle results from decode threads
+        plus::imagescensus::stage(plus::imagescensus::CREATE);  // <plus> research/348 images-census </plus>
         updateImagesCreateTextures(remaining_time);
     }
 
+    plus::imagescensus::stage(plus::imagescensus::AFTER);   // <plus> research/348 images-census </plus>
     bool didone = false;
     for (image_list_t::iterator iter = mCallbackList.begin();
         iter != mCallbackList.end(); )
@@ -2542,6 +2551,7 @@ void LLViewerTextureList::forceImmediateUpdate(LLViewerFetchedTexture* imagep)
 F32 LLViewerTextureList::updateImagesFetchTextures(F32 max_time)
 {
     LL_PROFILE_ZONE_SCOPED_CATEGORY_TEXTURE;
+    plus::imagescensus::stage(plus::imagescensus::FETCH_COPY);  // <plus> research/348 images-census </plus>
 
     typedef std::vector<LLPointer<LLViewerFetchedTexture> > entries_list_t;
     entries_list_t entries;
@@ -2574,6 +2584,7 @@ F32 LLViewerTextureList::updateImagesFetchTextures(F32 max_time)
         LLViewerTexture::sBiasTexturesUpdated += update_count;
     }
     update_count = llmin(update_count, (U32) mUUIDMap.size());
+    const U32 census_copied = update_count;     // <plus> research/348 images-census </plus>
 
     // <plus> idle-skip (research/178 G1)
     const bool pace = pace_frame();
@@ -2632,6 +2643,7 @@ F32 LLViewerTextureList::updateImagesFetchTextures(F32 max_time)
 
     const F64 copy_ms = copy_timer.getElapsedTimeF64() * 1000.0;
 
+    plus::imagescensus::stage(plus::imagescensus::FETCH_LOOP);  // <plus> research/348 images-census </plus>
     LLTimer timer;
 
     // LLRHI (research/65): the faces of the next block of textures are scanned
@@ -2661,6 +2673,7 @@ F32 LLViewerTextureList::updateImagesFetchTextures(F32 max_time)
         if (imagep->getNumRefs() > 1) // make sure this image hasn't been deleted before attempting to update (may happen as a side effect of some other image updating)
         {
             const S32 desired_before = imagep->getDesiredDiscardLevel(); // <plus> idle-skip </plus>
+            plus::imagescensus::textureBegin();     // <plus> research/348 images-census </plus>
             if (planned)
             {
                 visitPlanned(imagep, e - plan_begin);
@@ -2671,6 +2684,7 @@ F32 LLViewerTextureList::updateImagesFetchTextures(F32 max_time)
                 updateImageDecodePriority(imagep);
             }
             imagep->updateFetch();
+            plus::imagescensus::textureEnd();       // <plus> research/348 images-census </plus>
             // <plus> idle-skip: a paced texture's visit; late if it now wants more than it had
             if (imagep->mRhiPaceSkips)
             {
@@ -2730,6 +2744,9 @@ F32 LLViewerTextureList::updateImagesFetchTextures(F32 max_time)
     sVisitStats.copy_ms += copy_ms;
     sVisitStats.plan_ms += plan_ms;
     sVisitStats.loop_ms += elapsed * 1000.0;
+    // <plus> research/348 images-census
+    plus::imagescensus::fetchDone(max_time, mUUIDMap.size(), census_copied, entries.size(), visited, out_of_time, elapsed, plan_ms);
+    // </plus>
     log_visit_stats();
     return elapsed;
 }
@@ -2781,8 +2798,10 @@ F32 LLViewerTextureList::updateImagesUrgent(F32 max_time)
     }
 
     LLTimer timer;
+    size_t census_reached = 0;      // <plus> research/348 images-census </plus>
     for (size_t i = 0; i < entries.size(); ++i)
     {
+        census_reached = i + 1;     // <plus> research/348 images-census </plus>
         const LLTextureKey& key = entries[i].first;
         LLViewerFetchedTexture* imagep = entries[i].second.get();
         if (i >= boosted_count)
@@ -2824,6 +2843,7 @@ F32 LLViewerTextureList::updateImagesUrgent(F32 max_time)
     }
     const F32 elapsed = timer.getElapsedTimeF32();
     sVisitStats.urgent_ms += elapsed * 1000.0;
+    plus::imagescensus::urgentDone(entries.size(), census_reached, census_reached < entries.size());   // <plus> research/348 images-census </plus>
     return elapsed;
 }
 

@@ -27,6 +27,7 @@ set(llrhi_SOURCE_FILES
     ${CMAKE_CURRENT_LIST_DIR}/llrhissgi.cpp
     ${CMAKE_CURRENT_LIST_DIR}/llrhissr.cpp
     ${CMAKE_CURRENT_LIST_DIR}/llrhitaa.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/llrhimotion.cpp
     ${CMAKE_CURRENT_LIST_DIR}/llrhiuploadtrace.cpp
     ${CMAKE_CURRENT_LIST_DIR}/llrhiupscale.cpp
     ${CMAKE_CURRENT_LIST_DIR}/llrhivbcensus.cpp
@@ -62,6 +63,7 @@ set(llrhi_HEADER_FILES
     ${CMAKE_CURRENT_LIST_DIR}/llrhissgi.h
     ${CMAKE_CURRENT_LIST_DIR}/llrhissr.h
     ${CMAKE_CURRENT_LIST_DIR}/llrhitaa.h
+    ${CMAKE_CURRENT_LIST_DIR}/llrhimotion.h
     ${CMAKE_CURRENT_LIST_DIR}/llrhiuploadtrace.h
     ${CMAKE_CURRENT_LIST_DIR}/llrhiupscale.h
     ${CMAKE_CURRENT_LIST_DIR}/llrhivbcensus.h

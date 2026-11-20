@@ -556,23 +556,32 @@ namespace plus::photomode::tools
     std::string PhotoToolsFloater::whyNot(const ShotDims& dims, const ShotMemory& memory)
     {
         std::string why;
-        double      need = 0.0, room = 0.0;
-        if (shotFits(dims, memory, why, &need, &room))
+        if (shotFits(dims, memory, why))
+        {
+            return std::string(); // a shortage of memory is no reason: see splitNote()
+        }
+        // Left: a side over the limit, or the memory unreadable and the size over 4K.
+        return getString(dims.w > 7680 || dims.h > 7680 ? "why_side" : "why_unknown");
+    }
+
+    // The short mark after a size label that is taken in tiles; a space before it when the word starts in ASCII (en "(tiled)").
+    std::string PhotoToolsFloater::sizeSplitMark()
+    {
+        const std::string mark = getString("size_split");
+        return !mark.empty() && (unsigned char)mark[0] < 0x80 ? " " + mark : mark;
+    }
+
+    // The note for a size the memory may not take in one piece ("" when it will, or when it cannot be told).
+    std::string PhotoToolsFloater::splitNote(const ShotDims& dims, const ShotMemory& memory, bool was_split)
+    {
+        if (!shotWillSplit(dims, memory, was_split))
         {
             return std::string();
         }
         LLStringUtil::format_map_t args;
-        if (dims.w > 7680 || dims.h > 7680)
-        {
-            return getString("why_side");
-        }
-        if (need <= 0.0)
-        {
-            return getString("why_unknown");
-        }
-        args["[NEED]"] = llformat("%.1f", need);
-        args["[FREE]"] = llformat("%.1f", room);
-        return getString("why_memory", args);
+        args["[NEED]"] = llformat("%.1f", shotNeededGb(dims));
+        args["[FREE]"] = llformat("%.1f", memory.room_gb); // never below 0 (shotMemory)
+        return getString("why_split", args);
     }
 
     // The photo button: one picture, taken a few frames later, with the size and shape of the menus.
@@ -593,7 +602,7 @@ namespace plus::photomode::tools
         refreshShotState();
     }
 
-    // The size menu with the sizes the memory does not take switched off (and why), the shape menu, the line of numbers.
+    // The size menu (a size over the room is taken in tiles: noted, not switched off), the shape menu, the line of numbers.
     void PhotoToolsFloater::refreshShotMenus()
     {
         static const char* SIZE_STRINGS[SHOT_SIZE_COUNT] = { "size_window", "size_2k", "size_4k", "size_6k", "size_8k" };
@@ -603,7 +612,7 @@ namespace plus::photomode::tools
         const int aspect = llclamp((int)shot_aspect(), 0, SHOT_ASPECT_COUNT - 1);
         const ShotMemory memory = shotMemory();
 
-        std::vector<std::string> labels, reasons;
+        std::vector<std::string> labels, reasons, splits;
         std::vector<bool>        enabled;
         std::string              key = std::to_string(aspect);
         std::string              tip;
@@ -611,15 +620,21 @@ namespace plus::photomode::tools
         {
             const ShotDims    dims = shotDims(i, aspect);
             const std::string why  = whyNot(dims, memory); // the driver asked once for all the sizes
-            labels.push_back(getString(SIZE_STRINGS[i]) + "  " + std::to_string(dims.w) + " x " + std::to_string(dims.h));
+            SplitMemo&        memo  = mShotSplit[i];
+            const std::string split = why.empty() ? splitNote(dims, memory, memo.split && memo.w == dims.w && memo.h == dims.h) : std::string();
+            memo = { !split.empty(), dims.w, dims.h };
+            labels.push_back(getString(SIZE_STRINGS[i]) + "  " + std::to_string(dims.w) + " x " + std::to_string(dims.h) +
+                             (split.empty() ? std::string() : sizeSplitMark()));
             reasons.push_back(why);
+            splits.push_back(split);
             enabled.push_back(why.empty());
             key += "|" + labels.back() + (why.empty() ? "+" : "-");
-            if (!why.empty())
+            if (!why.empty() || !split.empty())
             {
-                tip += (tip.empty() ? "" : "\n") + getString(SIZE_STRINGS[i]) + ": " + why;
+                tip += (tip.empty() ? "" : "\n") + getString(SIZE_STRINGS[i]) + ": " + (why.empty() ? split : why);
             }
         }
+        const std::string tooltip = tip.empty() ? getString("shot_size_tip") : tip;
         if (key != mShotMenuKey)
         {
             mShotMenuKey = key;
@@ -631,7 +646,14 @@ namespace plus::photomode::tools
                 {
                     combo->add(labels[i], LLSD(i), ADD_BOTTOM, enabled[i]);
                 }
-                combo->setToolTip(tip.empty() ? getString("shot_size_tip") : tip);
+            }
+        }
+        for (const char* name : { "home_shot_size", "shot_size" })
+        {
+            LLComboBox* combo = getChild<LLComboBox>(name);
+            if (combo->getToolTip() != tooltip) // the numbers of the tip change with the memory, the menu does not
+            {
+                combo->setToolTip(tooltip);
             }
         }
         for (const char* name : { "home_shot_size", "shot_size" })
@@ -648,7 +670,8 @@ namespace plus::photomode::tools
         args["[H]"]   = std::to_string(dims.h);
         args["[MP]"]  = llformat("%.1f", dims.megapixels());
         args["[WHY]"] = reasons[size];
-        const std::string info = getString(enabled[size] ? "shot_dims" : "shot_dims_no", args);
+        const char*       info_key = !enabled[size] ? "shot_dims_no" : (splits[size].empty() ? "shot_dims" : "shot_dims_split");
+        const std::string info     = getString(info_key, args);
         setTextIfChanged(getChild<LLTextBox>("home_shot_info"), info);
         setTextIfChanged(getChild<LLTextBox>("shot_info"), info);
     }

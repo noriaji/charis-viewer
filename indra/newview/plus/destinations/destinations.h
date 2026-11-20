@@ -1,6 +1,6 @@
 /**
  * @file destinations.h
- * @brief Reload for the Destinations floater (plus/destinations)
+ * @brief Reload and page language for the Destinations floater (plus/destinations)
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -34,8 +34,16 @@ namespace destinations
     // without the cache (the guide URL only when no page is loaded).
     void setupReloadButton(LLFloater* floater);
 
-    // onOpen: reloads the guide if its last load ended in an HTTP error. A page that
-    // loaded fine is left as it is (opening the floater does not read the page again).
+    // postBuild: keeps the guide page in the UI language (Weglot's switchTo after a load; the
+    // setting PlusDestinationsPageLang turns it off). Not tied to the Reload button.
+    void setupPageLanguage(LLFloater* floater);
+
+    // onOpen: the next good load is asked for the UI language (a page that is settling loads two or
+    // three times), and the guide is reloaded if its last load ended in an HTTP error.
+    void onFloaterOpen(LLFloater* floater);
+
+    // Reloads the guide if its last load ended in an HTTP error. A page that loaded fine is left as
+    // it is (opening the floater does not read the page again).
     void reloadIfLastLoadFailed(LLFloater* floater);
 }
 }

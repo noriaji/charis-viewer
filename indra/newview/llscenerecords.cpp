@@ -539,8 +539,7 @@ bool LLSceneRecords::isAlphaPass(U32 pass)
 
 bool LLSceneRecords::alphaWanted()
 {
-    static const bool wanted = LLRHI::sceneAlphaMode() != LLRHI::SceneMode::Off;
-    return wanted;
+    return LLRHI::sceneAlphaMode() != LLRHI::SceneMode::Off;  // research/218 vk-s2f-2: each time (sceneOffForDevice)
 }
 
 // research/218 vk-s4b2: read once, as LLRHI's scene modes (off with LLRHI_SCENE
@@ -1780,8 +1779,8 @@ void LLSceneRecords::beginFrame()
         worldChecked(true, "the backend's checks found a difference");     // research/204 10 (vk-s4c2)
         if (LLRHI::sceneMode() == LLRHI::SceneMode::Auto && scene->drawing())
         {
-            scene->setDrawing(false);
             LL_WARNS("Scene") << "retained scene: the backend's checks found a difference (VKPerf scene line): drawing stops" << LL_ENDL;
+            autoStopDrawing(*scene, "the backend's checks found a difference");
         }
         else if (!mProblemLogged)
         {
@@ -1789,22 +1788,21 @@ void LLSceneRecords::beginFrame()
             LL_WARNS("Scene") << "retained scene: the backend's checks found a difference (VKPerf scene line)" << LL_ENDL;
         }
     }
-    if (LLRHI::sceneMode() == LLRHI::SceneMode::Auto && !scene->drawing() && mCleanFrames >= AUTO_FRAMES)
+    if (LLRHI::sceneMode() == LLRHI::SceneMode::Auto && !scene->drawing() && !autoOff() && mCleanFrames >= AUTO_FRAMES)
     {
         scene->setDrawing(true);
         if (scene->drawing())
         {
             LL_INFOS("Scene") << "retained scene: " << mCleanFrames << " frames without a difference, drawing" << LL_ENDL;
         }
-        else if (!mDrawFailedLogged)
+        else
         {
-            mDrawFailedLogged = true;
-            LL_INFOS("Scene") << "retained scene: " << mCleanFrames
-                              << " frames without a difference, but it cannot draw (no binder or expand, research/198 5.5): choosing only"
-                              << LL_ENDL;
+            // research/218 vk-s2f-2: what it lacks (no binder, no expand: research/198 5.5) is made
+            // once at the start and never comes later; choosing and verifying on would only cost.
+            autoOffForRun("it cannot draw (no binder or expand, research/198 5.5)");
         }
     }
-    mVerifyFrame = !scene->drawing() && mFrame % VERIFY_EVERY == 0;
+    mVerifyFrame = !scene->drawing() && !autoOff() && mFrame % VERIFY_EVERY == 0;   // research/218 vk-s2f-2: none once auto is off
     mFrameDiffered = false;
     memset(mPassVerified, 0, sizeof(mPassVerified));
     mPaletteChecks = 0;     // research/219
@@ -1862,7 +1860,13 @@ void LLSceneRecords::beginFrame()
     if (now >= mReportAt)
     {
         mReportAt = now + REPORT_SECONDS;
-        LL_INFOS("Scene") << takeReport(mReportFrames) << LL_ENDL;
+        // research/218 vk-s2f-2: the census line only in development starts (LLRHI::sPeriodicLogs);
+        // its counts start over either way. Differences and auto's changes are written where they happen.
+        const std::string report = takeReport(mReportFrames);
+        if (LLRHI::sPeriodicLogs)
+        {
+            LL_INFOS("Scene") << report << LL_ENDL;
+        }
         mReportFrames = 0;
     }
 }
@@ -2189,6 +2193,12 @@ U32 LLSceneRecords::beginView(LLCamera& camera)
     mViewTurn[view] = false;
     mViewCompare[view] = false;
     memset(mViewPassVerified[view], 0, sizeof(mViewPassVerified[view]));
+    if (autoOff())
+    {
+        // research/218 vk-s2f-2: LLRHI_SCENE=auto off for the run: no view of these is the scene's
+        // (nothing cut, chosen or compared; the shadows' views are LLSceneShadow's).
+        return LLRHI::SCENE_VIEW_COUNT;
+    }
     if (view != LLRHI::SCENE_VIEW_MAIN)
     {
         if (!viewWanted(view))
@@ -2464,9 +2474,9 @@ const std::vector<LLDrawInfo*>& LLSceneRecords::drawPassInView(U32 pass)
     // research/209: a probe face or mirror is chosen only when cut or in its
     // turn (else nothing of it is asked of the backend).
     const bool cut = cutsPass(view, pass) && !mCutGroups[view].empty();
-    if (!cut && (main_view ? LLRHI::sScene->drawing() : !mViewTurn[view]))
+    if (!cut && (main_view ? LLRHI::sScene->drawing() || autoOff() : !mViewTurn[view]))
     {
-        return mRescue;     // drawing, and nothing of this view's pass is the scene's
+        return mRescue;     // drawing (or, research/218 vk-s2f-2, auto off for the run), and nothing of this view's pass is the scene's
     }
     LLRHI::SceneDrawContext ctx;
     ctx.draw = cut;
@@ -3135,7 +3145,7 @@ void LLSceneRecords::noteDifference(const char* what, U32 view, U32 pass, U32 co
     LLRHI::Scene* scene = LLRHI::sScene;
     if (scene->drawing() && LLRHI::sceneMode() == LLRHI::SceneMode::Auto)
     {
-        scene->setDrawing(false);
+        autoStopDrawing(*scene, what);
     }
     mCleanFrames = 0;
     // research/218 vk-s2f: the alpha view's and the probe faces' own autos (research/209 4.3 7: a
@@ -3148,6 +3158,36 @@ void LLSceneRecords::noteDifference(const char* what, U32 view, U32 pass, U32 co
     {
         partChecked(mProbeAuto, LLRHI::sceneProbeMode(), "LLRHI_SCENE_PROBE", true, what);
     }
+}
+
+// research/218 vk-s2f-2: LLRHI_SCENE=auto at a difference while it draws (noteDifference, the
+// backend's checks in beginFrame).
+void LLSceneRecords::autoStopDrawing(LLRHI::Scene& scene, const char* why)
+{
+    scene.setDrawing(false);
+    ++mAutoDrawStops;
+    if (mAutoDrawStops < AUTO_DRAW_STOPS)
+    {
+        return;     // verify again: AUTO_FRAMES without a difference and it draws again
+    }
+    autoOffForRun("drawing stopped " + std::to_string(mAutoDrawStops) + " times for a difference (the last: " + why + ")");
+}
+
+// research/218 vk-s2f-2: LLRHI_SCENE=auto gives up for the run (once).
+void LLSceneRecords::autoOffForRun(const std::string& why)
+{
+    if (mAutoOff)
+    {
+        return;
+    }
+    mAutoOff = true;
+    mAutoOffWhy = why;
+    LL_WARNS("Scene") << "retained scene: LLRHI_SCENE=auto off for the run: " << why << "; every batch is drawn the usual way" << LL_ENDL;
+    // The parts that draw only while the scene draws: their checks would only cost.
+    const char* const off = "LLRHI_SCENE=auto is off for the run";
+    partChecked(mAlphaAuto, LLRHI::sceneAlphaMode(), "LLRHI_SCENE_ALPHA", true, off);
+    partChecked(mProbeAuto, LLRHI::sceneProbeMode(), "LLRHI_SCENE_PROBE", true, off);
+    worldChecked(true, off);
 }
 
 // research/218 vk-s2f: auto's step at a check of the part (several in a
@@ -3277,8 +3317,17 @@ std::string LLSceneRecords::takeReport(U32 frames)
     }
     const size_t batches = mInfos.size() - alpha_batches;
     std::ostringstream out;
-    out << "scene records (" << LLRHI::sceneModeName(LLRHI::sceneMode()) << (drawing() ? ", drawing" : ", choosing")
-        << "): target batches " << batches << ", with records " << records << " ("
+    out << "scene records (" << LLRHI::sceneModeName(LLRHI::sceneMode()) << (drawing() ? ", drawing" : ", choosing");
+    if (mAutoOff)
+    {
+        // research/218 vk-s2f-2: why auto is off for the run (stopped AUTO_DRAW_STOPS times, or it cannot draw).
+        out << ", auto off for the run: " << mAutoOffWhy;
+    }
+    else if (mAutoDrawStops)
+    {
+        out << ", auto stopped drawing " << mAutoDrawStops << " of " << AUTO_DRAW_STOPS << " times";
+    }
+    out << "): target batches " << batches << ", with records " << records << " ("
         << (batches ? (U32)((U64)records * 100 / batches) : 0) << "%), waiting " << waiting << "; groups " << mGroups.size()
         << " (resident " << resident_groups << ")";
     // research/218 vk-s4b2: the attachments' and animesh's groups (LLRHI_SCENE_ATTACHMENTS), cut in

@@ -32,6 +32,22 @@
 //-----------------------------------------------------------------------------
 #include "llmotion.h"
 
+// <plus> research/374: the checks a joint value gets before it is set from a file or from a share. The same limits as the
+// pose loading has: a position within +-POSER_VALUE_POSITION_LIMIT m of the base, a scale (as a change of the base) from
+// POSER_VALUE_SCALE_DELTA_MIN to POSER_VALUE_SCALE_DELTA_MAX; a value that is not finite counts as zero.
+namespace plus::poser
+{
+    constexpr F32 POSER_VALUE_POSITION_LIMIT  = 10.f;
+    constexpr F32 POSER_VALUE_SCALE_DELTA_MIN = -0.95f;
+    constexpr F32 POSER_VALUE_SCALE_DELTA_MAX = 19.f;
+
+    // A normalised rotation; the identity for one that is not finite or has no length.
+    LLQuaternion usableQuaternion(LLQuaternion q);
+    LLVector3    clampedPosition(const LLVector3& position);
+    LLVector3    clampedScaleDelta(const LLVector3& scale);
+}
+// </plus>
+
 /// <summary>
 /// Describes the kind of pose-change.
 /// Useful for undoing complex changes.
@@ -120,6 +136,22 @@ class FSJointPose
     /// Reflects the base and delta rotation of the represented joint left-right.
     /// </summary>
     void reflectRotation();
+
+    // <plus> research/374 6'(b): a pose another person shares (plus/poseshare). The joint is to stand at `absRotation`
+    // (what getTargetRotation() gives: the public rotation made from it and the base) with the position and the scale
+    // changed from the base by `positionDelta` and `scaleDelta`. The values are checked here (a rotation that is not
+    // finite becomes the identity, a rotation is normalised, the position and the scale are held in the ranges of a
+    // loaded pose: plus::poser::clampedPosition / clampedScaleDelta). Unlike setPublicRotation() nothing goes onto the
+    // undo queue and the undo serial stays (a share comes twice a second and must not end the window's drag undo), the
+    // base is not touched (the collision volumes keep it too) and the joint is not marked as modified.
+    void setSharedTarget(const LLQuaternion& absRotation, const LLVector3& positionDelta, const LLVector3& scaleDelta);
+
+    // research/374 review 2: the FSPosingMotion this joint pose belongs to (its instanceSerial(); 0: none), set by
+    // FSPosingMotion::onInitialize(). A drag's undo batch remembers it, so the window's undo knows the motion it was
+    // made on is still the one standing: a motion made again for any reason (the window's pose started again, a share
+    // or a push made on another avatar, flushAllMotions() after a skeleton reset) cannot give an old drag back.
+    void setOwnerSerial(U64 serial) { mOwnerSerial = serial; }
+    // </plus>
 
     /// <summary>
     /// Reflects the base rotation of the represented joint left-right.
@@ -236,11 +268,15 @@ class FSJointPose
         LLUUID                   avatar;
         std::vector<std::string> joints;
         U64                      serial = 0; // undoSerial() when the drag ended
+        U64                      motionSerial = 0; // the instanceSerial() of the motion whose joints the drag changed. The drag
+                                                   // is void once that motion is made again; lastUndoBatch() does not look at
+                                                   // it: the check is FSFloaterPoser::lastIkDragIsNext(), which a caller must use
         bool                     undone = false;
     };
     static void beginUndoBatch();
     static void endUndoBatch(const LLUUID& avatar);
-    /// The last drag, while no other change came after it (null otherwise).
+    /// The last drag, while no other change came after it (null otherwise). Not checked against the motion (motionSerial):
+    /// use FSFloaterPoser::lastIkDragIsNext() to know whether the drag can be taken back.
     static const UndoBatch* lastUndoBatch();
     static void setLastUndoBatchUndone(bool undone);
     /// The joints' own undo / redo ran: from now on the steps are the joints' own (FS's), not the drag.
@@ -349,6 +385,17 @@ class FSJointPose
         }
 
         bool baseRotationIsZero() const { return mBaseRotation == LLQuaternion::DEFAULT; }
+
+        // <plus> research/374: the public values that give `absRotation` as the target rotation
+        void setSharedTarget(const LLQuaternion& absRotation, const LLVector3& positionDelta, const LLVector3& scaleDelta)
+        {
+            LLQuaternion invBase = mBaseRotation;
+            invBase.conjugate();
+            mRotation = absRotation * invBase; // the same as updateFromJointProperties(false, ...)
+            mPosition.set(positionDelta);
+            mScale.set(scaleDelta);
+        }
+        // </plus>
 
         void resetJoint()
         {
@@ -509,6 +556,7 @@ class FSJointPose
 
     std::deque<FSJointState>              mLastSetJointStates;
     size_t                                mUndoneJointStatesIndex      = 0;
+    U64                                   mOwnerSerial                 = 0; // <plus> research/374 review 2 </plus>
     U32                                   mUndoBatchId                 = 0; // <plus> the batch this joint was last kept for
 
     // <plus> see beginUndoBatch

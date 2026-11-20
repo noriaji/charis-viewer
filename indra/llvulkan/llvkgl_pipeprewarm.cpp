@@ -80,10 +80,11 @@ namespace llvkgl
         {
             return VK_NULL_HANDLE;
         }
-        const VkSpecializationMapEntry oit_entries[2] = { { OIT_BLEND_CONSTANT_ID, 0, sizeof(U32) },
-                                                          { OIT_SPLIT_CONSTANT_ID, sizeof(U32), sizeof(U32) } };
+        const VkSpecializationMapEntry oit_entries[3] = { { OIT_BLEND_CONSTANT_ID, 0, sizeof(U32) },
+                                                          { OIT_SPLIT_CONSTANT_ID, sizeof(U32), sizeof(U32) },
+                                                          { OIT_SKIP_CONSTANT_ID, 2 * sizeof(U32), sizeof(F32) } };
         VkSpecializationInfo oit_specialization = {};
-        oit_specialization.mapEntryCount = 2;
+        oit_specialization.mapEntryCount = 3;
         oit_specialization.pMapEntries = oit_entries;
         oit_specialization.dataSize = sizeof(recipe.oit_constants);
         oit_specialization.pData = recipe.oit_constants;
@@ -264,6 +265,7 @@ namespace
             mMaxInputs = llmin(props.limits.maxVertexInputAttributes, props.limits.maxVertexInputBindings);   // one binding each
             mMaxLocations = props.limits.maxVertexInputAttributes;
             mMaxStride = props.limits.maxVertexInputBindingStride;
+            mMaxColors = llmin(LLVKMirror::MAX_COLORS, props.limits.maxColorAttachments);
         }
 
         bool wellFormed(const std::vector<U32>& persistent)
@@ -271,7 +273,7 @@ namespace
             // persistent[at(PK_x)] is the key's word PK_x
             constexpr auto at = [](size_t word) constexpr { return PREFIX_WORDS + word - PK_TOPOLOGY; };
             constexpr size_t AT_COLOR_FORMATS = at(PK_COLOR_FORMATS);
-            if (persistent.size() < AT_COLOR_FORMATS || persistent[at(PK_COLOR_COUNT)] > 4 ||
+            if (persistent.size() < AT_COLOR_FORMATS || persistent[at(PK_COLOR_COUNT)] > mMaxColors ||
                 persistent.size() < AT_COLOR_FORMATS + persistent[at(PK_COLOR_COUNT)])
             {
                 return false;
@@ -357,6 +359,7 @@ namespace
         U32 mMaxInputs = 16;
         U32 mMaxLocations = 16;
         U32 mMaxStride = 2048;
+        U32 mMaxColors = 4;             // colour attachments a key may name (LLVKMirror::MAX_COLORS, at most the device's)
     };
 
     std::string keys_path()
@@ -580,7 +583,7 @@ namespace
 
     bool is_oit_key(const std::vector<U32>& key)
     {
-        const size_t colors = llmin(key[PK_COLOR_COUNT], 4u);
+        const size_t colors = llmin(key[PK_COLOR_COUNT], LLVKMirror::MAX_COLORS);
         return key.size() > PK_COLOR_FORMATS + colors && (key.size() - PK_COLOR_FORMATS - colors) % 3 == 1 &&
                (key.back() == PIPELINE_KEY_OIT || key.back() == PIPELINE_KEY_OIT_SPLIT);
     }
@@ -707,7 +710,7 @@ namespace
     // SPIR-V has the formats a draw of it chose. Under sLock.
     bool inputs_fit(const Program& program, const std::vector<U32>& key, bool carried)
     {
-        const size_t colors = llmin(key[PK_COLOR_COUNT], 4u);
+        const size_t colors = llmin(key[PK_COLOR_COUNT], LLVKMirror::MAX_COLORS);
         const size_t end = key.size() - (key.size() - PK_COLOR_FORMATS - colors) % 3;
         const size_t first = PK_COLOR_FORMATS + colors;
         const std::vector<LLVKShader::Input>& inputs = program.vk.inputs;

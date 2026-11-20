@@ -596,6 +596,23 @@ Account: [ACCTTYPE]
        height="16"
        follows="left|top|right"
        layout="topleft"/>
+      <!-- plus contactsets: the contact sets the avatar is in, on the right of the label (Firestorm FIRE-32401 lists them
+           in the group list); hidden while in none, a click opens the Contact Sets tab (plus/contactsets/peopletab, research/333) -->
+      <plus_contact_sets_text
+       name="plus_contact_sets_text"
+       value="Contact sets:"
+       tool_tip="The contact sets this person is in. Click to open the Contact Sets tab of the People window."
+       top="1"
+       left="170"
+       right="-1"
+       height="16"
+       halign="right"
+       use_ellipses="true"
+       visible="false"
+       mouse_opaque="true"
+       follows="left|top|right"
+       layout="topleft"/>
+      <!-- /plus -->
       <group_list
        name="group_list"
        top="18"

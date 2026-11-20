@@ -43,12 +43,13 @@
 #include "llviewercontrol.h"
 #include "llviewerinventory.h"
 #include "plus/invguard/invguard.h"
+#include "plus/plus.h"
 
 #include <algorithm>
 
 namespace
 {
-    constexpr char ROOT_FOLDER_NAME[]    = "#Charis";    // ours: no folder of another viewer is made in the inventory
+    constexpr const char* ROOT_FOLDER_NAME = plus::CHARIS_FOLDER_NAME; // ours: no folder of another viewer is made in the inventory
     constexpr char FS_ROOT_FOLDER_NAME[] = "#Firestorm"; // Firestorm's ROOT_FIRESTORM_FOLDER (only read, to take its sets over)
     constexpr char AO_FOLDER_NAME[]      = "#AO";        // Firestorm's ROOT_AO_FOLDER
     constexpr char SETTING_OFFER[]       = "PlusAOFirestormOffer"; // ask about taking over Firestorm's sets (PerAccount)
@@ -359,33 +360,6 @@ namespace plus::ao
     // ------------------------------------------------------------------------
     // Reading
 
-    bool AOStore::findChildFolder(const LLUUID& parent, const std::string& name, LLUUID& found)
-    {
-        LLInventoryModel::cat_array_t*  cats  = nullptr;
-        LLInventoryModel::item_array_t* items = nullptr;
-        gInventory.getDirectDescendentsOf(parent, cats, items);
-        if (cats)
-        {
-            for (const LLPointer<LLViewerInventoryCategory>& cat : *cats)
-            {
-                if (cat->getName() == name)
-                {
-                    found = cat->getUUID();
-                    return true;
-                }
-            }
-        }
-
-        // Not there: certain only once the parent's contents are all known.
-        if (gInventory.isCategoryComplete(parent))
-        {
-            found.setNull();
-            return true;
-        }
-        gInventory.fetchDescendentsOf(parent);
-        return false;
-    }
-
     bool AOStore::isFetched(const LLUUID& folder, S32 depth)
     {
         if (!gInventory.getCategory(folder))
@@ -467,7 +441,7 @@ namespace plus::ao
                 LLUUID found;
                 if (mRootFolder.isNull())
                 {
-                    if (!findChildFolder(gInventory.getRootFolderID(), ROOT_FOLDER_NAME, found))
+                    if (!plus::findChildFolder(gInventory.getRootFolderID(), ROOT_FOLDER_NAME, found))
                     {
                         return;
                     }
@@ -475,7 +449,7 @@ namespace plus::ao
                 }
                 if (mRootFolder.notNull() && mAOFolder.isNull())
                 {
-                    if (!findChildFolder(mRootFolder, AO_FOLDER_NAME, found))
+                    if (!plus::findChildFolder(mRootFolder, AO_FOLDER_NAME, found))
                     {
                         return;
                     }
@@ -1003,8 +977,14 @@ namespace plus::ao
             return;
         }
 
-        createFolders(gInventory.getRootFolderID(), { ROOT_FOLDER_NAME }, batch, [batch, on_ao_folder](const LLUUID& id)
+        // #Charis through plus::makeCharisFolder(): plus/lslbridge makes it too, and it must not be made twice.
+        batch->addRequest();
+        plus::makeCharisFolder([batch, on_ao_folder](const LLUUID& id)
         {
+            if (id.isNull())
+            {
+                batch->addFailure();
+            }
             AOStore* store = AOStore::live();
             if (!store)
             {
@@ -1675,7 +1655,7 @@ namespace plus::ao
     {
         found.setNull();
         LLUUID fs_root;
-        if (!findChildFolder(gInventory.getRootFolderID(), FS_ROOT_FOLDER_NAME, fs_root))
+        if (!plus::findChildFolder(gInventory.getRootFolderID(), FS_ROOT_FOLDER_NAME, fs_root))
         {
             return false;
         }
@@ -1684,7 +1664,7 @@ namespace plus::ao
             return true;
         }
         LLUUID fs_ao;
-        if (!findChildFolder(fs_root, AO_FOLDER_NAME, fs_ao))
+        if (!plus::findChildFolder(fs_root, AO_FOLDER_NAME, fs_ao))
         {
             return false;
         }

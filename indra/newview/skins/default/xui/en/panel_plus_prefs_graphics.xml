@@ -17,7 +17,7 @@
        10 + the preset in use 30 + 10 + the level names 20 + the quality slider 31 (its seven marks under the
        track) + faster / better 20 + 6 + draw distance 31 + 6 + buttons 40
        + 10 + heading 40 + avatar display 33 + complexity 31 + animated avatars 31 + 6 + button 40
-       + 10 + heading 40 + 6 + buttons 40 + 6 + buttons 40 + 14 = 571 (it scrolls).
+       + 10 + heading 40 + 6 + buttons 40 + 6 + buttons 40 + 14 + distance of avatars drawn as pictures 31 + flat jelly dolls 30 + distance of jelly dolls 31 (about 663 with the rows above; it scrolls).
      Across: the sliders' labels 256 (the longest, ja "動くアバターの最大数：" 143, en "Maximum number of animated
      avatars:" 245), their tracks at 270..445 and the value boxes (or the value texts) at 457..519, "m" after it;
      the quality slider at 147..527 (no label: QualitySpeed is at its left), its marks at the bar's steps: the
@@ -57,7 +57,7 @@
              name="graphics_scroll_panel"
              background_visible="false"
              follows="left|top"
-             height="571"
+             height="663"
              layout="topleft"
              left="0"
              mouse_opaque="false"
@@ -243,6 +243,9 @@
                  width="380">
                     <plus_ps_slider_compat.commit_callback
                      function="Pref.QualityPerformance" />
+                    <!-- in the comparison a click on Mid-High (no change: no commit) chooses it again (plus/presets) -->
+                    <plus_ps_slider_compat.mouse_up_callback
+                     function="Plus.Presets.ReapplyInComparison" />
                 </plus_ps_slider_compat>
                 <plus_ps_text
                  name="FasterText"
@@ -439,6 +442,90 @@
                  width="62">
                     0
                 </plus_ps_text>
+                <plus_ps_slider_compat
+                 name="PlusAvatarFullDistance"
+                 control_name="PlusAvatarFullDistance"
+                 decimal_digits="0"
+                 follows="left|top"
+                 height="31"
+                 increment="1"
+                 initial_value="0"
+                 label="Draw avatars as pictures beyond:"
+                 label_width="256"
+                 layout="topleft"
+                 left="14"
+                 min_val="0"
+                 max_val="100"
+                 show_text="false"
+                 tool_tip="Avatars farther than this are drawn as flat pictures (impostors) to run faster. Off (0): only the maximum number of animated avatars decides. Zooming in stretches the distance; the avatar you look at, your friends (when shown always) and those you set to always show are never pictures. Values from 1 to 4 m count as 5 m."
+                 top="349"
+                 width="431">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.UpdateFullDistance"
+                     parameter="PlusAvatarFullDistance" />
+                </plus_ps_slider_compat>
+                <plus_ps_text
+                 name="PlusAvatarFullDistanceText"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="right"
+                 height="31"
+                 kind="white"
+                 layout="topleft"
+                 left="457"
+                 top="349"
+                 width="62">
+                    0
+                </plus_ps_text>
+                <plus_ps_check_compat
+                 name="PlusJellyDollFlat"
+                 control_name="PlusJellyDollFlat"
+                 follows="left|top"
+                 height="30"
+                 initial_value="false"
+                 label="Draw jelly dolls as flat silhouettes"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="An avatar drawn as a grey figure (too complex, set not to be rendered, blocked, or far away as set below) becomes a flat one-colour silhouette. It runs faster, but the figure has no shading of its own. Not used in the photo mode and for snapshots."
+                 top="380"
+                 width="505" />
+                <plus_ps_slider_compat
+                 name="PlusAvatarSilhouetteDistance"
+                 control_name="PlusAvatarSilhouetteDistance"
+                 decimal_digits="0"
+                 follows="left|top"
+                 height="31"
+                 increment="1"
+                 initial_value="0"
+                 label="Make jelly dolls beyond:"
+                 label_width="256"
+                 layout="topleft"
+                 left="14"
+                 min_val="0"
+                 max_val="100"
+                 show_text="false"
+                 tool_tip="Avatars farther than this are drawn as jelly dolls (grey figures that do not animate) to run faster, never nearer than the distance for pictures above. Off (0): none. Zooming in stretches the distance; the avatar you look at, your friends (when shown always) and those you set to always show are never jelly dolls. Values from 1 to 4 m count as 5 m. Not used in the photo mode."
+                 top="410"
+                 width="431">
+                    <plus_ps_slider_compat.commit_callback
+                     function="Pref.UpdateFullDistance"
+                     parameter="PlusAvatarSilhouetteDistance" />
+                </plus_ps_slider_compat>
+                <plus_ps_text
+                 name="PlusAvatarSilhouetteDistanceText"
+                 type="string"
+                 length="1"
+                 follows="left|top"
+                 halign="right"
+                 height="31"
+                 kind="white"
+                 layout="topleft"
+                 left="457"
+                 top="410"
+                 width="62">
+                    0
+                </plus_ps_text>
                 <plus_ps_button_compat
                  name="RenderExceptionsButton"
                  follows="left|top"
@@ -446,7 +533,7 @@
                  label="Exceptions..."
                  layout="topleft"
                  left="14"
-                 top="355"
+                 top="447"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.RenderExceptions" />
@@ -461,7 +548,7 @@
                  layout="topleft"
                  left="14"
                  size="sub"
-                 top="405"
+                 top="497"
                  width="529" />
                 <plus_ps_button_compat
                  name="PrefSaveButton"
@@ -470,7 +557,7 @@
                  label="Save settings as a preset..."
                  layout="topleft"
                  left="14"
-                 top="451"
+                 top="543"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.PrefSave"
@@ -483,7 +570,7 @@
                  label="Load preset..."
                  layout="topleft"
                  left="282"
-                 top="451"
+                 top="543"
                  width="261">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.PrefLoad"
@@ -496,7 +583,7 @@
                  label="Delete preset..."
                  layout="topleft"
                  left="14"
-                 top="497"
+                 top="589"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.PrefDelete"
@@ -509,7 +596,7 @@
                  label="Reset to recommended settings"
                  layout="topleft"
                  left="282"
-                 top="497"
+                 top="589"
                  width="261">
                     <plus_ps_button_compat.commit_callback
                      function="Pref.HardwareDefaults" />

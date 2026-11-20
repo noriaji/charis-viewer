@@ -28,7 +28,9 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "keywords.h"
+#include "keywordsrml.h"
 #include "plus.h"
+#include "plus/safemode/safemode.h"
 
 #include "llbutton.h"
 #include "llfloater.h"
@@ -132,10 +134,20 @@ namespace plus::keywords
             unsigned      mJudgedGeneration = 0; // ... and the list's (listGeneration(), from 1: 0 is none yet)
         };
 
+        // The window is the RmlUi one (keywordsrml.cpp, research/380). This XUI version is frozen (not changed
+        // any more: a setting added to the window goes to both) and is used in safe mode, where RmlUi is not
+        // started, and with PlusRmlUiWindows off (the choice is made once, here: it takes effect at the next start).
         void init()
         {
-            LLFloaterReg::add(FLOATER_NAME, "floater_plus_keywords.xml",
-                              (LLFloaterBuildFunc)&LLFloaterReg::build<KeywordsFloater>);
+            if (plus::safemode::active() || !gSavedSettings.getBOOL("PlusRmlUiWindows"))
+            {
+                LLFloaterReg::add(FLOATER_NAME, "floater_plus_keywords.xml",
+                                  (LLFloaterBuildFunc)&LLFloaterReg::build<KeywordsFloater>);
+            }
+            else
+            {
+                addRmlFloater(FLOATER_NAME);
+            }
         }
 
         plus::FeatureRegistration sRegistration({ "keywords", &init, {} });

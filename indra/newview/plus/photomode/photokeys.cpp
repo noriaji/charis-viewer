@@ -83,6 +83,7 @@ namespace plus::photomode
         constexpr F32 FAST       = 3.f;   // with Shift
         constexpr F32 EASE_TIME  = 0.25f; // as NUDGE_TIME and ORBIT_NUDGE_RATE of llviewerinput.cpp
         constexpr F32 EASE_START = 0.05f;
+        constexpr F32 MAX_KEY_FRAME_SECONDS = 0.25f;    // the most one frame turns the tilt by (a 4 fps frame)
 
         // The last press of photo_screen_toggle that toggles (keyPhotoScreenToggle), until
         // takePhotoScreenKeyPress() takes it from the gestures. Main thread.
@@ -137,7 +138,8 @@ namespace plus::photomode
 
         F32 easeIn()
         {
-            const F32 held = gKeyboard ? gKeyboard->getCurKeyElapsedTime() : EASE_TIME;
+            // not below 0 (a guard: the timer is monotonic since mono-clock, research/362, and does not go back)
+            const F32 held = gKeyboard ? llmax(gKeyboard->getCurKeyElapsedTime(), 0.f) : EASE_TIME;
             return held < EASE_TIME ? EASE_START + held * (1.f - EASE_START) / EASE_TIME : 1.f;
         }
 
@@ -192,8 +194,12 @@ namespace plus::photomode
                 rate *= FAST;
             }
             const F32 now  = plus::camroll::currentDegrees();
+            // the frame's time can be one long frame (waking from sleep, or the guard case of a clock that went back, whose U64
+            // difference in llframetimer.cpp would wrap around to a huge one; monotonic since mono-clock, research/362),
+            // which must not throw the tilt to its limit in one step
+            const F32 dt   = llclamp(LLFrameTimer::getFrameDeltaTimeF32(), 0.f, MAX_KEY_FRAME_SECONDS);
             // a camera path's wider tilt (camroll.h) is not pulled in to the keys' +-45
-            const F32 next = plus::camroll::stepped(now, direction * rate * LLFrameTimer::getFrameDeltaTimeF32(),
+            const F32 next = plus::camroll::stepped(now, direction * rate * dt,
                                                     plus::camroll::MAX_DEGREES);
             if (next != now)
             {

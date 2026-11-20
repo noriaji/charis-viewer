@@ -29,6 +29,11 @@
 #include "llmath.h"
 #include "llrigginginfo.h"
 
+// <plus> research/348 1-a
+#include <atomic>
+#include <new>
+// </plus>
+
 //-----------------------------------------------------------------------------
 // LLJointRiggingInfo
 //-----------------------------------------------------------------------------
@@ -39,25 +44,7 @@ LLJointRiggingInfo::LLJointRiggingInfo()
     mIsRiggedTo = false;
 }
 
-bool LLJointRiggingInfo::isRiggedTo() const
-{
-    return mIsRiggedTo;
-}
-
-void LLJointRiggingInfo::setIsRiggedTo(bool val)
-{
-    mIsRiggedTo = val;
-}
-
-LLVector4a *LLJointRiggingInfo::getRiggedExtents()
-{
-    return mRiggedExtents;
-}
-
-const LLVector4a *LLJointRiggingInfo::getRiggedExtents() const
-{
-    return mRiggedExtents;
-}
+// <plus> research/348 1-a: isRiggedTo, setIsRiggedTo and getRiggedExtents are defined in llrigginginfo.h </plus>
 
 // Combine two rigging info states.
 // - isRiggedTo if either of the source infos are rigged to
@@ -112,6 +99,7 @@ void LLJointRiggingInfoTab::resize(S32 size)
 
 void LLJointRiggingInfoTab::clear()
 {
+    plusFreeJointList();    // <plus> research/348 1-a: the list goes with the table </plus>
     if (mRigInfoPtr)
     {
         delete[](mRigInfoPtr);
@@ -119,6 +107,45 @@ void LLJointRiggingInfoTab::clear()
         mSize = 0;
     }
 }
+
+// <plus> research/348 1-a (rigged-joint-list)
+namespace
+{
+    // The generations of the lists, from any thread (relaxed: only told apart, never ordered by)
+    std::atomic<U32> sPlusJointListGeneration{ 0 };
+}
+
+const PlusRigJointList* LLJointRiggingInfoTab::plusBuildJointList()
+{
+    plusFreeJointList();
+    if (!mRigInfoPtr || mSize <= 0 || mSize > PlusRigJointList::CAPACITY)
+    {
+        return nullptr;
+    }
+    PlusRigJointList* list = new (std::nothrow) PlusRigJointList;
+    if (!list)
+    {
+        return nullptr;
+    }
+    U16 count = 0;
+    for (S32 i = 0; i < mSize; ++i)
+    {
+        if (mRigInfoPtr[i].isRiggedTo())
+        {
+            list->joints[count++] = (U8)i;
+        }
+    }
+    list->count = count;
+    U32 generation = sPlusJointListGeneration.fetch_add(1, std::memory_order_relaxed) + 1;
+    if (generation == 0)
+    {
+        generation = sPlusJointListGeneration.fetch_add(1, std::memory_order_relaxed) + 1;
+    }
+    list->generation = generation;
+    mPlusJoints = list;
+    return list;
+}
+// </plus>
 
 void showDetails(const LLJointRiggingInfoTab& src, const std::string& str)
 {
@@ -143,6 +170,7 @@ void showDetails(const LLJointRiggingInfoTab& src, const std::string& str)
 
 void LLJointRiggingInfoTab::merge(const LLJointRiggingInfoTab& src)
 {
+    plusFreeJointList();    // <plus> research/348 1-a: the entries change, a list made before would be stale </plus>
     //showDetails(*this, "input this");
     // Size should be either LL_CHARACTER_MAX_ANIMATED_JOINTS, or 0 if
     // no data. Not necessarily the same for both inputs.

@@ -6,6 +6,7 @@
         <scroll_container name="scroll_display">
           <panel name="list_display">
             <plus_ps_check name="c_chat_console" label="チャットコンソール（左下に周りのチャットを出す）" tool_tip="チャットの窓を閉じている間、周りのチャットを画面の左下に出します。「コミュニケーション」メニューにもあります。" />
+            <plus_ps_check name="c_chat_bar" label="左下のチャットバー（「近くのチャット」ボタンと入力欄）" tool_tip="下のツールバーの横に、「近くのチャット」ボタンと 1 行の入力欄を出します（Firestorm と同じ）。Enter で発言、Shift+Enter でささやく、Ctrl+Enter で叫ぶ。チャンネルは 0。別のチャンネルは /数字 で。" />
             <plus_ps_check name="c_inv_folder_icons" label="インベントリのフォルダを種類ごとに色分けする" tool_tip="インベントリのフォルダに、種類ごとの色と印を付けます。" />
             <plus_ps_check name="c_borderless" label="ボーダーレス全画面（ウィンドウを画面いっぱいに）" tool_tip="枠のないウィンドウで画面いっぱいに表示します。すぐに切り替わります。" />
             <plus_ps_check name="c_shortcut_bar" label="ショートカットバー（メニュー項目を右クリックで追加）" tool_tip="ナビゲーションバーの下に、選んだメニュー項目を並べます。メニューバーの項目を右クリックすると追加できます。" />
@@ -56,6 +57,22 @@
           </panel>
         </scroll_container>
       </panel>
+      <panel name="page_people" label="人物" tool_tip="コンタクトセットのオンライン通知と色の設定です。">
+        <scroll_container name="scroll_people">
+          <panel name="list_people">
+            <plus_ps_header name="h_cs_notices" label="コンタクトセットのオンライン通知" />
+            <plus_ps_check name="c_cs_notice_toast" label="セットの通知をポップアップで出す" tool_tip="「オンライン状態を通知する」をオンにしたセットのフレンドがログイン・ログアウトした時に知らせます。フレンド全員の通知を出している間（環境設定の「ポップアップ」の「フレンドがログイン・ログアウトした時」）は変えられません。" />
+            <plus_ps_check name="c_cs_notice_chat" label="セットの通知を近くのチャットに出す" tool_tip="「オンライン状態を通知する」をオンにしたセットのフレンドがログイン・ログアウトした時、近くのチャットの履歴に 1 行出します。" />
+            <plus_ps_header name="h_cs_colors" label="コンタクトセットの色" />
+            <plus_ps_check name="c_cs_color_tag" label="名前タグをセットの色にする" tool_tip="セットに入っている人の名前タグを、そのセットの色にします（いくつかのセットに入っている時は、人数の少ないセットの色）。" />
+            <plus_ps_check name="c_cs_color_minimap" label="ミニマップの点をセットの色にする" tool_tip="セットに入っている人のミニマップの点を、そのセットの色にします。" />
+            <plus_ps_check name="c_cs_color_radar" label="レーダーの名前をセットの色にする" tool_tip="セットに入っている人の名前を、レーダーの窓でそのセットの色にします。" />
+            <plus_ps_check name="c_cs_color_chat" label="チャットをセットの色にする（吹き出しも）" tool_tip="セットに入っている人の発言を、チャットの窓と頭上の吹き出しでそのセットの色にします。" />
+            <plus_ps_check name="c_cs_color_friends" label="フレンド一覧の名前をセットの色にする" tool_tip="「人物」＞「フレンド」の名前を、そのセットの色にします。" />
+            <plus_ps_label name="note_cs_where" label="セットの作成・色・メンバーは「人物」＞「コンタクトセット」で。" />
+          </panel>
+        </scroll_container>
+      </panel>
       <panel name="page_ai" label="AI（MCP）" tool_tip="AI アシスタントからポーザーとインベントリ検索を使う設定（MCP）です。">
         <scroll_container name="scroll_ai">
           <panel name="list_ai">
@@ -89,7 +106,7 @@
             <plus_ps_header name="h_dev" label="開発用" />
             <plus_ps_check name="c_shadow_diag" label="影の診断をログに出す" tool_tip="自分のアバターの影について、数秒ごとにログへ 1 行書きます。" />
             <plus_ps_check name="c_skin_sss_debug" label="肌と目の印を表示する" tool_tip="肌をマゼンタ、目をシアンで塗って見せます。" />
-            <plus_ps_button name="b_comparison" label="比較用: 公式の中〜高・256m" tool_tip="公式ビューワと速さを比べる時の設定にします。中〜高の段（Charis の機能はすべてオフ）、部分的な OIT、公式の LOD と異方性フィルタ、描画距離 256m です。" />
+            <plus_ps_button name="b_comparison" label="比較用: 公式の中〜高・256m" tool_tip="公式ビューワと速さを比べる時の設定にします。中〜高の段に、Charis の機能をすべて切った値、部分的な OIT、公式の LOD と異方性フィルタ、描画距離 256m、公式の夜空、読み込み中のテクスチャを公式と同じ灰色で描く（ワイヤーフレームなし）設定を重ねます。画質の段を選び直すと、読み込み中の表示は元に戻ります（夜空は戻りません）。" />
             <plus_ps_button name="b_ps_gallery" label="撮影モードの部品見本…" tool_tip="撮影モードの部品を、完成イメージの寸法で並べて見せます。" />
             <plus_ps_label name="note_comparison_on" label="今は比較用の設定です（公式の中〜高・256m）。" />
           </panel>

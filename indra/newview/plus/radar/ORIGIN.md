@@ -30,8 +30,12 @@ Firestorm's behaviour; the parts noted below are Firestorm's.
 - RLVa's @shownearby (not in this viewer's RLVa yet). @shownames is taken (plus/rlv,
   research/248 3.4): anonymized names, no age, no bold for friends, no menu on the list;
   an @shownames exception is shown by name (Firestorm's radar hides every name).
-- The LSL bridge (heights above 1020 m, alerts to scripts), contact sets,
+- The LSL bridge (heights above 1020 m, alerts to scripts),
   the asset blacklist (derender), voice levels, profile notes, age alerts.
+- Of the contact sets, only the name's set colour is taken (`FSContactSetsColorizeRadar`,
+  through plus/contactsethooks, research/333): Firestorm's other radar colours
+  (`LGGContactSets::colorize()`, `FSRadarColorNamesByDistance`, the legacy friend and Linden
+  colours) are not.
 - Report sounds (`UISndRadar*` do not exist here) and report toasts (nearby chat only).
 - The minimap inside the window and the marks on the minimap.
 - Estate and parcel actions on avatars (eject, freeze, kick, teleport home, ban):

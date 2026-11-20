@@ -130,10 +130,11 @@ What to bring over:
     <check_box
      height="16"
      initial_value="true"
-     label="Settings of each account (presets, volumes, ...)"
+     label="Settings of each account (presets, volumes, contact sets, ...)"
      layout="topleft"
      left="20"
      name="chk_accounts"
+     tool_tip="An account's files are copied where this viewer has none of that name. Its contact sets also replace ours when ours have no sets, people or aliases (ours are kept as settings_friends_groups_before_import_&lt;date&gt;.xml)"
      top_pad="4"
      width="548" />
     <check_box

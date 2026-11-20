@@ -205,9 +205,22 @@ namespace plus::camerapath
     // Drawn on the screen while the window is open, nothing plays and no picture is taken (never into a picture).
     void setShowRoute(bool show);
     bool showRoute();
+
+    // --- Hiding the viewer's UI while something plays (research/365) -----------
+
+    // Whether the menu bar, toolbars, floaters, the navigation and status bars, the chiclet bar, the "stand
+    // up / stop flying" buttons and the HUD attachments are hidden for as long as something plays (Counting,
+    // Playing, InPlace or Exporting), shown again the moment it stops (Esc, the path's own end, an error,
+    // stop(), a disconnect; after the last picture of a stopped run is taken). On by default; not a saved
+    // setting (as showRoute() above): a check box in the window, process lifetime only. Never touches the
+    // camera or the avatar. plus/uiscope does it: each thing hidden is only put back if it was actually shown
+    // when it was hidden, and View > Hide UI (pressed or turned off while it plays), the mouselook, RLV's locked
+    // HUD and the photo screen (the path played in it, or it entered while the path plays) are followed.
+    void setHideUIWhilePlaying(bool on);
+    bool hideUIWhilePlaying();
     // The window tells it is open or closed.
     void setEditorOpen(bool open);
-    // Whether the route is drawn now (the window is open, the switch is on, nothing plays, the path has points).
+    // Whether the route is drawn now (the window is open, the switch is on, nothing plays, the path has points, and no run or shot hides the UI).
     bool routeVisible();
     // Puts the view that draws the route in the window (once the UI exists, from the feature's onUIReady).
     void attachOverlay();

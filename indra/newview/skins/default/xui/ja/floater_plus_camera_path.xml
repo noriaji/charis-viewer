@@ -109,6 +109,7 @@
 			<button name="btn_spin_right" label="右回り" tool_tip="カメラを右へ傾けながら 1 回転して、元の傾きに戻ります（水平線が左回りに回ります）。カメラを動かしながらでも使えます。" />
 			<button name="btn_spin_point" label="選んだ点に一回転を入れる" tool_tip="選んだ点に 1 回転を保存します（「点」タブの「回転」でも変えられます）。演出を再生するたびに、その点へカメラが動く間に画面が 1 回転します。" />
 			<button name="btn_spin_left" label="左回り" tool_tip="カメラを左へ傾けながら 1 回転して、元の傾きに戻ります（水平線が右回りに回ります）。" />
+			<check_box name="hide_ui" label="再生中は UI と HUD を隠す" tool_tip="演出のカウントダウン・再生・その場で揺らす・連番撮影の間、メニュー・ツールバー・フローター・ナビゲーションバー・ステータスバー・HUD アタッチメントを隠し、止まったら元に戻します。カメラやアバターは動かしません。この窓自体も隠れます。止めるには Esc か J。" />
 			<text name="lbl_export">1 コマずつ撮影（連番）</text>
 			<combo_box name="export_fps" tool_tip="動画 1 秒あたりの枚数">
 				<combo_box.item name="fps_24" label="24 コマ／秒" />

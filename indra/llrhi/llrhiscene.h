@@ -54,8 +54,10 @@
 namespace LLRHI
 {
     // LLRHI_SCENE: off, verify (the GPU culls, the old path draws, and both
-    // are compared), auto (verify until 600 world frames agree, then on; one
-    // difference: off), on. Unset: SCENE_DEFAULT.
+    // are compared), auto (verify until LLSceneRecords::AUTO_FRAMES frames
+    // agree, then on; a difference while it draws: verify again, and at the
+    // AUTO_DRAW_STOPS-th, or when it cannot draw once on, off for the run),
+    // on. Unset: SCENE_DEFAULT.
     enum class SceneMode : U8
     {
         Off,
@@ -63,23 +65,49 @@ namespace LLRHI
         Auto,
         On,
     };
-    // Off. The scene draws since research/198 5.5 (LLRHI_SCENE=on, or auto
-    // after its clean frames), the main view's opaque G-buffer batches of one
-    // diffuse texture first (5.6: and the masks, the legacy materials, the
-    // fullbright and glow batches), but it has never been looked at on a real GPU:
-    // it becomes Auto after a visual check (capture-diff); the device
-    // then requires what the scene draws with (llvkdevice.cpp
-    // missing_required: any mode but Off asks for it).
-    constexpr SceneMode SCENE_DEFAULT = SceneMode::Off;
+    // What LLRHI_SCENE is when unset (research/218 vk-s2f-2: auto once the
+    // visual check Q2 is done, in a commit of its own that changes only the
+    // defaults here; off before it). The scene draws since research/198 5.5
+    // (LLRHI_SCENE=on, or auto after its clean frames), the main view's
+    // opaque G-buffer batches of one diffuse texture first (5.6: and the
+    // masks, the legacy materials, the fullbright and glow batches). What the scene draws with (LLVKScene::deviceGaps) is
+    // required of the GPU only when LLRHI_SCENE is set to a mode other than
+    // off (sceneRequired); unset, a chosen GPU without it runs with the
+    // scene off (sceneOffForDevice).
+    constexpr SceneMode SCENE_DEFAULT = SceneMode::Auto;
+    // The mode now: the switch as read once, or Off from sceneOffForDevice on.
     SceneMode sceneMode();
     const char* sceneModeName(SceneMode mode);
+    // LLRHI_SCENE is set (not unset or empty) to a mode other than off: the
+    // GPU must have what the scene draws with (llvkdevice.cpp
+    // missing_required), else it is passed over.
+    bool sceneRequired();
+    // LLRHI_SCENE unset and the chosen GPU lacks what the scene draws with
+    // (LLVKDevice::pickPhysicalDevice, before the renderer installs): from
+    // now on, for the run, sceneMode() and every part's mode are Off. Any
+    // thread may read it; the device's thread sets it, before the render
+    // thread starts.
+    void sceneOffForDevice();
+    bool sceneIsOffForDevice();
 
     // research/218 vk-s2f: what LLRHI_SCENE_ALPHA, _SHADOW and _PROBE are
     // when unset. Each is off whenever LLRHI_SCENE is off, and its auto is
     // read as verify while LLRHI_SCENE is verify (nothing of the scene is
-    // drawn then).
+    // drawn then). research/218 vk-s2f-2: the alpha and the shadows went
+    // auto with SCENE_DEFAULT (the alpha is off again, below); the probe
+    // faces stay off until their choices
+    // are recorded together (research/209 E4: until then a face may cost
+    // more than it saves).
+    // The alpha is off again by default (research/384 part D, 2026-11-20): while the
+    // scene's alpha takes the main view's alpha pass (any mode but off,
+    // verify included), plus/alphalist's draw lists (research/137 N3, about
+    // -1.5 to -2.3 ms) are not used for it, and the loop draws what the scene
+    // did not, one batch at a time; measured as 5 to 10 percent slower than
+    // alpha2 (OIT off), and gone with LLRHI_SCENE_ALPHA=0. Back to Auto only
+    // once the alpha is measured to pay (research/384 D5 branches 1 to 4). An
+    // explicit LLRHI_SCENE_ALPHA (verify, auto, on) works as before.
     constexpr SceneMode SCENE_ALPHA_DEFAULT = SceneMode::Off;
-    constexpr SceneMode SCENE_SHADOW_DEFAULT = SceneMode::Off;
+    constexpr SceneMode SCENE_SHADOW_DEFAULT = SceneMode::Auto;
     constexpr SceneMode SCENE_PROBE_DEFAULT = SceneMode::Off;
 
     // research/218 vk-s2f: auto of a part of the scene (LLRHI_SCENE_ALPHA,
@@ -108,7 +136,7 @@ namespace LLRHI
     }
 
     // research/205 (stage 3a): the alpha pool's batches on the scene's way.
-    // LLRHI_SCENE_ALPHA: off (default), verify (the alpha pool draws as
+    // LLRHI_SCENE_ALPHA (unset: SCENE_ALPHA_DEFAULT): off, verify (the alpha pool draws as
     // before; the viewer keeps an alpha record per batch and compares what
     // the records would draw, in which order and with which OIT priority,
     // with what the pool drew; in an OIT "all" session the scene also

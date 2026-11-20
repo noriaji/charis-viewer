@@ -1,0 +1,3 @@
+# RmlUi is kept byte for byte as released (SHA256SUMS checks every file); one of its files has CRLF line ends,
+# which the repository's "* text eol=lf" would rewrite.
+* -text

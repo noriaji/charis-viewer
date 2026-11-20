@@ -68,6 +68,18 @@ public:
     static U32 sCurResX;
     static U32 sCurResY;
 
+    // <plus> tu-motion-v1 (research/373): colour attachments a target may have, the G-buffer's four and its
+    // motion vectors (LLRHI::PASS_MAX_COLORS, LLVKMirror::MAX_COLORS; was 4 in addColorAttachment)
+    static constexpr U32 MAX_COLOR_ATTACHMENTS = 5;
+    // While the G-buffer's programs write more outputs than a G-buffer may have (their define HAS_MOTION:
+    // MAX_COLOR_ATTACHMENTS, plus/temporal sets it; 0 otherwise): a target made as a G-buffer
+    // (padDrawBuffers) is bound with this many draw buffers, those it lacks GL_NONE. Its programs' last
+    // outputs are then dropped into an empty slot (Vulkan: a colour attachment without an image) instead
+    // of a location the target does not have, which the validation layers report.
+    static U32 sPaddedDrawBuffers;
+    // This target is drawn with the G-buffer's programs (addDeferredAttachments). Until release().
+    void padDrawBuffers(bool pad) { mPadDrawBuffers = pad; }
+    // </plus>
 
     LLRenderTarget();
     ~LLRenderTarget();
@@ -184,6 +196,7 @@ protected:
 
     U32 mDepth;
     bool mUseDepth;
+    bool mPadDrawBuffers = false; // <plus> tu-motion-v1: padDrawBuffers </plus>
     LLTexUnit::eTextureMipGeneration mGenerateMipMaps;
     U32 mMipLevels;
 

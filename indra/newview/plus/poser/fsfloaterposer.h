@@ -33,6 +33,8 @@
 #include "fsposeranimator.h"
 #include "fsmaniprotatejoint.h"
 #include "handcurl.h" // <plus> hand tab "Easy"
+#include "poseconsent/poseconsent.h" // <plus> research/336
+#include "poseconsent/posereflect.h" // research/374b: stage 2 of the consent (the reflect button)
 
 class FSVirtualTrackpad;
 class LLButton;
@@ -73,6 +75,7 @@ typedef enum E_Columns
     COL_NAME = 1,
     COL_UUID = 2,
     COL_SAVE = 3,
+    COL_STATUS = 4, // <plus> the consent of another person (research/336)
 } E_Columns;
 
 /// <summary>
@@ -93,6 +96,13 @@ public:
     bool canUndo() const override { return true; }
     void redo() override { onRedoLastChange(); };
     bool canRedo() const override { return true; }
+    // <plus> other people's avatars with their consent (research/336), from plus/poser/poser.cpp
+    // A consent changed or a pose of another person was stopped: the rows and the buttons are brought up to date at the
+    // next draw (only a flag here, safe to call from inside plus::poseconsent).
+    void onOthersChanged() { mOthersDirty = true; }
+    // A notice of plus::poseconsent (stringId: a string of strings_plus.xml), shown for a while under the model list.
+    void showConsentNotice(const std::string& stringId, const LLUUID& peer);
+    // </plus>
  private:
     // Helper function to encapsualte save logic
     void doPoseSave(LLVOAvatar* avatar, const std::string& filename);
@@ -209,7 +219,81 @@ public:
     /// <param name="toFind">The avatar UUID to find on the avatars scroll list.</param>
     /// <returns>The scroll-list index for the supplied avatar, if found, otherwise -1.</returns>
     S32 getAvatarListIndexForUuid(const LLUUID& toFind) const;
-    
+
+    // <plus> other people's avatars with their consent (research/336). Their rows are kept by syncOtherRows() (the
+    // self / animesh rows by onAvatarsRefresh() as before); whether one may be posed is plus::poseconsent::canPose().
+    // Why the selected person cannot be asked now (the line under the buttons). BridgeFailed: the bridge could not be
+    // made and will not try again by itself (plus::lslbridge::failedForGood(), research/353); NoBridge: any other way
+    // it is not running (off, getting ready, trying again later).
+    enum class ConsentBlock { None, NotInView, Muted, TooFar, Cooldown, Leaving, NoBridge, BridgeFailed, Busy };
+    // What the consent button and the lines under it show; written again only when it changes (refreshConsentUi()).
+    struct ConsentUiKey
+    {
+        bool                          mValid{ false }; // false: nothing shown yet
+        LLUUID                        mPeer;           // the selected other person, null when none
+        // Their live avatar, null out of view. Compared only; held, so that its address is not reused unseen. Let go
+        // when the key is written again (another selection, the avatar gone: the next tick of an open window), when
+        // the window closes (onClose) and with the window.
+        LLPointer<LLVOAvatar>         mAvatar;
+        bool                          mPosing{ false };   // isPosingAvatar(mAvatar)
+        plus::poseconsent::Status     mStatus{ plus::poseconsent::Status::Ask };
+        bool                          mCanAsk{ false };
+        bool                          mCanPose{ false };
+        ConsentBlock                  mBlock{ ConsentBlock::None };
+        U32                           mNoticeSerial{ 0 };  // the notice shown (0: none)
+        bool                          mAnyOtherPosed{ false };
+        S32                           mShareMode{ 0 };     // plus::poseshare::sendMode(): the label of the Share button
+        plus::poseconsent::Status     mReflectStatus{ plus::poseconsent::Status::Ask }; // research/374b: stage 2 with the selected person
+        bool                          mReflectCanAsk{ false };
+        bool                          mReflectFriend{ false };   // stage 2 is for friends only
+        bool operator==(const ConsentUiKey&) const = default;
+        // The same selection and the same state of it (what onAvatarSelect() depends on); the notice and the
+        // "only on your screen" line are refreshConsentUi()'s alone
+        bool sameSelection(const ConsentUiKey& other) const
+        {
+            return mValid == other.mValid && mPeer == other.mPeer && mAvatar == other.mAvatar && mPosing == other.mPosing &&
+                   mStatus == other.mStatus && mCanAsk == other.mCanAsk && mCanPose == other.mCanPose && mBlock == other.mBlock;
+        }
+    };
+    // What a row of another person shows
+    struct OtherRow
+    {
+        std::string mName;   // display name and user name (or the anonym), cut short by the column
+        std::string mTip;    // the same whole, the name's tooltip
+        std::string mStatus; // the consent's status, in a column of its own: a display name cannot pass for it
+        bool operator==(const OtherRow&) const = default;
+    };
+    F32  distanceToMe(LLCharacter* character) const;             // metres, F32_MAX when either is missing
+    // Another person alive in this region and not muted; otherIsAround: also nearer than withinMeters
+    bool otherIsHere(LLVOAvatar* avatar) const;
+    bool otherIsAround(LLVOAvatar* avatar, F32 withinMeters) const;
+    bool otherIsOutgoing(const LLUUID& id) const;                // status Pending or Accepted
+    bool otherWasAskedOrCanBe(const LLUUID& id) const;           // status not Ask, or canAsk()
+    bool otherMayBeListed(LLVOAvatar* avatar) const;             // a row of another person is added
+    bool otherStaysListed(const LLUUID& id) const;               // a row of another person is kept
+    bool otherPersonName(const LLUUID& id, std::string& name) const;   // display + user name, @shownames; false: not known yet
+    bool makeOtherRow(const LLUUID& id, OtherRow& row) const;    // false while the name is not known yet
+    LLUUID getUiSelectedOtherId() const;                         // the selected row's ID when it is another person's
+    ConsentBlock consentBlockFor(const LLUUID& id) const;
+    ConsentUiKey consentUiKeyNow() const;
+    // One row of the model list; status and nameTip are empty for the own avatar and animeshes
+    void addAvatarRow(const std::string& iconName, const std::string& name, const LLUUID& id, const std::string& status,
+                      const std::string& nameTip);
+    void syncOtherRows();
+    void showStatusColumn(bool show);                            // the status column only while another person is listed
+    void clearJointHighlighting();
+    // The rotate, move and IK tools on one avatar (null: none). Another person only while they allow it.
+    static void setPoseToolsAvatar(LLVOAvatar* avatar);
+    void refreshPoserToolForSelection();                         // the IK button, after a selection
+    void tickOthers();
+    void refreshConsentUi();
+    // <plus> research/374: the Share button (the own pose shown to the Charis Viewers near) and its menu
+    void onShareButton();
+    // </plus>
+    void onConsentButton();
+    void onReflectButton(); // research/374b
+    // </plus>
+
     /// <summary>
     /// There are several control-callbacks manipulating rotations etc, they all devolve to these.
     /// In these are the appeals to the posing business layer.
@@ -656,6 +740,26 @@ public:
     LLUICtrl* mScaleXSpnr{ nullptr };
     LLUICtrl* mScaleYSpnr{ nullptr };
     LLUICtrl* mScaleZSpnr{ nullptr };
+
+    // <plus> other people's avatars with their consent (research/336)
+    LLButton*   mConsentBtn{ nullptr };      // Ask / Cancel the request / End the permission, by the selected person's status
+    LLButton*   mReflectBtn{ nullptr };        // research/374b: ask for stage 2 / take the request back / end it (beside the consent button)
+    LLButton*   mShareBtn{ nullptr };          // research/374: the label says the mode; a click opens the menu (shown with no other person selected)
+    LLHandle<LLContextMenu> mShareMenuHandle;  // its menu is a child of the menu holder: goes with the window (onClose)
+    std::string mShareStatusText;              // the status column of a person whose shared pose is shown (research/374)
+    LLTextBox*  mOwnScreenText{ nullptr };   // "only on your screen", while another person is selected or posed
+    LLTextBox*  mConsentInfoText{ nullptr }; // a notice of plus::poseconsent, else why the selected person cannot be asked
+    std::map<LLUUID, OtherRow> mOtherRows;              // the rows of other people and what each shows
+    std::string mOtherStatusText[5];                         // by plus::poseconsent::Status (postBuild)
+    F64         mNextOthersTickS{ 0.0 };                     // LLFrameTimer::getElapsedSeconds(); 0 = at the next draw
+    bool        mOthersDirty{ false };                       // onOthersChanged(): tick at the next draw
+    std::string mNoticeText;                                 // empty: no notice
+    U32         mNoticeSerial{ 0 };                          // counts the notices (ConsentUiKey::mNoticeSerial)
+    F64         mNoticeUntilS{ 0.0 };                        // the notice is shown until then (same clock)
+    ConsentUiKey mConsentUiKey;
+    std::vector<LLUUID> mOutgoingScratch;                    // a copy of poseconsent::outgoingList()'s IDs (syncOtherRows)
+    bool        mStatusColumnShown{ true };                  // as the XUI has it; postBuild hides it
+    // </plus>
 };
 
 class FSLoadPoseTimer : public LLEventTimer

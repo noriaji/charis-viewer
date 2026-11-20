@@ -48,6 +48,7 @@
 #include "llviewercontrol.h"    // for gSavedSettings
 #include "lltooldraganddrop.h"
 #include "plus/rlv/rlvhooks.h" // <plus> rlv (plus/rlv) </plus>
+#include "plus/contactsethooks/cshooks.h" // <plus> contactsets (research/333) </plus>
 
 static LLDefaultChildRegistry::Register<LLAvatarList> r("avatar_list");
 
@@ -225,6 +226,56 @@ std::string LLAvatarList::getNameForDisplay(const LLUUID& avatar_id, const LLAva
         return plus::rlv::anonymName(av_name);
     }
     return show_complete_name ? av_name.getCompleteName(false, force_complete_name) : av_name.getDisplayName();
+}
+// </plus>
+
+// <plus> contactsets: the names in their contact set's colour (FSContactSetsColorizeFriends), the contact set tab's
+// look (Firestorm FIRE-32748, FIRE-31733) (research/333)
+void LLAvatarList::setUseContactSetColors(bool use_colors)
+{
+    if (mUseContactSetColors == use_colors)
+        return;
+    mUseContactSetColors = use_colors;
+    if (use_colors)
+    {
+        // Built again when a set or its members change, and when the setting is switched
+        mContactSetsChanged = plus::cshooks::onChanged([this]() { refreshNames(); });
+        if (LLControlVariable* control = gSavedSettings.getControl("FSContactSetsColorizeFriends"))
+        {
+            mContactSetsColorizeChanged = control->getSignal()->connect([this](LLControlVariable*, const LLSD&, const LLSD&) { refreshNames(); });
+        }
+    }
+    else
+    {
+        mContactSetsChanged.disconnect();
+        mContactSetsColorizeChanged.disconnect();
+    }
+    forEachItem([use_colors](LLAvatarListItem* item) { item->setUseContactSetColors(use_colors); });
+    refreshNames();
+}
+
+void LLAvatarList::setUseContactSetListStyle(bool use_style)
+{
+    if (mUseContactSetListStyle == use_style)
+        return;
+    mUseContactSetListStyle = use_style;
+    forEachItem([use_style](LLAvatarListItem* item) { item->setUseContactSetListStyle(use_style); });
+    refreshNames();
+}
+
+void LLAvatarList::forEachItem(const std::function<void(LLAvatarListItem*)>& fn)
+{
+    std::vector<LLPanel*> items;
+    getItems(items);
+    for (LLPanel* panel : items)
+    {
+        fn(static_cast<LLAvatarListItem*>(panel));
+    }
+}
+
+void LLAvatarList::refreshNames()
+{
+    mNeedUpdateNames = true;
 }
 // </plus>
 
@@ -488,6 +539,10 @@ void LLAvatarList::addNewItem(const LLUUID& id, const std::string& name, bool is
     LLAvatarListItem* item = new LLAvatarListItem();
     item->setShowCompleteName(mShowCompleteName, mForceCompleteName);
     item->setRlvCheckShowNames(mRlvCheckShowNames); // <plus> rlv: before the name is set (research/248 E8) </plus>
+    // <plus> contactsets: before the name is set (research/333)
+    item->setUseContactSetColors(mUseContactSetColors);
+    item->setUseContactSetListStyle(mUseContactSetListStyle);
+    // </plus>
     // This sets the name as a side effect
     item->setAvatarId(id, mSessionID, mIgnoreOnlineStatus);
     item->setOnline(mIgnoreOnlineStatus ? true : is_online);
@@ -645,13 +700,30 @@ bool LLAvatarItemComparator::compare(const LLPanel* item1, const LLPanel* item2)
     return doCompare(avatar_item1, avatar_item2);
 }
 
+// <plus> contactsets: an alias sorts by its first letter, not by its quote (Firestorm FIRE-36478) (research/333)
+static std::string plus_comparable_name(const LLAvatarListItem* avatar_item)
+{
+    std::string name = avatar_item->getAvatarName();
+    if (!name.empty() && (name.front() == '\'' || name.front() == '"') && plus::cshooks::hasPseudonym(avatar_item->getAvatarId()))
+    {
+        name.erase(0, 1);
+    }
+    LLStringUtil::toUpper(name);
+    return name;
+}
+// </plus>
+
 bool LLAvatarItemNameComparator::doCompare(const LLAvatarListItem* avatar_item1, const LLAvatarListItem* avatar_item2) const
 {
-    std::string name1 = avatar_item1->getAvatarName();
-    std::string name2 = avatar_item2->getAvatarName();
+    // <plus> contactsets (research/333)
+    //std::string name1 = avatar_item1->getAvatarName();
+    //std::string name2 = avatar_item2->getAvatarName();
 
-    LLStringUtil::toUpper(name1);
-    LLStringUtil::toUpper(name2);
+    //LLStringUtil::toUpper(name1);
+    //LLStringUtil::toUpper(name2);
+    const std::string name1 = plus_comparable_name(avatar_item1);
+    const std::string name2 = plus_comparable_name(avatar_item2);
+    // </plus>
 
     return name1 < name2;
 }

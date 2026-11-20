@@ -24,7 +24,11 @@
  */
 
 // Outputs
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 
 // Inputs
 in vec3 pos;
@@ -218,6 +222,9 @@ void main()
     }
 
     frag_data[1] = vec4(0);
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
 
 #if defined(HAS_EMISSIVE)
     frag_data[0] = vec4(0);

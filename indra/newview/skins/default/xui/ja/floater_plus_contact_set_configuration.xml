@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="floater_fs_contact_set_configure" title="コンタクトセットの設定">
+	<floater.string name="title">[NAME] の設定</floater.string>
+	<plus_ps_box name="body">
+		<plus_ps_text name="set_label">コンタクトセット：</plus_ps_text>
+		<plus_ps_button_compat name="rename_btn" label="名前を変更" tool_tip="左に入力した名前に変えます"/>
+		<plus_ps_box name="set_swatch_box">
+			<color_swatch name="set_swatch" tool_tip="クリックで色を選ぶ"/>
+		</plus_ps_box>
+		<plus_ps_text name="set_color_label">このセットの色</plus_ps_text>
+		<plus_ps_check_compat name="show_set_notifications" label="ログイン・ログアウトを知らせる" tool_tip="このセットの人のログインの通知（「ログインの通知」の下の 2 つで出し方を選びます）"/>
+		<plus_ps_check_compat name="sort_by_online_status" label="オンライン状態で並べ替える" tool_tip="人物の「コンタクトセット」タブで、オンラインの人を先に並べます"/>
+		<plus_ps_text name="global_label">すべてのセット：</plus_ps_text>
+		<plus_ps_box name="global_swatch_box">
+			<color_swatch name="global_swatch" tool_tip="クリックで色を選ぶ"/>
+		</plus_ps_box>
+		<plus_ps_text name="global_color_label" tool_tip="新しいセットはこの色で始まります。この色のセットは誰にも色を付けません">既定の色（この色は付けない）</plus_ps_text>
+		<plus_ps_text name="label_online">ログインの通知：</plus_ps_text>
+		<plus_ps_check_compat name="ChatOnlineNotification" label="すべてのフレンドのログインをトーストで知らせる"/>
+		<plus_ps_check_compat name="FSContactSetsNotificationToast" label="知らせるセットの人：トーストで" tool_tip="「ログイン・ログアウトを知らせる」にしたセットだけ（すべてのフレンドをトーストで知らせる時は、もう出ています）"/>
+		<plus_ps_check_compat name="FSContactSetsNotificationNearbyChat" label="知らせるセットの人：近くのチャットに" tool_tip="「ログイン・ログアウトを知らせる」にしたセットだけ"/>
+		<plus_ps_text name="label_colors">セットの色を使う所：</plus_ps_text>
+		<plus_ps_check_compat name="FSContactSetsColorizeMiniMap" label="ミニマップの点"/>
+		<plus_ps_check_compat name="FSContactSetsColorizeNameTag" label="名前タグ"/>
+		<plus_ps_check_compat name="FSContactSetsColorizeRadar" label="レーダーと近くの人の一覧"/>
+		<plus_ps_check_compat name="FSContactSetsColorizeChat" label="チャット" tool_tip="近くのチャットと IM のその人の発言"/>
+		<plus_ps_check_compat name="FSContactSetsColorizeFriends" label="フレンドの一覧"/>
+		<plus_ps_check_compat name="set_autoresponse_busy_enabled" label="このセットだけの「取り込み中」の返事を使う" tool_tip="取り込み中の間、このセットの人には、いつもの返事の代わりにこれを送ります"/>
+		<plus_ps_check_compat name="set_autoresponse_mode_enabled" label="このセットだけの自動応答を使う" tool_tip="自動応答がオンの間、このセットの人には、いつものメッセージの代わりにこれを送ります"/>
+		<plus_ps_check_compat name="set_autoresponse_nonfriends_enabled" label="このセットだけのフレンド以外への返事を使う" tool_tip="フレンド以外への自動応答がオンの間、このセットのフレンドでない人にはこれを送ります"/>
+	</plus_ps_box>
+</floater>

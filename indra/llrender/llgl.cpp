@@ -602,6 +602,7 @@ LLGLManager::LLGLManager() :
     mGLSLVersionMajor(0),
     mGLSLVersionMinor(0),
     mVRAM(0),
+    mVRAMDetected(0),     // <plus> research/371 </plus>
     mGLMaxVertexRange(0),
     mGLMaxIndexRange(0),
     mGLMaxTextureSize(0)
@@ -729,6 +730,8 @@ bool LLGLManager::initGL()
 
     const U32 old_vram = mVRAM;
     mVRAM = device.vram_mb;
+    mVRAMDetected = device.vram_detected_mb;     // research/371
+    mVRAMOverridden = device.vram_mb != device.vram_detected_mb;
     if (mVRAM != 0)
     {
         LL_INFOS("RenderInit") << "VRAM Detected (Vulkan device):" << mVRAM << LL_ENDL;
@@ -737,6 +740,8 @@ bool LLGLManager::initGL()
     {
         // fall back to old method
         mVRAM = old_vram;
+        mVRAMDetected = old_vram;
+        mVRAMOverridden = false;
     }
 
     mNumTextureImageUnits = device.max_texture_units;
@@ -843,7 +848,7 @@ void LLGLManager::asLLSD(LLSD& info)
     info["gpu_version"] = mDriverVersionVendorString;
     info["opengl_version"] = mGLVersionString;
 
-    info["vram"] = LLSD::Integer(mVRAM);
+    info["vram"] = LLSD::Integer(getReportedVRAM());     // <plus> research/371: the detected, not a test override </plus>
 
     // OpenGL limits
     info["max_samples"] = mMaxSamples;

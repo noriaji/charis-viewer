@@ -67,8 +67,32 @@ namespace plus::flycammouse
     bool pressRight(LLWindow* window, LLCoordGL pos, MASK mask, S32 x, S32 y);
     bool releaseRight(LLWindow* window, LLCoordGL pos, MASK mask);
 
-    // The wheel over the world (LLViewerWindow::handleScrollWheel()); true when it set the speed.
+    // The wheel over the world (LLViewerWindow::handleScrollWheel()); true when it set the speed. One speed for every way
+    // of flying the flycam (the keyboard and mouse, a 3D mouse, another controller): PlusFlycamSpeedMul, 1 being the
+    // normal speed, stepped a level a notch (forward is faster) along the nine factors of PlusFlycamSpeedLevels
+    // (slowest first, 5 is 1 by default), and shown for a moment. Shift, Ctrl or Alt keep the wheel for the zoom.
     bool onWheel(S32 clicks);
+
+    // The factor on a 3D mouse's three move axes (PlusFlycamSpeedMul, at most the fastest of PlusFlycamSpeedLevels, so a
+    // speed saved past the wheel's levels does not make it fly off): moveFlycam() (llviewerjoystick.cpp) scales by it, the
+    // turn and zoom axes are left alone and the user's own FlycamAxisScale* stay as they are under it. The keyboard flycam
+    // moves by the same setting (update(), the whole range up to 50 and Shift's boost on top; its turn is the mouse's).
+    F32 speedMultiplier();
+
+    // The wheel's press (the middle button, CLICK_MIDDLE) in LLViewerWindow::handleAnyMouseClick(), offered after the UI
+    // declined it (a click on the world): with the flycam on and no Shift, Ctrl or Alt the flycam turns level in a
+    // quarter of a second, the direction it looks in kept (LLAgentCamera::levelFlycam(); its own roll and the tilt on top,
+    // Q / E and the photo tools', both go), and the click is taken, its release too (so the tools never see half a
+    // click). With any device, and whatever has the keyboard (a chat field keeps it). Not when the user has bound the
+    // middle button (no Shift, Ctrl or Alt) in the flycam's mode: that binding is theirs. False lets the click through
+    // as before.
+    bool onMiddleClick(bool down, MASK mask);
+
+    // For the number keys (plus/flycamsens, shortcuts that are not announced): the speed becomes the factor of level
+    // 1-9 of PlusFlycamSpeedLevels, as if the wheel had stepped to it (Preferences' Cancel does not put back an older
+    // one over it); another level is ignored. The flycam turns level as the wheel's press does (0 key).
+    void setSpeedLevel(S32 level);
+    void levelNow();
 
     // The app lost the focus, or the flycam went off: let the cursor go and forget the hold.
     void cancel();
@@ -139,7 +163,7 @@ namespace plus::flycammouse
     void preferencesCancelled();
 
     // Shift + W A S D, the space and C, so a key keeps flying while Shift boosts it, in the flycam's mode, on top of the user's
-    // own key bindings (the same way as plus::flycamsens::bindKeys()).
+    // own key bindings.
     using BindKey = std::function<bool(S32 mode, KEY key, MASK mask, const char* command)>;
     void bindKeys(const BindKey& bind);
 }

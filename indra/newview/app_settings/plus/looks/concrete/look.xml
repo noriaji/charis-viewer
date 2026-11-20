@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<llsd>
+  <map>
+    <key>format</key><integer>1</integer>
+    <key>name</key>
+    <map><key>en</key><string>Concrete</string><key>ja</key><string>灰色のコンクリート</string></map>
+    <key>description</key>
+    <map><key>en</key><string>Gray, hard and flat-lit: a documentary street feel.</string><key>ja</key><string>灰色で硬く、平らな光。ドキュメンタリーのような街の質感。</string></map>
+    <key>author</key><string>Charis Viewer</string>
+    <key>license</key><string>CC0-1.0</string>
+    <key>lut</key><string>lut.cube</string>
+    <key>strength</key><real>1.0</real>
+    <key>order</key><integer>213</integer>
+    <key>group</key><string>street</string>
+  </map>
+</llsd>

@@ -32,7 +32,11 @@
 #if (DIFFUSE_ALPHA_MODE == DIFFUSE_ALPHA_MODE_BLEND)
 out vec4 frag_color;
 #else
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 #endif
 
 void main()
@@ -43,6 +47,9 @@ void main()
     // deferred path               // See: C++: addDeferredAttachment(), shader: softenLightF.glsl
     frag_data[0] = vec4(0.5, 0, 1, 0);    // gbuffer is sRGB for legacy materials
     frag_data[1] = vec4(0); // XYZ = Specular color. W = Specular exponent.
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
     frag_data[2] = vec4(0); // XY = Normal.  Z = Env. intensity. W = 1 skip atmos (mask off fog)
 #if defined(HAS_EMISSIVE)
     frag_data[3] = vec4(0);

@@ -194,6 +194,16 @@ namespace
         {
             return SEG_LOOP;
         }
+        // <plus> research/319 cpu-census: the finer marks inside them ("pre-gbuffer images bump", "pre-gbuffer state sort ...") count as the section they cut
+        if (!strncmp(name, "pre-gbuffer images ", 19))
+        {
+            return SEG_IMAGES;
+        }
+        if (!strncmp(name, "pre-gbuffer state sort ", 23))
+        {
+            return SEG_STATE_SORT;
+        }
+        // </plus>
         return is(name, "pre-gbuffer images") ? SEG_IMAGES : is(name, "pre-gbuffer state sort") ? SEG_STATE_SORT : SEG_DISPLAY;
     }
 
@@ -508,12 +518,16 @@ namespace
         return RenderThreadMode::Off;
     }
 
-    // research/208 S2: read once, off unless asked for.
+    // research/208 S2: read once. research/218 vk-s2f-2: unset or empty is
+    // auto (the other switches read by read_four_way stay off when unset).
     RenderThreadMode renderThreadMode()
     {
-        static const RenderThreadMode mode = read_four_way("LLRHI_RENDER_THREAD");
+        static const RenderThreadMode mode =
+            envUnset("LLRHI_RENDER_THREAD") ? RenderThreadMode::Auto : read_four_way("LLRHI_RENDER_THREAD");
         return mode;
     }
+
+    std::string (*sRenderThreadProgress)() = nullptr;
 
     // research/209 E4 (vk-s4a4).
     RenderThreadMode sceneBatchMode()

@@ -194,6 +194,18 @@
 						<plus_ps_combo.item label="最高" name="Ultra" value="3"/>
 					</plus_ps_combo>
 					<plus_ps_check_compat label="テンポラル AA（TAA：細い線をなめらかに）" name="taa" tool_tip="テンポラル アンチエイリアス：直前の数フレームを重ねて、止まった景色の細い線や輪郭のギザギザ・ちらつきをならします。上のアンチエイリアスの後に掛かり、FXAA や SMAA もそのまま効きます（両方とも使います）。動く物の後ろにかすかな尾が出ることがあります。保存する写真には掛かりません。負荷は軽めで、再起動せずにすぐ切り替わります。"/>
+					<plus_ps_check_compat label="テクスチャに使うビデオメモリを制限する（MB）" name="FSLimitTextureVRAMUsage" tool_tip="テクスチャが使えるビデオメモリの量を制限します。上限を超えると、まず画面外のテクスチャが下がり、足りなければ画面内も下がります。ただし画面内は下限の解像度までなので、低すぎる上限には届かないことがあります。影やバッファなどほかの用途は制限しないので、全体ではもっと使うことがあります。オフ：GPU のビデオメモリに合わせます。ビデオメモリの少ない GPU を試すには、下のビデオメモリの上書きを使ってください。"/>
+					<plus_ps_slider_compat label="テクスチャの上限（MB）：" name="RenderMaxVRAMBudget" tool_tip="テクスチャが使えるビデオメモリの最大量（MB）です。"/>
+					<plus_ps_text name="vram_test_label">
+						ビデオメモリの上書き（再起動後に反映）：
+					</plus_ps_text>
+					<plus_ps_check_compat label="ビデオメモリの検出を上書きする" name="FSOverrideVRAMDetection" tool_tip="GPU のビデオメモリが実際より少ない（または多い）ものとして動かします。ビデオメモリが正しく認識されない時に正しい量を指定したり、メモリの少ない環境（たとえば CPU 内蔵 GPU）での動きを試したりするのに使います。おすすめの画質、影の大きさ、テクスチャの予算がこの値に従います。GPU を本当に制限するわけではないので、小さい GPU のようにメモリが足りなくなることはありません。実際より多い値は、専用のビデオメモリを持つ GPU でだけ効きます（おすすめの Ultra と太陽の影の大きさが変わります）。内蔵 GPU は少ない方にしか設定できません。普段はオフにしてください。"/>
+					<plus_ps_slider_compat label="仮定するビデオメモリ（GB）：" name="FSForcedVideoMemory" tool_tip="ビューワが GPU にあると仮定する、専用のビデオメモリの量です。PC と共有するメモリは含みません。"/>
+					<plus_ps_text name="texture_downscale_label">
+						テクスチャの自動縮小（0：しない）：
+					</plus_ps_text>
+					<plus_ps_slider_compat label="背景にある時（秒）：" name="TextureDiscardBackgroundedTime" tool_tip="ビューワが前面を離れてこの秒数が過ぎると、ビデオメモリを空けるためにテクスチャを下げます。0：しません。"/>
+					<plus_ps_slider_compat label="最小化した時（秒）：" name="TextureDiscardMinimizedTime" tool_tip="最小化してこの秒数が過ぎると、ビデオメモリを空けるためにテクスチャを下げます。0：しません。"/>
 					<plus_ps_check_compat label="HiDPI ディスプレイに対応（再起動後に反映）" name="use HiDPI" tool_tip="高解像度描画で OpenGL を有効にします。"/>
 				</panel>
 			</scroll_container>

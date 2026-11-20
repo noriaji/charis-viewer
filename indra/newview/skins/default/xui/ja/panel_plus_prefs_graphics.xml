@@ -55,6 +55,15 @@
 				<plus_ps_text name="IndirectMaxNonImpostorsText">
 					0
 				</plus_ps_text>
+				<plus_ps_slider_compat label="アバターを板で描く距離：" name="PlusAvatarFullDistance" tool_tip="この距離より遠いアバターを、平らな絵（インポスター）で描いて軽くします。オフ（0）なら、動くアバターの最大数だけで決まります。ズームすると距離は延びます。見ている相手、常に表示にしたフレンド・アバターは板になりません。1〜4 m は 5 m として扱います。"/>
+				<plus_ps_text name="PlusAvatarFullDistanceText">
+					0
+				</plus_ps_text>
+				<plus_ps_check_compat label="ジェリードールを単色の人影にする" name="PlusJellyDollFlat" tool_tip="灰色のジェリードール（複雑すぎる人、描画しない設定やブロックした人、または下で決めた距離より遠い人）を、陰影のない単色の人影にします。処理が軽くなる代わりに、人形そのものの立体的な陰影はなくなります。写真モードとスナップショットでは使いません。"/>
+				<plus_ps_slider_compat label="ジェリードールにする距離：" name="PlusAvatarSilhouetteDistance" tool_tip="この距離より遠いアバターを、動かない灰色の人形（ジェリードール）で描いて軽くします。上の「板で描く距離」より近くはなりません。オフ（0）なら人形にしません。ズームすると距離は延びます。見ている相手、常に表示にしたフレンド・アバターは人形になりません。1〜4 m は 5 m として扱います。写真モードでは使いません。"/>
+				<plus_ps_text name="PlusAvatarSilhouetteDistanceText">
+					0
+				</plus_ps_text>
 				<plus_ps_button_compat label="例外…" name="RenderExceptionsButton"/>
 				<plus_ps_header label="プリセット" name="h_presets"/>
 				<plus_ps_button_compat label="設定をプリセットとして保存…" name="PrefSaveButton"/>

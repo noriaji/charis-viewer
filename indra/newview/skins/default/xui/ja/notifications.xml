@@ -7298,7 +7298,7 @@ UDP：3478, 3479, 5060, 5062, 6250, 12000-32000
 
 	<!-- plus: フライカムの使い方（plus/flycammouse/flycamexit.cpp） -->
 	<notification name="PlusFlycamHint">
-		フライカムに入りました。[LOOK]ホイールで速さ、Shift で加速、W A S D で移動、スペース／C で上昇・下降、Q／E で傾き。[KEY] で抜けます。
+		フライカムに入りました。[LOOK]ホイールで速さ、Shift で加速、W A S D で移動、スペース／C で上昇・下降、Q／E で傾き、ホイールの押し込みで水平に戻します。[KEY] で抜けます。
 		<form name="form">
 			<button
 			 default="true"
@@ -7310,6 +7310,39 @@ UDP：3478, 3479, 5060, 5062, 6250, 12000-32000
 			 name="DontShowAgain"
 			 text="次回から表示しない"/>
 		</form>
+	</notification>
+	<!-- /plus -->
+	<!-- plus: 画質の段の Charis の値を変えた後の 1 回だけの知らせ（plus/presets、research/352） -->
+	<notification name="PlusLevelsMigrated">
+		[MESSAGE]
+		<form name="form">
+			<button
+			 default="true"
+			 index="0"
+			 name="Keep"
+			 text="このまま"/>
+			<button
+			 index="1"
+			 name="Undo"
+			 text="元に戻す"/>
+		</form>
+	</notification>
+	<!-- /plus -->
+	<!-- plus: lslbridge。ポーズの依頼に使うブリッジが作れない・動かない時（plus/lslbridge/lslbridge.cpp、research/336） -->
+	<notification name="PlusLSLBridgeNoLibrary">
+		ポーズの依頼に使うブリッジを作れませんでした。ライブラリに、もとにする物が見つかりません。相手のアバターに自分の画面だけでポーズを付ける依頼は、出すことも受けることもできません。
+	</notification>
+	<notification name="PlusLSLBridgeMakeFailed">
+		ポーズの依頼に使うブリッジを作る途中で止まりました（インベントリやライブラリの読み込みが時間内に済まなかったか、スクリプトのアップロードやコンパイルが通らなかったか時間内に済まなかったか、スクリプトを入れている間に外され続けたか、ブリッジへの接続を確かめられなかったか、ブリッジからの知らせが受け取れない形でした）。アバター同士のポーズの依頼は、しばらく使えません。ビューワが間を空けながら、自分で何回か作り直します。
+	</notification>
+	<notification name="PlusLSLBridgeGaveUp">
+		HUD に付けたポーズの依頼用のブリッジが応答しないため、3 回直してみて諦めました（この土地でスクリプトが止められているか、何かが装着を妨げているか、ブリッジの中身を読み取れないようです）。アバター同士のポーズの依頼は、しばらく使えません。ビューワが間を空けながら、自分で何回か作り直します。
+	</notification>
+	<notification name="PlusLSLBridgeNotHere">
+		ポーズの依頼に使うブリッジは Second Life でだけ使えます。このグリッドでは作らないので、アバター同士のポーズの依頼は使えません。
+	</notification>
+	<notification name="PlusLSLBridgeNoSlot">
+		ポーズの依頼に使うブリッジを着けませんでした。装着できる数に空きがありません（あなたの装着物が先で、最後の 1 つも空けておきます）。何か外すと、自動で着けます。
 	</notification>
 	<!-- /plus -->
 	<!-- plus: グループ称号の自動リージョン「名前を入力…」（plus/grouptitles） -->
@@ -7356,6 +7389,108 @@ UDP：3478, 3479, 5060, 5062, 6250, 12000-32000
 	<notification label="フィルタータブを閉じる" name="FSInventoryCustomTabClose">
 		フィルタータブ「[NAME]」を閉じますか？ このタブに保存した絞り込みも消えます。
 		<usetemplate ignoretext="カスタムのフィルタータブを閉じる前に確認する" name="okcancelignore" notext="キャンセル" yestext="閉じる"/>
+	</notification>
+	<!-- /plus -->
+	<!-- plus: contactsets。コンタクトセットと別名（plus/contactsets、research/333） -->
+	<notification name="AddNewContactSet">
+		新しいコンタクトセットの名前：
+		<form name="form">
+			<input name="message">
+				新しいコンタクトセット
+			</input>
+			<button name="Create" text="作成"/>
+			<button name="Cancel" text="キャンセル"/>
+		</form>
+	</notification>
+	<notification name="RemoveContactSet">
+		[SET_NAME] を削除しますか？ 元には戻せません。
+		<usetemplate ignoretext="コンタクトセットを削除する前に確認する" name="okcancelignore" notext="キャンセル" yestext="OK"/>
+	</notification>
+	<notification name="RemoveContactFromSet">
+		[TARGET] を [SET_NAME] から外しますか？
+		<usetemplate ignoretext="コンタクトセットから人を外す前に確認する" name="okcancelignore" notext="キャンセル" yestext="OK"/>
+	</notification>
+	<notification name="RemoveContactsFromSet">
+		この [TARGET] 人を [SET_NAME] から外しますか？
+		<usetemplate ignoretext="コンタクトセットから何人かをまとめて外す前に確認する" name="okcancelignore" notext="キャンセル" yestext="OK"/>
+	</notification>
+	<notification name="SetAvatarPseudonym">
+		[AVATAR] の別名：
+		<form name="form">
+			<button name="Create" text="決定"/>
+			<button name="Cancel" text="キャンセル"/>
+		</form>
+	</notification>
+	<notification name="SetAvatarPseudonymMultiple">
+		[COUNT] 人に付ける別名：
+		<form name="form">
+			<button name="Create" text="決定"/>
+			<button name="Cancel" text="キャンセル"/>
+		</form>
+	</notification>
+	<notification name="RenameContactSetFailure">
+		コンタクトセット「[SET]」の名前を「[NEW_NAME]」に変えられませんでした。同じ名前のセットがあるか、使えない名前です。
+	</notification>
+	<notification name="AddToContactSetSingleSuccess">
+		[NAME] を [SET] に追加しました。
+	</notification>
+	<notification name="AddToContactSetMultipleSuccess">
+		[COUNT] 人を [SET] に追加しました。
+	</notification>
+	<notification name="DisplayNameUpdateRemoveAlias">
+		[OLD_NAME]（[SLID]）の表示名が [NEW_NAME] に変わりました。
+この人には別名を付けているので、[NEW_NAME] の代わりに別名が表示されます。
+別名を外しますか？
+		<form name="form">
+			<button name="Yes" text="外す"/>
+			<button name="No" text="そのまま"/>
+		</form>
+	</notification>
+	<!-- /plus -->
+	<!-- plus: poseconsent。近くの人が自分の画面であなたのアバターをポーズしたいと依頼（plus/poseconsent、research/336） -->
+	<notification name="PlusPoseConsentAsk">
+		[DISTANCE] m 離れた所にいる [NAME] から、写真のためにあなたのアバターをポーズしたいという依頼です。
+ポーズは相手の画面の中だけで、ほかの人にもあなた自身にも見えません。有効なのは長くてもこのセッションの間だけで、いつでも取り下げられます。
+		<form name="form">
+			<button name="Allow" text="許可する"/>
+			<button name="Refuse" text="断る"/>
+			<button name="Block" text="この人の依頼をブロック"/>
+		</form>
+	</notification>
+	<notification name="PlusPoseReflectAsk">
+		[DISTANCE] m 離れた所にいる [NAME] が、自分が付けたポーズをあなたの画面のあなたのアバターにも出したいと依頼しています（相手の画面の中でポーズすることは許可済みです）。
+許可すると、あなたの画面でも相手のポーズになります。近くの Charis ビューワにも見せてよいかは、下のボタンで選べます（あなたが共有をオンにしている時だけ）。あなた自身がポーズしている間は、あなたが優先です。
+		<form name="form">
+			<button name="Allow" text="自分の画面だけ許可"/>
+			<button name="AllowAround" index="3" text="近くの人にも見せてよい"/>
+			<button name="Refuse" text="断る"/>
+			<button name="Block" text="この人の依頼をブロック"/>
+		</form>
+	</notification>
+	<notification name="PlusPoseConsentWithdrawNotSent">
+		[NAME] に取り下げを伝えられませんでした。[REASON]
+	</notification>
+	<notification name="PlusPoseConsentClearBlocksConfirm">
+		ポーズの依頼をブロックした [COUNT] 人が、また依頼できるようにしますか？ 元には戻せません。
+		<form name="form">
+			<button name="OK" text="全部解除する"/>
+			<button name="Cancel" text="キャンセル"/>
+		</form>
+	</notification>
+	<notification name="PlusPoseConsentBlocksAfterLogin">
+		ログインしてから使えます。
+	</notification>
+	<notification name="PlusPoseConsentNoBlocks">
+		ポーズの依頼をブロックしている人はいません。
+	</notification>
+	<notification name="PlusPoseConsentBlocksCleared">
+		ポーズの依頼をブロックしていた人（[COUNT] 人）が、また依頼できるようになりました。
+	</notification>
+	<!-- /plus -->
+	<!-- plus: ビデオメモリの検出の上書きをオンにした時（plus/prefscharis、research/371） -->
+	<notification name="PlusVRAMOverrideWarning">
+		ビデオメモリの上書きをオンにすると、次の再起動から、GPU がその量のビデオメモリを持つものとして動きます。おすすめの画質、影の大きさ、テクスチャの予算がこれに従い、テクスチャが粗く見えることがあります。ビデオメモリが正しく認識されない時に正しい量を指定するほか、メモリの少ない環境を試すのにも使えます。
+		<usetemplate name="okbutton" yestext="OK"/>
 	</notification>
 	<!-- /plus -->
 </notifications>

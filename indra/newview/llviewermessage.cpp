@@ -152,6 +152,8 @@
 // </plus>
 #include "plus/loginfast/loginfast.h" // <plus> the far range after an arrival (plus/loginfast) </plus>
 #include "plus/rlv/rlvhooks.h" // <plus> rlv: chat (research/248) </plus>
+#include "plus/contactsethooks/cshooks.h" // <plus> contactsets: a set's busy answer (research/333) </plus>
+#include "plus/lslbridge/lslbridgehooks.h" // <plus> lslbridge: the pose bridge's llOwnerSay lines (research/336) </plus>
 
 extern void on_new_message(const LLSD& msg);
 
@@ -2263,6 +2265,7 @@ void send_do_not_disturb_message (LLMessageSystem* msg, const LLUUID& from_id, c
         std::string my_name;
         LLAgentUI::buildFullname(my_name);
         std::string response = gSavedPerAccountSettings.getString("DoNotDisturbModeResponse");
+        plus::cshooks::busyResponse(from_id, response); // <plus> contactsets: the answer of the sender's set, when it has one (Firestorm FIRE-17006) (research/333) </plus>
         pack_instant_message(
             msg,
             gAgent.getID(),
@@ -2493,6 +2496,19 @@ void process_chat_from_simulator(LLMessageSystem *msg, void **user_data)
 
     bool is_audible = (CHAT_AUDIBLE_FULLY == chat.mAudible);
     chatter = gObjectList.findObject(from_id);
+    // <plus> lslbridge: the worn pose bridge's own llOwnerSay lines are taken here, before the speech particles,
+    // RLVa, the chat and its translation see them (its URL lines are dropped even when the speaker is not known);
+    // any other line goes on as before (plus/lslbridge, research/336)
+    if ((CHAT_TYPE_OWNER == chat.mChatType) && (owner_id == gAgentID))
+    {
+        std::string plus_bridge_text;
+        msg->getStringFast(_PREHASH_ChatData, _PREHASH_Message, plus_bridge_text);
+        if (plus::lslbridge::handleOwnerSay(chat, plus_bridge_text, from_id, owner_id, chatter))
+        {
+            return;
+        }
+    }
+    // </plus>
     if (chatter)
     {
         chat.mPosAgent = chatter->getPositionAgent();

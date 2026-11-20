@@ -62,7 +62,9 @@ namespace plus::posermcp
     // Main thread. The avatar of args["avatar"] (default self), which this viewer must be
     // posing: the `wanted` joints it has (others are skipped) and their ancestors, as drawn,
     // in its body frame, with the poser's mPelvis position offset. Throws std::runtime_error.
-    void captureSolveSkeleton(const boost::json::object& args, const std::vector<std::string>& wanted, SolveCapture& out);
+    // allow_other (the poser window's IK drag only, never the MCP): the avatar may be another person who accepted a request.
+    void captureSolveSkeleton(const boost::json::object& args, const std::vector<std::string>& wanted, SolveCapture& out,
+                              bool allow_other = false);
 
     // Main thread. A hash of the poser's targets (rotations, position and scale offsets, which
     // joints are posed) of the avatar: equal values = the pose was not changed in between.
@@ -74,7 +76,7 @@ namespace plus::posermcp
     // Main thread. Sets whole local rotations (as aim and set_joints absolute: the
     // animation's base rotation of those joints is zeroed) and the mPelvis position offset.
     void applySolvedPose(const boost::json::object& args, const std::vector<std::pair<std::string, LLQuaternion>>& rotations,
-                         const std::optional<LLVector3>& pelvisPosition);
+                         const std::optional<LLVector3>& pelvisPosition, bool allow_other = false);
 
     // Main thread. Where joints are drawn, in the avatar's body frame (missing ones skipped).
     std::vector<std::pair<std::string, LLVector3>> drawnPositions(const boost::json::object& args, const std::vector<std::string>& names);

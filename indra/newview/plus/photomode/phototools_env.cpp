@@ -183,6 +183,12 @@ namespace plus::photomode::tools
             return sItems;
         }
 
+        // Whether the entry (or one of the copies it stands for) is the item in use.
+        bool entryIs(const SkyEntry& entry, const LLUUID& item)
+        {
+            return item.notNull() && (entry.item == item || std::find(entry.same.begin(), entry.same.end(), item) != entry.same.end());
+        }
+
         // A row of the sky or water list: the mark of an old sky after its name, the dot of a water, the star.
         class PhotoSkyItem : public LLFolderViewItem
         {
@@ -477,12 +483,24 @@ namespace plus::photomode::tools
         getChild<LLButton>("btn_looktab_fav")->setCommitCallback([this](LLUICtrl*, const LLSD&) { setLookTab(1); });
         getChild<LLButton>("btn_looktab_recent")->setCommitCallback([this](LLUICtrl*, const LLSD&) { setLookTab(2); });
         getChild<LLButton>("btn_look_cur_star")->setCommitCallback([this](LLUICtrl*, const LLSD&) { onLookStar(); });
+        // the favorites whose look is gone (the rows cannot be chosen): taken off together by this button
+        getChild<LLButton>("btn_look_prune")->setCommitCallback([this](LLUICtrl*, const LLSD&) {
+            const size_t gone = removeMissingFavoriteLooks();
+            if (gone > 0)
+            {
+                LLStringUtil::format_map_t args;
+                args["[COUNT]"] = std::to_string(gone);
+                LLNotificationsUtil::add("SystemMessageTip", LLSD().with("MESSAGE", getString("look_fav_pruned", args)));
+            }
+            rebuildLookList(false);
+        });
         getChild<LLButton>("btn_look_prev")->setCommitCallback([this](LLUICtrl*, const LLSD&) { stepLookList(-1); });
         getChild<LLButton>("btn_look_next")->setCommitCallback([this](LLUICtrl*, const LLSD&) { stepLookList(1); });
         getChild<LLButton>("btn_look_folder")->setCommitCallback([](LLUICtrl*, const LLSD&) { plus::look::openUserFolder(); });
         getChild<LLButton>("btn_look_reload")->setCommitCallback([this](LLUICtrl*, const LLSD&) { onLookReload(); });
         setLookTab(0);
 
+        gInventory.addObserver(&mInvWatch);
         rebuildEnvLists(true);
         refreshCurrentEnv();
     }
@@ -503,6 +521,8 @@ namespace plus::photomode::tools
             mSky.ofAssetGeneration   = 0; // itemOfAsset() looks again: an item may have arrived or gone
             mWater.ofAssetGeneration = 0;
             rebuildEnvLists(false); // the inventory: a name, an item that arrived or went; a water's dot
+            syncFlat(mSky, true);   // the plain lists: the inventory's generation (loading at start-up too)
+            syncFlat(mWater, true);
         }
     }
 
@@ -589,6 +609,25 @@ namespace plus::photomode::tools
         getChild<LLButton>(ctl(picker, "btn_", "_list_toggle"))->setCommitCallback([this, p](LLUICtrl*, const LLSD&) {
             setEnvListOpen(*p, !p->listOpen);
         });
+        picker.flatList = getChild<LLScrollListCtrl>(ctl(picker, "", "_all_list"));
+        picker.flatList->setCommitCallback([this, p](LLUICtrl*, const LLSD&) {
+            const LLScrollListItem* picked = p->flatList->getFirstSelected(); // a click, or the arrow keys
+            // The list commits on every release of the mouse: the one in use again must not be put on again
+            // (that would undo what was adjusted in the editor).
+            const S32 row = p->flatList->getFirstSelectedIndex();
+            if (picked && picked->getEnabled() && row >= 0 && (size_t)row < p->flatIdx.size() &&
+                !entryIs(p->flatAll[p->flatIdx[row]], p->lastApplied))
+            {
+                applyEntry(picked->getValue().asUUID());
+            }
+        });
+        getChild<LLButton>(ctl(picker, "btn_", "_view_toggle"))->setCommitCallback([this](LLUICtrl*, const LLSD&) {
+            setEnvFlat(!envFlat());
+        });
+        for (int k = 0; k < 4; ++k)
+        {
+            picker.stepTips[k] = getChild<LLButton>(ctl(picker, k < 2 ? "btn_" : "btn_home_", k % 2 ? "_next" : "_prev"))->getToolTip();
+        }
         picker.openHeight = getChild<LLPanel>(ctl(picker, "sec_", ""))->getRect().getHeight();
         picker.listOpen   = gSavedSettings.getBOOL(listSetting(picker));
         showEnvList(picker); // and the first tab, "All" (setEnvTab())
@@ -603,7 +642,22 @@ namespace plus::photomode::tools
             getChild<LLButton>(ctl(picker, "btn_", names[i]))->setToggleState(i == tab);
         }
         const bool open = picker.listOpen; // folded: none of the list's parts
-        getChild<LLView>(ctl(picker, "", "_wrap"))->setVisible(open && tab == 0);
+        const bool flat = envFlat();
+        getChild<LLView>(ctl(picker, "", "_wrap"))->setVisible(open && tab == 0 && !flat);
+        picker.flatList->setVisible(open && tab == 0 && flat);
+        LLButton* view_toggle = getChild<LLButton>(ctl(picker, "btn_", "_view_toggle"));
+        view_toggle->setVisible(open && tab == 0);
+        view_toggle->setLabel(getString(flat ? "env_view_to_tree" : "env_view_to_flat"));
+        view_toggle->setToolTip(getString(flat ? "env_view_to_tree_tip" : "env_view_to_flat_tip"));
+        // what the arrows follow: the list (flat), the favorites' order, or the folder
+        const char* const tips[2][2] = { { "env_prev_flat", "env_next_flat" }, { "env_prev_fav", "env_next_fav" } };
+        const int         follows    = open && tab == 0 && flat ? 0 : (open && tab == 1 ? 1 : -1);
+        for (int k = 0; k < 4; ++k)
+        {
+            getChild<LLButton>(ctl(picker, k < 2 ? "btn_" : "btn_home_", k % 2 ? "_next" : "_prev"))
+                ->setToolTip(follows >= 0 ? getString(tips[follows][k % 2]) : picker.stepTips[k]);
+        }
+        syncFlat(picker, true);
         getChild<LLView>(ctl(picker, "flt_", ""))->setVisible(open && tab == 0);
         getChild<LLView>(ctl(picker, "", "_fav_list"))->setVisible(open && tab == 1);
         getChild<LLView>(ctl(picker, "btn_", "_fav_sort"))->setVisible(open && tab == 1);
@@ -649,6 +703,13 @@ namespace plus::photomode::tools
         gSavedSettings.setBOOL(listSetting(picker), open);
         if (!open)
         {
+            picker.flatBuilt = false; // folded: let go of the rows (and look at the inventory again when it opens)
+            picker.flatList->clearRows();
+            picker.flatAll.clear();
+            picker.flatIdx.clear();
+            picker.flatSig.clear();
+            picker.flatTerm.clear();
+            picker.flatMarked.setNull();
             // Folded, the tabs are not seen: the arrows (here and on the home tab) go through the folder
             // again, not the favorites of a tab chosen before.
             picker.tab = 0;
@@ -768,6 +829,7 @@ namespace plus::photomode::tools
             return;
         }
         picker.favSig = sig;
+        syncFlat(picker, true); // a star or a name changed (the rows are made again only if they differ)
 
         // the rows of the lists only while they can be seen (setEnvListOpen() makes them when they open)
         picker.listsBuilt = picker.listOpen;
@@ -803,6 +865,203 @@ namespace plus::photomode::tools
             }
         }
         getChild<LLButton>(ctl(picker, "btn_", "_cur_star"))->setToggleState(isFavorite(picker.lastApplied));
+    }
+
+    // Only a change that can show in the plain list: a sky or water item (added, changed, renamed), a folder
+    // renamed or added, anything removed (its type cannot be told then). Not the outfit's links and the like.
+    void PhotoToolsFloater::EnvInventoryWatch::changed(U32 mask)
+    {
+        if (mask & REMOVE)
+        {
+            ++generation;
+            return;
+        }
+        if (!(mask & (LABEL | INTERNAL | ADD | STRUCTURE)))
+        {
+            return;
+        }
+        for (const LLInventoryModel::changed_items_t* ids : { &gInventory.getChangedIDs(), &gInventory.getAddedIDs() })
+        {
+            for (const LLUUID& id : *ids)
+            {
+                const LLViewerInventoryItem* item = gInventory.getItem(id);
+                if ((item && item->getInventoryType() == LLInventoryType::IT_SETTINGS) ||
+                    (!item && (mask & (LABEL | ADD | STRUCTURE)) && gInventory.getCategory(id)))
+                {
+                    ++generation;
+                    return;
+                }
+            }
+        }
+    }
+
+    bool PhotoToolsFloater::envFlat()
+    {
+        static LLCachedControl<bool> flat(gSavedSettings, "PlusPhotoEnvListFlat", false);
+        return flat;
+    }
+
+    // The All tab as the tree or as a plain list; the same for the sky and the water, and kept.
+    void PhotoToolsFloater::setEnvFlat(bool flat)
+    {
+        gSavedSettings.setBOOL("PlusPhotoEnvListFlat", flat);
+        for (Picker* picker : { &mSky, &mWater })
+        {
+            setEnvTab(*picker, picker->tab); // shows the one and builds the rows of the other when it is seen
+            if (!flat && picker->listOpen && picker->lastApplied.notNull() && gInventory.getItem(picker->lastApplied))
+            {
+                picker->list->setSelectionByID(picker->lastApplied, false); // the tree shows the one in use
+            }
+        }
+    }
+
+    // The plain list as it should be seen now (only while it is: open, All tab, flat). full: look at the inventory
+    // when it changed (mInvWatch), and make the rows when what they show changed (the search, the stars, the
+    // items; the scroll stays otherwise). In either case the row of the one in use is chosen, and scrolled into
+    // view only when the one in use changed. Cheap when nothing changed (the timer calls it every second).
+    void PhotoToolsFloater::syncFlat(Picker& picker, bool full)
+    {
+        if (!(picker.listOpen && picker.tab == 0 && envFlat()))
+        {
+            return;
+        }
+        bool rebuilt = false;
+        if (full)
+        {
+            std::string term = picker.search;
+            LLStringUtil::trim(term);
+            LLStringUtil::toLower(term);
+            const std::string key =
+                term + "|" + std::to_string(favoritesGeneration()) + "|" + std::to_string(mInvWatch.generation);
+            if (!picker.flatBuilt || key != picker.flatKey)
+            {
+                picker.flatKey = key;
+                if (!picker.flatBuilt || picker.flatInvGen != mInvWatch.generation)
+                {
+                    constexpr size_t MAX_FLAT = 5000; // far above what an inventory has; the list's rows are light
+                    environmentItems(picker.kind, picker.flatAll, MAX_FLAT);
+                    picker.flatInvGen = mInvWatch.generation;
+                    picker.flatBuilt  = true;
+                }
+                rebuilt = rebuildFlatRows(picker, term);
+            }
+        }
+        if (!picker.flatBuilt)
+        {
+            return;
+        }
+        const bool changed = picker.flatMarked != picker.lastApplied;
+        if (!rebuilt && !changed)
+        {
+            return; // the row of the one in use is chosen already
+        }
+        picker.flatMarked = picker.lastApplied;
+        S32 in_use        = -1;
+        for (size_t k = 0; k < picker.flatIdx.size() && in_use < 0; ++k)
+        {
+            if (entryIs(picker.flatAll[picker.flatIdx[k]], picker.lastApplied))
+            {
+                in_use = (S32)k;
+            }
+        }
+        if (in_use >= 0)
+        {
+            if (picker.flatList->getFirstSelectedIndex() != in_use)
+            {
+                picker.flatList->selectNthItem(in_use); // no commit: only the mark
+            }
+            if (changed)
+            {
+                picker.flatList->scrollToShowSelected();
+            }
+        }
+        else
+        {
+            picker.flatList->deselectAllItems(true);
+        }
+    }
+
+    // The rows of the plain list from flatAll and the search term (lower case); false when they are the same as
+    // before (then nothing is touched, and the scroll stays).
+    bool PhotoToolsFloater::rebuildFlatRows(Picker& picker, const std::string& term)
+    {
+        const std::set<LLUUID> starred = favoriteItems();
+        const auto is_star = [&starred](const SkyEntry& entry) {
+            if (starred.count(entry.item))
+            {
+                return true;
+            }
+            return std::any_of(entry.same.begin(), entry.same.end(), [&starred](const LLUUID& id) { return starred.count(id) > 0; });
+        };
+
+        std::vector<size_t> shown;
+        std::string         sig = term + "|";
+        for (size_t i = 0; i < picker.flatAll.size(); ++i)
+        {
+            const SkyEntry& entry = picker.flatAll[i];
+            if (!entry.exists)
+            {
+                continue;
+            }
+            if (!term.empty())
+            {
+                std::string lower = entry.name;
+                LLStringUtil::toLower(lower);
+                if (lower.find(term) == std::string::npos)
+                {
+                    continue;
+                }
+            }
+            shown.push_back(i);
+            sig += entry.item.asString() + (is_star(entry) ? "*" : ".") + entry.name + ";";
+        }
+        if (sig == picker.flatSig)
+        {
+            return false;
+        }
+        picker.flatSig = sig;
+        picker.flatIdx = std::move(shown);
+
+        const bool same_term = term == picker.flatTerm; // another search: from the top, or the one in use
+        picker.flatTerm      = term;
+        const S32 scroll     = same_term ? picker.flatList->getScrollPos() : 0;
+        if (!same_term)
+        {
+            picker.flatMarked.setNull(); // so that syncFlat() scrolls to the one in use again
+        }
+        picker.flatList->clearRows();
+        picker.flatList->setCommentText(getString(picker.flatAll.empty() ? "env_flat_none" : "search_none"));
+        for (const size_t at : picker.flatIdx)
+        {
+            const SkyEntry& entry = picker.flatAll[at];
+            // the same name twice (an item of the inventory and one of the Library, or two folders): say which
+            const auto same_name = [&](size_t other) {
+                return other < picker.flatAll.size() &&
+                       LLStringUtil::compareInsensitive(picker.flatAll[other].name, entry.name) == 0;
+            };
+            std::string name = entry.name;
+            if (same_name(at + 1) || (at > 0 && same_name(at - 1)))
+            {
+                SkyEntry described = entry;
+                describe(described); // its folder's name
+                LLStringUtil::format_map_t args;
+                args["[FOLDER]"] = described.folder;
+                name += " " + getString(entry.library ? (described.folder.empty() ? "env_flat_library" : "env_flat_library_in")
+                                                      : (described.folder.empty() ? "env_flat_inventory" : "env_flat_folder"),
+                                        args);
+            }
+            const bool star = is_star(entry);
+            LLSD       row;
+            row["value"]                = LLSD(entry.item);
+            row["columns"][0]["column"] = "star";
+            row["columns"][0]["type"]   = star ? "icon" : "text";
+            row["columns"][0]["value"]  = star ? "Favorite_Star_Active" : "";
+            row["columns"][1]["column"] = "name";
+            row["columns"][1]["value"]  = name;
+            picker.flatList->addElement(row);
+        }
+        picker.flatList->setScrollPos(scroll);
+        return true;
     }
 
     // Puts a sky or water on, from a list or a chip.
@@ -967,6 +1226,10 @@ namespace plus::photomode::tools
                 getChild<LLUICtrl>(ctl(*picker, "title_home_", ""))->setToolTip(line);
             }
             getChild<LLButton>(ctl(*picker, "btn_", "_cur_star"))->setToggleState(isFavorite(picker->lastApplied));
+            if (picker->flatMarked != picker->lastApplied)
+            {
+                syncFlat(*picker, false); // changed elsewhere (the land's again, a chip, the editor): choose its row
+            }
         }
     }
 
@@ -1025,10 +1288,13 @@ namespace plus::photomode::tools
 
         const std::vector<LookChoice> shown = shownLooks();
         std::set<std::string>         stars;
+        bool                          favorites_gone = false;
         for (const LookChoice& choice : favoriteLooks())
         {
             stars.insert(choice.id);
+            favorites_gone = favorites_gone || !choice.exists;
         }
+        getChild<LLButton>("btn_look_prune")->setEnabled(mLookTab == 1 && favorites_gone);   // the favorites tab: what it takes off is seen there
         std::string sig = std::to_string(mLookTab) + "|" + mLookFilter + "|" + std::to_string(plus::look::generation());
         for (const LookChoice& choice : shown)
         {
@@ -1075,7 +1341,7 @@ namespace plus::photomode::tools
         LookChoice        in_use;
         in_use.id     = current;
         in_use.label  = plus::look::labelOf(current);
-        in_use.exists = current.empty() || !in_use.label.empty();
+        in_use.exists = current.empty() || plus::look::exists(current);
         LLStringUtil::format_map_t args;
         args["[NAME]"]   = lookName(in_use);
         std::string text = getString("look_current", args);
@@ -1179,11 +1445,38 @@ namespace plus::photomode::tools
         }
         picker.search = text;
         picker.list->setFilterSubString(text);
+        syncFlat(picker, true); // the plain list picks from its earlier look at the inventory
         if (!text.empty() && picker.list->getRootFolder())
         {
             // open the folders the search found something in
             picker.list->getRootFolder()->setOpenArrangeRecursively(true, LLFolderViewFolder::RECURSE_DOWN);
         }
+    }
+
+    // The arrows with the plain list: the next row, round (the search narrows it).
+    void PhotoToolsFloater::stepFlat(Picker& picker, int direction)
+    {
+        const int count = (int)picker.flatIdx.size();
+        if (count == 0)
+        {
+            return;
+        }
+        int at = picker.flatList->getFirstSelectedIndex();
+        if (at < 0)
+        {
+            for (int k = 0; k < count && at < 0; ++k)
+            {
+                if (entryIs(picker.flatAll[picker.flatIdx[k]], picker.lastApplied))
+                {
+                    at = k;
+                }
+            }
+        }
+        const int next = at < 0 ? (direction > 0 ? 0 : count - 1) : (at + direction + count) % count;
+        picker.flatList->selectNthItem(next);
+        picker.flatList->scrollToShowSelected();
+        picker.flatMarked = picker.flatAll[picker.flatIdx[next]].item;
+        applyEntry(picker.flatMarked);
     }
 
     // The next sky (or water) of the same folder as the one chosen, in the order of their names, and
@@ -1193,6 +1486,11 @@ namespace plus::photomode::tools
         if (picker.tab == 1)
         {
             stepFavorite(picker, direction); // the order of the favorites, not the folder's
+            return;
+        }
+        if (picker.tab == 0 && picker.listOpen && picker.flatBuilt && envFlat())
+        {
+            stepFlat(picker, direction); // the plain list's order, not the folder's
             return;
         }
         LLUUID current = selectedId(picker);

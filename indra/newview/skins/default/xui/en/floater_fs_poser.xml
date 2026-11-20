@@ -478,6 +478,56 @@
 	<string name="hand_preset_name_Rock">Rock</string>
 	<string name="hand_preset_name_Gun">Finger Gun</string>
 	<!-- /plus -->
+	<!-- plus: other people's avatars with their consent (research/336) -->
+	<string name="hand_save_not_others">Hand presets are saved from your own avatar or your animeshes only, not from another person.</string>
+	<string name="other_status_ask">Not asked</string>
+	<string name="other_status_pending">Waiting</string>
+	<string name="other_status_accepted">Allowed</string>
+	<string name="other_status_refused">Refused</string>
+	<string name="other_status_no_answer">No reply</string>
+	<string name="consent_ask">Ask to Pose</string>
+	<string name="consent_ask_tip">Ask this person whether you may pose their avatar. They see your request and answer it; nothing is posed until they allow it.</string>
+	<string name="consent_cancel">Cancel Request</string>
+	<string name="consent_cancel_tip">Take back the request you sent to this person.</string>
+	<string name="consent_end">End Permission</string>
+	<string name="consent_end_tip">Put this person's avatar back as it was and give the consent back. To pose them again, ask again.</string>
+	<string name="consent_block_not_in_view">Not in view</string>
+	<string name="consent_block_not_in_view_tip">This person is out of your draw distance (or has just left). A request can still be taken back, or the permission ended.</string>
+	<string name="consent_block_muted">This person is muted</string>
+	<string name="consent_block_muted_tip">A muted person cannot be asked. Unmute them to ask.</string>
+	<string name="consent_block_far">Too far away (over 50 m)</string>
+	<string name="consent_block_far_tip">Someone can be asked, and posed, only within 50 m and in the same region as you.</string>
+	<string name="consent_block_cooldown">Ask again in 10 minutes</string>
+	<string name="consent_block_cooldown_tip">After a refusal or no answer, the same person cannot be asked again for 10 minutes.</string>
+	<string name="consent_block_bridge">The bridge is not connected</string>
+	<string name="consent_block_bridge_tip">Requests go through the Charis bridge, an attachment you wear. It is turned off, not connected yet, or waiting for an attachment place (it is put on once you take something off).</string>
+	<string name="consent_block_bridge_failed">The bridge could not be made</string>
+	<string name="consent_block_bridge_failed_tip">The pose bridge could not be made, and it is not tried again by itself. Turn it off and on in Preferences &gt; Privacy to try again and be shown why.</string>
+	<string name="consent_block_leaving">Logging out</string>
+	<string name="consent_block_leaving_tip">No request is sent while you log out.</string>
+	<string name="consent_block_busy">Cannot ask now</string>
+	<string name="consent_block_busy_tip">Too many requests and permissions at once (64). End one before asking someone else.</string>
+	<string name="consent_someone">that person</string>
+	<!-- the reflect button and the line under it (research/374b) -->
+	<string name="reflect_ask">Reflect</string>
+	<string name="reflect_ask_tip">Ask this friend to let the pose you set show on their own screen too. If they allow it, they also choose whether the Charis Viewers near them (when they share their pose) may see it. They see your request and answer it; nothing changes on their side until they allow it. Friends only.</string>
+	<string name="reflect_pending">Waiting...</string>
+	<string name="reflect_pending_tip">Take back the request you sent to this person.</string>
+	<string name="reflect_on">Reflecting</string>
+	<string name="reflect_on_tip">The pose you set shows on this person's own screen too. Click to stop. Their own poser comes first: while they pose themselves, yours is not shown.</string>
+	<string name="own_screen_text_only">Only on your screen</string>
+	<string name="own_screen_text_reflect">Allowed on their screen too</string>
+	<string name="own_screen_tip_only">A pose you give another person shows on your screen only (unless they allowed Reflect): they, and everyone else, keep seeing their avatar as it is. It is never saved or uploaded, and it ends when you end it, close the poser, or they leave or take the consent back.</string>
+	<string name="own_screen_tip_reflect">They allowed your poses to show on their own screen too. It shows only while they are not posing themselves, near enough, and no one else is posing them this way. Whether the Charis Viewers near them see it too is their choice (and needs them to share their pose). It ends when you end it, they take it back, you stop being friends, they leave or move far, or you teleport.</string>
+	<string name="reflect_cooldown_tip">This person declined, or did not answer, a moment ago. You can ask again in a little while.</string>
+	<string name="reflect_friends_tip">Reflect works between friends only (and ends when you stop being friends).</string>
+	<string name="reflect_cannot_tip">Cannot ask now: the person is too far (over 50 m) or muted, the pose bridge is not connected, or there are too many requests at once.</string>
+	<!-- pose sharing (research/374) -->
+	<string name="other_status_sharing">Sharing</string>
+	<string name="share_label_off">Share Pose: Off</string>
+	<string name="share_label_friends">Share Pose: Friends</string>
+	<string name="share_label_everyone">Share Pose: Everyone</string>
+	<!-- /plus -->
 
 	<floater.string name="FiledateFormat">
 		[year,datetime,local]/[mthnum,datetime,local]/[day,datetime,local] [hour,datetime,local]:[min,datetime,local]:[second,datetime,local]
@@ -1048,9 +1098,14 @@
 						 keep_one_selected="false"
 						 show_permissions_granted="true"
 						 width="317" />
+						<!-- plus: the list is 63 shorter (250 -> 187) and the buttons under it 63 higher (top 244 -> 181), for the
+						     consent button and its lines (research/336). The panel is 293 high in the tab container: list 0-178,
+						     refresh/start 181-202, T-pose 203-224, consent 225-246, "only on your screen" 248-261, the notice or
+						     reason (2 lines) 262-288. The status column (the consent of another person) takes 0.42 of the width while another
+						     person is listed, 0 otherwise (FSFloaterPoser::showStatusColumn, STATUS_COLUMN_SHARE). -->
 						<scroll_list
 						 column_padding="0"
-						 height="250"
+						 height="187"
 						 can_sort="false"
 						 follows="all"
 						 layout="topleft"
@@ -1067,7 +1122,7 @@
 							<scroll_list.columns
 							 label="Select Someone to Pose..."
 							 name="name"
-							 relative_width="1.0"/>
+							 relative_width="0.58"/>
 							<scroll_list.columns
 							 label="UUID"
 							 name="uuid"
@@ -1076,6 +1131,10 @@
 							 label="SaveFileName"
 							 name="saveFileName"
 							 relative_width="0.0"/>
+							<scroll_list.columns
+							 label="Consent"
+							 name="status"
+							 relative_width="0.42"/>
 						</scroll_list>
 						<button
 						 height="21"
@@ -1087,11 +1146,12 @@
 						 name="refresh_avatars"
 						 tool_tip="Refresh the list of avatars and animeshes"
 						 width="20"
-						 top="244"
+						 top="181"
 						 left="3">
 							<button.commit_callback
 							 function="Poser.RefreshAvatars"/>
 						</button>
+						<!-- /plus -->
 						<button
 						 height="21"
 						 follows="top|left"
@@ -1128,6 +1188,76 @@
 							<button.commit_callback
 							 function="Poser.SetToTPose"/>
 						</button>
+						<!-- plus: other people's avatars with their consent (research/336). The button while another person is selected,
+						     "only on your screen" also while anyone else is posed; the label, the tooltip and the texts come from the
+						     strings consent_* (FSFloaterPoser::refreshConsentUi). -->
+						<button
+						 height="21"
+						 follows="top|left"
+						 layout="topleft"
+						 left="3"
+						 top_pad="1"
+						 label="Ask to Pose"
+						 image_hover_unselected="Toolbar_Middle_Over"
+						 image_unselected="Toolbar_Middle_Off"
+						 name="consent_button"
+						 visible="false"
+						 width="100"/>
+						<!-- Reflect button (research/374b): beside the consent button once stage 1 allows (or a request is out). The
+						     label, the tooltip and the toggle's state come from the strings reflect_* (refreshConsentUi). -->
+						<button
+						 height="21"
+						 follows="top|left"
+						 layout="topleft"
+						 left_pad="2"
+						 top_delta="0"
+						 label="Reflect"
+						 is_toggle="true"
+						 image_hover_unselected="Toolbar_Middle_Over"
+						 image_selected="Toolbar_Middle_Selected"
+						 image_unselected="Toolbar_Middle_Off"
+						 name="reflect_button"
+						 visible="false"
+						 width="70"/>
+						<text
+						 follows="top|left"
+						 font="SansSerifSmall"
+						 height="13"
+						 layout="topleft"
+						 left="3"
+						 top_pad="2"
+						 name="own_screen_only_text"
+						 use_ellipses="true"
+						 visible="false"
+						 tool_tip="A pose you give another person shows on your screen only (unless they allowed Reflect): they, and everyone else, keep seeing their avatar as it is. It is never saved or uploaded, and it ends when you end it, close the poser, or they leave or take the consent back."
+						 width="172">Only on your screen</text>
+						<text
+						 follows="top|left"
+						 font="SansSerifSmall"
+						 height="26"
+						 layout="topleft"
+						 left="3"
+						 top_pad="1"
+						 name="consent_info_text"
+						 visible="false"
+						 width="172"
+						 wrap="true"/>
+						<!-- Share button (research/374). In the place of the consent button (225-246) while no other person is
+						     selected: the own pose shown to the Charis Viewers near. The label says the mode
+						     (FSFloaterPoser::refreshConsentUi, strings share_label_*); a click opens menu_fs_poser_share.xml. -->
+						<button
+						 height="21"
+						 follows="top|left"
+						 layout="topleft"
+						 left="3"
+						 top="225"
+						 label="Share Pose: Off"
+						 image_hover_unselected="Toolbar_Middle_Over"
+						 image_unselected="Toolbar_Middle_Off"
+						 name="share_button"
+						 tool_tip="Show the pose of your own avatar, while you pose it here, on the screens of the Charis Viewers near you (100 m). Click to choose who sees it, and whose shared pose you see. It goes through your pose bridge, and it is turned off until you choose."
+						 width="172"/>
+						<!-- /plus -->
 					</panel>
 					<panel
 					 follows="all"
@@ -2120,6 +2250,10 @@
 			 left="0"
 			 name="button_controls_panel"
 			 width="800">
+				<!-- plus Motion Between Poses (plus/posermotion, research/324): the row is full (441 of the window's 450 px),
+				     so an icon in the spacer's right 22 px (the spacer was 56 wide: 34 + 1 + 21, so the buttons after it stay
+				     where they were); the name is in the tool tip. Opens its own window with the official
+				     Floater.ToggleOrBringToFront. -->
 				<panel
 				 follows="left|top|bottom"
 				 height="22"
@@ -2129,9 +2263,27 @@
 				 left_pad="0"
 				 top_delta="0"
 				 name="advbutton_spacer_panel"
-				 width="56"
+				 width="34"
 				 top_pad="-1"
 				 left="2"/>
+				<button
+				 height="21"
+				 follows="top|left"
+				 layout="topleft"
+				 image_overlay="Inv_Animation"
+				 image_hover_unselected="Toolbar_Middle_Over"
+				 image_selected="Toolbar_Middle_Selected"
+				 image_unselected="Toolbar_Middle_Off"
+				 name="plus_motion_between_poses"
+				 tool_tip="Motion Between Poses: make a short motion (0.6 to 1.9 s) from one pose of your own avatar to another, play it here and save it as a BVH animation"
+				 width="21"
+				 top_delta="0"
+				 left_pad="1">
+					<button.commit_callback
+					 function="Floater.ToggleOrBringToFront"
+					 parameter="plus_poser_motion"/>
+				</button>
+				<!-- /plus -->
 				<button
 				 height="21"
 				 follows="top|left"

@@ -609,7 +609,7 @@ namespace
         VkPipelineDepthStencilStateCreateInfo depth = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
 
         // Color stays untouched (the pass masks all color writes).
-        VkPipelineColorBlendAttachmentState blends[4] = {};
+        VkPipelineColorBlendAttachmentState blends[LLVKMirror::MAX_COLORS] = {};
         VkPipelineColorBlendStateCreateInfo color = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
         color.attachmentCount = target.color_count;
         color.pAttachments = blends;

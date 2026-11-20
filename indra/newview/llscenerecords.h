@@ -231,6 +231,11 @@ public:
     static constexpr U32 BUDGET = 2000;         // records registered a frame
     static constexpr U32 VERIFY_EVERY = 8;      // frames between verified frames
     static constexpr U32 AUTO_FRAMES = 600;     // verified frames without a difference before auto draws
+    // research/218 vk-s2f-2: auto's drawing stopped by a difference this many
+    // times: off for the run (one may be a passing one, a teleport's records
+    // changing under a check; a third says it comes back, and each costs a
+    // frame drawn wrong and AUTO_FRAMES of verify again).
+    static constexpr U32 AUTO_DRAW_STOPS = 3;
     static constexpr U32 RETRY_EVERY = 32;      // frames between the retries of softly refused batches
     static constexpr U32 RETRY_MAX_GAP = 32;    // in RETRY_EVERY rounds (about 1,000 frames)
     static constexpr F64 REPORT_SECONDS = 10.0; // between the census lines in the log
@@ -356,10 +361,11 @@ public:
     bool drawing() const;
 
     // A view (LLPipeline::postSort): beginView with its camera returns the
-    // view (SCENE_VIEW_COUNT: none, or the scene is off); then each group the
-    // CPU cull leaves visible, before its batches go to the render map
-    // (true: the scene draws its batches of the passes cutsPass names, leave
-    // those out); endView hands both to the scene.
+    // view (SCENE_VIEW_COUNT: none, the scene is off, or LLRHI_SCENE=auto is
+    // off for the run, autoOff); then each group the CPU cull leaves
+    // visible, before its batches go to the render map (true: the scene
+    // draws its batches of the passes cutsPass names, leave those out);
+    // endView hands both to the scene.
     U32 beginView(LLCamera& camera);
     // research/209 S7: the view (a probe face or mirror) is compared this
     // time: postSort leaves the face's batch cull, the probe list and the
@@ -706,6 +712,12 @@ private:
     void noteDrawn(U32 view, U32 pass, const LLDrawInfo& info);
     void endPassVerify(U32 view, U32 pass);
     void noteDifference(const char* what, U32 view, U32 pass, U32 count);
+    // research/218 vk-s2f-2: LLRHI_SCENE=auto stops drawing at a difference
+    // (counted; at AUTO_DRAW_STOPS it is off for the run: autoOffForRun, as
+    // when the scene cannot draw at all once its clean frames are in).
+    void autoStopDrawing(LLRHI::Scene& scene, const char* why);
+    void autoOffForRun(const std::string& why);
+    bool autoOff() const { return mAutoOff; }
     // research/218 vk-s2f: a check of a part with an auto of its own (the
     // alpha view, the probe faces) in this frame; logs a change.
     void partChecked(LLRHI::SceneAuto& progress, LLRHI::SceneMode asked, const char* part, bool differ, const char* why);
@@ -756,12 +768,14 @@ private:
     bool mVerifyFrame = false;
     bool mFrameDiffered = false;
     U32 mCleanFrames = 0;
+    U32 mAutoDrawStops = 0;                 // research/218 vk-s2f-2: auto's drawing stopped by a difference (autoStopDrawing)
+    bool mAutoOff = false;                  // research/218 vk-s2f-2: auto off for the run (autoOffForRun; never cleared)
+    std::string mAutoOffWhy;                // and why (takeReport's line)
     U64 mPassVerified[(LLRHI::SCENE_MAX_PASSES + 63) / 64] = {};   // this verified frame's main view passes
     std::vector<U32> mOldDrawn;
     std::vector<U32> mDrawn;
     std::vector<U32> mBounded;
     U32 mLogged = 0;
-    bool mDrawFailedLogged = false;
     // research/218 vk-s2f: the alpha view's and the probe faces' autos.
     LLRHI::SceneAuto mAlphaAuto;
     LLRHI::SceneAuto mProbeAuto;

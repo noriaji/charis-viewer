@@ -228,6 +228,7 @@ public:
     void fileUploadLocation(const LLSD& userdata);
     bool isUploadLocationSelected(const LLSD& userdata);
     void openSingleViewInventory(LLUUID folder_id = LLUUID());
+    void onCustomAction(const LLSD& userdata); // <plus> invctxfs: context menu actions the main panel handles (Find All Links) </plus>
     void purgeSelectedItems();
     bool attachObject(const LLSD& userdata);
     static void idle(void* user_data);

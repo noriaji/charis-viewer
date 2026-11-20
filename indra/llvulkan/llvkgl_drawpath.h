@@ -301,14 +301,14 @@ namespace llvkgl
             bool oit_variant;                   // takes oit_constants
         };
         std::vector<Stage> stages;
-        U32 oit_constants[2] = { 0, 0 };        // OIT_BLEND_CONSTANT_ID, OIT_SPLIT_CONSTANT_ID
+        U32 oit_constants[3] = { 0, 0, 0 };     // OIT_BLEND_CONSTANT_ID, OIT_SPLIT_CONSTANT_ID, OIT_SKIP_CONSTANT_ID (a float's bits)
         std::vector<VertexInput> inputs;
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         VkPolygonMode polygon_mode = VK_POLYGON_MODE_FILL;
         bool depth_clamp = false;
         U32 color_count = 0;
-        VkFormat color_formats[4] = { VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED, VK_FORMAT_UNDEFINED };
-        VkPipelineColorBlendAttachmentState blends[4] = {};
+        VkFormat color_formats[LLVKMirror::MAX_COLORS] = {};    // VK_FORMAT_UNDEFINED
+        VkPipelineColorBlendAttachmentState blends[LLVKMirror::MAX_COLORS] = {};
         VkFormat depth_format = VK_FORMAT_UNDEFINED;
         bool stencil = false;
         bool generated = false;                 // dynamic vertex strides (device generated commands)
@@ -621,6 +621,7 @@ namespace llvkgl
         bool copied[OIT_SESSIONS_PER_FRAME] = {};   // the entry's count copy was recorded (a dropped session has none)
         bool avatar_copied[OIT_SESSIONS_PER_FRAME] = {};    // hybrid: the avatar half's count was copied
         U32 avatar_draws[OIT_SESSIONS_PER_FRAME] = {};      // hybrid: the avatar half's node draws
+        U64 pixels[OIT_SESSIONS_PER_FRAME] = {};            // the entry's target size (oit_begin), what an overflow there asks the rest image for
     };
 
     struct OITState
@@ -653,8 +654,11 @@ namespace llvkgl
         OITImage dummy_rest;            // 1x1, bound while there is no rest image (never read then)
         OITImage dummy_storage;         // 1x1, bound as the copy's storage when it has none (never written then)
         bool copy_storage = false;      // the copy can be written by the bounds pass
-        bool rest_wanted = false;       // sessions ran out of nodes the buffer cannot grow to: make the rest image
-        U32 overflow_need = 0;          // nodes the last session that ran out wanted
+        U64 rest_wanted_pixels = 0;     // research/381 B': the rest image is made for targets of at most this many pixels (0: not asked for yet)
+        U64 rest_failed_pixels = 0;     // the size the rest image last failed to be made at, warned once (0: none)
+        U32 rest_failed_frame = 0;      // sFrame of that failure: no new try at that size for OIT_REST_RETRY_FRAMES frames
+        U32 rest_makes = 0;             // times the rest image was made (the log says it for the first few and then one in 16)
+        U32 overflow_need = 0;          // nodes the last session that ran out wanted (LLRHI_OIT_REST=lazy: oit_resources' rule)
         VkBuffer nodes = VK_NULL_HANDLE;
         VmaAllocation nodes_memory = nullptr;
         U32 capacity = 0;               // nodes

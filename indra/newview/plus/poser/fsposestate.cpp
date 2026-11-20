@@ -97,6 +97,14 @@ void FSPoseState::purgeMotionStates(LLVOAvatar* avatar)
      sMotionStates[avatar->getID()].clear();
 }
 
+// <plus> research/336
+void FSPoseState::forgetAvatar(const LLUUID& avatarId)
+{
+    sMotionStates.erase(avatarId);
+    sCaptureOrder.erase(avatarId);
+}
+// </plus>
+
 void FSPoseState::writeMotionStates(LLVOAvatar* avatar, bool ignoreOwnership, LLSD* saveRecord)
 {
     if (!avatar)

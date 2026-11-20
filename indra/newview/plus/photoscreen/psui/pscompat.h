@@ -32,7 +32,7 @@
 //
 // Tags (the names of tools/ui_ledger.py COMPAT, which tools/xui2psui.py writes):
 //   plus_ps_button_compat  LLButton        a button (toggle: blue while on); icon="<psui icon>" before its words
-//   plus_ps_check_compat   LLCheckBoxCtrl  a check box with its label
+//   plus_ps_check_compat   LLCheckBoxCtrl  a check box with its label (the box and the words take the click)
 //   plus_ps_slider_compat  LLSliderCtrl    label, track and value box (the box takes typed numbers); ticks
 //   plus_ps_spinner        LLSpinCtrl      label and a value box with up / down arrows
 //   plus_ps_text           LLTextBox       text (kind: label, white, dim, sub, hint, title), links and lines as official
@@ -72,6 +72,14 @@ namespace plus::psui
         // A round mark at the left of r and its label after it: a choice of a list (the check box's colours).
         void radio(const LLRectf& r, bool on, bool hover, bool pressed, F32 alpha, const LLFontGL* font,
                    const LLWString& label, const LLUICtrl& focus);
+        // The part of a check box or a list's choice that takes the click (from the left of its rect): the mark
+        // (mark: CHECK_BOX or RADIO_SIZE), then the gap and the words when there are any (label_width > 0, from
+        // labelWidth()), at most width. The blank after the words takes no click (a click there changed a setting
+        // unseen).
+        S32 clickWidth(S32 mark, S32 width, S32 label_width);
+        // The words' width as check() and radio() draw them with font; 0 when there are none (blank: the official
+        // check box's label is " " without one).
+        S32 labelWidth(const LLFontGL* font, const LLWString& label);
         // A slider's track from x0 to x1 at mid, filled up to the knob at kx, ticks dots under it and the knob (5.).
         void sliderTrack(F32 x0, F32 x1, F32 kx, F32 mid, S32 ticks, bool dragging, bool hover, F32 alpha,
                          const LLUICtrl& focus);
@@ -128,10 +136,15 @@ namespace plus::psui
         explicit PsCheckCompat(const Params& p);
 
     private:
-        // The button over the whole widget (all of it takes the click), the label after the drawn box.
+        // The button over the box and the words (look::clickWidth: the click), the label after the drawn box up
+        // to there. The rest of the widget takes the clicks and does nothing (no bounding rect of the children).
         void placeChildren();
+        LLRectf clickRect() const;
         const LLFontGL* mFont;
         LLPointer<LLUIImage> mMark;
+        S32  mClickWidth = 0;
+        S32  mLabelGeneration = -1;     // the label's text when placed (LLTextBase::getTextGeneration): placed again
+                                        // when it changes (setLabel, setLabelArg, the label's own setText ...)
         bool mHover = false;
     };
 
@@ -225,9 +238,12 @@ namespace plus::psui
         bool postBuild() override;
         void draw() override;
         void reshape(S32 width, S32 height, bool called_from_parent = true) override;
-        // The clicks are taken here for the whole of an item (its slot), and given to the group as the item's click.
+        // The clicks are taken here and given to the group as the item's click: a segment's whole part, a list's
+        // item on its mark and words (look::clickWidth; the blank after them does nothing).
         bool handleMouseDown(S32 x, S32 y, MASK mask) override;
         bool handleMouseUp(S32 x, S32 y, MASK mask) override;
+        // A list: a second click (as the official button), not the official item's own button.
+        bool handleDoubleClick(S32 x, S32 y, MASK mask) override;
         bool handleHover(S32 x, S32 y, MASK mask) override;
         // Home / End too (the group keeps the arrows).
         bool handleKeyHere(KEY key, MASK mask) override;
@@ -242,6 +258,7 @@ namespace plus::psui
     private:
         void placeItems();                      // segment: each item on its part of the bar
         S32  itemAt(S32 x, S32 y) const;        // -1: none
+        LLRect itemClickRect(LLCheckBoxCtrl* item) const;    // a list's item: its mark and words
         bool itemHighlighted(LLCheckBoxCtrl* item) const;
 
         bool mSegment;

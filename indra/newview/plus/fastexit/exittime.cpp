@@ -30,6 +30,7 @@
 
 #include <chrono>
 #include <string>
+#include <vector>
 
 #if LL_WINDOWS
 #include "llwin32headers.h"
@@ -50,6 +51,7 @@ namespace
 
     // Main thread only (the quit, the frame loop, cleanup, wWinMain).
     State sState = State::UNDECIDED;
+    std::vector<void (*)()> sObservers;     // addQuitObserver()
     Clock::time_point sStart;
     Clock::time_point sLast;
 
@@ -74,8 +76,20 @@ namespace
     }
 }
 
+void addQuitObserver(void (*observer)())
+{
+    if (observer)
+    {
+        sObservers.push_back(observer);
+    }
+}
+
 void begin(const char* stage)
 {
+    for (auto observer : sObservers)
+    {
+        observer();
+    }
     // research/285 (compact-hysteresis): every quit, measured or not: the
     // backend's VRAM compactions stop while the viewer waits to close.
     LLRHI::sQuitting.store(true, std::memory_order_relaxed);

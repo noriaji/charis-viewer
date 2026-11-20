@@ -46,6 +46,7 @@
 #include <glslang/build_info.h>     // GLSLANG_VERSION_* (the GL view cache, research/117 8.6)
 #include <glslang/SPIRV/GlslangToSpv.h>
 #include <spirv-tools/optimizer.hpp>     // SPIRV-Tools-opt: linked with glslang already (llvulkan.cmake)
+#include "thirdparty/zstd/lib/zstd.h"     // the bundle's modules are zstd frames (research/363; llvulkan.cmake)
 
 #include <algorithm>
 #include <atomic>
@@ -566,6 +567,66 @@ namespace
         }
     }
 
+    // LLRHI_VK_SHADER_KEEP_NAMES=1: modules keep their debug names (validation layer messages, RenderDoc).
+    // Part of the cache key (source_hash) so a cache never mixes the two forms.
+    bool keep_debug_names()
+    {
+        static const bool keep = LLStringUtil::getenv("LLRHI_VK_SHADER_KEEP_NAMES") == "1";
+        return keep;
+    }
+
+    // Takes the debug names out of a module that is about to be stored (research/363): every OpName except
+    // the ones of the descriptor variables (the variables with a Binding decoration), every OpMemberName
+    // (the descriptors' too), OpSource, OpSourceContinued, OpSourceExtension and OpModuleProcessed. The program is
+    // unchanged; the stored bytes shrink by about 13%.
+    // The descriptors' names stay because collect_descriptors reads them when a stored module is loaded
+    // (create_modules): llrhi_textures / llrhi_mt / llrhi_pal (llvkgl_program.cpp, llvkgl_linkbuild.cpp) and
+    // llrhi_oit* (llvkgl_oit.cpp) are found by them. drop_unread_descriptors does not look at names.
+    // OpString, OpLine and OpNoLine stay: an OpString is what a debugPrintfEXT format or a
+    // NonSemantic.Shader.DebugInfo instruction points at by id (none is in today's modules; a module that has
+    // them keeps them whole). A module that does not parse to its end is left as it is.
+    void strip_debug_names(std::vector<unsigned int>& spirv)
+    {
+        constexpr U32 OP_SOURCE_CONTINUED = 2, OP_SOURCE = 3, OP_SOURCE_EXTENSION = 4, OP_MEMBER_NAME = 6,
+                      OP_MODULE_PROCESSED = 330, DECORATION_BINDING = 33;
+        std::unordered_set<U32> descriptors;    // ids with a Binding
+        size_t i = 5;
+        for (; i < spirv.size();)
+        {
+            const U32 count = spirv[i] >> 16;
+            if (!count || i + count > spirv.size())
+            {
+                return;
+            }
+            if ((spirv[i] & 0xffff) == OP_DECORATE && count >= 4 && spirv[i + 2] == DECORATION_BINDING)
+            {
+                descriptors.insert(spirv[i + 1]);
+            }
+            i += count;
+        }
+        if (i != spirv.size() || spirv.size() < 5)
+        {
+            return;
+        }
+        std::vector<unsigned int> out;
+        out.reserve(spirv.size());
+        out.insert(out.end(), spirv.begin(), spirv.begin() + 5);
+        for (i = 5; i < spirv.size();)
+        {
+            const U32 count = spirv[i] >> 16;
+            const U32 op = spirv[i] & 0xffff;
+            const bool drop = op == OP_SOURCE_CONTINUED || op == OP_SOURCE || op == OP_SOURCE_EXTENSION || op == OP_MEMBER_NAME ||
+                              op == OP_MODULE_PROCESSED ||
+                              (op == OP_NAME && count >= 3 && !descriptors.count(spirv[i + 1]));
+            if (!drop)
+            {
+                out.insert(out.end(), spirv.begin() + i, spirv.begin() + i + count);
+            }
+            i += count;
+        }
+        spirv.swap(out);
+    }
+
     // Declared vertex inputs with a Location, typed as GL_FLOAT / GL_INT / GL_UNSIGNED_INT
     // by their scalar component.
     std::vector<LLVKShader::Input> vertex_inputs(const std::vector<unsigned int>& spirv)
@@ -626,33 +687,34 @@ namespace
     // viewer's programs takes seconds; loading them takes milliseconds.
 
     constexpr U32 CACHE_MAGIC = 0x4b564c4c;     // "LLVK"
-    constexpr U32 CACHE_VERSION = 7;            // bump when the build pipeline or the file layout changes (7: the trailer)
+    constexpr U32 CACHE_VERSION = 8;            // bump when the build pipeline or the file layout changes (7: the trailer; 8: no debug names, the glslang version in the key)
     // A program (a .vkp file, a bundle's program part) has a module per stage at most (vertex .. compute): a count
     // above it is a damaged or made-up file, whose loop would go on for as many entries as the file can point at
     // (each a copy of a module: gigabytes).
     constexpr U32 MAX_PROGRAM_MODULES = (U32)EShLangCompute + 1;
-    // The GL view files (below) and the shader bundle say which glslang made
-    // them; a .vkp file's key does not yet (research/159 section 1.1): from the next
-    // CACHE_VERSION on it does (source_hash). Until then a new SDK's glslang
-    // comes with a CACHE_VERSION bump.
+    // The GL view files (below) and the shader bundle say which glslang made them; a .vkp file's key has it too
+    // since CACHE_VERSION 8 (source_hash), so a new SDK's glslang never reads the old one's modules.
     constexpr U32 GL_VIEW_GLSLANG = GLSLANG_VERSION_MAJOR * 10000 + GLSLANG_VERSION_MINOR * 100 + GLSLANG_VERSION_PATCH;
     constexpr U32 GL_VIEW_MAGIC = 0x56474c4c;   // "LLGV"
     constexpr U32 GL_VIEW_VERSION = 2;          // bump when reflectGL's answers or the file layout change (2: the trailer)
 
-    // The cache's key: the cache version, the resource set and every stage's
-    // source. Also LLVKShader::Program::key (research/111 B-PL).
-    U64 source_hash(const std::vector<LLVKShader::Source>& sources, U32 resource_set)
+    // The cache's key: the cache version, the glslang version, the resource set and every stage's source; with
+    // `names_kept` (build(): LLRHI_VK_SHADER_KEEP_NAMES=1, modules that keep their names) a mark more, so a cache
+    // never mixes the two forms. The GL view key (gl_view_key) leaves the mark out: a GL view does not depend on
+    // the names of the modules. Also LLVKShader::Program::key (research/111 B-PL).
+    U64 source_hash(const std::vector<LLVKShader::Source>& sources, U32 resource_set, bool names_kept)
     {
         U64 hash = LLRHI::FNV1A_BASIS;
         U32 version = CACHE_VERSION;
         hash = LLRHI::fnv1a(hash, &version, sizeof(version));
-        if constexpr (CACHE_VERSION >= 8)
-        {
-            // Not before: every key of today's caches would change without a bump.
-            const U32 glslang = GL_VIEW_GLSLANG;
-            hash = LLRHI::fnv1a(hash, &glslang, sizeof(glslang));
-        }
+        const U32 glslang = GL_VIEW_GLSLANG;
+        hash = LLRHI::fnv1a(hash, &glslang, sizeof(glslang));
         hash = LLRHI::fnv1a(hash, &resource_set, sizeof(resource_set));
+        if (names_kept)
+        {
+            const U32 names = 1;    // only when set: the default's keys do not change by it
+            hash = LLRHI::fnv1a(hash, &names, sizeof(names));
+        }
         for (const auto& source : sources)
         {
             U32 stage = (U32)source.stage;
@@ -909,24 +971,36 @@ namespace
     //     u32 GL_VIEW_VERSION, u32 GL_VIEW_GLSLANG,
     //     u32 programs, u32 GL views, u32 modules,
     //     u64 program table, u64 GL view table, u64 module table (offsets),
-    //     char[40] the viewer's commit (ASCII, zero padded; told in the log)
+    //     char[40] the viewer's commit (ASCII, zero padded; told in the log),
+    //     u64 dictionary offset, u64 dictionary size (version 2; size 0: no dictionary)
     //   program and GL view tables: BUNDLE_ENTRY bytes an entry, by key:
     //     u64 key (the .vkp / .glv file's name), u64 offset, u32 size, u32 0
-    //   module table: BUNDLE_MODULE_ENTRY bytes an entry:
-    //     u64 offset, u32 words, u32 0
+    //   module table: BUNDLE_MODULE_ENTRY bytes an entry (version 2):
+    //     u64 offset, u32 stored bytes, u32 words
+    //     stored bytes == words * 4: the module's words as they are (a module zstd did not make smaller);
+    //     less: one zstd frame (with the dictionary) that decodes to exactly words * 4 bytes
     //   a program: u32 modules, then u32 stage (EShLanguage) and u32 module
     //     index each, then the reflection as a .vkp file has it
     //   a GL view: the .glv file without its trailer
-    //   a module: its SPIR-V words (4 byte aligned; one copy of each module)
+    //   a module: its SPIR-V words or the zstd frame of them (4 byte aligned; one copy of each module)
+    //   the dictionary: the zstd dictionary the frames were made with (read once, ZSTD_createDDict)
     //   the trailer of the cache files: u64 size, u64 XXH3-64 of all before it
-    // Any version, the size or the hash differing: the bundle is not used.
+    // Any version, the size or the hash differing: the bundle is not used. That includes the
+    // version 1 bundles (modules stored as they are, a 96 byte header): a bundle of another version is never
+    // read half way; the shaders it would have answered are compiled, as when there is no bundle (research/363).
 
     constexpr U32 BUNDLE_MAGIC = 0x42564c4c;    // "LLVB"
-    constexpr U32 BUNDLE_VERSION = 1;           // bump with the layout (and the packing tool's)
-    constexpr size_t BUNDLE_HEADER = 96;
+    constexpr U32 BUNDLE_VERSION = 2;           // bump with the layout (and the packing tool's; 2: zstd modules and a dictionary)
+    constexpr size_t BUNDLE_HEADER = 112;
     constexpr size_t BUNDLE_COMMIT = 40;
     constexpr size_t BUNDLE_ENTRY = 24;
     constexpr size_t BUNDLE_MODULE_ENTRY = 16;
+    // A module above this many words is a damaged or made-up entry (the biggest module is 40,000 words, 160 KB; a
+    // decode buffer is made at this size at most: 1 MB). The tools check the same limit (predeliver compares it).
+    constexpr U32 BUNDLE_MAX_MODULE_WORDS = 1u << 18;
+    // The dictionary is copied (ZSTD_createDDict): above this it is a damaged or made-up header (the tools write about 2 MB).
+    constexpr U64 BUNDLE_MAX_DICTIONARY_BYTES = 1ull << 24;
+    constexpr size_t BUNDLE_DICTIONARY_AT = 96;
 
     struct Bundle
     {
@@ -938,6 +1012,7 @@ namespace
         U64 program_table = 0;
         U64 view_table = 0;
         U64 module_table = 0;
+        ZSTD_DDict* dictionary = nullptr;   // null: frames without a dictionary; kept for the process (never freed)
     };
     std::once_flag sBundleOnce;
     Bundle sBundle;                     // set once (sBundleOnce), then only read
@@ -1082,6 +1157,33 @@ namespace
             refuse("damaged (a table lies outside it)");
             return;
         }
+        const U64 dictionary_at = read_u64(data + BUNDLE_DICTIONARY_AT);
+        const U64 dictionary_size = read_u64(data + BUNDLE_DICTIONARY_AT + sizeof(U64));
+        if (dictionary_size)
+        {
+            if (dictionary_at < BUNDLE_HEADER || dictionary_at > body || dictionary_size > body - dictionary_at ||
+                dictionary_size > BUNDLE_MAX_DICTIONARY_BYTES)
+            {
+                refuse(dictionary_size > BUNDLE_MAX_DICTIONARY_BYTES ? "damaged (its dictionary is above the size limit)"
+                                                                     : "damaged (the dictionary lies outside it)");
+                return;
+            }
+            // Copied, so the dictionary does not depend on the mapping; 1 to 4 MB, once.
+            bundle.dictionary = ZSTD_createDDict(data + dictionary_at, (size_t)dictionary_size);
+            // ZSTD_createDDict takes any bytes as a "raw content" dictionary (id 0): only a trained dictionary (the
+            // tools always write one, with an id) is a dictionary of ours. Anything else is a damaged or foreign bundle,
+            // refused whole, as the state table of research/363 says, not a bundle whose every program fails to decode.
+            if (!bundle.dictionary || ZSTD_getDictID_fromDDict(bundle.dictionary) == 0)
+            {
+                if (bundle.dictionary)
+                {
+                    ZSTD_freeDDict(bundle.dictionary);
+                    bundle.dictionary = nullptr;
+                }
+                refuse("damaged (its dictionary is not a trained zstd dictionary)");
+                return;
+            }
+        }
         std::string commit(data + 56, BUNDLE_COMMIT);
         commit.resize(strnlen(commit.c_str(), BUNDLE_COMMIT));
         sBundle = bundle;
@@ -1140,6 +1242,54 @@ namespace
         }
     }
 
+    // A zstd decompression context, freed whatever way the function using it leaves.
+    struct ZstdContext
+    {
+        ZSTD_DCtx* context = ZSTD_createDCtx();
+        ~ZstdContext() { ZSTD_freeDCtx(context); }
+        ZstdContext() = default;
+        ZstdContext(const ZstdContext&) = delete;
+        ZstdContext& operator=(const ZstdContext&) = delete;
+    };
+
+    // Module `index` of the bundle, decoded into `spirv` (the words, exactly the module's). False for a damaged
+    // entry (outside the file, a size that does not fit, a frame that does not decode to the size in the table):
+    // the caller treats the program as not in the bundle. Run on the thread that builds the program (the shader
+    // build workers), once per program load: about 50 microseconds for a 49 KB module (research/363).
+    bool bundle_module(const Bundle& b, U32 index, ZstdContext& decoder, std::vector<unsigned int>& spirv)
+    {
+        const char* entry = b.data + b.module_table + (size_t)index * BUNDLE_MODULE_ENTRY;
+        const U64 offset = read_u64(entry);
+        const U32 stored = read_u32(entry + 8);
+        const U32 words = read_u32(entry + 12);
+        if (words < 5 || words > BUNDLE_MAX_MODULE_WORDS || stored == 0 || (U64)stored > (U64)words * 4 ||
+            offset > b.size || stored > b.size - offset)
+        {
+            return false;
+        }
+        spirv.resize(words);
+        if (stored == (U64)words * 4)
+        {
+            memcpy(spirv.data(), b.data + offset, (size_t)stored);
+            return true;
+        }
+        if (!decoder.context)
+        {
+            return false;
+        }
+        // exactly one frame, filling the stored bytes: what follows a frame (garbage, a skippable frame, a second frame) is
+        // refused here as the tools refuse it (a decoder that stops after the first frame would let it through)
+        const size_t frame_bytes = ZSTD_findFrameCompressedSize(b.data + offset, stored);
+        if (ZSTD_isError(frame_bytes) || frame_bytes != stored)
+        {
+            return false;
+        }
+        const size_t decoded = b.dictionary
+            ? ZSTD_decompress_usingDDict(decoder.context, spirv.data(), (size_t)words * 4, b.data + offset, stored, b.dictionary)
+            : ZSTD_decompressDCtx(decoder.context, spirv.data(), (size_t)words * 4, b.data + offset, stored);
+        return !ZSTD_isError(decoded) && decoded == (size_t)words * 4;
+    }
+
     // The program of `key` from the bundle, as load_cache reads a .vkp file.
     bool load_bundle(U64 key, std::vector<std::pair<EShLanguage, std::vector<unsigned int>>>& modules, LLVKShader::Program& program)
     {
@@ -1157,6 +1307,7 @@ namespace
             tell_bundle_damage();
             return false;
         }
+        ZstdContext decoder;    // one per program (a few microseconds), freed on every way out
         for (U32 i = 0; i < module_count && r.ok; ++i)
         {
             const U32 lang = r.u32();
@@ -1166,17 +1317,8 @@ namespace
                 r.ok = false;
                 break;
             }
-            const char* entry = b->data + b->module_table + (size_t)index * BUNDLE_MODULE_ENTRY;
-            const U64 offset = read_u64(entry);
-            const U32 words = read_u32(entry + 8);
-            if (words < 5 || offset > b->size || (U64)words * 4 > b->size - offset)
-            {
-                r.ok = false;
-                break;
-            }
-            std::vector<unsigned int> spirv(words);
-            memcpy(spirv.data(), b->data + offset, (size_t)words * 4);
-            if (!whole_module(spirv))
+            std::vector<unsigned int> spirv;
+            if (!bundle_module(*b, index, decoder, spirv) || !whole_module(spirv))
             {
                 r.ok = false;
                 break;
@@ -2076,7 +2218,7 @@ bool LLVKShader::build(const std::vector<Source>& sources, Program& program, U32
     init();
 
     const Clock::time_point start = Clock::now();
-    const U64 key = source_hash(sources, resource_set);
+    const U64 key = source_hash(sources, resource_set, keep_debug_names());
     const std::string cache = cache_path(key);
     bool waited = false;
     F64 wait_ms = 0.0;
@@ -2109,8 +2251,9 @@ bool LLVKShader::build(const std::vector<Source>& sources, Program& program, U32
     // fresh compile follows).
     auto use = [&](std::vector<std::pair<EShLanguage, std::vector<unsigned int>>>& cached, From from)
     {
-        // Modules cached before the function-body rule may still list an
-        // unread descriptor; dropping again is cheap and changes nothing else.
+        // A stored module has been through drop_unread_descriptors when it was made; running it again changes
+        // nothing (measured on all 4,952 modules of a bundle: about 45 microseconds each). It stays as a
+        // guard for a file that was not made by this build (a hand-made or damaged one).
         for (auto& cached_module : cached)
         {
             drop_unread_descriptors(cached_module.second);
@@ -2214,6 +2357,25 @@ bool LLVKShader::build(const std::vector<Source>& sources, Program& program, U32
         match_varyings(modules[i - 1].second, modules[i].second);
     }
 
+    // Vertex inputs straight from the SPIR-V: every declared input must be fed (reflection lists only the
+    // live ones), with the shader's numeric type. They are read by name, so before the names go (research/363).
+    // The modules the program is made from, hashed (Program::code_key) and stored are the stripped ones, so a
+    // compile and a later load of the same program agree.
+    for (const auto& stage_module : modules)
+    {
+        if (stage_module.first == EShLangVertex)
+        {
+            program.inputs = vertex_inputs(stage_module.second);
+        }
+    }
+    if (!keep_debug_names())
+    {
+        for (auto& stage_module : modules)
+        {
+            strip_debug_names(stage_module.second);
+        }
+    }
+
     if (!create_modules(modules, program, modules_wanted))
     {
         count(From::Failed);
@@ -2242,15 +2404,6 @@ bool LLVKShader::build(const std::vector<Source>& sources, Program& program, U32
     {
         const glslang::TObjectReflection& reflected = linker.getUniformBlock(i);
         program.blocks.push_back({ reflected.name, reflected.getBinding(), reflected.size });
-    }
-    // Vertex inputs straight from the SPIR-V: every declared input must be fed
-    // (reflection lists only the live ones), with the shader's numeric type.
-    for (const auto& stage_module : modules)
-    {
-        if (stage_module.first == EShLangVertex)
-        {
-            program.inputs = vertex_inputs(stage_module.second);
-        }
     }
     save_cache(cache, modules, program);
     count(From::Compiled);
@@ -2415,7 +2568,7 @@ namespace
     // The .glv file's name, and its key in the shader bundle.
     U64 gl_view_key(const std::vector<LLVKShader::Source>& sources)
     {
-        U64 hash = source_hash(sources, 0);
+        U64 hash = source_hash(sources, 0, false);     // no names mark: a GL view does not depend on them
         const U32 salt[] = { GL_VIEW_MAGIC, GL_VIEW_VERSION, GL_VIEW_GLSLANG };
         return LLRHI::fnv1a(hash, salt, sizeof(salt));
     }

@@ -28,6 +28,7 @@
 #include "stdtypes.h"
 
 #include <atomic>
+#include <string>
 
 namespace LLRHI
 {
@@ -145,12 +146,15 @@ namespace LLRHI
     const char* passHeadModeName(PassHeadMode mode);
 
     // --- S2: the render thread (research/208 6.2 S2, section 11) -------------
-    // LLRHI_RENDER_THREAD: off (default: the main thread records everything, as
+    // LLRHI_RENDER_THREAD: off (the main thread records everything, as
     // before), verify (the main thread still records the retained scene's
     // passes, from the values it hands the render thread; the thread reads the
     // same values and the two are compared at the join: the jobs, their order
-    // and every value), auto (verify until 600 frames agree, then on; not on a
-    // PC with fewer than 8 logical processors), on (the render thread records
+    // and every value), auto (unset or empty too, research/218 vk-s2f-2:
+    // verify until AUTO_FRAMES frames agree, then on; the first difference
+    // while it compares: off for the run; not on a PC with fewer than
+    // MIN_PROCESSORS logical processors, llvkrender.cpp; it has no jobs while
+    // the retained scene draws nothing), on (the render thread records
     // the expands and the indirect draws of the main and alpha views' retained
     // passes into streams spliced where the main thread would have recorded
     // them; the main thread goes on and joins before every submission). The
@@ -165,6 +169,12 @@ namespace LLRHI
     };
     RenderThreadMode renderThreadMode();
     const char* renderThreadModeName(RenderThreadMode mode);
+    // research/218 vk-s2f-2: what the render thread does now, in words
+    // ("auto: comparing, 120 of 600 frames without a difference", "auto:
+    // recording", "auto: off for the run: <why>", ...). Set by the backend
+    // (llvkrender.cpp) at its static initialization; null without one. Main
+    // thread (the debug tools).
+    extern std::string (*sRenderThreadProgress)();
 
     // --- S4 (research/208 section 13, research/209 section 6; vk-s4a4) -------
     // The same four values as RenderThreadMode, each read once at start.

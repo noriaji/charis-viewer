@@ -6,6 +6,7 @@
 
 list(APPEND plus_SOURCE_FILES
     plus/subtitle/helperprocess.cpp
+    plus/subtitle/lineclient.cpp
     plus/subtitle/streamtap.cpp
     plus/subtitle/subtitleclient.cpp
     plus/subtitle/subtitledownload.cpp
@@ -16,6 +17,7 @@ list(APPEND plus_SOURCE_FILES
 
 list(APPEND plus_HEADER_FILES
     plus/subtitle/helperprocess.h
+    plus/subtitle/lineclient.h
     plus/subtitle/streamtap.h
     plus/subtitle/subtitleclient.h
     plus/subtitle/subtitledownload.h

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Charis: the ja words of the chat bar (plus/chatbar, research/334) in en/panel_toolbar_view.xml; the rest is the en file. -->
+<toolbar_view name="toolbar view">
+  <layout_stack name="bottom_toolbar_stack">
+    <layout_panel name="bottom_toolbar_panel">
+      <layout_stack name="chat_bar_stack">
+        <layout_panel name="chat_bar_layout_panel">
+          <plus_ps_box name="chat_bar_box">
+            <string name="chat_bar_label">近くのチャットに話す</string>
+            <plus_ps_button name="local_chat_button" label="近くのチャット" tool_tip="近くのチャットを表示／非表示にします（Ctrl+H）" />
+            <plus_chat_bar name="default_chat_bar" tool_tip="近くのチャット: Enter で発言、Shift+Enter でささやく、Ctrl+Enter で叫ぶ。チャンネルは 0。別のチャンネルは /数字 で。Ctrl+↑↓ で前に言ったことを呼び出せます。" />
+          </plus_ps_box>
+        </layout_panel>
+      </layout_stack>
+    </layout_panel>
+  </layout_stack>
+</toolbar_view>

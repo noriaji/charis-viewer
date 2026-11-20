@@ -37,6 +37,7 @@
 #include "llviewerwindow.h"
 #include "llnotificationmanager.h"
 #include "llpaneltiptoast.h"
+#include "plus/contactsethooks/cshooks.h" // <plus> contactsets: online notices of a set (research/333) </plus>
 
 using namespace LLNotificationsUI;
 
@@ -83,6 +84,15 @@ bool LLTipHandler::processNotification(const LLNotificationPtr& notification, bo
     {
         LLHandlerUtil::logToNearbyChat(notification, CHAT_SOURCE_SYSTEM);
     }
+    // <plus> contactsets: a friend's online notice of a set that asks for them, in the nearby chat
+    // (FSContactSetsNotificationNearbyChat; llcallingcard.cpp made it) (Firestorm FIRE-3522) (research/333)
+    const bool plus_friend_notice = "FriendOnlineOffline" == notification->getName();
+    const LLUUID plus_friend_id = plus_friend_notice ? notification->getPayload()["FROM_ID"].asUUID() : LLUUID::null;
+    if (plus_friend_notice && !notification->canLogToChat() && plus::cshooks::notifyNearbyChat(plus_friend_id))
+    {
+        LLHandlerUtil::logToNearbyChat(notification, CHAT_SOURCE_SYSTEM);
+    }
+    // </plus>
 
     std::string session_name = notification->getPayload()["SESSION_NAME"];
     const std::string name = LLHandlerUtil::getSubstitutionOriginalName(notification);
@@ -106,6 +116,15 @@ bool LLTipHandler::processNotification(const LLNotificationPtr& notification, bo
     {
         return false;
     }
+
+    // <plus> contactsets: with ChatOnlineNotification off, a friend's online notice is a toast only when a set of theirs
+    // asks for it and FSContactSetsNotificationToast is on (it may be here for the nearby chat only) (research/333)
+    static LLCachedControl<bool> plus_chat_online_notification(gSavedSettings, "ChatOnlineNotification", true);
+    if (plus_friend_notice && !plus_chat_online_notification && !plus::cshooks::notifyToast(plus_friend_id))
+    {
+        return false;
+    }
+    // </plus>
 
     LLToastPanel* notify_box = LLToastPanel::buidPanelFromNotification(notification);
 

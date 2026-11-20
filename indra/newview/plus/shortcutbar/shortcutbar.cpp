@@ -27,6 +27,7 @@
 
 #include "plus.h"
 #include "shortcutbar.h"
+#include "plus/uiscope/uiscope.h"
 #include "plus/photoscreen/photoscreen.h"
 #include "plus/photoscreen/psui/psstyle.h"
 
@@ -989,7 +990,7 @@ namespace plus::shortcutbar
             {
                 return;
             }
-            const bool want = show && !sSuppressed && !plus::photoscreen::isActive()
+            const bool want = show && !sSuppressed && !plus::photoscreen::isActive() && !plus::uiscope::hidingForPlayback()
                               && gViewerWindow && gViewerWindow->getUIVisibility() && !gAgentCamera.cameraMouselook()
                               && LLStartUp::getStartupState() == STATE_STARTED;
             if (panel->getVisible() != want)

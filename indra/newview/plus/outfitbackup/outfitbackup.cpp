@@ -98,6 +98,7 @@
 #include <set>
 #include <vector>
 
+#include "plus/lslbridge/lslbridgehooks.h"
 #include "plus/rlv/rlvhooks.h"
 
 namespace
@@ -402,7 +403,9 @@ namespace
         gInventory.collectDescendents(LLAppearanceMgr::instance().getCOF(), cats, items, LLInventoryModel::EXCLUDE_TRASH);
         for (const LLPointer<LLViewerInventoryItem>& item : items)
         {
-            if (item && item->getIsLinkType())
+            // The pose bridge (plus/lslbridge) is no part of the outfit: not kept in the copy, compared or put back
+            // by it (put back, it would be worn by another viewer too; research/353).
+            if (item && item->getIsLinkType() && !plus::lslbridge::isBridgeItem(item->getLinkedUUID()))
             {
                 links.push_back({ item->getLinkedUUID(), item->getName(), item->getActualDescription(), (S32)item->getActualType() });
             }
@@ -452,7 +455,8 @@ namespace
             }
             for (const LLPointer<LLViewerObject>& object : attachment->mAttachedObjects)
             {
-                if (object && !object->isDead() && !object->isTempAttachment() && object->getAttachmentItemID().notNull())
+                if (object && !object->isDead() && !object->isTempAttachment() && object->getAttachmentItemID().notNull() &&
+                    !plus::lslbridge::isBridgeItem(object->getAttachmentItemID())) // its placement is the bridge's own
                 {
                     worn[object->getAttachmentItemID()] = object.get();
                 }
@@ -971,6 +975,10 @@ namespace
         sMissing = 0;
         for (const Link& link : sSaved.outfit)
         {
+            if (plus::lslbridge::isBridgeItem(link.id))
+            {
+                continue;   // a copy from before the bridge was left out of it (research/353)
+            }
             std::string name;
             if (link.type == LLAssetType::AT_LINK_FOLDER)
             {
@@ -1033,11 +1041,25 @@ namespace
         }
 
         std::vector<Link> sent;
+        U32 objects = 0;
         for (const LLSD& entry : llsd::inArray(contents))
         {
             sent.push_back({ entry["linked_id"].asUUID(), entry["name"].asString(), entry["desc"].asString(), entry["type"].asInteger() });
+            const LLViewerInventoryItem* item = gInventory.getItem(entry["linked_id"].asUUID());
+            objects += (item && item->getType() == LLAssetType::AT_OBJECT) ? 1 : 0;
         }
         std::sort(sent.begin(), sent.end());
+        // The pose bridge worn now stays on, as through updateCOF(), while it has a place with the copy's attachments
+        // first (plus/lslbridge, research/353). Not in `sent`: the copy and the folder are compared without it.
+        if (LLViewerInventoryItem* bridge_item = plus::lslbridge::bridgeForOutfit(objects))
+        {
+            LLSD entry;
+            entry["name"]      = bridge_item->getName();
+            entry["desc"]      = bridge_item->getActualDescription();
+            entry["linked_id"] = bridge_item->getUUID();
+            entry["type"]      = LLAssetType::AT_LINK;
+            contents.append(entry);
+        }
         const std::vector<Link> current = currentOutfit();
         if (sent == current)
         {

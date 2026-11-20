@@ -28,6 +28,8 @@ namespace plus::fpslimit
 {
     // Once per frame in the main loop: waits until 1/PlusFpsLimit seconds have passed since the last
     // call. Does nothing (at once) when the limit is 0. A frame that was late is not made up for.
+    // While another Charis viewer on this GPU is in front, plus/multiinstance's cap applies too
+    // (PlusMultiBackgroundFps; the lower of the two).
     void wait();
 
     // The refresh rate (Hz) of the monitor the viewer window is on; 0 when it cannot be told.

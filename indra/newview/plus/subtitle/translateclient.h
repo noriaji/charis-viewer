@@ -5,7 +5,8 @@
  * The helper (tools/translate-helper) reads one JSON line per sentence on its stdin and answers one JSON line each
  * on its stdout. The viewer starts it when the first sentence is to be translated on this PC, and stops it when the
  * window closes. Nothing is sent to any service. Like charis-subtitle.exe it is tied to the viewer with a job
- * object, so it goes when the viewer goes.
+ * object, so it goes when the viewer goes. The pipes, threads and stopping are LineClient's (lineclient.h); what the
+ * lines say is here.
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Second Life Viewer Source Code

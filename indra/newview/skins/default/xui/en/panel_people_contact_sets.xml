@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- Charis: the Contact Sets tab of the People window (plus/contactsets/peopletab, research/333).
+     From Firestorm's panel_people_contact_sets.xml; laid out like the other tabs of panel_people.xml
+     (the 27-high row of buttons, the filter box, the list from x 3 to -2). Width 323 as the tabs
+     (panel_people.xml 333 wide, tab container 3..-5, tab panel ..-1); the tab follows the window.
+     Rows: combo and 3 buttons (y 3..28), filter (y 31..54), list (y 58..382 of 383). -->
+<panel
+ follows="all"
+ height="383"
+ layout="topleft"
+ left="0"
+ name="contact_sets_panel"
+ top="0"
+ width="323">
+    <string name="all_sets">All Sets</string>
+    <string name="no_sets">Friends in No Set</string>
+    <string name="pseudonyms">People with an Alias</string>
+    <string name="empty_list">No one in this set.</string>
+    <string name="no_filtered">No one in this set matches the filter.</string>
+    <panel
+     follows="left|top|right"
+     height="56"
+     label="bottom_panel"
+     layout="topleft"
+     left="0"
+     name="contact_sets_buttons_panel"
+     right="-1"
+     top="0">
+        <combo_box
+         follows="left|top|right"
+         height="23"
+         layout="topleft"
+         left="6"
+         name="combo_sets"
+         tool_tip="The contact set to show"
+         top="4"
+         width="210" />
+        <menu_button
+         follows="right"
+         height="25"
+         image_hover_unselected="Toolbar_Middle_Over"
+         image_overlay="OptionsMenu_Off"
+         image_selected="Toolbar_Middle_Selected"
+         image_unselected="Toolbar_Middle_Off"
+         layout="topleft"
+         left_pad="8"
+         menu_filename="menu_people_contact_sets_gear.xml"
+         menu_position="bottomleft"
+         name="contact_sets_gear_btn"
+         tool_tip="Actions on the selected people and on the set"
+         top="3"
+         width="31" />
+        <menu_button
+         follows="right"
+         height="25"
+         image_hover_unselected="Toolbar_Middle_Over"
+         image_overlay="AddItem_Off"
+         image_selected="Toolbar_Middle_Selected"
+         image_unselected="Toolbar_Middle_Off"
+         layout="topleft"
+         left_pad="2"
+         menu_filename="menu_people_contact_sets_add.xml"
+         menu_position="bottomleft"
+         name="contact_sets_plus_btn"
+         tool_tip="Make a new set, or add people to this one"
+         top_delta="0"
+         width="31" />
+        <menu_button
+         follows="right"
+         height="25"
+         image_hover_unselected="Toolbar_Middle_Over"
+         image_overlay="TrashItem_Off"
+         image_selected="Toolbar_Middle_Selected"
+         image_unselected="Toolbar_Middle_Off"
+         layout="topleft"
+         left_pad="2"
+         menu_filename="menu_people_contact_sets_remove.xml"
+         menu_position="bottomleft"
+         name="contact_sets_remove_btn"
+         tool_tip="Remove this set, or take people out of it"
+         top_delta="0"
+         width="31" />
+        <!-- the box to type in is dark in the Charis skin: text_color TextFgColor as the other tabs (ui-old-recolor) -->
+        <filter_editor
+         follows="left|top|right"
+         height="23"
+         label="Filter People"
+         layout="topleft"
+         left="6"
+         max_length_chars="300"
+         name="contact_sets_filter_input"
+         text_color="TextFgColor"
+         text_pad_left="10"
+         top="31"
+         width="315" />
+    </panel>
+    <avatar_list
+     allow_select="true"
+     follows="all"
+     height="324"
+     keep_one_selected="false"
+     layout="topleft"
+     left="3"
+     multi_select="true"
+     name="contact_list"
+     right="-2"
+     show_permissions_granted="true"
+     show_profile_btn="true"
+     show_speaking_indicator="false"
+     top="58" />
+</panel>

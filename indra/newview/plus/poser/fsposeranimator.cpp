@@ -33,8 +33,12 @@
 #include "llagent.h"
 #include "llagentcamera.h"
 #include "fsposingmotion.h"
+#include "llviewerobjectlist.h" // <plus> research/336: findLiveOther
 
 std::map<LLUUID, LLAssetID> FSPoserAnimator::sAvatarIdToRegisteredAnimationId;
+std::vector<LLUUID> FSPoserAnimator::sPosedOthers; // <plus> research/336
+std::map<LLUUID, PoseOwner> FSPoserAnimator::sPoseOwner; // <plus> research/374
+std::vector<LLUUID> FSPoserAnimator::sSharedOthers;      // <plus> research/374
 
 bool FSPoserAnimator::isPosingAvatarJoint(LLVOAvatar* avatar, const FSPoserJoint& joint)
 {
@@ -1347,9 +1351,7 @@ bool FSPoserAnimator::tryGetJointSaveVectors(LLVOAvatar* avatar, const FSPoserJo
 // wreck the skeleton. The poser's own sliders stay far inside these (position +-1.5 m, see posertools).
 namespace
 {
-    constexpr F32 LOADED_POSITION_LIMIT     = 10.f;   // m, delta or base position
-    constexpr F32 LOADED_SCALE_DELTA_MIN    = -0.95f; // added to the base scale (about 1)
-    constexpr F32 LOADED_SCALE_DELTA_MAX    = 19.f;
+    // (the position and delta-scale limits are plus::poser::POSER_VALUE_* in fsjointpose.h)
     constexpr F32 LOADED_SCALE_BASE_MIN     = 0.05f;  // an absolute (version <= 3) base scale
     constexpr F32 LOADED_SCALE_BASE_MAX     = 20.f;
 
@@ -1360,17 +1362,15 @@ namespace
 
     LLVector3 clampedLoadedPosition(const LLVector3& position)
     {
-        LLVector3 p = finiteOrZero(position);
-        p.clamp(-LOADED_POSITION_LIMIT, LOADED_POSITION_LIMIT);
-        return p;
+        return plus::poser::clampedPosition(position);
     }
 
     LLVector3 clampedLoadedScale(const LLVector3& scale, bool asDelta)
     {
-        LLVector3 s = finiteOrZero(scale);
         if (asDelta)
-            s.clamp(LOADED_SCALE_DELTA_MIN, LOADED_SCALE_DELTA_MAX);
-        else if (!s.isExactlyZero()) // zero: no scale in the file, as Firestorm loads it
+            return plus::poser::clampedScaleDelta(scale);
+        LLVector3 s = finiteOrZero(scale);
+        if (!s.isExactlyZero()) // zero: no scale in the file, as Firestorm loads it
             s.clamp(LOADED_SCALE_BASE_MIN, LOADED_SCALE_BASE_MAX);
         return s;
     }
@@ -1384,15 +1384,7 @@ namespace
         return r;
     }
 
-    LLQuaternion usableQuaternion(LLQuaternion q)
-    {
-        if (!q.isFinite())
-            return LLQuaternion::DEFAULT;
-        const F32 magnitude = q.normalize(); // a near-zero one becomes the identity
-        if (!std::isfinite(magnitude) || !q.isFinite())
-            return LLQuaternion::DEFAULT;
-        return q;
-    }
+    using plus::poser::usableQuaternion; // fsjointpose.h (shared with the poses others share, research/374)
 }
 
 void FSPoserAnimator::loadJointRotation(LLVOAvatar* avatar, const FSPoserJoint* joint, bool setBaseToZero, bool userSetBaseToZero, LLVector3 rotation)
@@ -1565,27 +1557,77 @@ bool FSPoserAnimator::tryGetJointNumber(LLVOAvatar* avatar, const FSPoserJoint &
 
 bool FSPoserAnimator::tryPosingAvatar(LLVOAvatar* avatar)
 {
+    return beginPosing(avatar, PoseOwner::Window); // <plus> research/374: the body is beginPosing() </plus>
+}
+
+// <plus> research/374 6': tryPosingAvatar() (role Window) and startShared() (role Share or Push). The rules of who may
+// take an avatar from whom are here and nowhere else: the window takes it from a share or a push (they are stopped
+// first); a share or a push takes it from the window only when the window's pose is not running (the stopped motion of
+// your own avatar, kept for its undo, goes); the same kind of owner goes on as it was.
+bool FSPoserAnimator::beginPosing(LLVOAvatar* avatar, PoseOwner role)
+{
     if (!isAvatarSafeToUse(avatar))
         return false;
 
-    FSPosingMotion* posingMotion = findOrCreatePosingMotion(avatar);
+    const LLUUID    avatarId   = avatar->getID();
+    const PoseOwner current    = ownerOf(avatarId);
+    const bool      windowRole = role == PoseOwner::Window;
+    if (current != PoseOwner::None && (current == PoseOwner::Window) != windowRole)
+    {
+        if (!windowRole)
+        {
+            FSPosingMotion* windowMotion = registeredMotion(avatar);
+            if (windowMotion && !windowMotion->isStopped())
+                return false; // the window's pose runs: it keeps the avatar
+        }
+        forceStopPosingAvatar(avatarId); // the window takes it, or the stopped window pose goes
+    }
+
+    if (!windowRole)
+    {
+        // A share is for another person, a push for the own avatar; the held people are few
+        const bool wrongKind = (role == PoseOwner::Share && !isOtherPerson(avatar)) || (role == PoseOwner::Push && !avatar->isSelf());
+        const bool full      = role == PoseOwner::Share && !isSharedOther(avatarId) && sSharedOthers.size() >= MAX_SHARED_OTHERS;
+        if (wrongKind || full || avatarId.isNull())
+            return false;
+    }
+
+    FSPosingMotion* posingMotion = findOrCreatePosingMotion(avatar, role);
     if (!posingMotion)
         return false;
 
     if (posingMotion->isStopped())
     {
-        if (avatar->isSelf())
-            gAgent.stopFidget();
+        if (windowRole)
+        {
+            if (avatar->isSelf())
+                gAgent.stopFidget();
 
-        mPosingState.captureMotionStates(avatar);
+            mPosingState.captureMotionStates(avatar);
+        }
         avatar->startDefaultMotions();
         avatar->startMotion(posingMotion->motionId());
+
+        // <plus> research/336: the other people posed, for the stops that do not go through the poser's list
+        if (windowRole && isOtherPerson(avatar) && avatarId.notNull() && !isPosingOther(avatarId))
+            sPosedOthers.push_back(avatarId);
+        // </plus>
+        if (role == PoseOwner::Share && !isSharedOther(avatarId))
+            sSharedOthers.push_back(avatarId);
 
         return true;
     }
 
     return false;
 }
+
+bool FSPoserAnimator::startShared(LLVOAvatar* avatar, PoseOwner role)
+{
+    if (mOwner == PoseOwner::Window || (role != PoseOwner::Share && role != PoseOwner::Push))
+        return false;
+    return beginPosing(avatar, role);
+}
+// </plus>
 
 void FSPoserAnimator::updatePosingState(LLVOAvatar* avatar, const std::vector<FSPoserAnimator::FSPoserJoint*>& jointsRecaptured)
 {
@@ -1611,6 +1653,14 @@ void FSPoserAnimator::updatePosingState(LLVOAvatar* avatar, const std::vector<FS
 
 void FSPoserAnimator::stopPosingAvatar(LLVOAvatar* avatar)
 {
+    // <plus> research/336: another person's pose is stopped whatever the region (getPosingMotion() would not find it)
+    if (isOtherPerson(avatar))
+    {
+        forceStopPosingAvatar(avatar->getID());
+        return;
+    }
+    // </plus>
+
     if (!avatar || avatar->isDead())
         return;
 
@@ -1621,6 +1671,121 @@ void FSPoserAnimator::stopPosingAvatar(LLVOAvatar* avatar)
     mPosingState.purgeMotionStates(avatar);
     avatar->stopMotion(posingMotion->motionId());
 }
+
+// <plus> research/336
+bool FSPoserAnimator::isOtherPerson(const LLVOAvatar* avatar)
+{
+    // (a UI avatar, as the previews have, is nobody's)
+    return avatar && !avatar->isSelf() && !avatar->isControlAvatar() && !avatar->isUIAvatar();
+}
+
+LLVOAvatar* FSPoserAnimator::findLiveOther(const LLUUID& avatar_id)
+{
+    // An avatar's object ID is the agent's, and a dead object is out of the object list's map
+    LLViewerObject* object = avatar_id.notNull() ? gObjectList.findObject(avatar_id) : nullptr;
+    LLVOAvatar*     avatar = object ? object->asAvatar() : nullptr;
+    return (avatar && !avatar->isDead() && isOtherPerson(avatar)) ? avatar : nullptr;
+}
+
+bool FSPoserAnimator::isOtherPoseAlive(const LLUUID& avatar_id)
+{
+    LLVOAvatar* avatar = findLiveOther(avatar_id);
+    if (!avatar)
+        return false;
+    auto registered = sAvatarIdToRegisteredAnimationId.find(avatar_id);
+    return registered != sAvatarIdToRegisteredAnimationId.end() && avatar->findMotion(registered->second);
+}
+
+bool FSPoserAnimator::isPosingOther(const LLUUID& avatar_id)
+{
+    return std::find(sPosedOthers.begin(), sPosedOthers.end(), avatar_id) != sPosedOthers.end();
+}
+
+void FSPoserAnimator::forceStopPosingAvatar(const LLUUID& avatar_id_in)
+{
+    // A copy: the caller may pass an element of sPosedOthers, which is erased here. Erased first and whatever the ID
+    // (null too), so that forceStopPosingAllOthers() always gets shorter.
+    const LLUUID avatar_id = avatar_id_in;
+    sPosedOthers.erase(std::remove(sPosedOthers.begin(), sPosedOthers.end(), avatar_id), sPosedOthers.end());
+    sSharedOthers.erase(std::remove(sSharedOthers.begin(), sSharedOthers.end(), avatar_id), sSharedOthers.end()); // <plus> research/374 </plus>
+    sPoseOwner.erase(avatar_id);                                                                              // <plus> research/374 </plus>
+    if (avatar_id.isNull())
+        return;
+
+    auto registered = sAvatarIdToRegisteredAnimationId.find(avatar_id);
+    if (registered != sAvatarIdToRegisteredAnimationId.end())
+    {
+        const LLAssetID motionId = registered->second;
+        // The avatar as it is now, in any region (not isAvatarSafeToUse()). Every live one of that ID: a dead object of
+        // the same person can stay listed next to the new one for a while (it takes its motions with it).
+        for (LLCharacter* character : LLCharacter::sInstances)
+        {
+            if (character->getID() != avatar_id)
+                continue;
+            LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(character);
+            if (avatar && !avatar->isDead() && avatar->findMotion(motionId))
+            {
+                avatar->stopMotion(motionId, true); // at once: deactivating reverts the joints (FSPosingMotion::onDeactivate)
+                avatar->removeMotion(motionId);
+            }
+        }
+        sAvatarIdToRegisteredAnimationId.erase(registered);
+    }
+
+    FSPoseState::forgetAvatar(avatar_id);
+}
+
+void FSPoserAnimator::forceStopPosingAllOthers()
+{
+    // forceStopPosingAvatar() takes each one out of sPosedOthers
+    while (!sPosedOthers.empty())
+        forceStopPosingAvatar(sPosedOthers.back());
+}
+
+// research/374 6'
+PoseOwner FSPoserAnimator::ownerOf(const LLUUID& avatar_id)
+{
+    const auto found = sPoseOwner.find(avatar_id);
+    return found == sPoseOwner.end() ? PoseOwner::None : found->second;
+}
+
+bool FSPoserAnimator::isSharedOther(const LLUUID& avatar_id)
+{
+    return std::find(sSharedOthers.begin(), sSharedOthers.end(), avatar_id) != sSharedOthers.end();
+}
+
+void FSPoserAnimator::forceStopAllShared()
+{
+    std::vector<LLUUID> ids; // a copy: forceStopPosingAvatar() erases from sPoseOwner
+    for (const auto& entry : sPoseOwner)
+    {
+        if (entry.second == PoseOwner::Share || entry.second == PoseOwner::Push)
+            ids.push_back(entry.first);
+    }
+    for (const LLUUID& id : ids)
+        forceStopPosingAvatar(id);
+}
+
+FSPosingMotion* FSPoserAnimator::registeredMotion(LLVOAvatar* avatar)
+{
+    if (!avatar || avatar->isDead())
+        return nullptr;
+    const auto registered = sAvatarIdToRegisteredAnimationId.find(avatar->getID());
+    if (registered == sAvatarIdToRegisteredAnimationId.end())
+        return nullptr;
+    return dynamic_cast<FSPosingMotion*>(avatar->findMotion(registered->second));
+}
+
+FSPosingMotion* FSPoserAnimator::motionOf(LLVOAvatar* avatar, PoseOwner* owner)
+{
+    if (owner)
+        *owner = PoseOwner::None;
+    FSPosingMotion* motion = registeredMotion(avatar);
+    if (motion && owner)
+        *owner = ownerOf(avatar->getID());
+    return motion;
+}
+// </plus>
 
 bool FSPoserAnimator::isPosingAvatar(LLVOAvatar* avatar) const
 {
@@ -1642,10 +1807,13 @@ FSPosingMotion* FSPoserAnimator::getPosingMotion(LLVOAvatar* avatar) const
     if (sAvatarIdToRegisteredAnimationId.find(avatar->getID()) == sAvatarIdToRegisteredAnimationId.end())
         return nullptr;
 
+    if (!ownerIsMine(ownerOf(avatar->getID()))) // <plus> research/374: the window does not see a share, a share not the window's pose </plus>
+        return nullptr;
+
     return dynamic_cast<FSPosingMotion*>(avatar->findMotion(sAvatarIdToRegisteredAnimationId[avatar->getID()]));
 }
 
-FSPosingMotion* FSPoserAnimator::findOrCreatePosingMotion(LLVOAvatar* avatar)
+FSPosingMotion* FSPoserAnimator::findOrCreatePosingMotion(LLVOAvatar* avatar, PoseOwner role)
 {
     FSPosingMotion* motion = getPosingMotion(avatar);
     if (motion)
@@ -1656,7 +1824,10 @@ FSPosingMotion* FSPoserAnimator::findOrCreatePosingMotion(LLVOAvatar* avatar)
     LLAssetID animationAssetId = mTransactionID.makeAssetID(gAgent.getSecureSessionID());
 
     if (avatar->registerMotion(animationAssetId, FSPosingMotion::create))
+    {
         sAvatarIdToRegisteredAnimationId[avatar->getID()] = animationAssetId;
+        sPoseOwner[avatar->getID()]                       = role; // <plus> research/374 </plus>
+    }
 
     return dynamic_cast<FSPosingMotion*>(avatar->createMotion(animationAssetId));
 }

@@ -251,16 +251,14 @@ U64 get_clock_count()
 
 
 TimerInfo::TimerInfo()
-:   mClockFrequency(0.0),
-    mTotalTimeClockCount(0),
-    mLastTotalTimeClockCount(0)
-{}
+{
+    update();
+}
 
 void TimerInfo::update()
 {
     mClockFrequency = calc_clock_frequency();
     mClockFrequencyInv = 1.0/mClockFrequency;
-    mClocksToMicroseconds = mClockFrequencyInv;
 }
 
 TimerInfo& get_timer_info()
@@ -271,59 +269,56 @@ TimerInfo& get_timer_info()
 
 ///////////////////////////////////////////////////////////////////////////////
 
+// <plus> mono-clock (research/362): totalTime() is monotonic; wallTime() is the system clock
+// The wall clock (system_clock) jumps when the PC's time is corrected (NTP, time sync) or set by hand;
+// every elapsed-time comparison built on it breaks (a deadline that never comes, one that passes at
+// once, a frame time that wraps in an unsigned subtraction). So totalTime() is the wall clock read
+// once (the anchor, a const made on the first call: no shared state, nothing to race on) plus the
+// steady clock's progress since. Same scale as before (microseconds since the Unix epoch), same as
+// before 26.5. Code that needs the real date or time of day calls wallTime() / getWallSeconds().
+namespace
+{
+    struct ClockAnchor
+    {
+        U64 mWallMicroseconds;
+        std::chrono::steady_clock::time_point mSteady;
+    };
+
+    const ClockAnchor& clock_anchor()
+    {
+        static const ClockAnchor anchor = []
+        {
+            const auto wall = std::chrono::system_clock::now();
+            const auto steady = std::chrono::steady_clock::now(); // read back to back
+            return ClockAnchor{ U64(std::chrono::duration_cast<std::chrono::microseconds>(
+                                    wall.time_since_epoch()).count()), steady };
+        }();
+        return anchor;
+    }
+}
+
 // returns a U64 number that represents the number of
-// microseconds since the Unix epoch - Jan 1, 1970
+// microseconds since the Unix epoch - Jan 1, 1970, counted on the monotonic clock from the anchor
 U64MicrosecondsImplicit totalTime()
 {
-    U64 current_clock_count = get_clock_count();
-    if (!get_timer_info().mTotalTimeClockCount || get_timer_info().mClocksToMicroseconds.value() == 0)
-    {
-        get_timer_info().update();
-        get_timer_info().mTotalTimeClockCount = current_clock_count;
-
-#if LL_WINDOWS
-        // Sync us up with local time (even though we PROBABLY don't need to, this is how it was implemented)
-        // Unix platforms use gettimeofday so they are synced, although this probably isn't a good assumption to
-        // make in the future.
-
-        get_timer_info().mTotalTimeClockCount = (U64)(time(NULL) * get_timer_info().mClockFrequency);
-#endif
-
-        // Update the last clock count
-        get_timer_info().mLastTotalTimeClockCount = current_clock_count;
-    }
-    else
-    {
-        if (current_clock_count >= get_timer_info().mLastTotalTimeClockCount)
-        {
-            // No wrapping, we're all okay.
-            get_timer_info().mTotalTimeClockCount += current_clock_count - get_timer_info().mLastTotalTimeClockCount;
-        }
-        else
-        {
-            // We've wrapped.  Compensate correctly
-            get_timer_info().mTotalTimeClockCount += (0xFFFFFFFFFFFFFFFFULL - get_timer_info().mLastTotalTimeClockCount) + current_clock_count;
-        }
-
-        // Update the last clock count
-        get_timer_info().mLastTotalTimeClockCount = current_clock_count;
-    }
-
-    // Return the total clock tick count in microseconds.
-    U64Microseconds time(get_timer_info().mTotalTimeClockCount*get_timer_info().mClocksToMicroseconds);
-    return time;
+    const ClockAnchor& anchor = clock_anchor();
+    return U64Microseconds(anchor.mWallMicroseconds + U64(std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::steady_clock::now() - anchor.mSteady).count()));
 }
+
+// the system clock in microseconds since the Unix epoch (follows corrections, manual changes and suspend)
+U64MicrosecondsImplicit wallTime()
+{
+    return U64Microseconds(std::chrono::duration_cast<std::chrono::microseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count());
+}
+// </plus>
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 LLTimer::LLTimer()
 {
-    if (!get_timer_info().mClockFrequency)
-    {
-        get_timer_info().update();
-    }
-
     mStarted = true;
     reset();
 }
@@ -356,6 +351,20 @@ F64SecondsImplicit LLTimer::getTotalSeconds()
 {
     return F64Microseconds(U64_to_F64(getTotalTime()));
 }
+
+// <plus> mono-clock
+// static
+U64MicrosecondsImplicit LLTimer::getWallTime()
+{
+    return wallTime();
+}
+
+// static
+F64SecondsImplicit LLTimer::getWallSeconds()
+{
+    return F64Microseconds(U64_to_F64(wallTime()));
+}
+// </plus>
 
 void LLTimer::reset()
 {

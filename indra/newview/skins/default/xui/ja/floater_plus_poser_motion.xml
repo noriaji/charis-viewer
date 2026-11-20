@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_poser_motion" title="ポーズ間モーション生成">
+	<string name="model_checking">モデル: 確認中…</string>
+	<string name="model_missing">動きを作るモデル（約 [SIZE] MB）が要ります</string>
+	<string name="model_unpublished">モデルの配布はまだ始まっていません</string>
+	<string name="model_downloading">モデルを取得中… [PERCENT]%</string>
+	<string name="model_verifying">取得したモデルを確かめています…</string>
+	<string name="model_installed">モデル: 取得済み</string>
+	<string name="model_failed">取得できませんでした（[REASON]）</string>
+	<string name="model_broken">モデルを読み込めませんでした。取得し直してください</string>
+	<string name="model_in_use">モデルを削除できませんでした（使用中）</string>
+	<string name="btn_fetch">取得…</string>
+	<string name="btn_cancel">中止</string>
+	<string name="btn_remove">削除…</string>
+	<string name="btn_retry">もう一度</string>
+	<string name="btn_refetch">取得し直す…</string>
+	<string name="reason_not_published">配布前</string>
+	<string name="reason_cannot_start">curl.exe を起動できない</string>
+	<string name="reason_bad_folder">フォルダが使えない</string>
+	<string name="reason_network">通信の失敗</string>
+	<string name="reason_size">大きさが違う</string>
+	<string name="reason_hash">中身が違う</string>
+	<string name="reason_disk">ディスクに書けない</string>
+	<string name="reason_in_use">使用中</string>
+	<string name="confirm_fetch">ポーズ間モーション生成のモデルを取得しますか？
+
+・大きさ: 約 [SIZE] MB
+・取得先: github.com の noriaji/charis-models
+・モデル: NVIDIA MotionBricks SOMA
+・ライセンス: NVIDIA Open Model Agreement（全文は取得先のページにあります）
+
+この PC の中だけで動き、ポーズのデータは外へ送りません。途中で止めると、次は最初からです。</string>
+	<string name="confirm_remove">モデル（約 [SIZE] MB）を削除しますか？ 動きを作るには、もう一度取得します。</string>
+	<string name="confirm_overwrite">[NAME].bvh はもうあります。置き換えますか？</string>
+	<string name="confirm_clear">キー [COUNT] 個と、それに作った動きを全部消しますか？</string>
+	<string name="seconds">[SEC] 秒</string>
+	<string name="frame_of">位置 [FRAME] / [COUNT]</string>
+	<string name="key_selected">選択中: キー [N]</string>
+	<string name="key_none">キーを選んでいません</string>
+	<string name="segment_title">区間: キー [FROM] → キー [TO]</string>
+	<string name="segment_none">区間: キーを 2 つ以上取り込んでください</string>
+	<string name="method_generate">生成</string>
+	<string name="method_smooth">なめらか</string>
+	<string name="method_linear">直線</string>
+	<string name="segment_unmade">まだ生成していません（仮の、なめらかな動きで再生します）</string>
+	<string name="segment_queued">生成の順番待ち</string>
+	<string name="segment_running">生成中</string>
+	<string name="segment_made">できています</string>
+	<string name="segment_failed">失敗</string>
+	<string name="segment_regen">作り直しをおすすめします</string>
+	<string name="hold_word">止まる</string>
+	<string name="unit_second">秒</string>
+	<string name="reason_prefix">：</string>
+	<string name="btn_play">再生</string>
+	<string name="btn_stop">停止</string>
+	<string name="status_loading">モデルを読み込み中…</string>
+	<string name="status_progress">動きを作っています… [DONE] / [TOTAL]</string>
+	<string name="why_not_logged_in">ログインしてから使えます。</string>
+	<string name="why_no_poser">ポーザーを開いてください。</string>
+	<string name="why_not_posing">ポーザーで自分を選び、「ポーズを開始」を押してください。</string>
+	<string name="why_other">対象は自分のアバターだけです。ポーザーで自分を選んでください。</string>
+	<string name="why_no_model">先にモデルを取得してください。</string>
+	<string name="why_unpublished">モデルの配布がまだ始まっていないので、動きを作れません。</string>
+	<string name="why_need_keys">キーを 2 つ以上取り込んでください（ポーズを取って「キーを足す」を押します）。</string>
+	<string name="why_not_generate">なめらか・直線の区間にモデルは要りません。</string>
+	<string name="why_same">この区間の 2 つのキーは同じポーズです。なめらか・直線を使ってください。</string>
+	<string name="fail_low_memory">メモリの空きが足りません（約 0.8 GB 使います）。</string>
+	<string name="fail_no_helper">モーション生成の部品（charis-motion.exe）が見つかりません。インストールし直してください。</string>
+	<string name="fail_bad_folder">モデルの置き場のフォルダが使えません。</string>
+	<string name="fail_bad_input">モーションの生成に失敗しました（ポーズを受け付けませんでした）。</string>
+	<string name="fail_model_missing">モデルが見つかりません。取得し直してください。</string>
+	<string name="fail_model_unreadable">モデルを読み込めませんでした。取得し直してください。</string>
+	<string name="fail_timeout">モーションの生成に失敗しました（時間切れ）。</string>
+	<string name="fail_helper_ended">モーションの生成に失敗しました（部品が止まりました）。</string>
+	<string name="fail_run">モーションの生成に失敗しました（計算の失敗）。</string>
+	<string name="fail_bad_answer">モーションの生成に失敗しました（答えが使えませんでした）。</string>
+	<string name="fail_convert">このポーズの組み合わせは変換できませんでした。</string>
+	<string name="fail_prev_missing">ひとつ前の区間ができなかったので、この区間の生成を取りやめました。</string>
+	<string name="note_touched">再生中に関節が動かされたので止めました。</string>
+	<string name="note_gone">ポーザーが自分のアバターをポーズしていないので、動きを捨てました。</string>
+	<string name="note_saved">ポーザーのフォルダに [NAME].bvh を保存しました。</string>
+	<string name="note_save_bad_name">この名前はファイル名に使えません。</string>
+	<string name="note_save_failed">BVH ファイルを保存できませんでした。</string>
+	<string name="note_discarded">この窓が最初に姿勢を変える前のポーズに戻しました。</string>
+	<string name="note_discard_failed">元のポーズに戻せませんでした（ポーザーが自分のアバターをポーズしているか確かめてください）。</string>
+	<string name="note_too_many_keys">キーは 16 個までです。</string>
+	<string name="note_too_long">動き全体は 30 秒までです。</string>
+	<string name="note_busy">その区間は生成中です。終わるまで待つか、「中止」を押してください。</string>
+	<string name="note_same_poses">2 つのキーが同じポーズなので、「生成」は使えません（別のポーズが 2 つ要ります）。</string>
+	<string name="note_capture_failed">ポーズを取り込めませんでした（ポーザーが自分のアバターをポーズしているか確かめてください）。</string>
+	<string name="note_apply_failed">アバターにポーズを当てられませんでした（ポーザーがまだポーズしているか確かめてください）。</string>
+	<string name="note_need_prev">この区間は、止まらずに通すキーから始まります。先に、ひとつ前の区間を生成してください。</string>
+	<string name="pass_auto">自動</string>
+	<string name="pass_auto_through">自動（通す）</string>
+	<string name="pass_auto_stop">自動（止める）</string>
+	<string name="pass_through">通す</string>
+	<string name="pass_why_end">最初と最後のキーは通しません。</string>
+	<string name="pass_why_neighbour">隣の区間が「生成」ではないので、このキーで止まります。</string>
+	<string name="pass_why_hold">止まる時間があるので、このキーで止まります。</string>
+	<string name="pass_why_same">隣のキーと同じポーズなので、このキーで止まります。</string>
+	<string name="pass_stop_hint">止めたい時は、キーを複製して同じポーズを並べてください。</string>
+	<string name="pass_pass_hint">通したい時は「通す」を選んでください。</string>
+	<string name="regen_ends">端のキーが変わった</string>
+	<string name="regen_targets">通る先のキーが変わった</string>
+	<string name="regen_context">前の区間が変わった</string>
+	<string name="regen_pass">通し方が変わった</string>
+	<string name="regen_join">、</string>
+	<plus_ps_box name="body">
+		<scroll_container name="scroll">
+			<panel name="scroll_panel">
+				<plus_ps_label name="model_label" label="モデル: 確認中…"/>
+				<plus_ps_button name="model_button" label="取得…" tool_tip="モデルを取得します（先に確認します）。取得中は中止、取得済みなら削除します"/>
+				<plus_ps_label name="keys_title" label="キー（順に並べたポーズ）"/>
+				<plus_motion_keys name="key_row" tool_tip="キーをクリックすると、そのポーズを自分のアバターに当てます。ドラッグで順番を変え、右クリックで他の操作を選べます。"/>
+				<plus_ps_button name="add_key_button" label="キーを足す" tool_tip="ポーザーの今の自分のポーズを、最後のキーとして足します。保存したポーズから始める時は、先にポーザーで読み込んでください"/>
+				<plus_ps_button name="loop_key_button" label="輪にする" tool_tip="最初のキーのコピーを最後に足して、くり返せるようにします"/>
+				<plus_ps_label name="key_label" label="キーを選んでいません"/>
+				<plus_ps_slider name="hold_slider" label="止まる" tool_tip="選んだキーのポーズを、動きが先へ進むまで保つ時間（0〜5 秒）"/>
+				<plus_ps_label name="pass_title" label="通過"/>
+				<plus_ps_segment name="pass_mode" left_label="自動" right_label="通す" tool_tip="両隣の区間が「生成」の時に、選んだキーで動きを止めるかどうか。自動: 途中のキーは止まらずに通り、折り返しのキー（しゃがんだ一番下など）では止まります。通す: いつも止まらずに通ります"/>
+				<plus_ps_label name="strength_title" label="強さ"/>
+				<plus_ps_segment name="pass_strength" left_label="弱" right_label="標準" tool_tip="キーを通り過ぎる勢いの強さ（弱: 少し、標準: しっかり）"/>
+				<plus_ps_label name="pass_info" label=""/>
+				<plus_ps_button name="update_key_button" label="今のポーズで更新" tool_tip="選んだキーのポーズを、ポーザーの今の自分のポーズに置き換えます。そのキーに作った動きは新しいポーズに合わせ直します"/>
+				<plus_ps_button name="duplicate_key_button" label="複製" tool_tip="選んだキーのコピーを、そのすぐ後ろに足します"/>
+				<plus_ps_button name="delete_key_button" label="削除" tool_tip="選んだキーを消します"/>
+				<plus_ps_label name="segment_label" label="区間: キーを 2 つ以上取り込んでください"/>
+				<plus_ps_label name="method_title" label="方式"/>
+				<plus_ps_segment name="method_seg" labels="生成|なめらか|直線" tool_tip="生成: 2 つのキーの間の動きをモデルが作ります。なめらか: 次のポーズへ、出だしと終わりをゆっくりにして曲がります。直線: 同じ動きを止めずに通過します"/>
+				<plus_ps_slider name="seconds_slider" label="長さ" tool_tip="この区間の長さ（0.2〜10 秒）。タイムラインで区間の右端をドラッグしても変えられます"/>
+				<plus_ps_button name="generate_segment_button" label="この区間を生成" tool_tip="選んだ区間の動きを、この PC の中で作ります（初回はモデルの読み込みに数秒かかります）"/>
+				<plus_ps_button name="generate_all_button" label="全部生成" tool_tip="まだ動きの無い「生成」の区間を、全部作ります"/>
+				<plus_ps_button name="generate_cancel_button" label="中止" tool_tip="動きを作るのを止めます"/>
+				<plus_motion_timeline name="timeline" tool_tip="目盛りをクリックするか針をドラッグすると、その位置の 1 コマ（フレーム）を自分のアバターに当てます。止めたコマは、ポーザーの普通の保存で 1 つのポーズとして残せます。区間の右端をドラッグすると長さが変わります"/>
+				<plus_ps_button name="play_button" label="再生" tool_tip="動き全体を自分のアバターで再生します（見えるのは自分だけです）"/>
+				<plus_ps_check name="loop_check" label="くり返す" tool_tip="くり返し再生します。毎回、最後のポーズで少し止まります"/>
+				<plus_ps_label name="name_title" label="名前"/>
+				<plus_ps_box name="name_box">
+					<line_editor name="name_editor" label="アニメーションの名前" tool_tip="ポーザーのフォルダ（ポーザーが BVH を保存する所）でのファイル名（.bvh は付けない）"/>
+				</plus_ps_box>
+				<plus_ps_button name="save_button" label="アニメとして保存（BVH）" tool_tip="全部のコマを BVH ファイルに保存します。"/>
+				<plus_ps_button name="discard_button" label="破棄して元に戻す" tool_tip="この窓が最初に姿勢を変える前のポーズに、アバターを戻します。キーは残ります"/>
+			</panel>
+		</scroll_container>
+	</plus_ps_box>
+</floater>

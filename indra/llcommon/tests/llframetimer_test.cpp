@@ -32,6 +32,12 @@
 
 #include "../test/lltut.h"
 
+#include <algorithm>
+#include <atomic>
+#include <chrono>
+#include <thread>
+#include <vector>
+
 namespace tut
 {
     struct frametimer_test
@@ -112,10 +118,56 @@ namespace tut
         ensure("timer took too long to expire", iterations_until_expiration <= 10);
     }
 
-/*
+    // <plus> mono-clock (research/362): totalTime() is monotonic and on the Unix epoch scale;
+    // wallTime() is the system clock
     template<> template<>
     void frametimer_object_t::test<4>()
     {
+        const auto wall_us = []
+        {
+            return std::chrono::duration_cast<std::chrono::microseconds>(
+                std::chrono::system_clock::now().time_since_epoch()).count();
+        };
+        const auto before = wall_us();
+        const U64 wall = wallTime();
+        const auto after = wall_us();
+        ensure("wallTime is current Unix time in microseconds",
+            wall >= U64(std::min(before, after)) && wall <= U64(std::max(before, after)));
+        // the anchor is the wall clock at the first call, so totalTime() starts near it (a test
+        // run is short; the two clocks drift apart by far less than a minute)
+        const U64 total = totalTime();
+        const U64 diff = total > wall ? total - wall : wall - total;
+        ensure("totalTime is on the Unix epoch scale", diff < U64(60) * 1000000);
+        ensure("LLTimer::getWallSeconds follows wallTime",
+            LLTimer::getWallSeconds() >= F64(wall) * 1e-6);
     }
-*/
+
+    template<> template<>
+    void frametimer_object_t::test<5>()
+    {
+        std::atomic<bool> monotonic{true};
+        std::vector<std::thread> threads;
+        for (int i = 0; i < 8; ++i)
+        {
+            threads.emplace_back([&monotonic]()
+            {
+                U64 last = totalTime();
+                for (int sample = 0; sample < 10000; ++sample)
+                {
+                    const U64 current = totalTime();
+                    if (current < last)
+                    {
+                        monotonic = false;
+                    }
+                    last = current;
+                }
+            });
+        }
+        for (auto& thread : threads)
+        {
+            thread.join();
+        }
+        ensure("Concurrent totalTime calls never go backwards", monotonic.load());
+    }
+    // </plus>
 }

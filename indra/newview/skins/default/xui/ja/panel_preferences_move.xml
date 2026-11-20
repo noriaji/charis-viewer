@@ -49,6 +49,7 @@
 	<check_box control_name="EnableCollisionSounds" label="ぶつかったときにサウンドを鳴らす" name="sound_on_collisions"/>
 	<!-- plus: tpscreen (PlusDisableTeleportScreens) -->
 	<check_box label="テレポート画面を表示しない" name="tp_screen_toggle" tool_tip="テレポート中の暗い画面を出さず、周りを見たまま移動します。途中で取り消すボタンは出ません。読み込み中の物は実体化の演出で現れます。"/>
+	<check_box label="ワールドマップのリージョン名の下に人数とレーティングを表示" name="world_map_region_info" tool_tip="ワールドマップの各リージョン名の下に「(人数 - レーティング)」を表示します。"/>
 	<!-- /plus -->
 	<button label="その他のデバイス" name="joystick_setup_button"/>
 </panel>

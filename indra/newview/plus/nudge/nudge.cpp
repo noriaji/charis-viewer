@@ -50,7 +50,7 @@ namespace
     bool repeat_due()
     {
         const F64 now = LLTimer::getTotalSeconds();
-        if (now - sLastStep < REPEAT_PERIOD)
+        if (now >= sLastStep && now - sLastStep < REPEAT_PERIOD)   // a clock set back does not hold it (a guard: monotonic since mono-clock, research/362)
         {
             return false;
         }

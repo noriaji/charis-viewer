@@ -7,7 +7,7 @@
 				<button name="btn_gl_low" label="低" tool_tip="低" />
 				<button name="btn_gl_lowmid" label="低〜中" tool_tip="低〜中" />
 				<button name="btn_gl_mid" label="中" tool_tip="中" />
-				<button name="btn_gl_midhigh" label="中〜高" tool_tip="中〜高: 全 OIT だけを使う段（ほかの Charis の機能はなし）" />
+				<button name="btn_gl_midhigh" label="中〜高" tool_tip="中〜高: 全 OIT、遠くの人の簡略表示（25 m から板、45 m から灰色の人形）、読み込み中の物の実体化" />
 				<button name="btn_gl_high" label="高" tool_tip="高" />
 				<button name="btn_gl_highultra" label="高〜超高" tool_tip="高〜超高" />
 				<button name="btn_gl_ultra" label="超高" tool_tip="超高" />

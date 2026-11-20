@@ -71,13 +71,18 @@ BUNDLE_DIR = 'app_settings/vk_shader_bundle/'
 BUNDLE_FILES = (BUNDLE_DIR + 'shaders.vkb', BUNDLE_DIR + 'pipeline_keys_seed.bin')
 MIN_FILES = 1000       # the list has several thousand files; fewer means the package step went wrong
 
-# The local translation and subtitle helpers (plus/subtitle helperPath(): next to the viewer exe only) and the
-# OpenMP runtime both of them load (they are built with /openmp; the VC runtime the package step ships has no
-# vcomp140.dll). Built from tools/helpers (not by the viewer's build or the release workflow), published once
-# in a release of noriaji/charis-models and pinned by size and SHA-256 in
-# release-package.yml: fetch-helpers.py takes them, make-release-zip.py --helpers puts them in the zip and the
-# stage (so in the Setup.exe and the update package too). Not in the packaging step's list.
-HELPER_FILES = ('charis-translate.exe', 'charis-subtitle.exe', 'vcomp140.dll')
+# The local translation, subtitle and motion helpers (plus/subtitle helperPath(): next to the viewer exe only), the
+# OpenMP runtime the first two load (they are built with /openmp; the VC runtime the package step ships has no
+# vcomp140.dll), charis-onnxruntime.dll (the motion helper loads it from its own folder; Microsoft's signed 1.23 build, which
+# also needs msvcp140_1.dll: the package step's list has it, REQUIRED in make-release-zip.py) and that dll's third-party
+# notices. Built from tools/helpers (not by the viewer's build or the release workflow), published once in a release
+# of noriaji/charis-models and pinned by size and SHA-256 in release-package.yml: fetch-helpers.py takes them,
+# make-release-zip.py --helpers puts them in the zip and the stage (so in the Setup.exe and the update package too).
+# Not in the packaging step's list.
+HELPER_FILES = ('charis-translate.exe', 'charis-subtitle.exe', 'vcomp140.dll', 'charis-motion.exe', 'charis-onnxruntime.dll',
+                'onnxruntime-ThirdPartyNotices.txt')
+# Where a helper file goes in the zip when it is not next to the viewer exe: the notices, with the other licenses.
+HELPER_ZIP_NAMES = {'onnxruntime-ThirdPartyNotices.txt': 'licenses/onnxruntime-ThirdPartyNotices.txt'}
 # Where fetch-helpers.py may fetch from: the release page's host, and the hosts GitHub sends a release asset's
 # download on to (release-assets... since 2025, objects... before). https only, no other port.
 HELPER_URL_HOSTS = ('github.com',)

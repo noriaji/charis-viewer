@@ -74,5 +74,8 @@
 		<panel label="ブロック" name="blocked_panel">
 			<panel label="ブロックされた人物とオブジェクト" name="panel_block_list_sidetray"/>
 		</panel>
+		<!-- plus contactsets -->
+		<panel label="コンタクトセット" name="contact_sets_panel"/>
+		<!-- /plus -->
 	</tab_container>
 </panel>

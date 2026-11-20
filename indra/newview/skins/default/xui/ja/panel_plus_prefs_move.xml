@@ -52,6 +52,7 @@
                 </plus_ps_combo>
                 <plus_ps_check_compat name="sound_on_collisions" label="ぶつかったときにサウンドを鳴らす" />
                 <plus_ps_check_compat name="tp_screen_toggle" label="テレポート画面を表示しない" tool_tip="テレポート中の暗い画面を出さず、周りを見たまま移動します。途中で取り消すボタンは出ません。読み込み中の物は実体化の演出で現れます。" />
+                <plus_ps_check_compat name="world_map_region_info" label="ワールドマップのリージョン名の下に人数とレーティングを表示" tool_tip="ワールドマップの各リージョン名の下に「(人数 - レーティング)」を表示します。今いるリージョンは、リージョン情報の窓を一度開くと「(人数/最大 - レーティング)」になります。" />
                 <plus_ps_button_compat name="joystick_setup_button" label="3Dconnexion の機器…" />
             </panel>
         </scroll_container>

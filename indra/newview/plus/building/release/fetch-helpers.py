@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
-"""Takes the local translation and subtitle helpers (and the OpenMP runtime they load) from
-their pinned release, checks each against its pinned size and SHA-256, and puts them in a
-new folder under the names the viewer looks for (releasecommon.HELPER_FILES), for
-make-release-zip.py --helpers.
+"""Takes the local translation, subtitle and motion helpers (and the OpenMP runtime and
+charis-onnxruntime.dll they load, with onnxruntime's notices) from their pinned releases, checks each
+against its pinned size and SHA-256, and puts them in a new folder under the names the viewer
+looks for (releasecommon.HELPER_FILES), for make-release-zip.py --helpers.
 
-  python -I fetch-helpers.py --base URL --out DIR --pin NAME "ASSET SIZE SHA256" [--pin ...]
+  python -I fetch-helpers.py --base URL --out DIR --pin NAME "ASSET SIZE SHA256 [TAG]" [--pin ...]
 
   --base URL   the release's download address: https://github.com/<owner>/<repo>/releases/download/<tag>
   --out DIR    a new or empty folder (made if missing): the files go here as NAME
-  --pin NAME "ASSET SIZE SHA256"
+  --pin NAME "ASSET SIZE SHA256 [TAG]"
                one for each of releasecommon.HELPER_FILES, once each: the file NAME is the
                release asset ASSET (letters, digits, ". _ -"), SIZE bytes (at most 64 MiB)
-               with that SHA-256 (64 lower-case hex digits)
+               with that SHA-256 (64 lower-case hex digits). With TAG (letters, digits, ". _ -")
+               the asset is taken from that release of the same repository instead of --base's
+               (a published release is never replaced, so a later helper goes to a later tag)
 
-Each asset is fetched from <base>/<ASSET>: https only, from github.com, following redirects
+Each asset is fetched from <base>/<ASSET> (<base with TAG>/<ASSET>): https only, from github.com, following redirects
 only to GitHub's download hosts (releasecommon.HELPER_REDIRECT_HOSTS), reading no more than
 SIZE bytes, with a 120 s timeout per read; it is put in place only when its size and SHA-256
-are the pinned ones. Then each must be a 64-bit Windows program (x64 PE; an .exe not a dll,
-the .dll a dll), and the folder must hold exactly these files.
+are the pinned ones. Then each .exe and .dll must be a 64-bit Windows program (x64 PE; an .exe
+not a dll, a .dll a dll; a .txt is not looked into), and the folder must hold exactly these files.
 Network: github.com and GitHub's download hosts only.
 Exit status: 0 = all fetched and checked; 1 = not fetched (network, HTTP error, a redirect
 elsewhere: nothing is left in DIR); 3 = fetched, but a file is not the pinned one (another
@@ -39,6 +41,7 @@ from releasecommon import (HELPER_FILES, HELPER_REDIRECT_HOSTS, HELPER_URL_HOSTS
 MAX_HELPER_SIZE = 64 << 20
 BASE_RE = re.compile(r'https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/releases/download/[A-Za-z0-9_.-]+')
 ASSET_RE = re.compile(r'[A-Za-z0-9][A-Za-z0-9_.-]*')
+TAG_RE = ASSET_RE
 SHA256_RE = re.compile(r'[0-9a-f]{64}')
 PE_MACHINE_X64 = 0x8664
 PE_FILE_DLL = 0x2000
@@ -67,8 +70,9 @@ def check_base(base):
 
 
 def parse_pins(pins):
-    """[(NAME, "ASSET SIZE SHA256")] -> {NAME: (ASSET, SIZE, SHA256)}, checked: every HELPER_FILES name once and
-    no other, each asset a plain name and used once, 0 < SIZE <= MAX_HELPER_SIZE, SHA256 64 lower-case hex digits."""
+    """[(NAME, "ASSET SIZE SHA256 [TAG]")] -> {NAME: (ASSET, SIZE, SHA256, TAG or None)}, checked: every HELPER_FILES
+    name once and no other, each asset a plain name and used once, 0 < SIZE <= MAX_HELPER_SIZE, SHA256 64
+    lower-case hex digits, TAG a plain release tag."""
     out, assets = {}, set()
     for name, spec in pins:
         if name not in HELPER_FILES:
@@ -76,9 +80,12 @@ def parse_pins(pins):
         if name in out:
             raise Stop('--pin %s twice' % name)
         fields = (spec or '').split()
-        if len(fields) != 3:
-            raise Stop('--pin %s %r: not "ASSET SIZE SHA256"' % (name, spec))
-        asset, size, digest = fields
+        if len(fields) not in (3, 4):
+            raise Stop('--pin %s %r: not "ASSET SIZE SHA256 [TAG]"' % (name, spec))
+        asset, size, digest = fields[:3]
+        tag = fields[3] if len(fields) == 4 else None
+        if tag is not None and (not TAG_RE.fullmatch(tag) or '..' in tag):
+            raise Stop('--pin %s: tag %r is not a plain release tag' % (name, tag))
         if not ASSET_RE.fullmatch(asset) or '..' in asset:
             raise Stop('--pin %s: asset %r is not a plain file name' % (name, asset))
         if asset.lower() in assets:
@@ -88,7 +95,7 @@ def parse_pins(pins):
         if not SHA256_RE.fullmatch(digest):
             raise Stop('--pin %s: %r is not a SHA-256 (64 lower-case hex digits)' % (name, digest))
         assets.add(asset.lower())
-        out[name] = (asset, int(size), digest)
+        out[name] = (asset, int(size), digest, tag)
     missing = [n for n in HELPER_FILES if n not in out]
     if missing:
         raise Stop('no --pin for %s' % ', '.join(missing))
@@ -128,8 +135,8 @@ def fetch(base, pins, out, get=download):
     ok = False
     try:
         for name in HELPER_FILES:
-            asset, size, digest = pins[name]
-            url = '%s/%s' % (base, asset)
+            asset, size, digest, tag = pins[name]
+            url = '%s/%s' % (base if tag is None else base.rsplit('/', 1)[0] + '/' + tag, asset)
             try:
                 get(url, os.path.join(out, name), size, digest, say, hosts=HELPER_URL_HOSTS,
                     redirect_hosts=HELPER_REDIRECT_HOSTS)
@@ -137,7 +144,8 @@ def fetch(base, pins, out, get=download):
                 raise NotPinned(str(e))
             except DownloadFailed as e:
                 raise Stop(str(e))
-            why = pe_problem(os.path.join(out, name), name.lower().endswith('.dll'))
+            why = None if name.lower().endswith('.txt') else pe_problem(os.path.join(out, name),
+                                                                       name.lower().endswith('.dll'))
             if why:
                 raise NotPinned('%s (%s) is not a 64-bit Windows %s: %s'
                                 % (name, asset, 'dll' if name.lower().endswith('.dll') else 'program', why))
@@ -155,8 +163,8 @@ def fetch(base, pins, out, get=download):
                 else:
                     os.remove(path)
     for name in HELPER_FILES:
-        asset, size, digest = pins[name]
-        say('%s: %s, %d bytes, sha256 %s' % (name, asset, size, digest))
+        asset, size, digest, tag = pins[name]
+        say('%s: %s%s, %d bytes, sha256 %s' % (name, asset, ' of ' + tag if tag else '', size, digest))
 
 
 def main():
@@ -165,7 +173,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0])
     ap.add_argument('--base', required=True)
     ap.add_argument('--out', required=True)
-    ap.add_argument('--pin', nargs=2, action='append', default=[], metavar=('NAME', '"ASSET SIZE SHA256"'))
+    ap.add_argument('--pin', nargs=2, action='append', default=[], metavar=('NAME', '"ASSET SIZE SHA256 [TAG]"'))
     a = ap.parse_args()
     try:
         base = check_base(a.base)

@@ -2,7 +2,7 @@
 <!-- Preferences > Game Controls > Flycam Keys in the Charis look (research/266 4. prefs-w-gamepad): the flycam you fly
      with the keyboard and the mouse (plus/flycammouse, research/219). A page of panel_plus_prefs_game_control.xml's
      sub-tabs (plus_ps_tabs); it was panel_plus_flycam_mouse_prefs.xml, which is no longer read. The ranges are the
-     clamps of flycammouse.cpp, the flying speed's too (0.05 to 50, as the wheel: a slider to 10 cut a speed the wheel
+     clamps of flycammouse.cpp, the flying speed's too (0.05 to 50, as the older wheel: a slider to 10 cut a speed the wheel
      had set when OK or Cancel took the focus from its number box, research/275 L063; type a number or use the wheel
      for a fine one). The settings are kept by control_name (LLPanelPreference: Cancel puts them back), but the flying
      speed: the wheel sets it while Preferences is open, so its slider is bound by flycammouse.cpp's init and commit
@@ -12,7 +12,7 @@
      plus_ps_text for their lines.
      Size (1080 base; plus/prefscharis/prefs_tab_template.xml): a page 574 x 475 under the strip; a scroll_container
      (574 x 475) with a panel 557 wide. Rows at left 14, 529 wide: 10 + the intro 40 (two lines) + 6 + the mouse row 33
-     + 4 + five sliders 31 (155) + 10 + the note 80 (four lines) + 6 + the button 40 + 14 = 398, so it does not scroll
+     + 4 + five sliders 31 (155) + 10 + the note 100 (five lines) + 6 + the button 40 + 14 = 418, so it does not scroll
      at the default size (the page is 398 at the least window height: a few pixels scroll there). The labels 190
      wide: ja's longest is 10 characters (130), en's 21 letters (147). -->
 <panel
@@ -42,7 +42,7 @@
          name="flycam_mouse_scroll_panel"
          background_visible="false"
          follows="left|top"
-         height="398"
+         height="418"
          layout="topleft"
          left="0"
          mouse_opaque="false"
@@ -123,7 +123,7 @@
              left="14"
              max_val="50"
              min_val="0.05"
-             tool_tip="How fast the flycam flies on the keys (1 = normal, up to 50). The mouse wheel also changes it while you fly (hold Shift, Ctrl or Alt to zoom instead); Cancel keeps what the wheel set."
+             tool_tip="How fast the flycam flies (1 = normal, up to 50 here), on the keys and on a 3D mouse (a 3D mouse only moves faster, up to 6; it turns as before). While you fly, the mouse wheel steps it through 9 levels from 0.1 to 6 (hold Shift, Ctrl or Alt to zoom instead); Cancel keeps what the wheel set."
              top="124"
              width="529">
                 <plus_ps_slider_compat.init_callback
@@ -188,7 +188,7 @@
             <plus_ps_text
              name="note"
              follows="left|top"
-             height="80"
+             height="100"
              kind="dim"
              layout="topleft"
              left="14"
@@ -196,7 +196,7 @@
              top="258"
              valign="top"
              width="529"
-             word_wrap="true">While you fly: W A S D move, Space and C go up and down, Q and E tilt the camera, Shift flies faster and the mouse wheel changes the speed. The 3D mouse has its own settings (Move &amp; View > 3Dconnexion devices). The gamepad's flycam is set on the Actions tab.</plus_ps_text>
+             word_wrap="true">While you fly: W A S D move, Space and C go up and down, Q and E tilt the camera, Shift flies faster, the mouse wheel changes the speed and pressing it levels the camera. The speed and the wheel work for a 3D mouse too (its other settings: Move &amp; View > 3Dconnexion devices). The gamepad's flycam is set on the Actions tab.</plus_ps_text>
             <plus_ps_button_compat
              name="restore_defaults"
              follows="left|top"
@@ -205,7 +205,7 @@
              layout="topleft"
              left="14"
              tool_tip="Puts every setting on this tab back to its default."
-             top="344"
+             top="364"
              width="200">
                 <plus_ps_button_compat.commit_callback
                  function="Plus.FlycamMouse.ResetPrefs" />

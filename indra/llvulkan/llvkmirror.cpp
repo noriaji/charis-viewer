@@ -913,7 +913,7 @@ VkCommandBuffer LLVKMirror::beginRendering(const Target& target)
     endRendering();
     ++mRenderScopes;
 
-    VkRenderingAttachmentInfo colors[4] = {};
+    VkRenderingAttachmentInfo colors[MAX_COLORS] = {};
     for (U32 i = 0; i < target.color_count; ++i)
     {
         colors[i].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;

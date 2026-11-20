@@ -109,6 +109,7 @@ private:
     S32                                     mPinClickHandle = -1;
     std::unique_ptr<plus::posermcp::LiveSolve> mSolve;
     plus::posermcp::solver::Skeleton        mSkeleton;
+    bool                                    mAllowOther = false; // the avatar of this drag is another person
     std::string                             mAvatarArg; // "self" or the avatar's id, as the MCP helpers take it
     LLVector3                               mFrameOrigin;
     LLQuaternion                            mFrameRotation; // body -> agent

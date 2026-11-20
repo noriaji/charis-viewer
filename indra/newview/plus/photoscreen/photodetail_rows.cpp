@@ -25,8 +25,6 @@
 
 #include "photodetail_rows.h"
 
-#include "plus/photomode/photolook.h"
-
 #include <cmath>
 
 #include "llcheckboxctrl.h"
@@ -126,102 +124,6 @@ namespace plus::photoscreen::detail
         button->setToolTip(tip.empty() ? label : tip);
         button->setCommitCallback([action](LLUICtrl*, const LLSD&) { action(); });
         list->addItem(row, LLSD(label));
-    }
-
-    // The photo tools' item as a spec.
-    Spec specOf(const pm::Item& item)
-    {
-        Spec spec;
-        const pm::Item* p = &item;      // items() lives as long as the process
-        spec.label = item.label;
-        spec.tip   = item.note;
-        spec.kind  = item.kind;
-        spec.min = item.min;
-        spec.max = item.max;
-        spec.step = item.step;
-        spec.digits = item.digits;
-        spec.scale = item.scale;
-        spec.options = item.options;
-        spec.get = [p]() { return pm::itemValue(*p); };
-        spec.set = [p](float v) { pm::setItemValue(*p, v); };
-        if (!item.needs.empty())
-        {
-            spec.needs = gSavedSettings.getControl(item.needs);
-            spec.needs_value = item.needs_value;
-        }
-        spec.blur = item.param == pm::Param::Blur;
-        spec.feature = item.feature;
-        return spec;
-    }
-
-    // The look list as a choice: the value is the index in lookIds.
-    bool addLookRow(LLFlatListView* list, std::vector<RowRef>& rows, const pm::Item& item)
-    {
-        Spec spec;
-        spec.label = item.label;
-        spec.tip   = item.note;
-        spec.kind  = pm::Kind::Combo;
-        sS.lookIds.clear();
-        float index = 0.f;
-        for (const pm::LookChoice& look : pm::allLooks())
-        {
-            if (!look.exists)
-            {
-                continue;
-            }
-            spec.options.push_back({ index, look.label.empty() ? str("LookNone") : look.label });
-            sS.lookIds.push_back(look.id);
-            index += 1.f;
-        }
-        spec.get = []() {
-            const std::string now = pm::currentLook();
-            for (size_t i = 0; i < sS.lookIds.size(); ++i)
-            {
-                if (sS.lookIds[i] == now)
-                {
-                    return (float)i;
-                }
-            }
-            return 0.f;
-        };
-        spec.set = [](float v) {
-            const size_t i = (size_t)llmax(0, ll_round(v));
-            if (i < sS.lookIds.size())
-            {
-                pm::applyLook(sS.lookIds[i]);
-            }
-        };
-        return addRow(list, rows, spec);
-    }
-
-    bool addItemRow(LLFlatListView* list, std::vector<RowRef>& rows, const pm::Item& item)
-    {
-        if (item.kind == pm::Kind::Text)
-        {
-            return false;
-        }
-        if (item.composite == "look")
-        {
-            return addLookRow(list, rows, item);
-        }
-        return addRow(list, rows, specOf(item));
-    }
-
-    bool addItemRowById(LLFlatListView* list, std::vector<RowRef>& rows, const char* id)
-    {
-        const pm::Item* item = pm::findItem(id);
-        return item && addItemRow(list, rows, *item);
-    }
-
-    void addTabItems(LLFlatListView* list, std::vector<RowRef>& rows, const char* tab, const char* skip)
-    {
-        for (const pm::Item& item : pm::items())
-        {
-            if (item.tab == tab && !item.detail && (!skip || item.id != skip))
-            {
-                addItemRow(list, rows, item);
-            }
-        }
     }
 
     // A setting of the viewer as a row of choices (labels from the strings PhotoScreenDetail_<prefix><n>).

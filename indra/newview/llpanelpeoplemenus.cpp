@@ -49,6 +49,9 @@
 // <plus> rlv: RLVa (plus/rlv) (research/248)
 #include "plus/rlv/rlvhooks.h"
 // </plus>
+// <plus> contactsets: "Add to Set" (plus/contactsets/peopletab) (research/333)
+#include "plus/contactsets/peoplehooks.h"
+// </plus>
 
 namespace LLPanelPeopleMenus
 {
@@ -86,6 +89,9 @@ LLContextMenu* PeopleContextMenu::createMenu()
         registrar.add("Avatar.Calllog",         boost::bind(&LLAvatarActions::viewChatHistory,          id));
         registrar.add("Avatar.Freeze",          boost::bind(&LLAvatarActions::freezeAvatar,                 id));
         registrar.add("Avatar.Eject",           boost::bind(&PeopleContextMenu::eject,                  this));
+        // <plus> contactsets: Firestorm's "Add to Set..." (plus/contactsets/peopletab) (research/333)
+        registrar.add("Avatar.AddToContactSet", boost::bind(&plus::contactsets::showAddToSet,           mUUIDs));
+        // </plus>
 
 
         enable_registrar.add("Avatar.EnableItem", boost::bind(&PeopleContextMenu::enableContextMenuItem, this, _2));
@@ -105,6 +111,9 @@ LLContextMenu* PeopleContextMenu::createMenu()
         registrar.add("Avatar.Call",            boost::bind(&LLAvatarActions::startAdhocCall,           mUUIDs, LLUUID::null));
         registrar.add("Avatar.OfferTeleport",   boost::bind(&PeopleContextMenu::offerTeleport,          this));
         registrar.add("Avatar.RemoveFriend",    boost::bind(&LLAvatarActions::removeFriendsDialog,      mUUIDs));
+        // <plus> contactsets: (plus/contactsets/peopletab) (research/333)
+        registrar.add("Avatar.AddToContactSet", boost::bind(&plus::contactsets::showAddToSet,           mUUIDs));
+        // </plus>
         // registrar.add("Avatar.Share",        boost::bind(&LLAvatarActions::startIM,                  mUUIDs)); // *TODO: unimplemented
         // registrar.add("Avatar.Pay",          boost::bind(&LLAvatarActions::pay,                      mUUIDs)); // *TODO: unimplemented
 
@@ -132,6 +141,7 @@ void PeopleContextMenu::buildContextMenu(class LLMenuGL& menu, U32 flags)
         items.push_back(std::string("share"));
         items.push_back(std::string("pay"));
         items.push_back(std::string("offer_teleport"));
+        items.push_back(std::string("Add to Set")); // <plus> contactsets (research/333) </plus>
     }
     else
     {
@@ -150,6 +160,7 @@ void PeopleContextMenu::buildContextMenu(class LLMenuGL& menu, U32 flags)
         items.push_back(std::string("share"));
         items.push_back(std::string("pay"));
         items.push_back(std::string("block_unblock"));
+        items.push_back(std::string("Add to Set")); // <plus> contactsets (research/333) </plus>
     }
 
     hide_context_entries(menu, items, disabled_items);
@@ -419,6 +430,7 @@ void NearbyPeopleContextMenu::buildContextMenu(class LLMenuGL& menu, U32 flags)
         items.push_back(std::string("share"));
         items.push_back(std::string("pay"));
         items.push_back(std::string("offer_teleport"));
+        items.push_back(std::string("Add to Set")); // <plus> contactsets (research/333) </plus>
     }
     else
     {
@@ -440,6 +452,7 @@ void NearbyPeopleContextMenu::buildContextMenu(class LLMenuGL& menu, U32 flags)
         items.push_back(std::string("block_unblock"));
         items.push_back(std::string("freeze"));
         items.push_back(std::string("eject"));
+        items.push_back(std::string("Add to Set")); // <plus> contactsets (research/333) </plus>
     }
 
     hide_context_entries(menu, items, disabled_items);

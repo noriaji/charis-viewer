@@ -43,6 +43,7 @@
 
 #include "fsfloaterposer.h"
 #include "fsjointpose.h"
+#include "fsposeranimator.h"
 
 #include "../posermcp/posehistorytools.h"
 #include "../posermcp/posesolvetools.h"
@@ -267,6 +268,8 @@ bool FSManipIKJoint::beginDrag(S32 handle, S32 x, S32 y, MASK mask)
     using namespace plus::posermcp;
 
     mAvatarArg = mAvatar->isSelf() ? "self" : mAvatar->getID().asString();
+    // another person who accepted a pose request (research/336); the MCP tools never take this path
+    mAllowOther = FSPoserAnimator::isOtherPerson(mAvatar);
     json::object args{ { "avatar", mAvatarArg } };
 
     try
@@ -277,7 +280,7 @@ bool FSManipIKJoint::beginDrag(S32 handle, S32 x, S32 y, MASK mask)
         for (const Handle& h : mHandles)
             wanted.push_back(h.name);
         SolveCapture cap;
-        captureSolveSkeleton(args, wanted, cap);
+        captureSolveSkeleton(args, wanted, cap, mAllowOther);
         mSkeleton = std::move(cap.skeleton);
 
         solver::State state{ mSkeleton.local, mSkeleton.rootPos };
@@ -326,7 +329,7 @@ bool FSManipIKJoint::beginDrag(S32 handle, S32 x, S32 y, MASK mask)
     mMouseDownX = x;
     mMouseDownY = y;
     mMouseOutsideSlop = false;
-    mRecording  = beginUserEdit();
+    mRecording  = !mAllowOther && beginUserEdit(); // the pose history is of the own avatar
     FSJointPose::beginUndoBatch(); // the whole drag is one step for the poser window's undo
 
     setMouseCapture(true);
@@ -397,7 +400,7 @@ void FSManipIKJoint::applySolve()
         }
         mAtLimit = mSolve->atLimit();
         if (!mRotations.empty() || pelvis)
-            applySolvedPose(json::object{ { "avatar", mAvatarArg } }, mRotations, pelvis);
+            applySolvedPose(json::object{ { "avatar", mAvatarArg } }, mRotations, pelvis, mAllowOther);
     }
     catch (const std::exception& e)
     {

@@ -183,6 +183,7 @@ LLInventoryPanel::LLInventoryPanel(const LLInventoryPanel::Params& p) :
 
     // context menu callbacks
     mCommitCallbackRegistrar.add("Inventory.DoToSelected", boost::bind(&LLInventoryPanel::doToSelected, this, _2));
+    mCommitCallbackRegistrar.add("Inventory.CustomAction", boost::bind(&LLInventoryPanel::onCustomAction, this, _2)); // <plus> invctxfs: Find All Links </plus>
     mCommitCallbackRegistrar.add("Inventory.EmptyTrash", boost::bind(&LLInventoryModel::emptyFolderType, &gInventory, "ConfirmEmptyTrash", LLFolderType::FT_TRASH));
     mCommitCallbackRegistrar.add("Inventory.EmptyLostAndFound", boost::bind(&LLInventoryModel::emptyFolderType, &gInventory, "ConfirmEmptyLostAndFound", LLFolderType::FT_LOST_AND_FOUND));
     mCommitCallbackRegistrar.add("Inventory.DoCreate", boost::bind(&LLInventoryPanel::doCreate, this, _2));
@@ -2230,6 +2231,17 @@ void LLInventoryPanel::updateSelection()
         setSelectionByID(mSelectThisID, mFocusSelection);
     }
 }
+
+// <plus> invctxfs: the context menu's "Find All Links" runs in the main inventory panel above this panel
+void LLInventoryPanel::onCustomAction(const LLSD& userdata)
+{
+    LLPanelMainInventory* main_panel = getParentByType<LLPanelMainInventory>();
+    if (main_panel)
+    {
+        main_panel->doCustomAction(userdata);
+    }
+}
+// </plus>
 
 void LLInventoryPanel::doToSelected(const LLSD& userdata)
 {

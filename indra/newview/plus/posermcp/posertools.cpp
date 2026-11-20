@@ -363,7 +363,7 @@ FSFloaterPoser* PlusPoserTools::poser()
     return floater;
 }
 
-LLVOAvatar* PlusPoserTools::findAvatar(const LLUUID& id)
+LLVOAvatar* PlusPoserTools::findAvatar(const LLUUID& id, bool allow_other)
 {
     if (id.isNull())
         return nullptr;
@@ -380,11 +380,13 @@ LLVOAvatar* PlusPoserTools::findAvatar(const LLUUID& id)
             return avatar;
         if (avatar->isControlAvatar() && !LLMuteList::getInstance()->isMuted(avatar->getID()))
             return avatar;
+        if (allow_other && FSPoserAnimator::isOtherPerson(avatar))
+            return avatar;
     }
     return nullptr;
 }
 
-LLVOAvatar* PlusPoserTools::resolveAvatar(const json::object& args)
+LLVOAvatar* PlusPoserTools::resolveAvatar(const json::object& args, bool allow_other)
 {
     requireLoggedIn();
 
@@ -395,15 +397,25 @@ LLVOAvatar* PlusPoserTools::resolveAvatar(const json::object& args)
     if (!LLUUID::validate(which))
         throw ToolError("'avatar' must be \"self\" or a UUID from list_avatars");
 
-    LLVOAvatar* avatar = findAvatar(LLUUID(which));
+    LLVOAvatar* avatar = findAvatar(LLUUID(which), allow_other);
     if (!avatar)
-        throw ToolError("No animesh " + which + " is around (other people's avatars are not offered); call list_avatars.");
+        throw ToolError(allow_other ? "This avatar is not around any more."
+                                    : "No animesh " + which + " is around (other people's avatars are not offered); call list_avatars.");
     return avatar;
 }
 
-bool PlusPoserTools::canPose(FSFloaterPoser* floater, LLVOAvatar* avatar)
+bool PlusPoserTools::canPose(FSFloaterPoser* floater, LLVOAvatar* avatar, bool allow_other)
 {
-    return floater->couldAnimateAvatar(avatar) && floater->havePermissionToAnimateAvatar(avatar);
+    if (!floater->couldAnimateAvatar(avatar))
+        return false;
+    return floater->havePermissionToAnimateAvatar(avatar) || (allow_other && floater->havePermissionToAnimateOtherAvatar(avatar));
+}
+
+std::string PlusPoserTools::canPoseMessage(bool allow_other)
+{
+    // the poser window's IK drag of another person (research/336): say what ended it, not the MCP's rule
+    return allow_other ? "This person no longer allows posing, or is out of reach (another region)."
+                       : "You can only pose yourself or an animesh you own, in your current region.";
 }
 
 void PlusPoserTools::requirePosing(FSFloaterPoser* floater, LLVOAvatar* avatar)
@@ -488,7 +500,9 @@ ToolResult PlusPoserTools::status(const json::object&)
         for (LLCharacter* character : LLCharacter::sInstances)
         {
             LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(character);
-            if (avatar && !avatar->isDead() && floater->mPoserAnimator.isPosingAvatar(avatar))
+            // Another person posed with consent (research/336) is not told: their UUID stays off the MCP
+            if (avatar && !avatar->isDead() && !FSPoserAnimator::isOtherPerson(avatar) &&
+                floater->mPoserAnimator.isPosingAvatar(avatar))
                 posing.push_back(json::string(avatar->getID().asString()));
         }
         result["posing"]      = std::move(posing);
@@ -1034,7 +1048,8 @@ bool PlusPoserTools::posesSettled(FSFloaterPoser* floater)
     for (LLCharacter* character : LLCharacter::sInstances)
     {
         LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(character);
-        if (!avatar || avatar->isDead())
+        // Another person's pose (research/336) is not the MCP's: it is not waited for
+        if (!avatar || avatar->isDead() || FSPoserAnimator::isOtherPerson(avatar))
             continue;
         FSPosingMotion* motion = floater->mPoserAnimator.getPosingMotion(avatar);
         if (!motion || motion->isStopped())
@@ -1283,6 +1298,284 @@ namespace plus::posermcp
 }
 
 // ---------------------------------------------------------------------------
+// Motion Between Poses (plus/posermotion/motionposer.h): the own avatar's joints
+// resolved once and written every frame of a played clip (no name lookup, no
+// allocation, no exception, no redraw of the window), and the clip as BVH.
+
+namespace
+{
+    namespace pm = plus::posermotion;
+
+    // Below this a value counts as already written (no write, no undo step).
+    constexpr F32 SAME_COMPONENT = 1e-7f;
+
+    // The largest component difference of two rotations, q and -q being the same.
+    F32 quatDifference(const LLQuaternion& a, const LLQuaternion& b)
+    {
+        F32 same = 0.f, flipped = 0.f;
+        for (S32 i = 0; i < 4; ++i)
+        {
+            same    = llmax(same, llabs(a.mQ[i] - b.mQ[i]));
+            flipped = llmax(flipped, llabs(a.mQ[i] + b.mQ[i]));
+        }
+        return llmin(same, flipped);
+    }
+
+    F32 vecDifference(const LLVector3& a, const LLVector3& b)
+    {
+        return llmax(llabs(a.mV[VX] - b.mV[VX]), llmax(llabs(a.mV[VY] - b.mV[VY]), llabs(a.mV[VZ] - b.mV[VZ])));
+    }
+
+    // A unit quaternion's components move by about sin(angle / 2) for a turn of angle.
+    const F32 TOUCHED_COMPONENT = std::sin(pm::TOUCHED_ANGLE_DEG * DEG_TO_RAD * 0.5f);
+
+    bool touchedSinceWrite(const pm::ResolvedJoint& rj)
+    {
+        const FSJointPose& pose = *rj.pose;
+        return quatDifference(pose.getTargetRotation(), rj.last_target) > TOUCHED_COMPONENT ||
+               vecDifference(pose.getPublicPosition(), rj.last_position) > pm::TOUCHED_OFFSET_M ||
+               vecDifference(pose.getPublicScale(), rj.last_scale) > pm::TOUCHED_OFFSET_M;
+    }
+
+    // As applySelf: target = own * base. A zero base stays zero (and the user's "zero base" mark stays); another
+    // base is kept and the own part is what makes the target.
+    void writeTarget(FSJointPose& pose, const LLQuaternion& target)
+    {
+        if (pose.isBaseRotationZero())
+        {
+            pose.setPublicRotation(true, pose.userHasSetBaseRotationToZero(), POSER_CHANGE_DEFAULT, target);
+            return;
+        }
+        const LLQuaternion base = ~pose.getPublicRotation() * pose.getTargetRotation();
+        LLQuaternion own = target * ~base;
+        own.normalize();
+        pose.setPublicRotation(false, false, POSER_CHANGE_DEFAULT, own);
+    }
+}
+
+// The own avatar is there (logged in, not being torn down; isAgentAvatarValid() also wants the avatar in a region).
+// Not isLoggedIn(): its region test adds nothing here (the agent's region is never null during a teleport:
+// LLAgent::setRegion asserts on null, only cleanup clears it). What stopped the playback on a teleport was the
+// poser's "avatar in the agent's region" test, which selfPosingMotion() leaves out (research/324 section 5.3).
+bool PlusPoserTools::selfAvatarThere()
+{
+    return LLStartUp::getStartupState() == STATE_STARTED && isAgentAvatarValid();
+}
+
+// The own avatar's posing motion of this poser window, or null. As FSPoserAnimator::getPosingMotion but without
+// its isAvatarSafeToUse(): that one also compares the avatar's region with the agent's, which differ for a moment in
+// a teleport or a region crossing (the own avatar is the agent's: always the one to pose).
+FSPosingMotion* PlusPoserTools::selfPosingMotion()
+{
+    if (!selfAvatarThere() || gAgentAvatarp->isDead())
+        return nullptr;
+    if (FSPoserAnimator::ownerOf(gAgentAvatarp->getID()) != PoseOwner::Window) // <plus> research/374: a push is not the window's pose </plus>
+        return nullptr;
+    const auto it = FSPoserAnimator::sAvatarIdToRegisteredAnimationId.find(gAgentAvatarp->getID());
+    if (it == FSPoserAnimator::sAvatarIdToRegisteredAnimationId.end())
+        return nullptr;
+    return dynamic_cast<FSPosingMotion*>(gAgentAvatarp->findMotion(it->second));
+}
+
+pm::SelfPoseState PlusPoserTools::motionSelfState()
+{
+    if (!selfAvatarThere())
+        return pm::SelfPoseState::NotLoggedIn;
+    FSFloaterPoser* floater = LLFloaterReg::findTypedInstance<FSFloaterPoser>(POSER_FLOATER);
+    if (!floater || !floater->getVisible())
+        return pm::SelfPoseState::NoPoser;
+    FSPosingMotion* motion = selfPosingMotion();
+    if (!motion || motion->isStopped())
+        return pm::SelfPoseState::NotPosing;
+    // the selected row's id against the agent's (not getUiSelectedAvatar(): it walks every character)
+    if (LLScrollListItem* item = floater->mAvatarSelectionScrollList ? floater->mAvatarSelectionScrollList->getFirstSelected() : nullptr)
+    {
+        const LLScrollListCell* cell = item->getColumn(COL_UUID);
+        if (cell && cell->getValue().asUUID() != gAgentID)
+            return pm::SelfPoseState::OtherSelected;
+    }
+    return pm::SelfPoseState::Posing;
+}
+
+bool PlusPoserTools::resolveSelfJoints(const pm::TrackLayout& layout, pm::ResolvedJoints& out)
+{
+    out.clear();
+    FSFloaterPoser* floater = LLFloaterReg::findTypedInstance<FSFloaterPoser>(POSER_FLOATER);
+    FSPosingMotion* motion  = floater ? selfPosingMotion() : nullptr;
+    if (!motion || motion->isStopped())
+        return false;
+    LLVOAvatar*      avatar   = gAgentAvatarp.get();
+    FSPoserAnimator& animator = floater->mPoserAnimator;
+
+    bool turned_on = false;
+    out.joints.reserve(layout.joints.size());
+    for (const pm::TrackJoint& track : layout.joints)
+    {
+        pm::ResolvedJoint rj;
+        const FSPoserAnimator::FSPoserJoint* joint = animator.getPoserJointByName(track.name);
+        rj.pose = joint ? motion->getJointPoseByJointName(track.name) : nullptr;
+        if (rj.pose && !motion->currentlyPosingJoint(rj.pose))
+        {
+            motion->addJointToState(rj.pose); // as FSPoserAnimator::setPosingAvatarJoint(..., true), without its region test
+            turned_on = true;
+        }
+        out.joints.push_back(rj);
+    }
+    out.poser     = floater->getHandle();
+    out.motion    = motion;
+    out.motion_id = motion->motionId();
+    if (turned_on)
+        refreshWindow(floater, false);
+    return true;
+}
+
+FSPosingMotion* PlusPoserTools::resolvedMotion(const pm::ResolvedJoints& joints)
+{
+    if (!joints.motion || !joints.poser.get())
+        return nullptr;
+    FSPosingMotion* motion = selfPosingMotion();
+    if (motion != joints.motion || motion->motionId() != joints.motion_id || motion->isStopped())
+        return nullptr;
+    return motion;
+}
+
+bool PlusPoserTools::resolvedJointsHold(const pm::ResolvedJoints& joints, const pm::TrackLayout& layout)
+{
+    FSPosingMotion* motion = resolvedMotion(joints);
+    if (!motion || joints.joints.size() != layout.joints.size())
+        return false;
+    for (size_t i = 0; i < joints.joints.size(); ++i)
+    {
+        if (joints.joints[i].pose)
+            return motion->getJointPoseByJointName(layout.joints[i].name) == joints.joints[i].pose;
+    }
+    return true; // no joint of this skeleton to write: nothing can be written through
+}
+
+pm::WriteResult PlusPoserTools::writeSelfFrame(pm::ResolvedJoints& joints, const pm::TrackLayout& layout,
+                                              const pm::KeyPose& frame, pm::WriteCheck check)
+{
+    if (!resolvedMotion(joints) || joints.joints.size() != layout.joints.size())
+        return pm::WriteResult::Gone;
+
+    if (check == pm::WriteCheck::IfUntouched)
+    {
+        for (const pm::ResolvedJoint& rj : joints.joints)
+        {
+            if (rj.pose && rj.has_last && touchedSinceWrite(rj))
+                return pm::WriteResult::Touched;
+        }
+    }
+
+    pm::TrackValues values;
+    for (S32 i = 0; i < (S32)joints.joints.size(); ++i)
+    {
+        pm::ResolvedJoint& rj = joints.joints[(size_t)i];
+        if (!rj.pose)
+            continue;
+        if (!pm::trackValues(layout, i, frame, values))
+            return pm::WriteResult::Gone; // the frame is not of this layout (the earlier joints are written: harmless)
+        FSJointPose& pose = *rj.pose;
+        if (values.has_rotation && !pose.isCollisionVolume() &&
+            quatDifference(pose.getTargetRotation(), values.rotation) > SAME_COMPONENT)
+            writeTarget(pose, values.rotation);
+        if (values.has_position && vecDifference(pose.getPublicPosition(), values.position) > SAME_COMPONENT)
+            pose.setPublicPosition(values.position);
+        if (values.has_scale && vecDifference(pose.getPublicScale(), values.scale) > SAME_COMPONENT)
+            pose.setPublicScale(values.scale);
+        rj.last_target   = pose.getTargetRotation();
+        rj.last_position = pose.getPublicPosition();
+        rj.last_scale    = pose.getPublicScale();
+        rj.has_last      = true;
+    }
+    return pm::WriteResult::Written;
+}
+
+void PlusPoserTools::refreshSelfWindow()
+{
+    if (FSFloaterPoser* floater = LLFloaterReg::findTypedInstance<FSFloaterPoser>(POSER_FLOATER))
+        refreshWindow(floater, false);
+}
+
+pm::BvhSaveResult PlusPoserTools::saveClipBvh(const std::string& name, const pm::MotionClip& clip, const pm::TrackLayout& layout)
+{
+    if (!isValidPoseName(name))
+        return pm::BvhSaveResult::BadName;
+    FSFloaterPoser* floater = LLFloaterReg::findTypedInstance<FSFloaterPoser>(POSER_FLOATER);
+    if (!selfAvatarThere() || !floater)
+        return pm::BvhSaveResult::NoPoser;
+    const FSPoserAnimator::FSPoserJoint* root = floater->mPoserAnimator.getPoserJointByName(pm::PELVIS_JOINT);
+    if (!root || clip.empty())
+        return pm::BvhSaveResult::WriteFailed;
+
+    const std::string folder = poseDirectory();
+    if (!gDirUtilp->fileExists(folder))
+        LLFile::mkdir(folder);
+    const std::string path = posePath(name, ".bvh");
+    const std::string temp = path + ".tmp";
+    auto fail = [&temp]()
+    {
+        LLFile::remove(temp);
+        return pm::BvhSaveResult::WriteFailed;
+    };
+
+    // the poser's hierarchy, then read back for the joints' order and channels
+    {
+        llofstream file(temp.c_str());
+        if (!file.is_open())
+            return pm::BvhSaveResult::WriteFailed;
+        file << "HIERARCHY" << std::endl;
+        floater->writeBvhFragment(&file, gAgentAvatarp.get(), root, 0);
+        file.close();
+        if (file.fail())
+            return fail();
+    }
+    std::vector<pm::BvhJoint> joints;
+    {
+        llifstream file(temp.c_str());
+        if (!file.is_open() || !pm::readBvhHierarchy(file, joints))
+            return fail();
+    }
+    // only the joints the clip writes move (the others stay 0: left to the other animations, as in the playback)
+    const pm::BvhClipTracks tracks = pm::bvhTracksOf(joints, layout);
+    {
+        llofstream file(temp.c_str(), std::ios::app);
+        if (!file.is_open() || !pm::writeBvhMotion(file, joints, tracks, clip))
+        {
+            file.close();
+            return fail();
+        }
+        file.close();
+        if (file.fail())
+            return fail();
+    }
+    if (LLFile::rename(temp, path) != 0)
+        return fail();
+    return pm::BvhSaveResult::Saved;
+}
+
+namespace plus::posermotion
+{
+    SelfPoseState   selfPoseState() { return PlusPoserTools::motionSelfState(); }
+    bool            resolveSelfJoints(const TrackLayout& layout, ResolvedJoints& out) { return PlusPoserTools::resolveSelfJoints(layout, out); }
+    FSPosingMotion* resolvedMotion(const ResolvedJoints& joints) { return PlusPoserTools::resolvedMotion(joints); }
+    bool            resolvedJointsHold(const ResolvedJoints& joints, const TrackLayout& layout)
+    {
+        return PlusPoserTools::resolvedJointsHold(joints, layout);
+    }
+    WriteResult     writeSelfFrame(ResolvedJoints& joints, const TrackLayout& layout, const KeyPose& frame, WriteCheck check)
+    {
+        return PlusPoserTools::writeSelfFrame(joints, layout, frame, check);
+    }
+    void            refreshPoserWindow() { PlusPoserTools::refreshSelfWindow(); }
+    bool            clipBvhExists(const std::string& name) { return isValidPoseName(name) && gDirUtilp->fileExists(posePath(name, ".bvh")); }
+    BvhSaveResult   saveClipBvh(const std::string& name, const MotionClip& clip, const TrackLayout& layout)
+    {
+        return PlusPoserTools::saveClipBvh(name, clip, layout);
+    }
+}
+
+// ---------------------------------------------------------------------------
 // solve_pose and nudge (posesolvetools.cpp): the skeleton as drawn in, the
 // solved rotations out.
 
@@ -1291,12 +1584,13 @@ namespace
     namespace solver = plus::posermcp::solver;
 }
 
-void PlusPoserTools::captureForSolve(const json::object& args, const std::vector<std::string>& wanted, plus::posermcp::SolveCapture& out)
+void PlusPoserTools::captureForSolve(const json::object& args, const std::vector<std::string>& wanted, plus::posermcp::SolveCapture& out,
+                                     bool allow_other)
 {
-    LLVOAvatar*     avatar  = resolveAvatar(args);
+    LLVOAvatar*     avatar  = resolveAvatar(args, allow_other);
     FSFloaterPoser* floater = poser();
-    if (!canPose(floater, avatar))
-        throw ToolError("You can only pose yourself or an animesh you own, in your current region.");
+    if (!canPose(floater, avatar, allow_other))
+        throw ToolError(canPoseMessage(allow_other));
     requirePosing(floater, avatar);
     LLJoint* root = avatar->getRootJoint();
     if (!root)
@@ -1349,13 +1643,13 @@ void PlusPoserTools::captureForSolve(const json::object& args, const std::vector
     }
     FSJointPose* pelvis = jointPose(floater, avatar, requireJoint(floater, "mPelvis"));
     sk.pelvisOffset     = pelvis ? solver::fromLL(pelvis->getPublicPosition()) : solver::Vec3();
-    out.fingerprint     = fingerprintOf(args);
+    out.fingerprint     = fingerprintOf(args, allow_other);
     out.settled         = posesSettled(floater);
 }
 
-std::uint64_t PlusPoserTools::fingerprintOf(const json::object& args)
+std::uint64_t PlusPoserTools::fingerprintOf(const json::object& args, bool allow_other)
 {
-    LLVOAvatar*     avatar  = resolveAvatar(args);
+    LLVOAvatar*     avatar  = resolveAvatar(args, allow_other);
     FSFloaterPoser* floater = poser();
     FSPosingMotion* motion  = floater->mPoserAnimator.getPosingMotion(avatar);
     if (!motion)
@@ -1382,12 +1676,12 @@ std::uint64_t PlusPoserTools::fingerprintOf(const json::object& args)
 bool PlusPoserTools::settledNow() { return posesSettled(poser()); }
 
 void PlusPoserTools::applySolved(const json::object& args, const std::vector<std::pair<std::string, LLQuaternion>>& rotations,
-                                 const std::optional<LLVector3>& pelvisPosition)
+                                 const std::optional<LLVector3>& pelvisPosition, bool allow_other)
 {
-    LLVOAvatar*     avatar  = resolveAvatar(args);
+    LLVOAvatar*     avatar  = resolveAvatar(args, allow_other);
     FSFloaterPoser* floater = poser();
-    if (!canPose(floater, avatar))
-        throw ToolError("You can only pose yourself or an animesh you own, in your current region.");
+    if (!canPose(floater, avatar, allow_other))
+        throw ToolError(canPoseMessage(allow_other));
     requirePosing(floater, avatar);
     FSPoserAnimator& animator = floater->mPoserAnimator;
     for (const auto& [name, rotation] : rotations)
@@ -1423,16 +1717,16 @@ std::vector<std::pair<std::string, LLVector3>> PlusPoserTools::drawnAt(const jso
 
 namespace plus::posermcp
 {
-    void captureSolveSkeleton(const json::object& args, const std::vector<std::string>& wanted, SolveCapture& out)
+    void captureSolveSkeleton(const json::object& args, const std::vector<std::string>& wanted, SolveCapture& out, bool allow_other)
     {
-        PlusPoserTools::captureForSolve(args, wanted, out);
+        PlusPoserTools::captureForSolve(args, wanted, out, allow_other);
     }
     std::uint64_t poseFingerprint(const json::object& args) { return PlusPoserTools::fingerprintOf(args); }
     bool          posesSettledNow() { return PlusPoserTools::settledNow(); }
     void          applySolvedPose(const json::object& args, const std::vector<std::pair<std::string, LLQuaternion>>& rotations,
-                                  const std::optional<LLVector3>& pelvisPosition)
+                                  const std::optional<LLVector3>& pelvisPosition, bool allow_other)
     {
-        PlusPoserTools::applySolved(args, rotations, pelvisPosition);
+        PlusPoserTools::applySolved(args, rotations, pelvisPosition, allow_other);
     }
     std::vector<std::pair<std::string, LLVector3>> drawnPositions(const json::object& args, const std::vector<std::string>& names)
     {

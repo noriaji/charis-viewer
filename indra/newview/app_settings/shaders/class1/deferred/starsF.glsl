@@ -25,7 +25,11 @@
 
 /*[EXTRA_CODE_HERE]*/
 
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: frag_data[4] the motion vectors (research/373, llrhimotion.h)
+out vec4 frag_data[5];
+#else // </plus>
 out vec4 frag_data[4];
+#endif // <plus> tu-motion-v1 </plus>
 
 in vec4 vertex_color;
 in vec2 vary_texcoord0;
@@ -243,6 +247,9 @@ void main()
     {
         vec4 star = vec4(newStar(), 1.0);
         frag_data[1] = vec4(0.0f);
+#if defined(HAS_MOTION) // tu-motion-v1 (in the block above): no motion of its own, the camera's is filled in after the G-buffer
+        frag_data[4] = vec4(0.0);
+#endif
         frag_data[2] = vec4(0.0, 1.0, 0.0, GBUFFER_FLAG_SKIP_ATMOS);
 #if defined(HAS_EMISSIVE)
         frag_data[0] = vec4(0);
@@ -267,6 +274,9 @@ void main()
     col.a *= twinkle();
 
     frag_data[1] = vec4(0.0f);
+#if defined(HAS_MOTION) // <plus> tu-motion-v1: no motion of its own, the camera's is filled in after the G-buffer
+    frag_data[4] = vec4(0.0);
+#endif // </plus>
     frag_data[2] = vec4(0.0, 1.0, 0.0, GBUFFER_FLAG_SKIP_ATMOS);
 
 #if defined(HAS_EMISSIVE)

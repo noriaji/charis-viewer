@@ -50,6 +50,8 @@
 
 #include <algorithm>
 #include <cmath>
+#include <sstream>
+#include <vector>
 
 namespace plus::flycammouse
 {
@@ -62,11 +64,17 @@ namespace plus::flycammouse
         constexpr char SETTING_BOOST[] = "PlusFlycamBoost";
         constexpr char SETTING_SMOOTH[] = "PlusFlycamSmooth";
         constexpr char SETTING_SPEED[] = "PlusFlycamSpeedMul";
+        constexpr char SETTING_LEVELS[] = "PlusFlycamSpeedLevels";
         constexpr char SETTING_ROLL_SPEED[] = "PlusFlycamRollSpeed";
 
         constexpr F32 SPEED_MIN       = 0.05f;
         constexpr F32 SPEED_MAX       = 50.f;
-        constexpr F32 WHEEL_STEP      = 1.15f;   // per notch
+        constexpr S32 SPEED_LEVELS    = 9;
+        constexpr F32 SAME_SPEED      = 1.0001f; // two speeds closer than this are the same level
+        // The turn to level of the wheel's press: short enough to feel at once and to keep the flycam's input (which
+        // waits for it, LLFlycam::integrate()) only a moment, long enough that a big roll turns instead of cutting (the
+        // official unroll, Home, takes 1 s).
+        constexpr F32 LEVEL_SECONDS   = 0.25f;
         constexpr F32 BOOST_MAX       = 20.f;
         constexpr F32 BOOST_EASE_TIME = 0.2f;    // seconds for the Shift boost to come and go
         constexpr F32 SMOOTH_MAX      = 2.f;     // seconds
@@ -101,6 +109,7 @@ namespace plus::flycammouse
         F32     sRollSmoothed = 0.f;        // the tilt keys, started and stopped gently
         F32     sRollBoost = 1.f;           // Shift's ROLL_FAST, eased as the move boost (sBoost)
         LLNotificationPtr sSpeedTip;
+        bool    sMiddleTaken = false;       // the middle button we took is still down (its release is ours too)
         bool    sTurningOn = false;         // toggle() is turning the flycam on
         bool    sOurs = false;              // the flycam that is on was turned on by toggle() (no 3D mouse): isOurs()
 
@@ -189,6 +198,95 @@ namespace plus::flycammouse
                 && !(gMenuHolder && gMenuHolder->hasVisibleMenu())   // the pie menu and the context menus
                 && !keyboardFocusIsText()
                 && !LLToolMgr::getInstance()->inBuildMode();
+        }
+
+        // The speed levels the wheel steps along, slowest first; a missing or bad entry falls back to the default list's,
+        // so a hand-edited setting can not leave a level out. Sorted, so the wheel's order is the speed's whatever order
+        // the setting was written in. Parsed on each wheel notch, never per frame.
+        std::vector<F32> speedLevels()
+        {
+            static const F32 DEFAULTS[SPEED_LEVELS] = { 0.1f, 0.18f, 0.3f, 0.5f, 1.f, 1.6f, 2.5f, 4.f, 6.f };
+            std::vector<F32> list(DEFAULTS, DEFAULTS + SPEED_LEVELS);
+            std::istringstream words(gSavedSettings.getString(SETTING_LEVELS));
+            for (S32 i = 0; i < SPEED_LEVELS; ++i)
+            {
+                F32 value = 0.f;
+                if (!(words >> value))
+                {
+                    break;
+                }
+                if (value >= SPEED_MIN && value <= SPEED_MAX)
+                {
+                    list[i] = value;
+                }
+            }
+            std::sort(list.begin(), list.end());
+            return list;
+        }
+
+        // The speed `steps` levels faster (negative: slower) than `current`: a step is the next level above (below) it,
+        // so a speed between two levels (the Preferences slider's) moves to the next one in that direction, and the ends
+        // stay where they are (a speed past the fastest level is not pulled down by a turn faster). Within
+        // SPEED_MIN..SPEED_MAX; a bad `current` is 1.
+        F32 stepSpeed(F32 current, S32 steps)
+        {
+            F32 speed = llfinite(current) ? llclamp(current, SPEED_MIN, SPEED_MAX) : 1.f;
+            if (steps == 0)
+            {
+                return speed;
+            }
+            const std::vector<F32> list = speedLevels();
+            for (S32 n = llmin(std::abs(steps), (S32)list.size()); n > 0; --n)
+            {
+                F32 next = speed;
+                if (steps > 0)
+                {
+                    const auto it = std::find_if(list.begin(), list.end(), [speed](F32 level) { return level > speed * SAME_SPEED; });
+                    if (it != list.end())
+                    {
+                        next = *it;
+                    }
+                }
+                else
+                {
+                    const auto it = std::find_if(list.rbegin(), list.rend(), [speed](F32 level) { return level * SAME_SPEED < speed; });
+                    if (it != list.rend())
+                    {
+                        next = *it;
+                    }
+                }
+                if (next == speed)
+                {
+                    break;   // at an end
+                }
+                speed = next;
+            }
+            return speed;
+        }
+
+        // The fastest of the levels, for the 3D mouse's cap (speedMultiplier(), every frame): parsed again only when
+        // PlusFlycamSpeedLevels changes, the per-frame cost a compare of the setting's short string.
+        F32 fastestLevel()
+        {
+            static LLCachedControl<std::string> levels(gSavedSettings, SETTING_LEVELS, "");
+            static std::string sParsed;
+            static F32 sFastest = 0.f;
+            const std::string& now = levels();
+            if (sFastest == 0.f || now != sParsed)
+            {
+                sParsed = now;
+                sFastest = speedLevels().back();
+            }
+            return sFastest;
+        }
+
+        // The tilt goes level: the flycam's own roll in a turn of LEVEL_SECONDS, the keys' (Q / E) and the photo tools'
+        // tilt at once. With the flycam on; whatever has the keyboard (a click or a shortcut, not a typed key).
+        void levelAll()
+        {
+            gAgentCamera.levelFlycam(LEVEL_SECONDS);
+            sRollSmoothed = 0.f;   // Q / E's tilt does not coast on from the level
+            plus::camroll::setDegrees(0.f);
         }
 
         void showSpeed(F32 speed)
@@ -460,13 +558,59 @@ namespace plus::flycammouse
         {
             return false;
         }
-        // scrolling forward (negative clicks) flies faster
-        const F32 speed = llclamp(gSavedSettings.getF32(SETTING_SPEED) * (F32)std::pow(WHEEL_STEP, (F32)-clicks),
-                                  SPEED_MIN, SPEED_MAX);
+        // scrolling forward (negative clicks) flies faster, a level a notch (the same for a 3D mouse)
+        const F32 speed = stepSpeed(gSavedSettings.getF32(SETTING_SPEED), -clicks);
         gSavedSettings.setF32(SETTING_SPEED, speed);
         sSpeedChangedInPrefs = false;   // the wheel's speed stays, whatever Preferences does after
         showSpeed(speed);
         return true;
+    }
+
+    F32 speedMultiplier()
+    {
+        // Within the wheel's levels at most: a speed saved past them (the older wheel went up to 50, or the Preferences
+        // slider's) would make a 3D mouse fly off at once. The keyboard flycam keeps the whole range (update()).
+        static LLCachedControl<F32> speed(gSavedSettings, SETTING_SPEED, 1.f);
+        return llfinite((F32)speed) ? llclamp((F32)speed, SPEED_MIN, fastestLevel()) : 1.f;   // NaN would pass llclamp()
+    }
+
+    bool onMiddleClick(bool down, MASK mask)
+    {
+        if (!down)
+        {
+            const bool ours = sMiddleTaken;
+            sMiddleTaken = false;
+            return ours;
+        }
+        sMiddleTaken = false;
+        // the user's own binding of the middle button in the flycam's mode is theirs (as the right double click's,
+        // LLViewerWindow::handleAnyMouseClick())
+        if (mask != MASK_NONE || !gAgentCamera.isUsingFlycam()
+            || gViewerInput.isMouseBindUsed(CLICK_MIDDLE, MASK_NONE, (S32)MODE_FLYCAM))
+        {
+            return false;
+        }
+        levelAll();
+        sMiddleTaken = true;
+        return true;
+    }
+
+    void levelNow()
+    {
+        if (gAgentCamera.isUsingFlycam())
+        {
+            levelAll();
+        }
+    }
+
+    void setSpeedLevel(S32 level)
+    {
+        if (level < 1 || level > SPEED_LEVELS)
+        {
+            return;
+        }
+        gSavedSettings.setF32(SETTING_SPEED, speedLevels()[level - 1]);
+        sSpeedChangedInPrefs = false;   // this speed stays, whatever Preferences does after
     }
 
     void preferencesApplied()

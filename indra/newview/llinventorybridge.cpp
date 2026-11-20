@@ -57,6 +57,7 @@
 #include "llinventorymodel.h"
 #include "llinventorymodelbackgroundfetch.h"
 #include "llinventorypanel.h"
+#include "llpanelmaininventory.h" // <plus> invctxfs: Find All Links needs the main inventory panel </plus>
 #include "llmarketplacefunctions.h"
 #include "llnotifications.h"
 #include "llnotificationsutil.h"
@@ -86,6 +87,7 @@
 #include "llenvironment.h"
 
 // <plus> protected folders, and the guards that refuse a folder (plus/protectedfolders, plus/invguard), folder icons (plus/invfoldericons)
+#include "plus/animquick/animquick.h"
 #include "plus/invfoldericons/invfoldericons.h"
 #include "plus/invguard/invguard.h"
 #include "plus/protectedfolders/protectedfolders.h"
@@ -845,6 +847,22 @@ void hide_context_entries(LLMenuGL& menu,
     }
 }
 
+// <plus> invctxfs: "Copy Name" shared by items and folders (the display name, so a system folder gives its localized name)
+void LLInvFVBridge::copyNameToClipboard() const
+{
+    gViewerWindow->getWindow()->copyTextToClipboard(utf8str_to_wstring(getDisplayName()));
+}
+
+void LLInvFVBridge::addCopyNameMenuOption(U32 flags, menuentry_vec_t& items, menuentry_vec_t& disabled_items)
+{
+    items.push_back(std::string("Copy Name"));
+    if ((flags & ITEM_IN_MULTI_SELECTION) != 0)
+    {
+        disabled_items.push_back(std::string("Copy Name"));
+    }
+}
+// </plus>
+
 // Helper for commonly-used entries
 void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
                                         menuentry_vec_t &items,
@@ -867,6 +885,9 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
         {
             disabled_items.push_back(std::string("Copy"));
         }
+        // <plus> invctxfs: "Copy Name"; single selection only
+        addCopyNameMenuOption(flags, items, disabled_items);
+        // </plus>
 
         bool is_agent_inventory = isAgentInventory();
         if (is_agent_inventory && !single_folder_root && !is_cof && !is_inbox)
@@ -915,6 +936,14 @@ void LLInvFVBridge::getClipboardEntries(bool show_asset_id,
             if (LLAssetType::lookupCanLink(obj->getType()))
             {
                 items.push_back(std::string("Find Links"));
+                // <plus> invctxfs: the search runs in the main inventory panel, for one item (links never get this entry)
+                LLInventoryPanel* find_panel = mInventoryPanel.get();
+                if ((flags & ITEM_IN_MULTI_SELECTION) != 0
+                    || !find_panel || !find_panel->getParentByType<LLPanelMainInventory>())
+                {
+                    disabled_items.push_back(std::string("Find Links"));
+                }
+                // </plus>
             }
 
             if (!is_inbox && !single_folder_root)
@@ -1814,6 +1843,13 @@ void LLItemBridge::performAction(LLInventoryModel* model, std::string action)
         LLFloaterReg::showInstance("change_item_thumbnail", data);
         return;
     }
+    // <plus> invctxfs: "Copy Name"
+    else if ("copy_name" == action)
+    {
+        copyNameToClipboard();
+        return;
+    }
+    // </plus>
     else if ("copy_uuid" == action)
     {
         // Single item only
@@ -3561,6 +3597,28 @@ void LLFolderBridge::performAction(LLInventoryModel* model, std::string action)
     }
     // </plus>
 
+    // <plus> invctxfs: "Copy Name" / "Reload Folder"
+    if ("copy_name" == action)
+    {
+        copyNameToClipboard();
+        return;
+    }
+    if ("reload_folder" == action)
+    {
+        LLViewerInventoryCategory* cat = model ? model->getCategory(mUUID) : nullptr;
+        // Only when no request is in flight or recently failed: a version reset during the 60 s wait after a failed
+        // fetch would drop the request and leave the folder "loading"; a running fetch updates the folder by itself.
+        if (cat && !isCOFFolder() && cat->getFetching() == LLViewerInventoryCategory::FETCH_NONE)
+        {
+            // LLViewerInventoryCategory::fetch() does nothing while its last request is recent (10 s, 180 s after a
+            // background fetch), so queue the fetch directly after forgetting the version
+            cat->setVersion(LLViewerInventoryCategory::VERSION_UNKNOWN);
+            LLInventoryModelBackgroundFetch::instance().start(mUUID, false);
+        }
+        return;
+    }
+    // </plus>
+
     if ("open" == action)
     {
         LLFolderViewFolder *f = dynamic_cast<LLFolderViewFolder   *>(mInventoryPanel.get()->getItemByID(mUUID));
@@ -4804,6 +4862,29 @@ void LLFolderBridge::buildContextMenuOptions(U32 flags, menuentry_vec_t&   items
     }
 
 
+
+    // <plus> invctxfs: "Copy Name" and "Reload Folder" for every folder, added before the contents fetch below
+    // (that fetch only builds the rest of the menu once the folder is loaded, so a stuck folder must not wait for it)
+    // (not for a folder in the trash: the trash menu has no Copy Name for its items either)
+    if (!isItemInTrash() && std::find(items.begin(), items.end(), std::string("Copy Name")) == items.end())
+    {
+        addCopyNameMenuOption(flags, items, disabled_items);
+    }
+    // not for the two roots (misuse), the COF (a version reset there stalls appearance updates) or a multi-selection
+    if ((flags & ITEM_IN_MULTI_SELECTION) == 0
+        && mUUID != model->findCategoryUUIDForType(LLFolderType::FT_ROOT_INVENTORY)
+        && mUUID != model->findLibraryCategoryUUIDForType(LLFolderType::FT_ROOT_INVENTORY)
+        && !isCOFFolder())
+    {
+        items.push_back(std::string("ReloadFolder"));
+        // grey while a request is running or recently failed (the action does nothing then, see performAction)
+        LLViewerInventoryCategory* reload_cat = model->getCategory(mUUID);
+        if (!reload_cat || reload_cat->getFetching() != LLViewerInventoryCategory::FETCH_NONE)
+        {
+            disabled_items.push_back(std::string("ReloadFolder"));
+        }
+    }
+    // </plus>
 
     // Add menu items that are dependent on the contents of the folder.
     LLViewerInventoryCategory* category = (LLViewerInventoryCategory *) model->getCategory(mUUID);
@@ -8222,6 +8303,7 @@ void LLLinkFolderBridge::buildContextMenu(LLMenuGL& menu, U32 flags)
     else
     {
         items.push_back(std::string("Find Original"));
+        addCopyNameMenuOption(flags, items, disabled_items); // <plus> invctxfs: Copy Name </plus>
         addDeleteContextMenuOptions(items, disabled_items);
 
         if (isFavorite())
@@ -8459,7 +8541,12 @@ public:
         LLViewerInventoryItem* item = getItem();
         if (item)
         {
-            LLFloaterReg::showInstance("preview_anim", LLSD(mUUID), TAKE_FOCUS_YES);
+            // <plus> animquick: reuse one preview window and play at once (research/332)
+            if (!plus::animquick::open(mUUID))
+            {
+                LLFloaterReg::showInstance("preview_anim", LLSD(mUUID), TAKE_FOCUS_YES);
+            }
+            // </plus>
         }
         LLInvFVBridgeAction::doIt();
     }

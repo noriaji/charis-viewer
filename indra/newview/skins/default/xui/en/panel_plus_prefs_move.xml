@@ -5,7 +5,7 @@
      ranges) in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml).
      Height of the list (1080 base): 10 + 2 sliders x 31 + label 24 + 2 checks x 30 + 10 + heading 40
      + 3 checks x 30 + 10 + heading 40 + check 30 + sensitivity 31 + 10 + 3 drop-down rows x 33 + 10
-     + 2 checks x 30 + 6 + button 40 + 14 + 1 check x 30 (camera constraints) = 676 (scrolls in 515).
+     + 3 checks x 30 + 6 + button 40 + 14 + 1 check x 30 (camera constraints) = 706 (scrolls in 515).
      Rows at left 44 (the icons in the column at 14), 499 wide: label 257 | 12 | drop-down 230 (the
      longest ja choice is 15 characters); sensitivity: label 206 | 6 | slider 174 | 12 | Invert 101. -->
 <panel
@@ -41,7 +41,7 @@
              name="move_scroll_panel"
              background_visible="false"
              follows="left|top"
-             height="676"
+             height="706"
              layout="topleft"
              left="0"
              mouse_opaque="false"
@@ -375,6 +375,18 @@
                  tool_tip="The dark teleport screen (the progress view) does not come down: the world stays in view while you teleport. What is still loading comes in with the materialize effect."
                  top="586"
                  width="499" />
+                <!-- worldmapinfo (PlusWorldMapRegionInfo): Firestorm's FSAdvancedWorldmapRegionInfo -->
+                <plus_ps_check_compat
+                 name="world_map_region_info"
+                 control_name="PlusWorldMapRegionInfo"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show avatar count and maturity under region names on the World Map"
+                 layout="topleft"
+                 left="44"
+                 tool_tip="Shows (avatar count - maturity) under each region name on the World Map. For the region you are in, after you open the Region/Estate window once, it reads (count/maximum - maturity)."
+                 top="616"
+                 width="499" />
                 <plus_ps_button_compat
                  name="joystick_setup_button"
                  follows="left|top"
@@ -382,7 +394,7 @@
                  label="3Dconnexion devices"
                  layout="topleft"
                  left="44"
-                 top="622"
+                 top="652"
                  width="260">
                     <plus_ps_button_compat.commit_callback
                      function="Floater.Show"

@@ -119,13 +119,20 @@
 #include "plus/hairsway/hairsway.h"
 #include "llrhiavatar.h"    // research/199 (stage 4b): resident palette rows, compute skinning check
 #include "plus/gaze/gaze.h"
+#include "plus/photomode/phototoolsfloater.h" // research/344: inPhotoMode for the flat jelly doll
+#include "llfloaterreg.h" // research/344: the snapshot window is open (flat jelly dolls)
+extern bool gSnapshot; // llviewerdisplay.cpp: a picture is being taken (also tiles of one)
 #include "plus/ao/ao.h"
+#include "plus/focuslock/focuslock.h" // research/343
+#include "plus/poser/poser.h" // research/336: another person posed with consent is never far
+#include "plus/photoscreen/photoscreen.h" // research/343
 #include "plus/idlecheap/idlecensus.h"
 #include "plus/idlecheap/vparammemo.h"
 // </plus>
 // <plus> rlv: RLVa (plus/rlv) (research/248)
 #include "plus/rlv/rlvhooks.h"
 // </plus>
+#include "plus/contactsethooks/cshooks.h" // <plus> contactsets: set colours of the tag and the bubble (research/333) </plus>
 
 #include <boost/lexical_cast.hpp>
 #include <chrono>
@@ -613,6 +620,8 @@ private:
 //-----------------------------------------------------------------------------
 U32 LLVOAvatar::sMaxNonImpostors = 12; // Set from RenderAvatarMaxNonImpostors
 bool LLVOAvatar::sLimitNonImpostors = false; // True unless RenderAvatarMaxNonImpostors is 0 (unlimited)
+F32 LLVOAvatar::sFullDistance = 0.f; // <plus> research/343: set from PlusAvatarFullDistance (sLimitNonImpostors is also on for it) </plus>
+U32 LLVOAvatar::sFarSwitches = 0; // <plus> research/343 </plus>
 F32 LLVOAvatar::sRenderDistance = 256.f;
 S32 LLVOAvatar::sNumVisibleAvatars = 0;
 S32 LLVOAvatar::sNumLODChangesThisFrame = 0;
@@ -2965,7 +2974,9 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
         return;
     }
 
+    plus::idlecensus::Scope plus_graywire(plus::idlecensus::AV_GRAYWIRE); // <plus> research/339 22 </plus>
     GrayWire::updateAvatar(this);   // attachments with a texture not loaded yet: the avatar is drawn as a wireframe
+    plus_graywire.stop(); // <plus> research/339 22 </plus>
 
     static LLCachedControl<bool> friends_only(gSavedSettings, "RenderAvatarFriendsOnly", false);
     if (friends_only()
@@ -3002,6 +3013,7 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
     }
 
     // Update should be happening max once per frame.
+    plus::idlecensus::Scope plus_extent(plus::idlecensus::AV_EXTENT); // <plus> research/339 22 </plus>
     static LLCachedControl<S32> refreshPeriod(gSavedSettings, "AvatarExtentRefreshPeriodBatch");
     static LLCachedControl<S32> refreshMaxPerPeriod(gSavedSettings, "AvatarExtentRefreshMaxPerBatch");
     static S32 upd_freq = refreshPeriod; // initialise to a reasonable default of 1 batch
@@ -3036,10 +3048,14 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
         // if the frame counnter + the first byte of the UUID % upd_freq = 0 then update the extent.
         mNeedsExtentUpdate = ((thisFrame + mID.mData[0]) % upd_freq == 0);
     }
+    plus_extent.stop(); // <plus> research/339 22 </plus>
 
+    plus::idlecensus::Scope plus_texture(plus::idlecensus::AV_TEXTURE_LOADING); // <plus> research/193 A: only the call from idleUpdate </plus>
     checkTextureLoading() ;
+    plus_texture.stop(); // <plus> research/193 A </plus>
 
     // force immediate pixel area update on avatars using last frames data (before drawable or camera updates)
+    plus::idlecensus::Scope plus_area(plus::idlecensus::AV_PIXEL_AREA); // <plus> research/339 22 </plus>
     setPixelAreaAndAngle(gAgent);
 
     if (!isSelf())
@@ -3063,7 +3079,21 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
             mLastCulledPixelArea = current_pixel_area;
         }
     }
+    plus_area.stop(); // <plus> research/339 22 </plus>
 
+    // <plus> research/341: out of view, most frames do only the above and the complexity schedule (the position, the
+    // attachments and the name tag are brought up to date by a full frame at most PlusOffscreenAvatarPeriod frames later)
+    plus::idlecensus::Scope plus_light(plus::idlecensus::AV_OFFSCREEN_LIGHT); // research/339 22 (census)
+    const bool plus_light_frame = plusOffscreenLightFrame();
+    plus_light.stop(); // research/339 22 (census)
+    if (plus_light_frame)
+    {
+        idleUpdateComplexitySchedule();
+        return;
+    }
+    // </plus>
+
+    plus::idlecensus::Scope plus_move(plus::idlecensus::AV_DRAWABLE_MOVE); // <plus> research/339 22 </plus>
     // force asynchronous drawable update
     if(mDrawable.notNull())
     {
@@ -3089,11 +3119,13 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
             gPipeline.updateMoveDampedAsync(mDrawable);
         }
     }
+    plus_move.stop(); // <plus> research/339 22 </plus>
 
     //--------------------------------------------------------------------
     // set alpha flag depending on state
     //--------------------------------------------------------------------
 
+    plus::idlecensus::Scope plus_base(plus::idlecensus::AV_BASE_IDLE); // <plus> research/339 22 </plus>
     if (isSelf())
     {
         LLViewerObject::idleUpdate(agent, time);
@@ -3111,10 +3143,12 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
         LLViewerObject::idleUpdate(agent, time);
         setRotation(rotation);
     }
+    plus_base.stop(); // <plus> research/339 22 </plus>
 
     // attach objects that were waiting for a drawable
     if (!mPendingAttachment.empty())
     {
+        plus::idlecensus::Scope plus_lazy(plus::idlecensus::AV_LAZY_ATTACH); // <plus> research/339 22 </plus>
         lazyAttach();
     }
 
@@ -3131,25 +3165,45 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
         (isImpostor() ? LLRHI::sAvatarCounters.character_ns_impostor : LLRHI::sAvatarCounters.character_ns_full) += ns;
     }
 
+    plus::idlecensus::Scope plus_voice(plus::idlecensus::AV_VOICE); // <plus> research/339 22 </plus>
     static LLUICachedControl<bool> visualizers_in_calls("ShowVoiceVisualizersInCalls", false);
     bool voice_enabled = (visualizers_in_calls || LLVoiceClient::getInstance()->inProximalChannel()) &&
                          LLVoiceClient::getInstance()->getVoiceEnabled(mID);
+    plus_voice.stop(); // <plus> research/339 22 </plus>
 
+    plus::idlecensus::Scope plus_name_pos(plus::idlecensus::AV_NAME_POS); // <plus> research/339 22 </plus>
     LLVector3 hud_name_pos = idleCalcNameTagPosition(mLastRootPos);
+    plus_name_pos.stop(); // <plus> research/339 22 </plus>
 
+    plus::idlecensus::Scope plus_visualizer(plus::idlecensus::AV_VOICE_VIS); // <plus> research/339 22 </plus>
     idleUpdateVoiceVisualizer(voice_enabled, hud_name_pos);
+    plus_visualizer.stop(); // <plus> research/339 22 </plus>
     idleUpdateMisc( detailed_update );
     idleUpdateAppearanceAnimation();
     if (detailed_update)
     {
+        plus::idlecensus::Scope plus_lip(plus::idlecensus::AV_LIPSYNC); // <plus> research/339 22 </plus>
         idleUpdateLipSync( voice_enabled );
+        plus_lip.stop(); // <plus> research/339 22 </plus>
         idleUpdateLoadingEffect();
+        plus::idlecensus::Scope plus_wind(plus::idlecensus::AV_WIND); // <plus> research/339 22 </plus>
         idleUpdateBelowWater(); // wind effect uses this
         idleUpdateWindEffect();
     }
+    plus::idlecensus::Scope plus_catchup(plus::idlecensus::AV_CATCHUP); // <plus> research/339 22 </plus>
+    plusCatchUpAttachments(); // <plus> research/338: after everything that can ask for a picture </plus>
+    plus_catchup.stop(); // <plus> research/339 22 </plus>
 
     idleUpdateNameTag(hud_name_pos);
 
+    idleUpdateComplexitySchedule(); // <plus> research/341: the rest of idleUpdate (was here) </plus>
+}
+
+// <plus> research/341: the end of idleUpdate, which a light frame of an avatar out of view runs too (its period is
+// the same as before: it is not left to the frames a light frame would skip). The body is the official one.
+void LLVOAvatar::idleUpdateComplexitySchedule()
+{
+    // </plus>
     // Complexity has stale mechanics, but updates still can be very rapid
     // so spread avatar complexity calculations over frames to lesen load from
     // rapid updates and to make sure all avatars are not calculated at once.
@@ -3185,6 +3239,7 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
         // (both are unacceptably costly)
         idleUpdateRenderComplexity();
     }
+    plus::idlecensus::Scope plus_debug(plus::idlecensus::AV_DEBUG_INFO); // <plus> research/339 22 </plus>
     idleUpdateDebugInfo();
 }
 
@@ -3289,6 +3344,265 @@ static void override_bbox(LLDrawable* drawable, LLVector4a* extents)
     drawable->movePartition();
 }
 
+// <plus> research/338: the loop of idleUpdateMisc that moves the attachments with the avatar (their spatial bridges, the
+// damped moves, the hover text), as it was there
+void LLVOAvatar::idleUpdateAttachments(bool visible)
+{
+    U32 draw_order = 0;
+    bool attachment_selected = LLSelectMgr::getInstance()->getSelection()->getObjectCount() > 0 && LLSelectMgr::getInstance()->getSelection()->isAttachment();
+    for (const auto& [attachment_point_id, attachment] : mAttachmentPoints)
+    {
+        for (auto& attached_object : attachment->mAttachedObjects)
+        {
+            if (attached_object.isNull()
+                || attached_object->isDead()
+                || !attachment->getValid()
+                || attached_object->mDrawable.isNull())
+            {
+                continue;
+            }
+
+            LLSpatialBridge* bridge = attached_object->mDrawable->getSpatialBridge();
+
+            if (visible || !(bridge && bridge->getRadius() < 2.0))
+            {
+                //override rigged attachments' octree spatial extents with this avatar's bounding box
+                bool rigged = false;
+                if (bridge)
+                {
+                    //transform avatar bounding box into attachment's coordinate frame
+                    LLVector4a extents[2];
+                    bridge->transformExtents(mDrawable->getSpatialExtents(), extents);
+
+                    if (attached_object->mDrawable->isState(LLDrawable::RIGGED | LLDrawable::RIGGED_CHILD))
+                    {
+                        rigged = true;
+                        override_bbox(attached_object->mDrawable, extents);
+                    }
+                }
+
+                // if selecting any attachments, update all of them as non-damped
+                if (attachment_selected)
+                {
+                    gPipeline.updateMoveNormalAsync(attached_object->mDrawable);
+                }
+                else
+                {
+                    // Note: SL-17415; While most objects follow joints,
+                    // some objects get position updates from server
+                    gPipeline.updateMoveDampedAsync(attached_object->mDrawable);
+                }
+
+                // override_bbox calls movePartition() and getSpatialPartition(),
+                // so bridge might no longer be valid, get it again.
+                // ex: animesh stops being an animesh
+                bridge = attached_object->mDrawable->getSpatialBridge();
+                if (bridge)
+                {
+                    if (!rigged)
+                    {
+                        gPipeline.updateMoveNormalAsync(bridge);
+                    }
+                    else
+                    {
+                        //specialized impl of updateMoveNormalAsync just for rigged attachment SpatialBridge
+                        bridge->setState(LLDrawable::MOVE_UNDAMPED);
+                        bridge->updateMove();
+                        bridge->setState(LLDrawable::EARLY_MOVE);
+
+                        LLSpatialGroup* group = attached_object->mDrawable->getSpatialGroup();
+                        if (group)
+                        { //set draw order of group
+                            group->mAvatarp = this;
+                            group->mRenderOrder = draw_order++;
+                        }
+                    }
+                }
+
+                attached_object->updateText();
+            }
+        }
+    }
+}
+
+// An impostor's attachments are not frozen when one of them (or a child of one) is drawn or heard by itself: an
+// animesh, a light, a particle source, a sound; or when attachments of this avatar are selected (the selection frame
+// follows them). Looked at only where the attachments would be left alone (a detailed update of an impostor with no
+// picture due).
+bool LLVOAvatar::plusHasLiveAttachments()
+{
+    LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
+    if (selection->getObjectCount() > 0 && selection->isAttachment())
+    {
+        LLViewerObject* selected = selection->getFirstObject();
+        if (selected && selected->getAvatar() == this)
+        {
+            return true;
+        }
+    }
+    auto live = [](LLViewerObject* object)
+    {
+        return object->isAnimatedObject() || object->getControlAvatar() || object->isParticleSource() ||
+               object->isAudioSource() ||
+               (object->getPCode() == LL_PCODE_VOLUME && static_cast<LLVOVolume*>(object)->getIsLightFast());
+    };
+    for (const auto& [attachment_point_id, attachment] : mAttachmentPoints)
+    {
+        for (auto& attached_object : attachment->mAttachedObjects)
+        {
+            if (attached_object.isNull() || attached_object->isDead())
+            {
+                continue;
+            }
+            if (live(attached_object))
+            {
+                return true;
+            }
+            for (LLViewerObject* child : attached_object->getChildren())
+            {
+                if (child && live(child))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
+// Called at the end of idleUpdate (after everything that may ask for a picture: the checks of idleUpdateMisc and the
+// cloud that clears, idleUpdateLoadingEffect): a picture is due and will be taken (the avatar is visible): the
+// attachments are moved now, once for this request, so that the picture shows them where they are.
+void LLVOAvatar::plusCatchUpAttachments()
+{
+    static LLCachedControl<bool> impostor_freeze(gSavedSettings, "PlusImpostorFreeze", true);
+    if (!impostor_freeze || mIsControlAvatar || isSelf() || !mNeedsImpostorUpdate || mPlusAttachMovedFor == mPlusImpostorShots
+        || !isVisible() || !isImpostor())
+    {
+        return;
+    }
+    idleUpdateAttachments(true);
+    mPlusAttachMovedFor = mPlusImpostorShots;
+}
+// </plus>
+
+// <plus> research/341: an avatar out of view does a full idleUpdate once in PlusOffscreenAvatarPeriod frames (and when it
+// must: see plusKeepsFullUpdate), the frames between are light (idleUpdate returns early). Its pose is not animated out of
+// view anyway (updateCharacter does the hidden motion update); the frames skipped are only its root position, the
+// attachments, the name tag and flags, which a full frame catches up (positions are interpolated from absolute time).
+namespace
+{
+    constexpr F32 PLUS_OFFSCREEN_MAX_AGE_S = 0.12f;     // the longest an avatar out of view is left, whatever the frame rate
+    constexpr F32 PLUS_OFFSCREEN_MARGIN_M = 3.f;        // the frustum is widened by this and ... (see plusKeepsFullUpdate)
+    constexpr F32 PLUS_OFFSCREEN_MARGIN_SLOPE = 0.27f;  // ... this much of the distance (about 15 degrees): where it may turn in
+
+    U32 sPlusOffscreenLight = 0;    // the light frames and the avatars out of view, for the 5 s line of LLRHI_AVATAR_STATS
+    U32 sPlusOffscreenSeen = 0;
+}
+
+// What keeps an avatar out of view on every frame. Cheapest tests first.
+bool LLVOAvatar::plusKeepsFullUpdate()
+{
+    if (isVisible())
+    {
+        return true;    // the common case first
+    }
+    if (isSelf() || mIsControlAvatar || mIsDummy || isUIAvatar() || !mIsBuilt || mDrawable.isNull() || mNeedsAnimUpdate
+        || mLastAnimExtents[0] == LLVector3() || mLastAnimExtents[1] == LLVector3())
+    {
+        return true;    // not an ordinary avatar, or not set up yet (it has had no full update)
+    }
+    if (getParent() || isSitting())
+    {
+        return true;    // on an object: its update moves that object
+    }
+    if (gAgentCamera.getFocusObject().get() == this)
+    {
+        return true;    // the camera looks at it
+    }
+    if (mNameText.notNull() && mNameText->isVisible())
+    {
+        return true;    // its name tag (or chat) is drawn, also stuck to the edge of the screen: its position moves with it
+    }
+    // Attachments of this avatar selected (the selection frame follows them): who owns the selection is looked at once a frame.
+    static S32 selection_frame = -1;
+    static const LLVOAvatar* selected_avatar = nullptr;
+    const S32 frame = (S32)LLDrawable::getCurrentFrame();
+    if (selection_frame != frame)
+    {
+        selection_frame = frame;
+        selected_avatar = nullptr;
+        LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
+        if (selection->getObjectCount() > 0 && selection->isAttachment())
+        {
+            LLViewerObject* selected = selection->getFirstObject();
+            selected_avatar = selected ? selected->getAvatarAncestor() : nullptr;   // the one wearing it, also for an animesh attachment (only the first of the selected is looked at)
+        }
+    }
+    if (selected_avatar == this)
+    {
+        return true;
+    }
+    // Near the view: the frustum widened (the more, the farther it is), so that one about to turn in is full already.
+    LLViewerCamera* camera = LLViewerCamera::getInstance();
+    const LLVector3 position = mDrawable->getPositionAgent();
+    const F32 distance = (position - camera->getOrigin()).length();
+    return camera->sphereInFrustum(position, mDrawable->getRadius() + PLUS_OFFSCREEN_MARGIN_M + PLUS_OFFSCREEN_MARGIN_SLOPE * distance) != 0;
+}
+
+// True for a light frame (idleUpdate does not go on); false: do the full update (and note it).
+bool LLVOAvatar::plusOffscreenLightFrame()
+{
+    static LLCachedControl<S32> period_setting(gSavedSettings, "PlusOffscreenAvatarPeriod", 4);
+    const S32 period = llclamp((S32)period_setting, 1, 16);
+    if (period <= 1)
+    {
+        return false;
+    }
+    const S32 frame = (S32)LLDrawable::getCurrentFrame();
+    const F32 now = gFrameTimeSeconds;
+    // A camera that moved fast (a turn of more than about 16 degrees or 2 m in a frame, which goes on in the next frame)
+    // may bring avatars into view without passing the widened frustum: all are full on that frame. A prediction for a fast
+    // move that goes on: the first frame of a single jump is not covered (the objects' idle is before the camera's update;
+    // a known limit, the pose of that first frame is as old in the official viewer). Looked at once a frame.
+    static S32 camera_frame = -1;
+    static LLVector3 camera_origin;
+    static LLVector3 camera_at;
+    static bool camera_jumped = true;
+    if (camera_frame != frame)
+    {
+        camera_frame = frame;
+        LLViewerCamera* camera = LLViewerCamera::getInstance();
+        camera_jumped = (camera->getOrigin() - camera_origin).lengthSquared() > 4.f      // 2 m
+                        || camera->getAtAxis() * camera_at < 0.96f;                      // about 16 degrees
+        camera_origin = camera->getOrigin();
+        camera_at = camera->getAtAxis();
+    }
+    const S32 since = frame - mPlusOffscreenLastFullFrame;
+    // Full: its turn (spread by the first byte of its id as computeNeedsUpdate does), over its age, or a clock that went back.
+    const bool due = since < 0 || since >= period || now - mPlusOffscreenLastFullTime > PLUS_OFFSCREEN_MAX_AGE_S
+                     || now < mPlusOffscreenLastFullTime || (frame + mID.mData[0]) % period == 0;
+    const bool light = !due && !camera_jumped && !plusKeepsFullUpdate();
+    if (LLRHI::sAvatarStats && !isSelf() && !isVisible())
+    {
+        ++sPlusOffscreenSeen;
+        sPlusOffscreenLight += light ? 1 : 0;
+    }
+    if (light)
+    {
+        mPlusExtentPending |= mNeedsExtentUpdate;   // its turn for the extents may fall on a frame that is skipped: the next full frame does it
+    }
+    else
+    {
+        mPlusOffscreenLastFullFrame = frame;
+        mPlusOffscreenLastFullTime = now;
+        mNeedsExtentUpdate |= mPlusExtentPending;
+        mPlusExtentPending = false;
+    }
+    return light;
+}
+// </plus>
+
 void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 {
     plus::idlecensus::Scope plus_census(plus::idlecensus::AV_MISC); // <plus> research/193 A (off: a flag test) </plus>
@@ -3303,84 +3617,23 @@ void LLVOAvatar::idleUpdateMisc(bool detailed_update)
 
     bool visible = isVisible() || mNeedsAnimUpdate;
 
+    // <plus> research/338: an impostor's attachments are not drawn (its picture is): they are moved when its picture is
+    // due (plusCatchUpAttachments, at the end of idleUpdate), not at each of its detailed updates (every 32 to 64
+    // frames). PlusImpostorFreeze 0: as before. The loop of the official code is idleUpdateAttachments.
+    static LLCachedControl<bool> impostor_freeze(gSavedSettings, "PlusImpostorFreeze", true);
+    const bool plus_impostor = impostor_freeze && !mIsControlAvatar && !isSelf() && isImpostor(); // isImpostor() once: it goes through the mute cache
+    // </plus>
     // update attachments positions
-    if (detailed_update)
+    if (detailed_update && !(plus_impostor && !mNeedsImpostorUpdate && !plusHasLiveAttachments())) // <plus> research/338 (was: if (detailed_update)) </plus>
     {
-        U32 draw_order = 0;
-        bool attachment_selected = LLSelectMgr::getInstance()->getSelection()->getObjectCount() > 0 && LLSelectMgr::getInstance()->getSelection()->isAttachment();
-        for (const auto& [attachment_point_id, attachment] : mAttachmentPoints)
+        idleUpdateAttachments(visible); // <plus> research/338 (the loop was here) </plus>
+        // <plus> research/338: this move counts for the picture request only if the avatar was visible (an avatar out of
+        // sight does not move its small attachments): the catch-up at the end of idleUpdate goes on otherwise
+        if (plus_impostor && visible)
         {
-            for (auto& attached_object : attachment->mAttachedObjects)
-            {
-                if (attached_object.isNull()
-                    || attached_object->isDead()
-                    || !attachment->getValid()
-                    || attached_object->mDrawable.isNull())
-                {
-                    continue;
-                }
-
-                LLSpatialBridge* bridge = attached_object->mDrawable->getSpatialBridge();
-
-                if (visible || !(bridge && bridge->getRadius() < 2.0))
-                {
-                    //override rigged attachments' octree spatial extents with this avatar's bounding box
-                    bool rigged = false;
-                    if (bridge)
-                    {
-                        //transform avatar bounding box into attachment's coordinate frame
-                        LLVector4a extents[2];
-                        bridge->transformExtents(mDrawable->getSpatialExtents(), extents);
-
-                        if (attached_object->mDrawable->isState(LLDrawable::RIGGED | LLDrawable::RIGGED_CHILD))
-                        {
-                            rigged = true;
-                            override_bbox(attached_object->mDrawable, extents);
-                        }
-                    }
-
-                    // if selecting any attachments, update all of them as non-damped
-                    if (attachment_selected)
-                    {
-                        gPipeline.updateMoveNormalAsync(attached_object->mDrawable);
-                    }
-                    else
-                    {
-                        // Note: SL-17415; While most objects follow joints,
-                        // some objects get position updates from server
-                        gPipeline.updateMoveDampedAsync(attached_object->mDrawable);
-                    }
-
-                    // override_bbox calls movePartition() and getSpatialPartition(),
-                    // so bridge might no longer be valid, get it again.
-                    // ex: animesh stops being an animesh
-                    bridge = attached_object->mDrawable->getSpatialBridge();
-                    if (bridge)
-                    {
-                        if (!rigged)
-                        {
-                            gPipeline.updateMoveNormalAsync(bridge);
-                        }
-                        else
-                        {
-                            //specialized impl of updateMoveNormalAsync just for rigged attachment SpatialBridge
-                            bridge->setState(LLDrawable::MOVE_UNDAMPED);
-                            bridge->updateMove();
-                            bridge->setState(LLDrawable::EARLY_MOVE);
-
-                            LLSpatialGroup* group = attached_object->mDrawable->getSpatialGroup();
-                            if (group)
-                            { //set draw order of group
-                                group->mAvatarp = this;
-                                group->mRenderOrder = draw_order++;
-                            }
-                        }
-                    }
-
-                    attached_object->updateText();
-                }
-            }
+            mPlusAttachMovedFor = mPlusImpostorShots;
         }
+        // </plus>
     }
 
     mNeedsAnimUpdate = false;
@@ -3809,6 +4062,18 @@ void LLVOAvatar::idleUpdateNameTag(const LLVector3& root_pos_last)
 
     mNameText->setPositionAgent(root_pos_last);
 
+    // <plus> research/319 (avatar-idle-trim): the text is looked at again (name, title, away, muted, friend,
+    // cloud: about 2 us an avatar) every PlusAvatarIdleInterval frames, each avatar on its own frame, not every
+    // frame, unless the tag was just made, the chat is shown, or the name is not set yet. Its alpha follows every frame.
+    static LLCachedControl<U32> idle_interval_setting(gSavedSettings, "PlusAvatarIdleInterval", 4);
+    const U32 idle_interval = llmin<U32>(idle_interval_setting, 16); // 0 and 1: every frame
+    if (!new_name && mNameIsSet && !mVisibleChat && !isSelf() && idle_interval > 1
+        && (LLDrawable::getCurrentFrame() + getID().mData[0]) % idle_interval != 0)
+    {
+        idleUpdateNameTagAlpha(false, alpha);
+        return;
+    }
+    // </plus>
     idleUpdateNameTagText(new_name);
     idleUpdateNameTagAlpha(new_name, alpha);
 }
@@ -3838,6 +4103,10 @@ void LLVOAvatar::idleUpdateNameTagText(bool new_name)
     const bool plus_rlv_show_name = !plus::rlv::enabled() || plus::rlv::canShowMenuName(getID());
     bool is_friend = plus_rlv_show_name && isBuddy();
     // </plus>
+    // <plus> contactsets: the set colour of the tag (FSContactSetsColorizeNameTag); the tag is built again when it changes (research/333)
+    LLColor4 plus_cs_color;
+    const bool plus_cs_has = plus_rlv_show_name && plus::cshooks::colorFor(getID(), ContactSetType::TAG, plus_cs_color);
+    // </plus>
     bool is_cloud = getHasMissingParts();
 
     if (is_appearance != mNameAppearance)
@@ -3862,9 +4131,16 @@ void LLVOAvatar::idleUpdateNameTagText(bool new_name)
         || is_muted != mNameMute
         || is_appearance != mNameAppearance
         || is_friend != mNameFriend
+        || plus_cs_has != mNameContactSet || (plus_cs_has && plus_cs_color != mNameContactSetColor) // <plus> contactsets </plus>
         || is_cloud != mNameCloud)
     {
         LLColor4 name_tag_color = getNameTagColor(is_friend);
+        // <plus> contactsets: the set colour over the official one (friend, display name), as in Firestorm (research/333)
+        if (plus_cs_has)
+        {
+            name_tag_color = plus_cs_color;
+        }
+        // </plus>
 
         clearNameTag();
 
@@ -3978,6 +4254,10 @@ void LLVOAvatar::idleUpdateNameTagText(bool new_name)
         mNameMute = is_muted;
         mNameAppearance = is_appearance;
         mNameFriend = is_friend;
+        // <plus> contactsets (research/333)
+        mNameContactSet = plus_cs_has;
+        mNameContactSetColor = plus_cs_color;
+        // </plus>
         mNameCloud = is_cloud;
         mTitle = title ? title->getString() : "";
         LLStringFn::replace_ascii_controlchars(mTitle,LL_UNKNOWN_CHAR);
@@ -3995,7 +4275,14 @@ void LLVOAvatar::idleUpdateNameTagText(bool new_name)
 
         static const LLUIColor user_chat_color = LLUIColorTable::instance().getColor("UserChatColor");
         static const LLUIColor agent_chat_color = LLUIColorTable::instance().getColor("AgentChatColor");
-        const LLColor4& new_chat = isSelf() ? user_chat_color : agent_chat_color;
+        // <plus> contactsets: the bubble in the set colour (FSContactSetsColorizeChat) (research/333)
+        //const LLColor4& new_chat = isSelf() ? user_chat_color : agent_chat_color;
+        LLColor4 new_chat = isSelf() ? user_chat_color : agent_chat_color;
+        if (plus_rlv_show_name)
+        {
+            plus::cshooks::colorFor(getID(), ContactSetType::CHAT, new_chat);
+        }
+        // </plus>
         LLColor4 normal_chat = lerp(new_chat, LLColor4(0.8f, 0.8f, 0.8f, 1.f), 0.7f);
         LLColor4 old_chat = lerp(normal_chat, LLColor4(0.6f, 0.6f, 0.6f, 1.f), 0.7f);
         if (mTyping && mChats.size() >= MAX_BUBBLE_CHAT_UTTERANCES)
@@ -4272,7 +4559,7 @@ bool LLVOAvatar::isVisuallyMuted()
         }
         else
         {
-            muted = isTooComplex() || isTooSlow();
+            muted = isTooComplex() || isTooSlow() || beyondSilhouetteDistance(); // <plus> research/344 J2 </plus>
         }
     }
 
@@ -4666,6 +4953,7 @@ void LLVOAvatar::updateFootstepSounds()
 // ------------------------------------------------------------------------
 void LLVOAvatar::computeUpdatePeriod()
 {
+    updateBeyondSilhouette(); // <plus> research/344: before the others read isVisuallyMuted </plus>
     bool visually_muted = isVisuallyMuted();
     if (mDrawable.notNull()
         && isVisible()
@@ -4694,6 +4982,13 @@ void LLVOAvatar::computeUpdatePeriod()
             // impostor camera near clip plane
             mUpdatePeriod = 1;
         }
+        // <plus> research/343: a full avatar that is only too far waits for its turn (a picture first). Not an
+        // animesh: it follows the period of its avatar (isImpostor is its avatar's)
+        else if (mUpdatePeriod <= 1 && !getAttachedAvatar() && !shouldImpostorByRank(1.0) && !takeFarSwitch())
+        {
+            mUpdatePeriod = 1;
+        }
+        // </plus>
         else if (shouldImpostor(4.0))
         { //background avatars are REALLY slow updating impostors
             mUpdatePeriod = UPDATE_RATE_SLOW;
@@ -4717,6 +5012,12 @@ void LLVOAvatar::computeUpdatePeriod()
     {
         mUpdatePeriod = 1;
     }
+    // <plus> research/343: back to full (or out of sight): no picture is due for the switch any more
+    if (mUpdatePeriod <= 1)
+    {
+        mPlusFarSwitchPending = false;
+    }
+    // </plus>
 }
 
 //------------------------------------------------------------------------
@@ -5088,10 +5389,27 @@ bool LLVOAvatar::computeNeedsUpdate()
 
     if (needs_update && !isSelf())
     {
+        // <plus> research/344: a jelly doll whose picture is of the other kind (flat or not) than the setting says is retaken; the old
+        // one stays on the plate until then (mImpostorUnusable: taken first). Asked in the period's step (a full avatar's is every
+        // frame: a few comparisons; the setting off and nothing flat, the first one is false at once).
+        if (mImpostorIsFlat != plusFlatImpostorEnabled() && (isVisuallyMuted() || isTooComplex()))
+        {
+            mNeedsImpostorUpdate = true;
+            if (!mPlusFarSwitchPending) // keeps the reason of the switch by distance (13)
+            {
+                mLastImpostorUpdateReason = 8;
+            }
+            mImpostorUnusable = true;
+        }
+        else // (the official if below had no else)
+        // </plus>
         if (needs_update_by_max_time)
         {
             mNeedsImpostorUpdate = true;
-            mLastImpostorUpdateReason = 11;
+            if (!mPlusFarSwitchPending) // <plus> research/343: keeps the reason of the switch by distance (13) </plus>
+            {
+                mLastImpostorUpdateReason = 11;
+            }
         }
         else
         {
@@ -5107,6 +5425,111 @@ bool LLVOAvatar::computeNeedsUpdate()
     // </plus>
     return needs_update;
 }
+
+// <plus> research/344: the photo mode (the photo screen or the photo tools), asked once a frame: it looks a window up by name,
+// and the flat jelly doll and the distance both ask at each avatar's update step.
+static bool plus_photo_mode_now()
+{
+    static S32 sFrame = -1;
+    static bool sPhotoMode = false;
+    const S32 frame = LLDrawable::getCurrentFrame();
+    if (frame != sFrame)
+    {
+        sFrame = frame;
+        sPhotoMode = plus::photomode::inPhotoMode();
+    }
+    return sPhotoMode;
+}
+
+// The zoom of the view (a view narrower than the standard 60 degrees stretches the distances: 60 / the view angle, 1 to 16),
+// once a frame. PlusAvatarFullDistance and PlusAvatarSilhouetteDistance both use it.
+static F32 plus_view_zoom_now()
+{
+    static U32 frame = U32_MAX;
+    static F32 zoom = 1.f;
+    const U32 now = LLFrameTimer::getFrameCount();
+    if (frame != now)
+    {
+        frame = now;
+        const F32 view = LLViewerCamera::getInstance()->getView();
+        zoom = view > 0.f ? llclamp(DEFAULT_FIELD_OF_VIEW / view, 1.f, 16.f) : 1.f;
+    }
+    return zoom;
+}
+
+// research/344 J2: PlusAvatarSilhouetteDistance, 5 to 1024 m, with the zoom as the full distance has it, and never nearer than
+// the full distance (a jelly doll is farther than an impostor: D_flat >= D_full); 0 (or a value that is not a number) = off,
+// and off in the photo mode (what is seen is what is taken: the far ones are drawn and animated). (A smaller one would make
+// the avatar next to you a jelly doll.)
+// static
+F32 LLVOAvatar::silhouetteDistance()
+{
+    static LLCachedControl<F32> distance(gSavedSettings, "PlusAvatarSilhouetteDistance", 0.f);
+    const F32 d = distance;
+    if (!llfinite(d) || d <= 0.f || plus_photo_mode_now())
+    {
+        return 0.f;
+    }
+    return llmax(llclamp(d, 5.f, 1024.f) * plus_view_zoom_now(), fullDistanceNow());
+}
+
+// Once a frame, in the idle (computeUpdatePeriod); isVisuallyMuted, getOverallAppearance and the drawing read the flag. Enters
+// at D, leaves below D less max(0.1 D, 2 m) (as the full distance does): an edge must not flip a jelly doll on and off (each
+// flip is a new picture, a resetSkeleton and the animations stopped or started); the flag is its own memory. Never the avatar
+// the camera looks at, the focus lock's target, one shown always (exemptFromFullDistance). A visible full avatar that would
+// be a jelly doll only by the distance goes through takeFarSwitch (research/343): a few between two rounds of pictures, each
+// with its picture taken first; the others stay full, drawn as before, until their turn.
+void LLVOAvatar::updateBeyondSilhouette()
+{
+    bool beyond = false;
+    const F32 d = silhouetteDistance();
+    // not a UI avatar (the previews: always "visible", no distance of its own), as computeUpdatePeriod
+    if (d > 0.f && !isSelf() && !mIsControlAvatar && !isUIAvatar() && mDrawable.notNull())
+    {
+        const F32 edge = mPlusBeyondSilhouette ? d - llmax(0.1f * d, 2.f) : d;
+        // mDistanceWRTCamera is made by the culling, for the avatars that were seen: an avatar out of view has its old one (it
+        // walks up to the camera, and is a jelly doll in its first frame in view). Out of view: from where it is now
+        // (mLastRootPos is written by idleUpdate just before updateCharacter).
+        const F32 distance = mDrawable->isVisible() ? mDrawable->mDistanceWRTCamera
+                                                    : dist_vec(mLastRootPos, LLViewerCamera::getInstance()->getOrigin());
+        beyond = distance > edge && !exemptFromFullDistance();
+    }
+    if (beyond && !mPlusBeyondSilhouette && isVisible() && mUpdatePeriod <= 1 && !getAttachedAvatar() && !isVisuallyMuted()
+        && !takeFarSwitch())
+    {
+        beyond = false;
+    }
+    mPlusBeyondSilhouette = beyond;
+}
+// </plus>
+
+// <plus> research/344: the snapshot window is open (shown), asked once a frame as the photo mode is
+static bool plus_snapshot_open_now()
+{
+    static S32 sFrame = -1;
+    static bool sOpen = false;
+    const S32 frame = LLDrawable::getCurrentFrame();
+    if (frame != sFrame)
+    {
+        sFrame = frame;
+        const LLFloater* floater = LLFloaterReg::findInstance("snapshot");
+        sOpen = floater && floater->getVisible();
+    }
+    return sOpen;
+}
+
+// Jelly dolls are shot as flat silhouettes (generateImpostor) while this holds. The photo mode, the snapshot window (its
+// preview is the result) and a snapshot being taken use the 3D grey picture (what is seen is what is taken). Opening the
+// window: its first preview is a snapshot, which takes all the flat pictures again at once (updateImpostors, no budget); closing
+// it: the 3D ones are taken flat again over the periods and the time budget. A flat picture has no normals, so only the
+// deferred renderer has it.
+// static
+bool LLVOAvatar::plusFlatImpostorEnabled()
+{
+    static LLCachedControl<bool> jelly_flat(gSavedSettings, "PlusJellyDollFlat", false);
+    return jelly_flat && LLPipeline::sRenderDeferred && !gSnapshot && !plus_photo_mode_now() && !plus_snapshot_open_now();
+}
+// </plus>
 
 // updateCharacter()
 //
@@ -6149,7 +6572,6 @@ const S32 MAX_TEXTURE_UPDATE_INTERVAL = 64 ; //need to call updateTextures() at 
 const S32 MAX_TEXTURE_VIRTUAL_SIZE_RESET_INTERVAL = S32_MAX ; //frames
 void LLVOAvatar::checkTextureLoading()
 {
-    plus::idlecensus::Scope plus_census(plus::idlecensus::AV_TEXTURE_LOADING); // <plus> research/193 A (off: a flag test) </plus>
     static const F32 MAX_INVISIBLE_WAITING_TIME = 15.f ; //seconds
 
     bool pause = !isVisible() ;
@@ -11378,8 +11800,8 @@ U32 LLVOAvatar::getPartitionType() const
 
 namespace
 {
-    // LLRHI (research/56): impostor updates by mLastImpostorUpdateReason (12: other).
-    constexpr U32 RHI_IMPOSTOR_REASONS = 13;
+    // LLRHI (research/56): impostor updates by mLastImpostorUpdateReason (12: an animesh's, 13: switched by distance, 14: any other).
+    constexpr U32 RHI_IMPOSTOR_REASONS = 15; // <plus> research/343 (was: 13; 13 = switched by distance, the last box is for any other number) </plus>
     U32 sRHIImpostorReasons[RHI_IMPOSTOR_REASONS] = {};
 
     // LLRHI_AVATAR_STATS: the RHIAvatar line, every 5 s. Called once a frame.
@@ -11505,6 +11927,11 @@ namespace
             line << "; backend " << LLRHI::sAvatarBackendReport(frames);
         }
         line << "; prebuilt palettes " << (LLRHI::sPalettePrebuild ? "on" : "off");
+        // <plus> research/341: the avatars out of view whose update was light (of those seen out of view in the frames)
+        line << "; offscreen light frames/frame " << sPlusOffscreenLight * per << " of " << sPlusOffscreenSeen * per;
+        sPlusOffscreenLight = 0;
+        sPlusOffscreenSeen = 0;
+        // </plus>
         LL_INFOS("RHIAvatar") << line.str() << LL_ENDL;
         c = LLRHI::AvatarCounters();
         memset(sRHIImpostorReasons, 0, sizeof(sRHIImpostorReasons));
@@ -11530,7 +11957,6 @@ bool LLVOAvatar::extentsInCameraFrustum() const
     return LLViewerCamera::getInstance()->AABBInFrustum(center, size) != 0;
 }
 
-extern bool gSnapshot; // llviewerdisplay.cpp: a picture is being taken (also tiles of one)
 // </plus>
 
 //static
@@ -11544,14 +11970,14 @@ void LLVOAvatar::updateImpostors()
     // taken in the following frames. The flag mNeedsImpostorUpdate stays set
     // until generateImpostor clears it, so nothing else remembers what is due.
     // - An avatar with no picture at all draws nothing (renderImpostor), so it is
-    //   always taken at once, as before (once per avatar, not on every turn).
+    //   taken first (within the time budget below; once per avatar, not on every turn).
     // - The cap is per 1/60 s of time between the calls on average (only the fraction of a
     //   picture is carried over), so the rate of pictures does not fall with the frame rate;
     //   a gap longer than 1/30 s counts as 1/30 s (a slow frame must not ask for many more).
     // - An avatar whose picture is old or of something else (mImpostorUnusable,
     //   or older than IMPOSTOR_OLD_AGE) has a budget twice as big and goes first.
-    // - After resetImpostors every picture is gone: all of them are "no picture", so all are
-    //   taken at once, as before the cap.
+    // - After resetImpostors every picture is gone: all of them are "no picture": they come back within the
+    //   time budget below, the nearest first, a few frames at a time.
     // 0 = no cap (as before).
     static LLCachedControl<U32> captures_setting(gSavedSettings, "PlusImpostorCapturesPerFrame", 2);
     static F32 credit = 0.f;
@@ -11568,6 +11994,20 @@ void LLVOAvatar::updateImpostors()
     // Snapshots (also the tiles of one) take every picture, as before the cap: one display()
     // per tile must not leave an avatar on the border with an old picture in one of them.
     const bool unlimited = cap == 0 || gSnapshot;
+    // A time budget for all the pictures of one call (ms of main thread, at least one picture is always taken): a crowd
+    // that just came (every avatar without a picture) or a reset would otherwise take them all in one frame, and a
+    // frame of seconds with a black screen (the dummy server's 190 avatars: frames of 0.5 to 10 s). What is not taken
+    // waits for the next frames: on screen first, then no picture, then the old pictures, then the most overdue, the
+    // nearer first. 0 = off, as before; not while a snapshot is taken.
+    static LLCachedControl<F32> capture_budget_ms(gSavedSettings, "PlusImpostorCaptureBudgetMs", 8.f);
+    const bool timed = capture_budget_ms > 0.f && !gSnapshot;
+    // After a call whose pictures took longer than the budget (the first one is always taken, and one picture of an avatar
+    // with heavy attachments is 100 ms or more: it builds its attachments' geometry), no picture is taken for that long
+    // times this ratio (at most CAPTURE_REST_MAX): the crowd that just arrived then costs a long frame every few frames
+    // instead of every frame (5 fps for a minute). 0 = no rest (research/340 section 7).
+    static LLCachedControl<F32> capture_rest(gSavedSettings, "PlusImpostorCaptureRest", 1.f);
+    static std::chrono::steady_clock::time_point rest_end;     // counted from the end of the last long capture
+    constexpr F64 CAPTURE_REST_MAX = 0.5;
     // This function's own clock: the time between its calls, not between the main loop's turns
     // (a turn with only the UI in it is short; a tile of a snapshot is no frame at all).
     static F64 last_call = 0.0;
@@ -11588,7 +12028,7 @@ void LLVOAvatar::updateImpostors()
         F32 urgency;        // wait / how old its picture may be; F32_MAX: old or of something else
         F32 distance;
         bool onscreen;
-        bool no_picture;    // draws nothing until taken: never deferred
+        bool no_picture;    // draws nothing until taken: outside the count cap, first, but within the time budget
         bool old;           // picture old or of something else
         bool pending;       // not taken yet
     };
@@ -11600,6 +12040,14 @@ void LLVOAvatar::updateImpostors()
     for (LLCharacter* character : LLCharacter::sInstances)
     {
         LLVOAvatar* avatar = (LLVOAvatar*)character;
+        // research/344: a snapshot (also each tile of one) shows the 3D grey jelly dolls: the flat pictures are taken
+        // again, all of them (a snapshot's pictures are not capped), and flat again after it (computeNeedsUpdate)
+        if (gSnapshot && avatar->mImpostorIsFlat && !avatar->isDead() && avatar->isVisible() && avatar->isImpostor())
+        {
+            avatar->mNeedsImpostorUpdate = true;
+            avatar->mLastImpostorUpdateReason = 8;
+            avatar->mImpostorUnusable = true;
+        }
         if (!(!avatar->isDead()
             && avatar->isVisible()
             && avatar->isImpostor()
@@ -11622,6 +12070,7 @@ void LLVOAvatar::updateImpostors()
             }
             LLVOAvatar* attached = avatar->getAttachedAvatar();
             const bool no_picture = !avatar->mImpostor.isComplete()
+                || avatar->mPlusFarSwitchPending // research/343: switched by distance, its old picture is of something else
                 // an animesh's own request is overwritten by its avatar's flag: not deferred
                 || (attached && avatar->mImpostorUnusable);
             const bool old = no_picture || avatar->mImpostorUnusable || age > IMPOSTOR_OLD_AGE;
@@ -11638,12 +12087,13 @@ void LLVOAvatar::updateImpostors()
         }
     }
 
-    if (!unlimited && due.size() > 1)
+    if ((!unlimited || timed) && due.size() > 1)
     {
-        // On screen first, then the old pictures, then the most overdue, the nearer first among equals.
+        // On screen first, then no picture, then the old pictures, then the most overdue, the nearer first.
         std::sort(due.begin(), due.end(), [](const Due& a, const Due& b)
         {
             if (a.onscreen != b.onscreen) return a.onscreen;
+            if (a.no_picture != b.no_picture) return a.no_picture;     // invisible until taken: before the old pictures
             if (a.urgency != b.urgency) return a.urgency > b.urgency;
             return a.distance < b.distance;
         });
@@ -11660,18 +12110,28 @@ void LLVOAvatar::updateImpostors()
         }
         avatar->calcMutedAVColor();
         gPipeline.generateImpostor(avatar);
+        avatar->mPlusFarSwitchPending = false; // research/343
         taken_roots.push_back(avatar);
         d.pending = false;
     };
 
-    // First pass: an animesh whose avatar is due too waits for it (taken with it below).
     U32 taken = 0;
     U32 taken_old = 0;
+    U32 taken_any = 0;
     bool any_left = false;
+    const std::chrono::steady_clock::time_point plus_start = timed ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point();
+    // resting: nothing is taken but an animesh without its avatar's flag and the avatars just switched by distance
+    // (research/343: at most a few, drawn in full a moment ago so their attachments are built: a light picture; they
+    // must not wait for the rest with no picture or an old one)
+    const bool resting = timed && capture_rest > 0.f && std::chrono::steady_clock::now() < rest_end;
+    bool over_budget = false;
+    bool far_left = false; // research/343: an avatar switched by distance was put off (its picture is not taken yet)
     for (Due& d : due)
     {
-        if (d.root != d.avatar && !d.no_picture
-            && std::find_if(due.begin(), due.end(), [&](const Due& o) { return o.avatar == d.root; }) != due.end())
+        // an animesh with a picture whose avatar is due waits for it (taken with it in the second pass below)
+        const bool has_parent_due = d.root != d.avatar
+            && std::find_if(due.begin(), due.end(), [&](const Due& o) { return o.avatar == d.root; }) != due.end();
+        if (has_parent_due && !d.no_picture)
         {
             any_left = true;
             continue;
@@ -11681,11 +12141,35 @@ void LLVOAvatar::updateImpostors()
             any_left = true;
             continue;
         }
+        // The time budget (the last test: the clock is read only for what would be taken): the first picture is always
+        // taken; the clock is read until it is over. Not for an animesh with no picture whose avatar is not due this
+        // frame: its flag is its avatar's, copied at the next idle (what is left here would be lost). One whose avatar
+        // is due waits like it (its flag stays with the avatar's) and is taken in the second pass with it.
+        const bool animesh_alone = d.root != d.avatar && d.no_picture && !has_parent_due;
+        // research/340: resting (before the clock: it is read only for what would be taken): only an avatar just
+        // switched by distance and an animesh alone are taken; the others wait (none of them is a switch: far_left is as it was)
+        if (resting && !animesh_alone && !d.avatar->mPlusFarSwitchPending)
+        {
+            any_left = true;
+            continue;
+        }
+        if (timed && !over_budget && taken_any > 0
+            && std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - plus_start).count() > capture_budget_ms)
+        {
+            over_budget = true;
+        }
+        if (over_budget && !animesh_alone)
+        {
+            any_left = true;
+            far_left = far_left || d.avatar->mPlusFarSwitchPending; // research/343
+            continue;
+        }
         if (!d.no_picture)
         {
             ++(d.old ? taken_old : taken);
         }
         take(d);
+        ++taken_any;
     }
     if (any_left)
     {
@@ -11703,7 +12187,7 @@ void LLVOAvatar::updateImpostors()
                 take(d);
                 continue;
             }
-            if (!unlimited && LLRHI::sAvatarStats)
+            if ((!unlimited || timed) && LLRHI::sAvatarStats)
             {
                 ++LLRHI::sAvatarCounters.impostor_deferred;
                 LLRHI::sAvatarCounters.impostor_deferred_old += d.old ? 1 : 0;
@@ -11716,12 +12200,28 @@ void LLVOAvatar::updateImpostors()
             }
         }
     }
+    if (timed && !resting && taken_any > 0 && capture_rest > 0.f)
+    {
+        const F32 spent_ms = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - plus_start).count();
+        if (spent_ms > capture_budget_ms)
+        {
+            rest_end = std::chrono::steady_clock::now()
+                + std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                    std::chrono::duration<double>(llmin<F64>(0.001 * spent_ms * capture_rest, CAPTURE_REST_MAX)));
+        }
+    }
     // only the fraction of a picture is carried over: a quiet frame does not save up a burst
     // (the old pictures' budget is twice the normal one: an old picture costs half a credit)
     credit = llclamp(credit - llmax((F32)taken, 0.5f * (F32)taken_old), 0.f, 0.999f);
     // </plus>
 
     LLCharacter::sAllowInstancesChange = true;
+
+    // <plus> research/343: the next switches by distance have their pictures taken in the next round; none while the time
+    // budget put off the picture of one switched in this one (it would wait, with no picture or an old one). Other pictures put off
+    // do not stop them: in a crowd that is every frame
+    sFarSwitches = far_left ? MAX_FAR_SWITCHES : 0;
+    // </plus>
 
     if (LLRHI::sAvatarStats)
     {
@@ -11745,8 +12245,112 @@ bool LLVOAvatar::shouldImpostor(const F32 rank_factor)
     {
         return true;
     }
-    return sLimitNonImpostors && (mVisibilityRank > sMaxNonImpostors * rank_factor);
+    // <plus> research/343: beyond the distance, whatever the count limit says (not for the "far" factors of the
+    // update period: the distance makes a nearby impostor, updated often)
+    if (rank_factor <= 1.f && beyondFullDistance())
+    {
+        return true;
+    }
+    // </plus>
+    return shouldImpostorByRank(rank_factor); // <plus> research/343 (was: return sLimitNonImpostors && (mVisibilityRank > sMaxNonImpostors * rank_factor);) </plus>
 }
+
+// <plus> research/343
+bool LLVOAvatar::shouldImpostorByRank(const F32 rank_factor) const
+{
+    // sMaxNonImpostors 0 = unlimited (the flag may be on only for the distance)
+    return sLimitNonImpostors && sMaxNonImpostors != 0 && (mVisibilityRank > sMaxNonImpostors * rank_factor);
+}
+
+// PlusAvatarFullDistance with the zoom: a view narrower than the standard 60 degrees (Ctrl+0/8/9, the photo tools and
+// camera shots, the mouselook zoom, the flycam all change the view angle; the default FOV they write is no base) stretches
+// it by 60 degrees / the view angle, as the count limit (by the size on the screen) lets a zoomed-in avatar back to full.
+// Once a frame. 0 while the photo screen is on or the distance is off. Not cut for a snapshot: the idle that decides
+// the period does not run while one is taken, so a cut would only make every avatar flip to full and back around it.
+F32 LLVOAvatar::fullDistanceNow()
+{
+    static U32 frame = U32_MAX;
+    static F32 distance = 0.f;
+    const U32 now = LLFrameTimer::getFrameCount();
+    if (frame != now)
+    {
+        frame = now;
+        distance = 0.f;
+        if (sFullDistance > 0.f && !plus::photoscreen::isActive())
+        {
+            distance = sFullDistance * plus_view_zoom_now(); // research/344: the zoom is shared (was computed here)
+        }
+    }
+    return distance;
+}
+
+// Never an impostor by distance: the one the camera looks at (focus object), the target of the focus lock, an avatar
+// shown "always" in the exceptions, a friend when the friends are shown always, another person posed on this screen
+// with their consent (research/336: a silhouette stops their animations, an impostor updates them seldom). As the count
+// limit leaves them.
+bool LLVOAvatar::exemptFromFullDistance() const
+{
+    if (mVisuallyMuteSetting == AV_ALWAYS_RENDER)
+    {
+        return true;
+    }
+    if (plus::poser::isPosingOther(getID())) // research/336: nobody posed is one test of an empty list
+    {
+        return true;
+    }
+    LLViewerObject* focus = gAgentCamera.getFocusObject().get();
+    if (focus && (focus == this || focus->getAvatarAncestor() == this || focus->getControlAvatar() == this)) // the body or hair of an attachment, a part of an animesh too
+    {
+        return true;
+    }
+    if (plus::focuslock::getMode() == plus::focuslock::MODE_OTHER && plus::focuslock::getAvatar() == getID())
+    {
+        return true;
+    }
+    static LLCachedControl<S32> complexity_render_mode(gSavedSettings, "RenderAvatarComplexityMode");
+    return complexity_render_mode > AV_RENDER_LIMIT_BY_COMPLEXITY && isBuddy();
+}
+
+// Farther than PlusAvatarFullDistance (zoomed). Enters at D; an impostor leaves below D less max(0.1 D, 2 m) (so that the
+// edge does not make it flip on and off: each flip is a new picture). mUpdatePeriod > 1 is the memory.
+bool LLVOAvatar::beyondFullDistance() const
+{
+    const F32 limit = fullDistanceNow();
+    if (limit <= 0.f || mDrawable.isNull())
+    {
+        return false;
+    }
+    const F32 edge = mUpdatePeriod > 1 ? limit - llmax(0.1f * limit, 2.f) : limit;
+    return mDrawable->mDistanceWRTCamera > edge && !exemptFromFullDistance();
+}
+
+// A full avatar goes impostor by distance only a few between two rounds of pictures (updateImpostors resets the
+// count): each one needs its picture at once (an impostor with no picture draws nothing). The others stay full,
+// drawn as before, until their turn. Not an animesh: its avatar decides.
+bool LLVOAvatar::takeFarSwitch()
+{
+    if (getAttachedAvatar() || sFarSwitches >= MAX_FAR_SWITCHES)
+    {
+        return false;
+    }
+    ++sFarSwitches;
+    // its picture is of something else (it was drawn in full): updateImpostors takes it as one with no picture
+    mNeedsImpostorUpdate = true;
+    mLastImpostorUpdateReason = 13;
+    mImpostorUnusable = true;
+    mPlusFarSwitchPending = true;
+    return true;
+}
+
+// the flag of updateImpostorRendering for the distance
+void LLVOAvatar::updateFullDistance()
+{
+    const F32 d = gSavedSettings.getF32("PlusAvatarFullDistance");
+    // 0 = off; otherwise 5 to 1024 m (a smaller one would make the avatar next to you a picture)
+    sFullDistance = (llfinite(d) && d > 0.f) ? llclamp(d, 5.f, 1024.f) : 0.f;
+    sLimitNonImpostors = (0 != sMaxNonImpostors) || sFullDistance > 0.f;
+}
+// </plus>
 
 bool LLVOAvatar::needsImpostorUpdate() const
 {
@@ -11806,7 +12410,13 @@ void LLVOAvatar::updateImpostorRendering(U32 newMaxNonImpostorsValue)
         sMaxNonImpostors = newMaxNonImpostorsValue;
     }
     // the sLimitNonImpostors flag depends on whether or not sMaxNonImpostors is set to the no-limit value (0)
-    sLimitNonImpostors = (0 != sMaxNonImpostors);
+    // <plus> research/343: the flag is also on for the distance (PlusAvatarFullDistance); the setting is followed from here on
+    static const boost::signals2::connection full_distance_signal =
+        gSavedSettings.getControl("PlusAvatarFullDistance")->getSignal()->connect(
+            [](LLControlVariable*, const LLSD&, const LLSD&) { LLVOAvatar::updateFullDistance(); });
+    (void)full_distance_signal;
+    updateFullDistance();
+    // </plus>
     if ( oldflg != sLimitNonImpostors )
     {
         LL_DEBUGS("AvatarRender")
@@ -12593,7 +13203,7 @@ void LLVOAvatar::updateOverallAppearance()
         if (!isSelf())
         {
             mNeedsImpostorUpdate = true;
-            mLastImpostorUpdateReason = 8;
+            if (!mPlusFarSwitchPending) mLastImpostorUpdateReason = 8; // <plus> research/344: keeps the reason of the switch by distance (was: mLastImpostorUpdateReason = 8;) </plus>
             mImpostorUnusable = true; // <plus> research/319 </plus>
         }
         updateMeshVisibility();
@@ -12676,7 +13286,7 @@ LLVOAvatar::AvatarOverallAppearance LLVOAvatar::getOverallAppearance() const
         {   // Always want to see this AV as an impostor
             result = AOA_JELLYDOLL;
         }
-        else if (isTooComplex() || isTooSlow())
+        else if (isTooComplex() || isTooSlow() || beyondSilhouetteDistance()) // <plus> research/344 J2 </plus>
         {
             result = AOA_JELLYDOLL;
         }
@@ -12703,7 +13313,7 @@ void LLVOAvatar::calcMutedAVColor()
         new_color = LLColor4::grey4;
         change_msg = " blocked: color is grey4";
     }
-    else if (!isTooComplex() && !isTooSlow())
+    else if (!isTooComplex() && !isTooSlow() && !beyondSilhouetteDistance()) // <plus> research/344: a jelly doll by distance is grey too </plus>
     {
         new_color = LLColor4::white;
         change_msg = " simple imposter ";

@@ -45,6 +45,7 @@ What it adds:
 | Update download (Setup.exe version only, from the project's GitHub releases) | after you press Download (or without asking, if you chose that) | ask first |
 | Online translation (Azure, DeepL or Google; an official feature) | subtitles with online translation | off |
 | Statistics to the region (the official ViewerStats) | once just after login, then every 5 minutes, at logout and at quit (as the official viewer) | on, as in the official viewer, without secrets, free text or Charis settings |
+| Pose sharing (your own pose, as a shout on a fixed chat channel through your pose bridge, to the Charis Viewers near you; see [PRIVACY.md](PRIVACY.md)) | while you pose your avatar in the poser and Share is on | off |
 | Local MCP server on 127.0.0.1 (a local remote control for the poser) | when you turn it on | off |
 
 There is no crash reporter, no telemetry of its own, and nothing is sent to

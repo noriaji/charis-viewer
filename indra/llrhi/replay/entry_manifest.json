@@ -144,7 +144,7 @@
     "glVertexAttribIPointer",
     "glVertexAttribPointer"
   ],
-  "hash": "13d940b66b2d8db20bff7bed1342b702d80a44b02cdaee23eb2693a0b0710912",
+  "hash": "07ac529af0272ebbeff1f991fef0d4efb150d66184d67ea846cdefb233e4244d",
   "hooks": {
     "sActiveTexture": {
       "direction": "forward",
@@ -461,6 +461,21 @@
       "flag": null,
       "header": "llrhi.h"
     },
+    "sMotionCamera": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhimotion.h"
+    },
+    "sMotionClear": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhimotion.h"
+    },
+    "sMotionViewDraw": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhimotion.h"
+    },
     "sNoteEvent": {
       "direction": "forward",
       "flag": null,
@@ -590,6 +605,11 @@
       "direction": "forward",
       "flag": null,
       "header": "llrhi.h"
+    },
+    "sRenderThreadProgress": {
+      "direction": "forward",
+      "flag": null,
+      "header": "llrhiframe.h"
     },
     "sResourceCounts": {
       "direction": "forward",

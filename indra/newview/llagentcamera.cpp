@@ -1658,7 +1658,7 @@ void LLAgentCamera::updateCamera()
             diff.mV[VZ] = 0.f;
         }
 #endif
-        static LLCachedControl<bool> useRealisticMouselook(gSavedSettings, "AlchemyRealisticMouselook", false);
+        bool useRealisticMouselook = false;
         if (useRealisticMouselook)
         {
             auto frame_agent = gAgent.getFrameAgent();
@@ -3093,6 +3093,21 @@ void LLAgentCamera::resetFlycamToCurrentView()
     mFlycam.setView(camera->getView());
 }
 
+// <plus> plus/flycamsens (flycam-level): see llagentcamera.h
+void LLAgentCamera::levelFlycam(F32 duration)
+{
+    if (!mUsingFlycam)
+    {
+        return;
+    }
+    LLVector3d position;
+    LLQuaternion rotation;
+    mFlycam.getTransform(position, rotation);
+    mFlycam.startLevel(plus::camroll::withTilt(rotation), duration);
+    plus::camroll::setDegrees(0.f); // now in the flycam's attitude (it would show twice)
+}
+// </plus>
+
 //-----------------------------------------------------------------------------
 // toggleFlycam()
 //-----------------------------------------------------------------------------
@@ -3101,6 +3116,10 @@ void LLAgentCamera::toggleFlycam()
     mUsingFlycam = !mUsingFlycam;
     if (mUsingFlycam)
     {
+        // <plus> plus/flycamsens (flycam-level): a flycam left in the middle of a reset (the 0 key's level, the official
+        // unroll) starts from the camera, not from that reset's old target
+        mFlycam.cancelReset();
+        // </plus>
         resetFlycamToCurrentView();
         // Flycam starts from the current view, which in mouselook is inside the
         // avatar's head: keep the avatar hidden until it's out of view.

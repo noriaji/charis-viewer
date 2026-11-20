@@ -78,6 +78,9 @@
 // <plus> rlv: RLVa (plus/rlv) (research/248)
 #include "plus/rlv/rlvhooks.h"
 // </plus>
+// <plus> contactsets: the Contact Sets tab (plus/contactsets/peopletab) (research/333)
+#include "plus/contactsets/peoplehooks.h"
+// </plus>
 
 #define FRIEND_LIST_UPDATE_TIMEOUT  0.5
 #define NEARBY_LIST_UPDATE_INTERVAL 1
@@ -646,6 +649,11 @@ bool LLPanelPeople::postBuild()
     mAllFriendList->setShowIcons("FriendsListShowIcons");
     mAllFriendList->showPermissions(gSavedSettings.getBOOL("FriendsListShowPermissions"));
     mAllFriendList->setShowCompleteName(!gSavedSettings.getBOOL("FriendsListHideUsernames"));
+    // <plus> contactsets: the friends in their set's colour (FSContactSetsColorizeFriends; Firestorm FIRE-32748), names
+    // built again when the sets or the aliases change (plus/contactsethooks) (research/333)
+    mOnlineFriendList->setUseContactSetColors(true);
+    mAllFriendList->setUseContactSetColors(true);
+    // </plus>
 
     LLPanel* nearby_tab = getChild<LLPanel>(NEARBY_TAB_NAME);
     nearby_tab->setVisibleCallback(boost::bind(&Updater::setActive, mNearbyListUpdater, _2));
@@ -968,6 +976,12 @@ LLUUID LLPanelPeople::getCurrentItemID() const
     if (cur_tab == BLOCKED_TAB_NAME)
         return LLUUID::null; // FIXME?
 
+    // <plus> contactsets: the tab keeps its own list (plus/contactsets/peopletab) (research/333)
+    uuid_vec_t contact_sets_selection;
+    if (plus::contactsets::getTabSelection(mTabContainer->getCurrentPanel(), contact_sets_selection))
+        return contact_sets_selection.empty() ? LLUUID::null : contact_sets_selection.front();
+    // </plus>
+
     llassert(0 && "unknown tab selected");
     return LLUUID::null;
 }
@@ -990,6 +1004,10 @@ void LLPanelPeople::getCurrentItemIDs(uuid_vec_t& selected_uuids) const
         mGroupList->getSelectedUUIDs(selected_uuids);
     else if (cur_tab == BLOCKED_TAB_NAME)
         selected_uuids.clear(); // FIXME?
+    // <plus> contactsets: (plus/contactsets/peopletab) (research/333)
+    else if (plus::contactsets::getTabSelection(mTabContainer->getCurrentPanel(), selected_uuids))
+        {} // the Contact Sets tab has given its selection
+    // </plus>
     else
         llassert(0 && "unknown tab selected");
 

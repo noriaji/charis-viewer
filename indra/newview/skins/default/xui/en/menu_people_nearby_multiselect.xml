@@ -13,6 +13,15 @@
          function="Avatar.EnableItem"
          parameter="can_add" />
     </menu_item_call>
+    <!-- plus contactsets: Firestorm's "Add to Set..." in its place after Add Friend (plus/contactsets/peopletab, research/333) -->
+    <menu_item_call
+     label="Add to Set..."
+     layout="topleft"
+     name="Add to Set">
+        <menu_item_call.on_click
+         function="Avatar.AddToContactSet" />
+    </menu_item_call>
+    <!-- /plus -->
     <menu_item_call
      label="Remove Friends"
      layout="topleft"

@@ -43,6 +43,7 @@
 #include "llvklook.h"
 #include "llvkupscale.h"
 #include "llvktaa.h"
+#include "llvkmotion.h"
 #include "llvkatmosphere.h"
 #include "llvkrain.h"
 #include "llvkskinfill.h"
@@ -913,7 +914,7 @@ namespace
         VkPipelineMultisampleStateCreateInfo multisample = { VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
         multisample.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
         VkPipelineDepthStencilStateCreateInfo depth = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
-        VkPipelineColorBlendAttachmentState blends[4] = {};     // shadow passes write depth only
+        VkPipelineColorBlendAttachmentState blends[LLVKMirror::MAX_COLORS] = {};   // shadow passes write depth only
         VkPipelineColorBlendStateCreateInfo color = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
         color.attachmentCount = target.color_count;
         color.pAttachments = blends;
@@ -1819,6 +1820,7 @@ void LLVKNative::install()
     LLVKLook::install();        // research/102: looks, the colour grading LUT (a fullscreen pass)
     LLVKUpscale::install();     // research/165: the main view drawn smaller and upscaled, FSR 1 (fullscreen passes)
     LLVKTaa::install();         // research/185: temporal anti-aliasing (a fullscreen pass)
+    LLVKMotion::install();      // research/373: the G-buffer's motion vectors, the camera's motion (fullscreen passes)
     LLVKGlare::install();       // research/108: glare (HDR bloom) and the sun's lens flare (fullscreen passes)
     LLVKSkinSss::install();     // research/100: skin subsurface scattering (fullscreen passes on the skin mark)
     LLVKSkinFill::install();    // research/110: softer shadows on skin (fullscreen passes on the skin mark)

@@ -239,34 +239,24 @@ namespace
     {
 #if LL_WINDOWS
         LLFile::remove(path, ENOENT); // the access list is given only to a new file
-        bool   made  = false;
-        HANDLE token = nullptr;
-        if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+        bool               made = false;
+        const std::wstring sid  = plus::userSidText();
+        if (!sid.empty())
         {
-            DWORD size = 0;
-            GetTokenInformation(token, TokenUser, nullptr, 0, &size);
-            std::vector<BYTE> user(size);
-            LPWSTR            sid = nullptr;
-            if (size && GetTokenInformation(token, TokenUser, user.data(), size, &size) &&
-                ConvertSidToStringSidW(reinterpret_cast<TOKEN_USER*>(user.data())->User.Sid, &sid))
+            const std::wstring   sddl = L"D:P(A;;FA;;;" + sid + L")";
+            PSECURITY_DESCRIPTOR sd   = nullptr;
+            if (ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, &sd, nullptr))
             {
-                const std::wstring   sddl = L"D:P(A;;FA;;;" + std::wstring(sid) + L")";
-                PSECURITY_DESCRIPTOR sd   = nullptr;
-                if (ConvertStringSecurityDescriptorToSecurityDescriptorW(sddl.c_str(), SDDL_REVISION_1, &sd, nullptr))
+                SECURITY_ATTRIBUTES sa{ sizeof(sa), sd, FALSE };
+                HANDLE file = CreateFileW(ll_convert<std::wstring>(path).c_str(), GENERIC_WRITE, 0, &sa, CREATE_NEW,
+                                          FILE_ATTRIBUTE_NORMAL, nullptr);
+                if (file != INVALID_HANDLE_VALUE)
                 {
-                    SECURITY_ATTRIBUTES sa{ sizeof(sa), sd, FALSE };
-                    HANDLE file = CreateFileW(ll_convert<std::wstring>(path).c_str(), GENERIC_WRITE, 0, &sa, CREATE_NEW,
-                                              FILE_ATTRIBUTE_NORMAL, nullptr);
-                    if (file != INVALID_HANDLE_VALUE)
-                    {
-                        CloseHandle(file);
-                        made = true;
-                    }
-                    LocalFree(sd);
+                    CloseHandle(file);
+                    made = true;
                 }
-                LocalFree(sid);
+                LocalFree(sd);
             }
-            CloseHandle(token);
         }
         if (!made)
             LL_WARNS("PlusPoserMcp") << "Could not limit " << path << " to this OS user; it keeps the folder's access" << LL_ENDL;

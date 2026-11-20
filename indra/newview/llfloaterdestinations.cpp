@@ -55,6 +55,7 @@ bool LLFloaterDestinations::postBuild()
     // which will also update destinations instance if it already exists.
     LLViewerMedia::getInstance()->getOpenIDCookie(destinations);
     plus::destinations::setupReloadButton(this); // <plus> destinations-reload: the Reload button (plus/destinations) </plus>
+    plus::destinations::setupPageLanguage(this); // <plus> destinations-lang: keep the page in the UI language (plus/destinations) </plus>
     return true;
 }
 
@@ -62,7 +63,7 @@ bool LLFloaterDestinations::postBuild()
 // (HTTP 4xx/5xx) is loaded again when the floater is opened again (plus/destinations)
 void LLFloaterDestinations::onOpen(const LLSD& key)
 {
-    plus::destinations::reloadIfLastLoadFailed(this);
+    plus::destinations::onFloaterOpen(this); // language of the next loads, and reload a failed guide
 }
 // </plus>
 

@@ -34,6 +34,9 @@ Rules (each finding is an NG unless said otherwise):
               full commit SHA with the version in a comment; every uses: on a
               plain "uses: <ref>" line
   run         no ${{ }} expression inside a run: script (values go through env:)
+  pip         an allow list: a run line that has pip in it (any case, `pipefail` aside) must be exactly
+              `python -I -m pip install --require-hashes --only-binary :all: --no-deps -r FILE`, without shell syntax that
+              could add a command
   checkout    persist-credentials: false
   artifacts   upload-artifact never with overwrite (a name taken before makes the
               upload, and the run, fail); download-artifact with a name and none of
@@ -50,6 +53,7 @@ Exit status: 0 = no NG, 1 = an NG (or a file cannot be read), 2 = wrong argument
 import argparse
 import os
 import re
+import shlex
 import subprocess
 import sys
 
@@ -366,6 +370,62 @@ def check_gate(rep, path, jobs):
                 rep.say('NG', path, 'job %s step %d: continue-on-error in the approval job' % (name, n))
 
 
+PIP_FLAGS = ('--require-hashes', '--no-deps')
+
+
+def pip_problems(script):
+    """What is wrong with the pip commands of a run: script (a list of messages). An allow list, not a hunt for bad forms: a
+    line that has `pip` in it at all (any case: `$PIP`, `pip.exe`, `-mpip`, `pip._internal`, `pip wheel`; `pipefail` is not pip)
+    must be exactly `python -I -m pip install --require-hashes --only-binary :all: --no-deps -r FILE` (the flags in any order,
+    `--only-binary=:all:` too, FILE one word, quoted or not) and have no shell syntax that could add a command (& | ; ( ) < >
+    ` or $( ). Everything else about pip (a second command on the line, a variable that holds the command, bash -c, pip wheel
+    or download, options before the subcommand) is a finding."""
+    problems = []
+    for line in script.replace('\\\n', ' ').splitlines():
+        text = line.strip()
+        if not text or text.startswith('#') or not re.search(r'pip(?!efail)', text, re.I):
+            continue
+        shown = text[:100]
+        if re.search(r'[&|;()<>`]', text):
+            problems.append('a pip line with shell syntax that can add a command (& | ; ( ) < > `): %s' % shown)
+            continue
+        try:
+            words = shlex.split(text, posix=True)
+        except ValueError:
+            problems.append('a pip line that is not read as one command: %s' % shown)
+            continue
+        if words[:5] not in (['python', '-I', '-m', 'pip', 'install'], ['python3', '-I', '-m', 'pip', 'install']):
+            problems.append('pip is run other than as `python -I -m pip install ...` (-I before -m: nothing of the working folder on '
+                            'sys.path): %s' % shown)
+            continue
+        rest = words[5:]
+        flags = set()
+        file_given = False
+        i = 0
+        while i < len(rest):
+            word = rest[i]
+            if word in PIP_FLAGS:
+                flags.add(word)
+            elif word == '--only-binary=:all:':
+                flags.add('--only-binary')
+            elif word == '--only-binary' and i + 1 < len(rest) and rest[i + 1] == ':all:':
+                flags.add('--only-binary')
+                i += 1
+            elif word == '-r' and i + 1 < len(rest) and not file_given and not rest[i + 1].startswith('-'):
+                file_given = True
+                i += 1
+            else:
+                problems.append('pip install with something else than a pinned wheel (--require-hashes --only-binary :all: --no-deps '
+                                '-r <file>): %r in %s' % (word, shown))
+                break
+            i += 1
+        else:
+            if flags != {'--require-hashes', '--no-deps', '--only-binary'} or not file_given:
+                problems.append('pip install without --require-hashes --only-binary :all: --no-deps -r <file> '
+                                '(a pinned wheel, nothing else): %s' % shown)
+    return problems
+
+
 def check_steps(rep, path, name, job):
     """Returns the uses: of the job and its steps (for check_pins)."""
     for key in ('container', 'services'):
@@ -396,6 +456,9 @@ def check_steps(rep, path, name, job):
         label = 'job %s step %d (%s)' % (name, n, step.get('name', '?'))
         if isinstance(step.get('run'), str) and '${{' in step['run']:
             rep.say('NG', path, '%s: ${{ }} inside run: (pass it through env:)' % label)
+        if isinstance(step.get('run'), str):
+            for why in pip_problems(step['run']):
+                rep.say('NG', path, '%s: %s' % (label, why))
         uses = str(step.get('uses', ''))
         action, given = uses.split('@')[0], step.get('with') or {}
         if not isinstance(given, dict):

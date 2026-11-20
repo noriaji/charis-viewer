@@ -55,10 +55,18 @@ namespace
 {
     // The manipulators draw in agent space; a HUD selection puts the
     // renderSelections() pass in HUD coordinates, so stay out of it.
+    // <plus> Only while something is selected: the select type is set when objects are
+    // selected and is not reset when the selection is emptied, so a HUD edited and let go
+    // earlier left the guide and the joint markers off until a world object was selected.
+    // With an empty selection left at the HUD type the guide is drawn by render_ui_3d(), after
+    // the HUD attachments (not before them, as render_hud_elements() does): the matrices stay the
+    // world's, so only the overlap with HUD pixels differs.
     bool selectionIsHud()
     {
-        return LLSelectMgr::getInstance()->getSelection()->getSelectType() == SELECT_TYPE_HUD;
+        const LLObjectSelectionHandle selection = LLSelectMgr::getInstance()->getSelection();
+        return !selection->isEmpty() && selection->getSelectType() == SELECT_TYPE_HUD;
     }
+    // </plus>
 }
 
 //-----------------------------------------------------------------------

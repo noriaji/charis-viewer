@@ -133,7 +133,13 @@ public:
     std::string mDriverVersionVendorString;
     std::string mGLVersionString;
 
-    U32 mVRAM; // VRAM in MB
+    U32 mVRAM; // VRAM in MB (<plus> the override when one is set: research/371 </plus>)
+    U32 mVRAMDetected; // <plus> research/371: the VRAM detected, MB, before an override (statistics and reports use this) </plus>
+    bool mVRAMOverridden = false; // <plus> research/371: mVRAM is an override (mVRAMDetected may be 0: not known) </plus>
+
+    // <plus> research/371: the VRAM to report (statistics, debug info): what was detected, not an override set for testing
+    U32 getReportedVRAM() const { return mVRAMOverridden ? mVRAMDetected : mVRAM; }
+    // </plus>
 
     std::string getGLInfoString();
     void printGLInfoString();

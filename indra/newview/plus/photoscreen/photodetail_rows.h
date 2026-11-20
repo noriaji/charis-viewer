@@ -1,7 +1,7 @@
 /**
  * @file photodetail_rows.h
- * @brief The rows of the side panels of the detailed photo screen (the photo tools' items as sliders,
- *        checks and choices), used by the left and the right panel.
+ * @brief The row helpers of the side panels of the detailed photo screen (sliders, checks, choices and
+ *        buttons as rows of a flat list), used by the left and the right panel.
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Second Life Viewer Source Code
@@ -51,11 +51,6 @@ namespace plus::photoscreen::detail
     void clearRows(LLFlatListView* list, std::vector<RowRef>& rows);
     bool addRow(LLFlatListView* list, std::vector<RowRef>& rows, const Spec& spec);
     void addButtonRow(LLFlatListView* list, const std::string& label, const std::string& tip, std::function<void()> action);
-    Spec specOf(const pm::Item& item);
-    bool addLookRow(LLFlatListView* list, std::vector<RowRef>& rows, const pm::Item& item);
-    bool addItemRow(LLFlatListView* list, std::vector<RowRef>& rows, const pm::Item& item);
-    bool addItemRowById(LLFlatListView* list, std::vector<RowRef>& rows, const char* id);
-    void addTabItems(LLFlatListView* list, std::vector<RowRef>& rows, const char* tab, const char* skip = nullptr);
     void addSettingChoice(LLFlatListView* list, std::vector<RowRef>& rows, const char* label, const char* setting,
                           const char* prefix, int count);
 

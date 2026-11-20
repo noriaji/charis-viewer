@@ -26,6 +26,7 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include <cmath>
 #include <deque>
 #include "fsposingmotion.h"
 #include "llcharacter.h"
@@ -51,9 +52,42 @@ FSJointPose::FSJointPose(LLJoint* joint, U32 usage, bool isCollisionVolume)
     mJointNumber       = joint->getJointNum();
 
     mCurrentState = FSJointState(joint);
-
-    ++sUndoSerial; // <plus> a joint pose made again starts with no steps: the last drag is not one of them
 }
+
+// <plus> research/374
+namespace plus::poser
+{
+    LLQuaternion usableQuaternion(LLQuaternion q)
+    {
+        if (!q.isFinite())
+            return LLQuaternion::DEFAULT;
+        const F32 magnitude = q.normalize(); // a near-zero one becomes the identity
+        if (!std::isfinite(magnitude) || !q.isFinite())
+            return LLQuaternion::DEFAULT;
+        return q;
+    }
+
+    LLVector3 clampedPosition(const LLVector3& position)
+    {
+        LLVector3 p = position.isFinite() ? position : LLVector3::zero;
+        p.clamp(-POSER_VALUE_POSITION_LIMIT, POSER_VALUE_POSITION_LIMIT);
+        return p;
+    }
+
+    LLVector3 clampedScaleDelta(const LLVector3& scale)
+    {
+        LLVector3 s = scale.isFinite() ? scale : LLVector3::zero;
+        s.clamp(POSER_VALUE_SCALE_DELTA_MIN, POSER_VALUE_SCALE_DELTA_MAX);
+        return s;
+    }
+}
+
+void FSJointPose::setSharedTarget(const LLQuaternion& absRotation, const LLVector3& positionDelta, const LLVector3& scaleDelta)
+{
+    mCurrentState.setSharedTarget(plus::poser::usableQuaternion(absRotation), plus::poser::clampedPosition(positionDelta),
+                                  plus::poser::clampedScaleDelta(scaleDelta));
+}
+// </plus>
 
 void FSJointPose::setPublicPosition(const LLVector3& pos)
 {
@@ -117,6 +151,7 @@ void FSJointPose::beginUndoBatch()
         ++sUndoBatchCounter; // 0 means "none"
     sUndoBatchActive = sUndoBatchCounter;
     sUndoBatchNow.joints.clear();
+    sUndoBatchNow.motionSerial = 0;
 }
 
 void FSJointPose::endUndoBatch(const LLUUID& avatar)
@@ -129,6 +164,7 @@ void FSJointPose::endUndoBatch(const LLUUID& avatar)
     sUndoBatchLast.avatar = avatar;
     sUndoBatchLast.joints.swap(sUndoBatchNow.joints);
     sUndoBatchLast.serial = sUndoSerial;
+    sUndoBatchLast.motionSerial = sUndoBatchNow.motionSerial;
     sUndoBatchLast.undone = false;
     sUndoBatchNow.joints.clear();
 }
@@ -166,6 +202,7 @@ void FSJointPose::addStateToUndo(const FSJointState& stateToAddToUndo)
             return;
         mUndoBatchId = sUndoBatchActive;
         sUndoBatchNow.joints.push_back(mJointName);
+        sUndoBatchNow.motionSerial = mOwnerSerial;
     }
     else
     {

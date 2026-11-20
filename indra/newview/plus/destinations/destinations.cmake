@@ -1,6 +1,7 @@
 # -*- cmake -*-
-# Destinations reload (plus/destinations): a Reload button on the Destinations floater, and a
-# reload when the floater is opened again after the guide page failed to load (HTTP 4xx/5xx).
+# Destinations reload and page language (plus/destinations): a Reload button on the Destinations floater, and a
+# reload when the floater is opened again after the guide page failed to load (HTTP 4xx/5xx), and
+# the guide page kept in the viewer's language (Weglot switchTo after a load; PlusDestinationsPageLang).
 # Included by plus/plus.cmake. Hooks: llfloaterdestinations.{h,cpp} (postBuild, onOpen).
 
 list(APPEND plus_SOURCE_FILES

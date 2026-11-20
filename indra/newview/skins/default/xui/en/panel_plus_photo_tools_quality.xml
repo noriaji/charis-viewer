@@ -116,7 +116,7 @@
                  top="22"
                  width="62"
                  tab_stop="false"
-                 tool_tip="Mid-High: full OIT only; no other Charis feature on"
+                 tool_tip="Mid-High: full OIT, simpler distant avatars (flat pictures from 25 m, grey figures from 45 m) and the materialize band while loading"
                  name="btn_gl_midhigh">
                     <button.commit_callback
                      function="Plus.Presets.SetLevel"

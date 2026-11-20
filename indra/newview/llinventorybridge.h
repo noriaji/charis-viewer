@@ -134,6 +134,10 @@ public:
     virtual void pasteLinkFromClipboard() {}
     void getClipboardEntries(bool show_asset_id, menuentry_vec_t &items,
                              menuentry_vec_t &disabled_items, U32 flags);
+    // <plus> invctxfs: "Copy Name" shared by items and folders
+    void copyNameToClipboard() const;
+    void addCopyNameMenuOption(U32 flags, menuentry_vec_t& items, menuentry_vec_t& disabled_items);
+    // </plus>
     virtual void buildContextMenu(LLMenuGL& menu, U32 flags);
     virtual LLToolDragAndDrop::ESource getDragSource() const;
     virtual bool startDrag(EDragAndDropType* type, LLUUID* id) const;

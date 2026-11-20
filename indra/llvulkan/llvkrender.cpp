@@ -87,7 +87,9 @@ namespace
     U32 sFramePosted = 0;               // posting order within the frame
     U32 sLastTaken = 0;                 // the join's: the last verify job's mTaken (order check)
     bool sAnyTaken = false;
-    const char* sFailure = nullptr;     // why the thread is off (the first)
+    // Why the thread is off: the first fail() sets it, then sFailed (release);
+    // read after sFailed (acquire). research/218 vk-s2f-2: any thread may fail.
+    std::atomic<const char*> sFailure{ nullptr };
 
     struct Counts
     {
@@ -123,9 +125,11 @@ namespace
 
     void fail(const char* why)
     {
-        if (!sFailed.exchange(true, std::memory_order_relaxed))
+        why = why ? why : "?";     // a null reason would read as "not failed" in sFailure
+        const char* none = nullptr;
+        if (sFailure.compare_exchange_strong(none, why, std::memory_order_acq_rel))
         {
-            sFailure = why;
+            sFailed.store(true, std::memory_order_release);
             try
             {
                 LL_WARNS("VKRender") << "render thread (research/208 S2): " << why
@@ -263,7 +267,7 @@ namespace
         {
             return true;
         }
-        if (sShutDown || sFailed.load(std::memory_order_relaxed))
+        if (sShutDown || sFailed.load(std::memory_order_acquire))
         {
             return false;
         }
@@ -393,6 +397,16 @@ namespace
                         sCounts.diff_pass[sCounts.diff_kept] = job.mPass;
                         ++sCounts.diff_kept;
                     }
+                    // research/218 vk-s2f-2: a thread that read other values
+                    // than the main thread recorded is not safe to record with,
+                    // so auto does not turn it on later either: the main
+                    // thread records from now on, and nothing more is
+                    // compared. The 10 s line keeps the job and pass.
+                    if (LLRHI::renderThreadMode() == LLRHI::RenderThreadMode::Auto && !sAutoOn)
+                    {
+                        fail(differs ? "a job's values differed between the render thread and the main thread while auto compared them"
+                                     : "the render thread took the jobs out of their order while auto compared them");
+                    }
                 }
             }
         }
@@ -409,7 +423,7 @@ LLVKRender::Use LLVKRender::use()
 {
     const LLRHI::RenderThreadMode mode = LLRHI::renderThreadMode();
     // Without the recording worker (LLRHI_VK_RECORD_THREAD=0, checkpoints) nothing is spliced and finish() never joins.
-    if (mode == LLRHI::RenderThreadMode::Off || !LLRHI::sRenderThread || sShutDown || sFailed.load(std::memory_order_relaxed) ||
+    if (mode == LLRHI::RenderThreadMode::Off || !LLRHI::sRenderThread || sShutDown || sFailed.load(std::memory_order_acquire) ||
         !LLVKRecorder::enabled())
     {
         return Use::Inline;
@@ -579,7 +593,9 @@ void LLVKRender::join(bool frame_end)
         }
         sFrameCompared = false;
         sFrameDiffered = false;
-        if (LLRHI::renderThreadMode() == LLRHI::RenderThreadMode::Auto && !sAutoOn && sCleanFrames >= AUTO_FRAMES)
+        // research/218 vk-s2f-2: never after a failure (another fail than a difference leaves the count as it was).
+        if (LLRHI::renderThreadMode() == LLRHI::RenderThreadMode::Auto && !sAutoOn && sCleanFrames >= AUTO_FRAMES &&
+            !sFailed.load(std::memory_order_acquire))
         {
             sAutoOn = true;
             LL_INFOS("VKRender") << "render thread (research/208 S2): " << sCleanFrames
@@ -623,24 +639,25 @@ std::string LLVKRender::takeReport(U32 frames)
         sBusyMs = 0.0;
     }
     sCounts = Counts();
-    if (mode == LLRHI::RenderThreadMode::Off || (!c.posted && !c.verified && !sFailed.load(std::memory_order_relaxed)))
+    if (mode == LLRHI::RenderThreadMode::Off || (!c.posted && !c.verified && !sFailed.load(std::memory_order_acquire)))
     {
         return std::string();
     }
     frames = llmax(frames, 1u);
     std::ostringstream out;
     out << "render thread (research/208 S2, " << LLRHI::renderThreadModeName(mode);
-    if (mode == LLRHI::RenderThreadMode::Auto)
+    const char* const failure = sFailed.load(std::memory_order_acquire) ? sFailure.load(std::memory_order_acquire) : nullptr;
+    if (failure)
+    {
+        out << ", OFF: " << failure;    // research/218 vk-s2f-2: neither comparing nor recording then
+    }
+    else if (mode == LLRHI::RenderThreadMode::Auto)
     {
         out << (sAutoOn ? ", recording" : ", comparing");
     }
     if (!LLRHI::sRenderThread)
     {
         out << ", toggled off";
-    }
-    if (sFailed.load(std::memory_order_relaxed))
-    {
-        out << ", OFF: " << (sFailure ? sFailure : "?");
     }
     out << "): jobs " << (F32)(c.posted + c.verified) / frames << " a frame (";
     for (U32 i = 0; i < KINDS && c.kind[i]; ++i)
@@ -666,13 +683,56 @@ std::string LLVKRender::takeReport(U32 frames)
             out << (i ? "; " : " (") << c.diff_what[i] << " of pass " << c.diff_pass[i];
         }
         out << (c.diff_kept ? ")" : "");
-        if (mode == LLRHI::RenderThreadMode::Auto && !sAutoOn)
+        if (mode == LLRHI::RenderThreadMode::Auto && !sAutoOn && !failure)
         {
             out << ", frames without a difference " << sCleanFrames << " of " << AUTO_FRAMES;
         }
     }
     out << "; join waits " << c.waits << " (" << c.wait_ms << " ms), thread busy " << busy / frames << " ms a frame";
     return out.str();
+}
+
+namespace
+{
+    // research/218 vk-s2f-2: LLRHI::sRenderThreadProgress (main thread).
+    std::string progress()
+    {
+        const LLRHI::RenderThreadMode mode = LLRHI::renderThreadMode();
+        std::string out = LLRHI::renderThreadModeName(mode);
+        if (mode == LLRHI::RenderThreadMode::Off)
+        {
+            return out;
+        }
+        if (sFailed.load(std::memory_order_acquire))
+        {
+            const char* const failure = sFailure.load(std::memory_order_acquire);
+            out += std::string(": off for the run: ") + (failure ? failure : "?");
+        }
+        else if (!sChecked)
+        {
+            out += ": not asked yet (the retained scene has not drawn, or the recording worker or the toggle is off)";
+        }
+        else if (sNotForThisPC)
+        {
+            out += ": unused (" + std::to_string(sProcessors) + " logical processors, fewer than " + std::to_string(MIN_PROCESSORS) + ")";
+        }
+        else if (mode == LLRHI::RenderThreadMode::Auto)
+        {
+            out += sAutoOn ? std::string(": recording")
+                           : ": comparing, " + std::to_string(sCleanFrames) + " of " + std::to_string(AUTO_FRAMES) + " frames without a difference";
+        }
+        if (!LLRHI::sRenderThread)
+        {
+            out += ", toggled off";
+        }
+        return out;
+    }
+
+    const bool sProgressHook = []()
+    {
+        LLRHI::sRenderThreadProgress = &progress;
+        return true;
+    }();
 }
 
 // ==== research/208 13.3 (vk-s4a4): the threads' secondary command buffers ====
@@ -745,7 +805,7 @@ VkCommandBuffer LLVKRender::beginSecondary(const SecondaryTarget& target, U32 fr
     }
     const VkCommandBuffer buffer = buffers[p.next[frame_slot]++];
     VkCommandBufferInheritanceRenderingInfo rendering = { VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_RENDERING_INFO };
-    rendering.colorAttachmentCount = llmin(target.color_count, 4u);
+    rendering.colorAttachmentCount = llmin(target.color_count, SECONDARY_COLORS);
     rendering.pColorAttachmentFormats = target.colors;
     rendering.depthAttachmentFormat = target.depth;
     rendering.stencilAttachmentFormat = target.stencil;

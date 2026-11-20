@@ -26,6 +26,9 @@
 
 #include "llvkgl_internal.h"
 
+#include <cerrno>
+#include <cstdlib>
+
 #if LL_GL_FUNC_POINTER
 
 #include <dxgi.h>
@@ -252,6 +255,52 @@ namespace
         return bytes;
     }
 
+    // research/371 (vram-core): the VRAM to pretend, MB (0: none). LLRHI::sVRAMOverrideMB (the settings
+    // FSOverrideVRAMDetection and FSForcedVideoMemory, read by LLAppViewer before the window), else the environment
+    // LLRHI_VRAM_OVERRIDE_MB. A value outside 512 MB to 256 GB is not used (the log says so).
+    constexpr U32 VRAM_OVERRIDE_MIN_MB = 512;
+    constexpr U32 VRAM_OVERRIDE_MAX_MB = 256u * 1024u;
+
+    U32 vram_override_mb()
+    {
+        U64 mb = LLRHI::sVRAMOverrideMB;        // (the settings' value: LLAppViewer checked its range)
+        if (!mb)
+        {
+            const char* env = std::getenv("LLRHI_VRAM_OVERRIDE_MB");
+            if (env && *env)
+            {
+                // digits only (strtoull takes a sign and wraps "-1" to a huge number)
+                bool digits = true;
+                for (const char* c = env; *c; ++c)
+                {
+                    digits = digits && *c >= '0' && *c <= '9';
+                }
+                char* end = nullptr;
+                errno = 0;
+                const unsigned long long value = digits ? std::strtoull(env, &end, 10) : 0;
+                if (!digits || errno == ERANGE)
+                {
+                    LL_WARNS("VKGL") << "LLRHI_VRAM_OVERRIDE_MB is not a number of MB (digits only): not used" << LL_ENDL;
+                }
+                else if (value == 0)
+                {
+                    LL_INFOS("VKGL") << "LLRHI_VRAM_OVERRIDE_MB is 0: no override" << LL_ENDL;
+                }
+                else
+                {
+                    mb = value;
+                }
+            }
+        }
+        if (mb && (mb < VRAM_OVERRIDE_MIN_MB || mb > VRAM_OVERRIDE_MAX_MB))
+        {
+            LL_WARNS("VKGL") << "VRAM override of " << mb << " MB is outside " << VRAM_OVERRIDE_MIN_MB << " to " << VRAM_OVERRIDE_MAX_MB
+                             << " MB: not used" << LL_ENDL;
+            mb = 0;
+        }
+        return (U32)mb;
+    }
+
     GLint highest_sample_count(VkSampleCountFlags flags)
     {
         for (S32 bit = 6; bit >= 0; --bit)
@@ -330,16 +379,45 @@ namespace
         }
         // The VRAM of the GPU that renders, on every GPU (vram_bytes; research/124 V3).
         const char* vram_source = "";
-        const U64 vram = vram_bytes(props.properties, ids, vidmem, vram_source);
-        a.vidmem_kb = (GLint)llmin<U64>(vram / 1024, (U64)S32_MAX);
-        d.vram_mb = (U32)(a.vidmem_kb / 1024);
-        LL_INFOS("VKGL") << "VRAM of the GPU that renders: " << (vram >> 20) << " MB (" << vram_source << ")" << LL_ENDL;
+        const U64 detected = vram_bytes(props.properties, ids, vidmem, vram_source);
+        U64 vram = detected;
         // igpu-safe: a GPU without VRAM of its own takes all it is given from the PC's memory:
         // the device holds it to this value (the budgets, where new memory goes).
         d.shared_memory = props.properties.deviceType != VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
+        // research/371 (vram-core): pretend a GPU with this much VRAM (for testing low-VRAM paths; the real use and
+        // the real driver budget stay what they are, vramBudget holds the budget to it). A GPU that shares the PC's memory
+        // only goes lower than detected: more would take the PC's memory past what igpu-safe holds it to, and everything
+        // that follows (the feature table, the Ultra recommendation, the sun maps' size) would count on memory it has not
+        const U32 override_mb = vram_override_mb();
+        if (override_mb)
+        {
+            vram = (U64)override_mb << 20;
+            if (d.shared_memory)
+            {
+                vram = llmin(vram, detected);
+            }
+        }
+        a.vidmem_kb = (GLint)llmin<U64>(vram / 1024, (U64)S32_MAX);
+        d.vram_mb = (U32)(a.vidmem_kb / 1024);
+        d.vram_detected_mb = (U32)llmin<U64>(detected >> 20, (U64)U32_MAX);
+        LL_INFOS("VKGL") << "VRAM of the GPU that renders: " << (vram >> 20) << " MB (" << (override_mb ? "override" : vram_source)
+                         << ")" << (override_mb ? llformat(", detected %llu MB (%s); the %s",
+                                                            (unsigned long long)(detected >> 20), vram_source,
+                                                            d.shared_memory ? "share of the PC's memory is held to the lower of the two (the override only lowers it)"
+                                                                            : "driver's budget is held to the override")
+                                                : std::string())
+                         << LL_ENDL;
         if (d.shared_memory)
         {
-            device.setSharedMemoryBudget(vram);
+            device.setSharedMemoryBudget(vram);     // (the override, when lower than detected: above)
+        }
+        // research/371: a GPU whose budget the share does not hold (VRAM of its own, or the share refused): the driver's budget held to the override
+        device.setVramCap(override_mb && !device.sharedMemory() ? vram : 0);
+        // research/337: which GPU, for the viewers on one PC to tell whether they share it (plus/multiinstance)
+        static_assert(sizeof(d.luid) == VK_LUID_SIZE, "a LUID is 8 bytes");
+        if (ids.deviceLUIDValid)
+        {
+            memcpy(&d.luid, ids.deviceLUID, sizeof(d.luid));
         }
 
         // The translation keeps 32 texture units and 32 vertex attributes, 4 draw buffers.
@@ -356,7 +434,7 @@ namespace
         a.max_3d_size = (GLint)limits.maxImageDimension3D;
         a.max_layers = (GLint)limits.maxImageArrayLayers;
         a.max_vertex_attribs = (GLint)llmin(32u, limits.maxVertexInputAttributes);
-        a.max_draw_buffers = (GLint)llmin(4u, limits.maxColorAttachments);
+        a.max_draw_buffers = (GLint)llmin(LLVKMirror::MAX_COLORS, limits.maxColorAttachments);
         // GL drivers (NVIDIA's: 1 to 10) allow less than Vulkan's range (1 to 64
         // there). LLRender clamps line widths to it (research/117 7.2); the
         // translation draws lines 1 wide either way.

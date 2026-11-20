@@ -25,9 +25,13 @@ The shipped looks in `app_settings/plus/looks/` were generated for Charis by
 `tools/looks/make_looks.py` (sl-viewer repository) from parameters chosen for
 this viewer, and are released under CC0 1.0 (see `app_settings/plus/looks/LICENSE.txt`).
 `autumn-street` ("Autumn Alley") is made by `tools/make-look-autumn.py` the
-same way; its coefficients come from a few colour statistics (casts, the
+same way; its coefficients come from a few color statistics (casts, the
 saturation of hue bands, brightness percentiles) measured on a reference
 photo, which is not shipped and no pixel of which is in the LUT.
+`studio-mute` ("Muted Studio") is made by `tools/make-look-studio.py` in the same way, from the
+statistics of a studio portrait that is not shipped either.
+The 28 "pack" looks (portrait, street, film, mood) are made by `tools/make-looks-pack.py`
+from hand-chosen parameters; no photo is used.
 No third-party LUT is shipped.
 
 ## Files
@@ -42,5 +46,5 @@ No third-party LUT is shipped.
 | plus/presets/presets.* | `snapshotInProgress()` (for "only in snapshots") |
 | pipeline.cpp | the `<plus>` hook in `LLPipeline::renderFinalize()` after anti-aliasing |
 | app_settings/settings_plus.xml | `PlusLook`, `PlusLookStrength`, `PlusLookSnapshotOnly` |
-| app_settings/plus/looks/ | the shipped looks (look.xml, lut.cube, lut.png) |
+| app_settings/plus/looks/ | the shipped looks (look.xml, lut.cube) |
 | skins/default/xui/{en,ja}/menu_plus.xml | the "Look" submenu (the strength and "only in snapshots" are in the photo tools, catalog.xml) |

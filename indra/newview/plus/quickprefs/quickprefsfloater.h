@@ -80,6 +80,7 @@ namespace plus::quickprefs
         bool postBuild() override;
         void onOpen(const LLSD& key) override;
         void onClose(bool app_quitting) override;
+        void draw() override;
 
     private:
         explicit QuickPrefsFloater(const LLSD& key);
@@ -152,6 +153,12 @@ namespace plus::quickprefs
         void onRegionChanged();
         void syncAvatarZOffsetFromPreferenceSetting();
 
+        // Look (the same choice as Charis > Look and the photo tools: PlusLook) and its strength (PlusLookStrength).
+        // Picking a look leaves the strength as it is (the slider is for changing it).
+        void syncLook();
+        void onLookCombo();
+        void onLookStrength();
+
         // IndirectMaxNonImpostors (a list entry) drives RenderAvatarMaxNonImpostors.
         static void updateMaxNonImpostors(const LLSD& newvalue);
 
@@ -159,6 +166,12 @@ namespace plus::quickprefs
         LLComboBox*   mWaterPresetsCombo     = nullptr;
         LLComboBox*   mDayCyclePresetsCombo  = nullptr;
         LLSliderCtrl* mAvatarZOffsetSlider   = nullptr;
+        LLComboBox*   mLookCombo             = nullptr;
+        LLSliderCtrl* mLookStrengthSlider    = nullptr;
+        unsigned      mLookGeneration        = 0;       // of the look folders (plus::look::generation()) when the drop-down was filled
+        bool          mLookFilled            = false;   // the drop-down was filled
+        bool          mLookDirty             = true;    // PlusLook changed since the drop-down showed it (shown at the next draw)
+        std::string   mLookMissing;                     // PlusLook names a look that is not in the folders: its row is last
         LLButton*     mBtnResetDefaults      = nullptr;
 
         LLLayoutStack* mOptionsStack = nullptr; // where the rows go
@@ -198,6 +211,8 @@ namespace plus::quickprefs
         boost::signals2::scoped_connection mEnvFailedConnection;     // plus::photomode: a preset could not be had
         boost::signals2::scoped_connection mRegionChangedConnection;
         boost::signals2::scoped_connection mHoverSettingConnection;
+        boost::signals2::scoped_connection mLookConnection;
+        boost::signals2::scoped_connection mLookStrengthConnection;
         boost::signals2::scoped_connection mNonImpostorsConnection;
         boost::signals2::scoped_connection mRealNonImpostorsConnection;
     };
