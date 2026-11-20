@@ -41,7 +41,7 @@ What it adds:
 |---|---|---|
 | Speech recognition model download from huggingface.co (subtitles, Whisper) | when you press Download | off |
 | Translation model download from the project's GitHub releases | when you press Download | off |
-| Update check (one small file, `latest.json`, from raw.githubusercontent.com; see [PRIVACY.md](PRIVACY.md)) | at start, once a day | on (a notice only; turn it off in Preferences > Setup) |
+| Update check (one small file, `latest.json`, from raw.githubusercontent.com; see [PRIVACY.md](PRIVACY.md)) | at every start (not within 10 minutes of the last try) | on (a notice only; turn it off in Preferences > Setup) |
 | Update download (Setup.exe version only, from the project's GitHub releases) | after you press Download (or without asking, if you chose that) | ask first |
 | Online translation (Azure, DeepL or Google; an official feature) | subtitles with online translation | off |
 | Statistics to the region (the official ViewerStats) | once just after login, then every 5 minutes, at logout and at quit (as the official viewer) | on, as in the official viewer, without secrets, free text or Charis settings |

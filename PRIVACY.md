@@ -22,9 +22,11 @@ Second Life, and it has no connection to Linden Lab.
 - **0.1.0-alpha1**: there is no update check. Everything else in this
   policy applies.
 - **0.1.0-alpha2 and later**: the update check is on by default.
-  - At start, at most once a day, the viewer reads one small file
-    (`latest.json`) from raw.githubusercontent.com with a plain HTTP GET.
-    If no answer comes, it tries again an hour later at the earliest.
+  - At every start (not again if the last try was less than 10 minutes
+    ago), the viewer reads one small file (`latest.json`) from
+    raw.githubusercontent.com with a plain HTTP GET. What is sent is the
+    same as before: only the GET (see below).
+    If no answer comes, it tries again at the next start.
   - Nothing about your account, avatar, computer or settings is sent. As
     with any web page, the site sees your IP address and the User-Agent,
     which holds the viewer's name and version (for example
@@ -196,9 +198,10 @@ Charis Viewer（以下「本ビューワ」）は、Second Life 用の非公式�
 
 - **0.1.0-alpha1**: 更新確認はありません。それ以外はこのポリシーのとおりです。
 - **0.1.0-alpha2 以降**: 更新確認が既定でオンです。
-  - 起動時に 1 日 1 回まで、raw.githubusercontent.com の小さなファイル
-    （`latest.json`）を 1 つ、ふつうの HTTP の GET で読みます。答えが無かった
-    時は、早くても 1 時間後にもう一度試します。
+  - 起動のたびに（10 分以内の再起動では読みません）、raw.githubusercontent.com
+    の小さなファイル（`latest.json`）を 1 つ、ふつうの HTTP の GET で読みます。
+    送る内容は変わりません（下の GET だけ）。答えが無かった時は、次の起動で
+    もう一度試します。
   - アカウント・アバター・PC・設定の情報は送りません。ふつうの Web ページと
     同じく、相手には IP アドレスと、ビューワの名前と版を含む User-Agent
     （例: 「Charis Viewer 0.1.0 alpha 2」）が見えます。

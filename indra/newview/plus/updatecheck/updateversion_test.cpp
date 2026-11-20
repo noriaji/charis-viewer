@@ -244,17 +244,15 @@ int main()
     check(!hostInList("updates.example.invalid", ""), "empty list");
     check(!hostInList("updates.example.invalid", " , ; "), "list of separators");
 
-    // Once a day
-    const uint32_t day = 24 * 60 * 60;
-    check(dueForCheck(1000000, 0, day), "never checked");
-    check(!dueForCheck(1000000 + day - 1, 1000000, day), "within a day");
-    check(dueForCheck(1000000 + day, 1000000, day), "a day later");
-    check(dueForCheck(999999, 1000000, day), "clock went back");
-
-    // Once an hour after a try that got no answer
-    const uint32_t hour = 60 * 60;
-    check(!dueForCheck(1000000 + hour - 1, 1000000, hour), "tried within the hour");
-    check(dueForCheck(1000000 + hour, 1000000, hour), "an hour after a try");
+    // At every start, but not within 10 minutes of the last try (startCheck())
+    const uint32_t ten = 10 * 60;
+    check(dueForCheck(1000000, 0, ten), "never tried");
+    check(dueForCheck(1000000 + 60 * 60, 1000000, ten), "a start under 24 hours after: checks");
+    check(dueForCheck(1000000 + 23 * 60 * 60, 1000000, ten), "a start 23 hours after: checks");
+    check(!dueForCheck(1000000 + ten - 1, 1000000, ten), "within 10 minutes: skipped");
+    check(!dueForCheck(1000000, 1000000, ten), "same second: skipped");
+    check(dueForCheck(1000000 + ten, 1000000, ten), "10 minutes after a try");
+    check(dueForCheck(999999, 1000000, ten), "clock went back");
 
     // The update file and the copy kept of it (research/325 4.2)
     {

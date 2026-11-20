@@ -2666,7 +2666,7 @@
   <key>PlusUpdateCheck</key>
   <map>
     <key>Comment</key>
-    <string>At start, at most once a day, read PlusUpdateCheckURL and tell when a newer Charis Viewer is out: a band at the bottom of the login screen at every start while it is newer (research/325), or a small window when the answer comes once the login has started. Only a plain GET of that file is sent; like any web page, the site's log keeps the IP address and the viewer's version. On by default; Preferences > Setup and the band's "Stop notices" turn it off (then nothing is read or shown).</string>
+    <string>At every start (not again within 10 minutes of the last try), read PlusUpdateCheckURL and tell when a newer Charis Viewer is out: a band at the bottom of the login screen at every start while it is newer (research/325), or a small window when the answer comes once the login has started. Only a plain GET of that file is sent; like any web page, the site's log keeps the IP address and the viewer's version. On by default; Preferences > Setup and the band's "Stop notices" turn it off (then nothing is read or shown).</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -2699,7 +2699,7 @@
   <key>PlusUpdateCheckLastTime</key>
   <map>
     <key>Comment</key>
-    <string>When the update check last got an answer and judged it (seconds since 1970, UTC). Set to 0 to check again at the next start.</string>
+    <string>No longer used (the check runs at every start). Kept so an old settings.xml still loads.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>
@@ -2710,7 +2710,7 @@
   <key>PlusUpdateCheckLastTry</key>
   <map>
     <key>Comment</key>
-    <string>When the update check last started to read the file (seconds since 1970, UTC), kept before reading: a try without an answer is repeated an hour later at the earliest, even when the viewer ended while reading. Cleared to 0 when an answer comes.</string>
+    <string>When the update check last started to read the file (seconds since 1970, UTC), kept before reading: a start within 10 minutes of it does not read again, even when the viewer ended while reading.</string>
     <key>Persist</key>
     <integer>1</integer>
     <key>Type</key>

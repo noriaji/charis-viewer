@@ -34,21 +34,20 @@
 //        as an answer (readOfferFile(): size, version, addresses and their
 //        hosts); still newer and not skipped: it is offered at once. Broken or
 //        caught up with: the copy is cleared.
-//     -> a day since PlusUpdateCheckLastTime and an hour since
-//        PlusUpdateCheckLastTry: the time of the try is kept and settings.xml
+//     -> every start reads it, unless the last try (PlusUpdateCheckLastTry) was
+//        less than 10 minutes ago: the time of the try is kept and settings.xml
 //        written, then a coroutine GETs the file (LLCore HTTP; 8 s, no
 //        retries, no redirects, the server's certificate and its host name
 //        checked, at most 16 KiB taken in; the login screen does not wait)
-//     -> the site answers 4xx (404 and the like; not 429): a log line, the
-//        time kept (the next check a day later), the copy not touched
+//     -> the site answers 4xx (404 and the like): a log line, nothing shown,
+//        the copy not touched
 //     -> no answer, 429, 5xx, a redirect, a file that is not what we expect:
-//        a log line and nothing else (the copy is not touched; a start an
-//        hour or more later tries again; a crash while reading does not
-//        repeat at every start)
-//     -> same or older version: the copy is cleared, the time kept, nothing shown
-//     -> the version in PlusUpdateCheckSkipped: the copy kept, the time kept,
-//        nothing shown
-//     -> newer: the copy kept, the time kept, and it is offered.
+//        a log line and nothing else (the copy is not touched; the next start
+//        tries again; a restart within 10 minutes, e.g. after a crash while
+//        reading, does not read it again)
+//     -> same or older version: the copy is cleared, nothing shown
+//     -> the version in PlusUpdateCheckSkipped: the copy kept, nothing shown
+//     -> newer: the copy kept, and it is offered.
 //   An offer is shown while the login screen waits for the user, as the band
 //   (panel_plus_update_banner.xml) at its bottom (at its top in a window too
 //   low for the login column and the band); when the answer comes once
@@ -113,13 +112,11 @@ namespace plus::updatecheck
         constexpr char SETTING_ENABLED[]  = "PlusUpdateCheck";
         constexpr char SETTING_URL[]      = "PlusUpdateCheckURL";
         constexpr char SETTING_SKIPPED[]  = "PlusUpdateCheckSkipped";
-        constexpr char SETTING_LAST[]     = "PlusUpdateCheckLastTime";
         constexpr char SETTING_LAST_TRY[] = "PlusUpdateCheckLastTry";
         constexpr char SETTING_ALLOWED[]  = "PlusUpdateCheckAllowedHosts";
         constexpr char SETTING_OFFER[]    = "PlusUpdateCheckOffer";
 
-        constexpr uint32_t CHECK_INTERVAL_SECONDS = 24 * 60 * 60;   // once a day at most
-        constexpr uint32_t RETRY_INTERVAL_SECONDS = 60 * 60;        // after a try without an answer
+        constexpr uint32_t RETRY_INTERVAL_SECONDS = 10 * 60;        // a start this soon after a try does not read again
         constexpr unsigned TIMEOUT_SECONDS        = 8;              // to connect, and for the whole transfer
 
         constexpr S32 BANNER_SIDE     = 24;   // the band's left and right to the window's
@@ -158,14 +155,6 @@ namespace plus::updatecheck
         {
             const F64 seconds = LLDate::now().secondsSinceEpoch();
             return seconds > 0.0 ? static_cast<uint32_t>(seconds) : 0;
-        }
-
-        // An answer: the next check is a day later. The time of the try is
-        // cleared, so setting PlusUpdateCheckLastTime to 0 alone checks again.
-        void markChecked()
-        {
-            gSavedSettings.setU32(SETTING_LAST, nowSeconds());
-            gSavedSettings.setU32(SETTING_LAST_TRY, 0);
         }
 
         // settings.xml written now (as llstartup.cpp does once connected): a try, or what the user asked
@@ -761,10 +750,6 @@ namespace plus::updatecheck
                 LL_INFOS("UpdateCheck") << (answer ? "Up to date" : "The saved offer is caught up with") << ": running "
                                         << displayText(current) << ", newest " << newest << LL_ENDL;
                 gSavedSettings.setString(SETTING_OFFER, std::string());
-                if (answer)
-                {
-                    markChecked();
-                }
                 sOffer.reset();         // a band up for an older copy goes the next frame
                 return;
             }
@@ -781,7 +766,6 @@ namespace plus::updatecheck
                     LL_WARNS("UpdateCheck") << "The offer is " << copy.size() << " bytes written out; not kept" << LL_ENDL;
                     gSavedSettings.setString(SETTING_OFFER, std::string());
                 }
-                markChecked();
             }
 
             if (!found.required && gSavedSettings.getString(SETTING_SKIPPED) == key(found.version))
@@ -896,13 +880,12 @@ namespace plus::updatecheck
             if (!status)
             {
                 // The site answered "no" (404 before noriaji/charis-viewer is public, 403, 410 ...): that is an
-                // answer, so the next check is a day later, not an hour. Not 429 (too many requests) and not
-                // 5xx (the site in trouble): those, like no answer at all, are tried again an hour later.
+                // answer: nothing is shown. 429 (too many requests), 5xx (the site in trouble) and no answer
+                // at all are only logged. Each start reads again (startCheck()).
                 const int code = status.isHttpStatus() ? static_cast<int>(status.getType()) : 0;
                 if (code >= 400 && code < 500 && code != 429)
                 {
-                    LL_INFOS("UpdateCheck") << "The site answered HTTP " << code << "; nothing shown, checked again a day from now" << LL_ENDL;
-                    markChecked();
+                    LL_INFOS("UpdateCheck") << "The site answered HTTP " << code << "; nothing shown" << LL_ENDL;
                     return;
                 }
                 if (status == LLCore::HttpStatus(LLCore::HttpStatus::EXT_CURL_EASY, CURLE_WRITE_ERROR)
@@ -911,7 +894,7 @@ namespace plus::updatecheck
                     LL_WARNS("UpdateCheck") << "The answer is more than " << MAX_OFFER_BYTES << " bytes; ignored" << LL_ENDL;
                     return;
                 }
-                LL_INFOS("UpdateCheck") << "No answer (" << status.toString() << "); nothing shown, tried again at a start an hour or more from now" << LL_ENDL;
+                LL_INFOS("UpdateCheck") << "No answer (" << status.toString() << "); nothing shown, tried again at the next start" << LL_ENDL;
                 return;
             }
 
@@ -933,18 +916,13 @@ namespace plus::updatecheck
             consider(file, Origin::Answer);
         }
 
-        // Once a day at most, and an hour after a try without an answer.
+        // At every start, except within 10 minutes of the last try (a restart, a crash loop).
         void startCheck(const Source& source)
         {
             const uint32_t now = nowSeconds();
-            if (!dueForCheck(now, gSavedSettings.getU32(SETTING_LAST), CHECK_INTERVAL_SECONDS))
-            {
-                LL_INFOS("UpdateCheck") << "Checked less than a day ago; not now" << LL_ENDL;
-                return;
-            }
             if (!dueForCheck(now, gSavedSettings.getU32(SETTING_LAST_TRY), RETRY_INTERVAL_SECONDS))
             {
-                LL_INFOS("UpdateCheck") << "Tried less than an hour ago without an answer; not now" << LL_ENDL;
+                LL_INFOS("UpdateCheck") << "Tried less than 10 minutes ago; not now" << LL_ENDL;
                 return;
             }
 
