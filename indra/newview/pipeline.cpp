@@ -512,7 +512,6 @@ LLPipeline::LLPipeline() :
     mRenderDebugFeatureMask(0),
     mRenderDebugMask(0),
     mOldRenderDebugMask(0),
-    mMeshDirtyQueryObject(0),
     mGroupQ1Locked(false),
     mResetVertexBuffers(false),
     mLastRebuildPool(NULL),
@@ -851,11 +850,7 @@ void LLPipeline::destroyGL()
 
     releaseGLBuffers();
 
-    if (mMeshDirtyQueryObject)
-    {
-        glDeleteQueries(1, &mMeshDirtyQueryObject);
-        mMeshDirtyQueryObject = 0;
-    }
+    // <plus> research/394 T17: the mesh-dirty transform-feedback query was never made (its only creator was commented out); gone with its member </plus>
 }
 
 void LLPipeline::requestResizeScreenTexture()
@@ -5879,20 +5874,7 @@ void LLPipeline::postSort(LLCamera &camera)
     gSceneRecords.endView(scene_view); // <plus> research/198 3.3: the view and its visible groups to the scene </plus>
     plus::retained::census(camera, sCull); // <plus> research/195 S0: the main view's groups and batches counted (LLRHI_RETAINED_CENSUS) </plus>
 
-    /*bool use_transform_feedback = gTransformPositionProgram.mProgramObject && !mMeshDirtyGroup.empty();
-
-    if (use_transform_feedback)
-    { //place a query around potential transform feedback code for synchronization
-        mTransformFeedbackPrimitives = 0;
-
-        if (!mMeshDirtyQueryObject)
-        {
-            glGenQueries(1, &mMeshDirtyQueryObject);
-        }
-
-
-        glBeginQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN, mMeshDirtyQueryObject);
-    }*/
+    // <plus> research/394 T17: the commented-out transform-feedback query around rebuildMesh is gone </plus>
 
     // pack vertex buffers for groups that chose to delay their updates
     {
@@ -5902,11 +5884,6 @@ void LLPipeline::postSort(LLCamera &camera)
             (*iter)->rebuildMesh();
         }
     }
-
-    /*if (use_transform_feedback)
-    {
-        glEndQuery(GL_TRANSFORM_FEEDBACK_PRIMITIVES_WRITTEN);
-    }*/
 
     mMeshDirtyGroup.clear();
 

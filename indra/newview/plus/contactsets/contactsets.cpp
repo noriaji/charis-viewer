@@ -26,11 +26,14 @@
 
 #include "contactsets.h"
 
+#include "addtosetrml.h"
+
 #include "fsfloateraddtocontactset.h"
 #include "fsfloatercontactsetconfiguration.h"
 #include "lggcontactsets.h"
 #include "plus.h"
 #include "rlv/rlvhooks.h"
+#include "plus/safemode/safemode.h"
 
 #include "llfile.h"
 #include "llfloaterreg.h"
@@ -39,6 +42,7 @@
 #include "llsdutil.h"
 #include "llslurl.h"
 #include "llstartup.h"
+#include "llviewercontrol.h"
 
 namespace
 {
@@ -50,8 +54,17 @@ namespace
     void init()
     {
         // Firestorm's names (cs-people and cs-color open them by these): lggcontactsets.h CS_FLOATER_*.
-        LLFloaterReg::add(CS_FLOATER_ADD, "floater_plus_contact_set_add.xml",
-                          (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAddToContactSet>);
+        // The "add to a set" window is the RmlUi one (addtosetrml.cpp, research/386). The XUI version (fsfloateraddtocontactset.cpp)
+        // is frozen and is used in safe mode and with PlusRmlUiWindows off (chosen once, here: it takes effect at the next start).
+        if (plus::safemode::active() || !gSavedSettings.getBOOL("PlusRmlUiWindows"))
+        {
+            LLFloaterReg::add(CS_FLOATER_ADD, "floater_plus_contact_set_add.xml",
+                              (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterAddToContactSet>);
+        }
+        else
+        {
+            plus::contactsets::addRmlAddToSetFloater(CS_FLOATER_ADD);
+        }
         LLFloaterReg::add(CS_FLOATER_CONFIG, "floater_plus_contact_set_configuration.xml",
                           (LLFloaterBuildFunc)&LLFloaterReg::build<FSFloaterContactSetConfiguration>);
     }

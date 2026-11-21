@@ -8,8 +8,10 @@
 list(APPEND plus_SOURCE_FILES
     plus/protectedfolders/protectedfolders.cpp
     plus/protectedfolders/protectedfoldersfloater.cpp
+    plus/protectedfolders/protectedfoldersrml.cpp
     )
 
 list(APPEND plus_HEADER_FILES
     plus/protectedfolders/protectedfolders.h
+    plus/protectedfolders/protectedfoldersrml.h
     )

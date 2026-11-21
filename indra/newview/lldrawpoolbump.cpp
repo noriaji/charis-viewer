@@ -965,7 +965,7 @@ void LLBumpImageList::onSourceUpdated(LLViewerTexture* src, EBumpEffect bump_cod
 
         // generate mipmap
         gGL.getTexUnit(0)->bind(bump);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        LLRHI::generateMipmap(bump->getGLTexture()->getTexName(), GL_TEXTURE_2D); // <plus> research/394 T17 </plus>
         gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
     }
 

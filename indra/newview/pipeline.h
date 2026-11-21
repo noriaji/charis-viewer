@@ -1243,7 +1243,7 @@ protected:
     LLSpatialGroup::sg_vector_t     mGroupSaveQ1; // a place to save mGroupQ1 until it is safe to unref
 
     LLSpatialGroup::sg_vector_t     mMeshDirtyGroup; //groups that need rebuildMesh called
-    U32 mMeshDirtyQueryObject;
+    // <plus> research/394 T17: mMeshDirtyQueryObject removed (never created) </plus>
 
     LLDrawable::drawable_list_t     mPartitionQ; //drawables that need to update their spatial partition radius
 

@@ -30,6 +30,26 @@
             <button id="b_colour" title="[[tip_colour]]">[[button_colour]]</button>
             <button id="b_size" title="[[tip_size]]">[[button_size]]</button>
         </div>
+        <p class="hint">[[parts_label]]</p>
+        <div class="row">
+            <button id="d_append" title="[[tip_append]]">[[button_append]]</button>
+        </div>
+        <textarea id="d_log" class="ps-readonly demo-log" readonly title="[[tip_log]]"></textarea>
+        <div class="row">
+            <span class="label">[[search_label]]</span>
+            <input type="text" id="d_search" class="text" select-on-focus maxlength="64" title="[[tip_search]]"/>
+        </div>
+        <div class="row">
+            <span class="label">[[spin_label]]</span>
+            <div class="ps-spin" id="d_spin" min="0" max="200" step="5" decimals="0" title="[[tip_spin]]">
+                <input type="text" class="text" maxlength="16" ime="off" data-attr-value="spin_value"/>
+                <div class="arrows"><button class="up"></button><button class="down"></button></div>
+            </div>
+            <span class="value">{{ spin_value }}</span>
+        </div>
+        <div class="row">
+            <div class="ps-ellipsis demo-narrow">[[long_name]]</div>
+        </div>
         <p class="hint">[[list_label]]</p>
         <div id="list" class="list">
             <div id="list_top"></div>

@@ -317,6 +317,7 @@
 						<plus_ps_combo.item label="すべて" name="2"/>
 					</plus_ps_combo>
 					<plus_ps_check_compat label="スナップショットは全 OIT で撮る" name="OITSnapshotFull" tool_tip="上の設定にかかわらず、スナップショットではすべての半透明を OIT で描きます。撮るのに少し時間がかかります。"/>
+					<plus_ps_slider_compat label="水面映り込みの更新間隔：" name="PlusWaterMirrorRate" tool_tip="水面の映り込みを、このフレーム数に 1 回だけ描き直します。2 にすると映り込みの重さが半分になります。カメラが止まっている間は前の絵を使い、約 1m 動くか約 10 度回るとすぐ描き直します。撮影モードの水面の映り込みが「なし」の時は効きません。"/>
 					<plus_ps_text name="ObjectFxText">
 						物の出現・消滅の演出
 					</plus_ps_text>

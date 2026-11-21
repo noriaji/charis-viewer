@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_group_titles" title="グループ称号">
+    <string name="NoGroupTitle">＜称号なし＞</string>
+    <string name="ClearAllRegions">すべてのリージョンから外す</string>
+    <string name="UnknownTitle">（入っていないグループの称号）</string>
+    <string name="NotMember">（メンバーではありません）</string>
+    <string name="filter_hint">称号・グループで絞り込み</string>
+    <string name="tip_filter">称号かグループ名にこの文字を含むものだけを表示します（Ctrl+F）</string>
+    <string name="col_title">称号</string>
+    <string name="col_group">グループ</string>
+    <string name="col_region">自動リージョン</string>
+    <string name="tip_col_region">着いた時にこの称号へ切り替えるリージョン</string>
+    <string name="auto_region">自動リージョン：割り当てたリージョンに入ると、その称号に切り替えます</string>
+    <string name="btn_set_region">このリージョン</string>
+    <string name="tip_set_region">選んだ称号を、今いるリージョンに割り当てます</string>
+    <string name="btn_type_region">名前を入力…</string>
+    <string name="tip_type_region">リージョン名を入力して、選んだ称号を割り当てます（先に地図で確かめます）</string>
+    <string name="btn_clear_region">割り当てを外す</string>
+    <string name="tip_clear_region">選んだ称号のリージョンの割り当てを外します（複数ある時は選べます）</string>
+    <string name="none_on_unassigned">割り当てのないリージョンではグループなしにする</string>
+    <string name="tip_none">称号を割り当てていないリージョンでは、どのグループもアクティブにしません（頭上の称号が消えます）</string>
+    <string name="btn_info">グループの情報</string>
+    <string name="tip_info">選んだ称号のグループの情報を開きます</string>
+    <string name="btn_activate">この称号にする</string>
+    <string name="tip_activate">選んだ称号をアクティブにします</string>
+    <string name="tip_refresh">称号の一覧を読み直します</string>
+    <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+    <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、以前の窓に戻ります。</string>
+</floater>

@@ -339,7 +339,7 @@ namespace
         {
             buffer_sub_data(name, sBuffers.find(name), offset, size, data);
         }
-        // research/137 N14: counted, to set against the writes by handle.
+        // Counted, for the VKPerf line (LLVKResource::report).
         BufferWriteCounts& c = sBufferWrites;
         ++c.calls;
         ++c.ranges;
@@ -347,40 +347,6 @@ namespace
         if (start)
         {
             c.ticks += __rdtsc() - start;
-        }
-    }
-
-    // research/137 N14: LLRHI::sBufferWriteRanges' work. Each range as
-    // buffer_sub_data writes one (skipped past the storage, the same bytes, the
-    // same dirty range); what buffer_sub_data does besides, once a call, is
-    // done once for all of them: forgetting the frame's resolved entry, telling
-    // the copies made from the buffer, a new version and the change counters
-    // only say that the buffer changed, which once says as well as once a range.
-    void buffer_write_ranges(GLuint name, Buffer& b, const U8* data, const LLRHI::BufferRange* ranges, U32 count)
-    {
-        bool changed = false;
-        for (U32 i = 0; i < count; ++i)
-        {
-            const size_t offset = ranges[i].offset;
-            const size_t size = ranges[i].size;
-            if (size > b.data.size() || offset > b.data.size() - size)     // no wrap-around (security audit B 7)
-            {
-                continue;
-            }
-            if (!changed)
-            {
-                forget_resolved_buffer(name);
-                buffer_changed(name);
-                changed = true;
-            }
-            memcpy(b.data.data() + offset, data + offset, size);
-            b.markDirty(offset, offset + size);
-        }
-        if (changed)
-        {
-            b.version = next_buffer_version();
-            ++sVertexState;
-            if (b.uniform_source) ++sUniformBlockState;
         }
     }
 

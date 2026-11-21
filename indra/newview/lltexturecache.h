@@ -86,6 +86,10 @@ private:
 
 public:
 
+    // <plus> fast-exit (research/276): the index of the entries changed since it was last written, written now
+    void writeUpdatedEntriesAtExit() { writeUpdatedEntries(); }
+    // </plus>
+
     class Responder : public LLResponder
     {
     public:

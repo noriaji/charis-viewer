@@ -39,7 +39,6 @@
 #include "llrhimotion.h"
 #include "llrhiocclusion.h"
 #include "llrhipass.h"
-#include "llrhiresource.h"
 #include "llrhiskinfill.h"
 #include "llrhiskinsss.h"
 #include "llrhissgi.h"
@@ -202,8 +201,6 @@ namespace
         // --- Buffer contents, queries, uniform buffers
         CUT(sBufferData);
         CUT(sBufferSubData);
-        CUT(sBufferWriteRanges);            // llrhiresource.h (research/137 N14): as sBufferSubData
-        KEEP(sBufferHandle);                // a lookup
         CUT(sBeginQuery);
         CUT(sEndQuery);
         CUT(sGetQueryObjectuiv);

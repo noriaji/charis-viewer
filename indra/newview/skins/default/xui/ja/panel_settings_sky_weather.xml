@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<panel label="天気" name="panel_settings_sky_weather">
+  <string name="rain_hint">目安: 約 [MM] mm/h</string>
+  <string name="snow_hint">目安: 約 [CM] cm/h</string>
+  <string name="notice_own">撮影ツールの雨・雪がオンなので、この空の天気は出ません（オフにすると出ます）。</string>
+  <string name="notice_off">撮影ツールの「空に保存された天気を使う」がオフなので、この空の天気は出ません。</string>
+  <scroll_container name="weather_scroll">
+    <panel name="weather_scroll_panel">
+    <plus_ps_box name="weather_body">
+      <plus_ps_switch
+        name="sw_weather"
+        tool_tip="この空（とデイサイクルのキーフレーム）に天気を保存します。オフなら、この空は天気を決めません。" />
+      <plus_ps_label
+        name="l_switch"
+        label="この空に天気を保存する" />
+      <plus_ps_label
+        name="l_notice"
+        label="" />
+      <plus_ps_header
+        name="h_fall"
+        label="雨と雪" />
+      <plus_ps_slider
+        name="s_rain"
+        label="雨" />
+      <plus_ps_slider
+        name="s_snow"
+        label="雪" />
+      <plus_ps_header
+        name="h_wind"
+        label="風" />
+      <plus_ps_slider
+        name="s_wind"
+        label="風速" />
+      <plus_ps_slider
+        name="s_wind_dir"
+        label="風向"
+        tool_tip="風が吹いてくる方角です。0 が北、90 が東、180 が南、270 が西。" />
+      <plus_ps_slider
+        name="s_wind_var"
+        label="強さの変動"
+        tool_tip="風の強さの強弱の幅です。" />
+      <plus_ps_slider
+        name="s_gust"
+        label="突風"
+        tool_tip="急に吹く突風の強さです。" />
+      <plus_ps_slider
+        name="s_wind_dir_var"
+        label="風向のゆらぎ"
+        tool_tip="風向が左右にゆれる幅です。" />
+      <plus_ps_button
+        name="b_import"
+        label="今の天気を取り込む"
+        tool_tip="撮影ツールの雨・雪・風の値を入れます。自分の設定が無く、区画の天候を受け取る設定がオンなら、区画の天候の値を入れます。" />
+    </plus_ps_box>
+    </panel>
+  </scroll_container>
+</panel>

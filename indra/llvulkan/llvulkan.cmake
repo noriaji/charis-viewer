@@ -133,7 +133,6 @@ if (DEFINED ENV{VULKAN_SDK} AND WINDOWS)
       ${CMAKE_CURRENT_LIST_DIR}/llvktaa.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkmotion.h
       ${CMAKE_CURRENT_LIST_DIR}/llvktracker.h
-      ${CMAKE_CURRENT_LIST_DIR}/llvktranslate.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkupscale.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkshader.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkskinfill.h
@@ -143,6 +142,7 @@ if (DEFINED ENV{VULKAN_SDK} AND WINDOWS)
       ${CMAKE_CURRENT_LIST_DIR}/llvkswapchain.h
       ${CMAKE_CURRENT_LIST_DIR}/llvktexcompress.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkbc7.glsl.inl
+      ${CMAKE_CURRENT_LIST_DIR}/llvkbc7check.glsl.inl
       ${CMAKE_CURRENT_LIST_DIR}/llvkvolumetric.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkvramdiag.h
       ${CMAKE_CURRENT_LIST_DIR}/llvkwetlook.h

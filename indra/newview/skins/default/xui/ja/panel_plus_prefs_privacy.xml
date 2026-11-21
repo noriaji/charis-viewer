@@ -22,7 +22,6 @@
 						<plus_ps_text name="block_list_label">
 							（ブロックした人やオブジェクト）
 						</plus_ps_text>
-						<plus_ps_header name="h_privacy_stats" label="ビューワの統計" />
 						<plus_ps_header name="h_privacy_pose" label="自分のアバターのポーズ" />
 					</panel>
 				</scroll_container>

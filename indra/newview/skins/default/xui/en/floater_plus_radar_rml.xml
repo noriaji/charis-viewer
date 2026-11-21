@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Radar, RmlUi version (plus/radar/radarrml.cpp, research/386): the frame and the words. The content is
+  app_settings/plus/rmlui/radar.rml in a plus_rml_view under the 18 px header. The XUI window (floater_plus_radar.xml,
+  frozen) is used in safe mode and when PlusRmlUiWindows is off. The words are the XUI window's.
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ min_width="330"
+ min_height="260"
+ height="420"
+ width="420"
+ layout="topleft"
+ name="plus_radar"
+ title="RADAR">
+    <string name="counter">[TOTAL] around | [REGION] in this region | [CHAT] within chat range</string>
+    <string name="mark_parcel">&#9670;</string>
+    <string name="mark_region">&#9671;</string>
+    <string name="mark_sitting">S</string>
+    <string name="age_hidden">n.a.</string>
+    <string name="age_unknown">?</string>
+    <string name="no_focus">The camera cannot focus on this resident because they are outside your draw distance.</string>
+    <string name="no_position">The position of this resident is not known (too high above the ground).</string>
+    <string name="col_name">Name</string>
+    <string name="col_region">Here</string>
+    <string name="col_sitting">Sit</string>
+    <string name="col_age">Age</string>
+    <string name="col_payment">Pay</string>
+    <string name="col_seen">Seen</string>
+    <string name="col_range">Range</string>
+    <string name="tip_region">&#9670; on the same parcel as you, &#9671; in the same region</string>
+    <string name="tip_sitting">Is sitting</string>
+    <string name="tip_age">Days since the account was made</string>
+    <string name="tip_payment">Payment info: $ on file, $$ used</string>
+    <string name="tip_seen">How long they have been around (since the radar saw them)</string>
+    <string name="tip_range">Distance in meters. Red: within chat range, yellow: within shout range, bold: drawn</string>
+    <string name="tab_list">List</string>
+    <string name="tab_settings">Settings</string>
+    <string name="filter_hint">Narrow the list by name</string>
+    <string name="tip_filter">Only the names with these letters stay (upper or lower case alike)</string>
+    <string name="names_label">Names:</string>
+    <string name="fmt_0">Display name</string>
+    <string name="fmt_1">User name</string>
+    <string name="fmt_2">Display name (user name)</string>
+    <string name="fmt_3">User name (display name)</string>
+    <string name="tip_name_format">How a name is written in the list (the display name needs display names on)</string>
+    <string name="limit_range">Only within (m):</string>
+    <string name="tip_limit_range">List only the residents this near</string>
+    <string name="show_muted">List blocked residents too</string>
+    <string name="report_label">Show a note in nearby chat (only you see it) when someone:</string>
+    <string name="report_chat_enter">comes within chat range (20 m)</string>
+    <string name="report_chat_leave">goes out of chat range</string>
+    <string name="report_draw_enter">comes within your draw distance</string>
+    <string name="report_draw_leave">goes out of your draw distance</string>
+    <string name="report_region_enter">comes into your region</string>
+    <string name="report_region_leave">leaves your region</string>
+    <string name="columns_label">Columns of the list:</string>
+    <string name="lbl_col_region">Here (parcel / region)</string>
+    <string name="lbl_col_sitting">Sitting</string>
+    <string name="lbl_col_age">Age</string>
+    <string name="lbl_col_payment">Payment info</string>
+    <string name="lbl_col_seen">Time seen</string>
+    <string name="lbl_col_range">Range</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="radar.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="420"
+     height="402" />
+</floater>

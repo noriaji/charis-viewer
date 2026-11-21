@@ -45,45 +45,9 @@
 #include "llslurl.h"
 
 FSFloaterAddToContactSet::FSFloaterAddToContactSet(const LLSD& target)
-:   LLFloater(target)
+:   LLFloater(target),
+    mTarget(target)
 {
-    auto addIds = [this](const LLSD& ids)
-    {
-        for (const LLSD& id : llsd::inArray(ids))
-        {
-            if (id.asUUID().notNull())
-            {
-                mAgentIDs.push_back(id.asUUID());
-            }
-        }
-    };
-    if (target.isMap())
-    {
-        mIsMoveOperation = (target["operation"].asString() == "move");
-        mSourceSet = target["source_set"].asString();
-        const LLSD ids = target["ids"];
-        if (ids.isArray())
-        {
-            mHasMultipleAgents = true;
-            addIds(ids);
-        }
-        else if (target.has("id"))
-        {
-            mHasMultipleAgents = false;
-            mAgentID = target["id"].asUUID();
-        }
-    }
-    else if (target.isArray())
-    {
-        mHasMultipleAgents = true;
-        addIds(target);
-    }
-    else
-    {
-        mHasMultipleAgents = false;
-        mAgentID = target.asUUID();
-    }
-
     mContactSetChangedConnection = LGGContactSets::getInstance()->setContactSetChangeCallback(boost::bind(&FSFloaterAddToContactSet::updateSets, this, _1));
 }
 
@@ -97,16 +61,16 @@ FSFloaterAddToContactSet::~FSFloaterAddToContactSet()
 
 bool FSFloaterAddToContactSet::postBuild()
 {
-    if (mHasMultipleAgents)
+    if (mTarget.multiple())
     {
         LLStringUtil::format_map_t args;
-        args["COUNT"] = llformat("%d", (S32)mAgentIDs.size());
+        args["COUNT"] = llformat("%d", mTarget.count());
         childSetValue("textfield", LLSD( getString("text_add_multiple", args) ) );
     }
     else
     {
         LLStringUtil::format_map_t args;
-        args["NAME"] = LLSLURL("agent", mAgentID, "inspect").getSLURLString();
+        args["NAME"] = mTarget.agentLink();
         childSetValue("textfield", LLSD( getString("text_add_single", args)) );
     }
 
@@ -122,50 +86,10 @@ bool FSFloaterAddToContactSet::postBuild()
 
 void FSFloaterAddToContactSet::onClickAdd()
 {
-    LGGContactSets& contact_sets = LGGContactSets::instance();
-    const std::string set = mContactSetsCombo->getValue().asString();
-    if (!contact_sets.isValidSet(set))
+    if (mTarget.add(mContactSetsCombo->getValue().asString()))
     {
-        return;
+        closeFloater();
     }
-
-    if (!mHasMultipleAgents)
-    {
-        if (mAgentID.isNull())
-        {
-            return;
-        }
-        mAgentIDs.assign(1, mAgentID);
-    }
-    else if (mAgentIDs.empty())
-    {
-        return;
-    }
-
-    contact_sets.addToSet(mAgentIDs, set);
-    if (mIsMoveOperation && set != mSourceSet)
-    {
-        for (const LLUUID& id : mAgentIDs)
-        {
-            contact_sets.removeFriendFromSet(id, mSourceSet);
-        }
-    }
-
-    if (!mIsMoveOperation && mHasMultipleAgents)
-    {
-        LLSD args;
-        args["COUNT"] = llformat("%d", (S32)mAgentIDs.size());
-        args["SET"] = plus::safeText(set);
-        LLNotificationsUtil::add("AddToContactSetMultipleSuccess", args);
-    }
-    else if (!mIsMoveOperation)
-    {
-        LLSD args;
-        args["NAME"] = LLSLURL("agent", mAgentID, "inspect").getSLURLString();
-        args["SET"] = plus::safeText(set);
-        LLNotificationsUtil::add("AddToContactSetSingleSuccess", args);
-    }
-    closeFloater();
 }
 
 void FSFloaterAddToContactSet::onClickCancel()
@@ -196,12 +120,8 @@ void FSFloaterAddToContactSet::populateContactSets()
     const std::string selected = mContactSetsCombo->getValue().asString();
     mContactSetsCombo->clearRows();
     bool isEmptySet = true;
-    for (auto const& set_name : LGGContactSets::getInstance()->getAllContactSets())
+    for (const std::string& set_name : mTarget.setNames())
     {
-        if (mIsMoveOperation && set_name == mSourceSet)
-        {
-            continue;
-        }
         mContactSetsCombo->add(set_name, LLSD(set_name));
         isEmptySet = false;
     }

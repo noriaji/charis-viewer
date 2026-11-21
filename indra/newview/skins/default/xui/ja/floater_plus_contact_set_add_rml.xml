@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="floater_fs_add_contact" title="コンタクトセットに追加">
+  <string name="no_sets">コンタクトセットがありません（＋で作ります）</string>
+  <string name="text_add_single">[NAME] を追加するコンタクトセット：</string>
+  <string name="text_add_multiple">[COUNT] 人を追加するコンタクトセット：</string>
+  <string name="add">セットに追加</string>
+  <string name="cancel">キャンセル</string>
+  <string name="tip_add_set">新しいコンタクトセットを作る</string>
+  <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+  <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、今までの窓になります。</string>
+</floater>

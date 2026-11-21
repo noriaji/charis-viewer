@@ -26,6 +26,7 @@
 #include "rmlime.h"
 
 #include "rmlhost.h"
+#include "rmlparts.h"
 
 #include "llcallbacklist.h"
 #include "llfocusmgr.h"
@@ -35,6 +36,7 @@
 #include "llview.h"
 #include "llwindow.h"
 
+#include <cmath>
 #include <utility>
 
 namespace plus::rmlui
@@ -65,8 +67,42 @@ namespace plus::rmlui
         }
         mInput = input;
         mHost = host->getRmlHandle();
-        Rml::Element* element = host->getContext()->GetFocusElement();
+        // The field that is getting the focus. RmlUi calls this inside the field's own focus event, before it sets the
+        // context's focus (Context::OnFocusChange sends the events, then sets focus), so GetFocusElement() is still the
+        // element that LOST the focus (never the one to use here): Parts noted the target of the latest focus event in
+        // the capture pass of the document. That is this field's unless a window's focus listener moved the focus in
+        // between, which the box check below catches. No note (nothing in a focus event reached Parts) leaves the
+        // element empty: the IME stays off for this field and its copy is empty, which is safe.
+        Rml::Element* element = host->parts().focusTarget();
+        if (!element)
+        {
+            LL_WARNS_ONCE("RmlUi") << "RmlUi: a text field was activated outside a focus event; the IME stays off for it" << LL_ENDL;
+        }
+        else
+        {
+            Rml::Rectanglef field_box;
+            Rml::Rectanglef element_box;
+            const bool field_ok = input->GetBoundingBox(field_box);
+            const bool element_ok = Rml::ElementUtilities::GetBoundingBox(element_box, element, Rml::BoxArea::Border);
+            if (field_ok != element_ok || (field_ok && (std::fabs(field_box.Left() - element_box.Left()) > 0.5f ||
+                                                         std::fabs(field_box.Top() - element_box.Top()) > 0.5f ||
+                                                         std::fabs(field_box.Right() - element_box.Right()) > 0.5f ||
+                                                         std::fabs(field_box.Bottom() - element_box.Bottom()) > 0.5f)))
+            {
+                LL_WARNS_ONCE("RmlUi") << "RmlUi: the element of a focus event is not the field that was activated "
+                                       << "(a window's focus listener moved the focus); the IME stays off for it" << LL_ENDL;
+                element = nullptr;
+            }
+        }
         mElement = element ? element->GetObserverPtr() : Rml::ObserverPtr<Rml::Element>();
+        // The caret RmlUi reported just before (WidgetTextInput::Focus calls ActivateKeyboard, then OnActivate): at that
+        // time no field was active here, so setCaret kept it aside.
+        if (mLastCaretHost == host)
+        {
+            mCaretPx = mLastCaretPx;
+            mLineHeightPx = mLastLineHeightPx;
+        }
+        mLastCaretHost = nullptr;
         mComposing = false;
         mCompositionStart = 0;
         mCompositionEnd = 0;
@@ -82,6 +118,14 @@ namespace plus::rmlui
     bool RmlPreeditor::isPassword(const Rml::Element* element)
     {
         return element && element->GetTagName() == "input" && element->GetAttribute<Rml::String>("type", "") == "password";
+    }
+
+    bool RmlPreeditor::imeAllowed(const Rml::Element* element)
+    {
+        // ime="off" on the field itself (not looked up in its ancestors, as with the password type), read when the
+        // field takes the focus: like the XUI line editor, a field of digits only takes no IME. A password field and a
+        // read-only one are not FieldKind::Text (research/387 6.4).
+        return fieldKind(element) == FieldKind::Text && element->GetAttribute<Rml::String>(IME_ATTRIBUTE, Rml::String()) != "off";
     }
 
     void RmlPreeditor::hostFocusChanged(const LLRmlView& host)
@@ -186,8 +230,9 @@ namespace plus::rmlui
         }
         const LLRmlView* host = activeHost();
         // Without the keyboard focus the composition would go here while the keys go elsewhere; a password field
-        // takes no IME (its text would be handed to the IME's queries).
-        const bool allow = host && host->hasFocus() && !isPassword(mElement.get());
+        // or an ime="off" field takes no IME (its text would be handed to the IME's queries), nor does a read-only one
+        // (nothing is typed into it): imeAllowed() is the one place that says so.
+        const bool allow = host && host->hasFocus() && imeAllowed(mElement.get());
         // (let go: the window ends a composition left open, its result comes to no preeditor)
         window->allowLanguageTextInput(this, allow);
         mWindowAllowed = allow;
@@ -235,6 +280,14 @@ namespace plus::rmlui
         {
             mCaretPx = caret_px;
             mLineHeightPx = llmax(0.f, line_height_px);
+        }
+        else if (host)
+        {
+            // No field is active here yet: a field that is just getting the focus reports its caret before OnActivate.
+            // Kept for it (OnActivate takes it and forgets it; the pointer is only compared, never used).
+            mLastCaretHost = host;
+            mLastCaretPx = caret_px;
+            mLastLineHeightPx = llmax(0.f, line_height_px);
         }
     }
 
@@ -290,10 +343,11 @@ namespace plus::rmlui
             return;
         }
         Copy copy;
-        // A password field gives the window no text, and then no position either: the window cuts the text at
+        // A password field (and a read-only one, whose log may be 64 KB: nothing is typed or reconverted in it) gives the
+        // window no text, and then no position either: the window cuts the text at
         // these positions (find_context in llwindowwin32.cpp), so a caret past the empty text reads outside it.
         // The defaults (0, 0) stay.
-        if (field && !isPassword(field))
+        if (field && !isPassword(field) && fieldKind(field) != FieldKind::ReadOnly)
         {
             copy.text = utf8str_to_wstring(field->GetValue());
             int start = 0;

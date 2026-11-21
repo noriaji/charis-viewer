@@ -29,6 +29,7 @@
 #include "asset.h"
 #include "buffer_util.h"
 #include "../llskinningutil.h"
+#include "llrhigl.h" // <plus> research/394 T17: the uniform buffer writes and names through LLRHI </plus>
 
 using namespace LL::GLTF;
 using namespace boost::json;
@@ -395,7 +396,7 @@ Skin::~Skin()
 {
     if (mUBO)
     {
-        glDeleteBuffers(1, &mUBO);
+        LLRHI::deleteBuffers(1, &mUBO); // <plus> research/394 T17 </plus>
     }
 }
 
@@ -408,7 +409,7 @@ void Skin::uploadMatrixPalette(Asset& asset)
 
     if (mUBO == 0)
     {
-        glGenBuffers(1, &mUBO);
+        LLRHI::genBuffers(1, &mUBO); // <plus> research/394 T17 </plus>
     }
 
     size_t joint_count = llmin<size_t>(max_joints, mJoints.size());
@@ -452,9 +453,7 @@ void Skin::uploadMatrixPalette(Asset& asset)
         mp[idx + 11] = m[14];
     }
 
-    glBindBuffer(GL_UNIFORM_BUFFER, mUBO);
-    glBufferData(GL_UNIFORM_BUFFER, glmp.size() * sizeof(F32), glmp.data(), GL_STREAM_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    LLRHI::uniformBufferData(mUBO, glmp.size() * sizeof(F32), glmp.data()); // <plus> research/394 T17: was glBindBuffer/glBufferData/glBindBuffer </plus>
 }
 
 bool Skin::prep(Asset& asset)

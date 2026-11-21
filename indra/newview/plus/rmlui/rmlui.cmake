@@ -236,6 +236,12 @@ list(APPEND plus_SOURCE_FILES
     plus/rmlui/rmlfonts.cpp
     plus/rmlui/rmlhost.cpp
     plus/rmlui/rmlime.cpp
+    plus/rmlui/rmllist.cpp
+    plus/rmlui/rmlmenu.cpp
+    plus/rmlui/rmlnumber.cpp
+    plus/rmlui/rmlparts.cpp
+    plus/rmlui/rmlpopup.cpp
+    plus/rmlui/rmlsearch.cpp
     plus/rmlui/rmlrender.cpp
     plus/rmlui/rmlsettings.cpp
     plus/rmlui/rmlsystem.cpp
@@ -249,7 +255,17 @@ list(APPEND plus_HEADER_FILES
     plus/rmlui/rmlfonts.h
     plus/rmlui/rmlhost.h
     plus/rmlui/rmlime.h
+    plus/rmlui/rmlkeyroute.h
+    plus/rmlui/rmllist.h
+    plus/rmlui/rmlmenu.h
+    plus/rmlui/rmlnumber.h
+    plus/rmlui/rmlnumbermath.h
+    plus/rmlui/rmlparts.h
+    plus/rmlui/rmlpopup.h
+    plus/rmlui/rmlpopuplogic.h
+    plus/rmlui/rmlsearch.h
     plus/rmlui/rmlrender.h
     plus/rmlui/rmlsettings.h
     plus/rmlui/rmlsystem.h
+    plus/rmlui/rmltextmath.h
     )

@@ -7,9 +7,12 @@
 
 list(APPEND plus_SOURCE_FILES
     plus/timeconv/timeconvfloater.cpp
+    plus/timeconv/timeconvrml.cpp
     )
 
 list(APPEND plus_HEADER_FILES
     plus/timeconv/timeconv.h
     plus/timeconv/timeconvmath.h
+    plus/timeconv/timeconvrml.h
+    plus/timeconv/timeconvshared.h
     )

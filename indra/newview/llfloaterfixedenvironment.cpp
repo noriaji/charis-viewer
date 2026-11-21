@@ -43,6 +43,7 @@
 // newview
 #include "llpaneleditwater.h"
 #include "llpaneleditsky.h"
+#include "plus/skyweather/skyweatherpanel.h" // <plus> skyweather-ui </plus>
 
 #include "llsettingssky.h"
 #include "llsettingswater.h"
@@ -505,6 +506,14 @@ bool LLFloaterFixedEnvironmentSky::postBuild()
     panel->setSky(std::static_pointer_cast<LLSettingsSky>(mSettings));
     panel->setOnDirtyFlagChanged([this](LLPanel *, bool value) { onPanelDirtyFlagChanged(value); });
     mTab->addTabPanel(LLTabContainer::TabPanelParams().panel(panel).select_tab(false));
+
+    // <plus> skyweather-ui: the weather tab (research/371)
+    panel = new LLPanelSettingsSkyWeatherTab;
+    panel->buildFromFile("panel_settings_sky_weather.xml");
+    panel->setSky(std::static_pointer_cast<LLSettingsSky>(mSettings));
+    panel->setOnDirtyFlagChanged([this](LLPanel *, bool value) { onPanelDirtyFlagChanged(value); });
+    mTab->addTabPanel(LLTabContainer::TabPanelParams().panel(panel).select_tab(false));
+    // </plus>
 
     return true;
 }

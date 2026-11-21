@@ -49,32 +49,74 @@
 #include "lltoggleablemenu.h"
 #include "lltransutil.h"
 #include "llviewercontrol.h"
+#include "llstartup.h" // <plus> outfit-hierarchy </plus>
+#include "llcallbacklist.h" // <plus> outfit-hierarchy </plus>
+#include "plus/plus.h" // <plus> outfit-hierarchy </plus>
 #include "llviewermenu.h"
 #include "llvoavatar.h"
 #include "llvoavatarself.h"
 #include "llwearableitemslist.h"
 
 static bool is_tab_header_clicked(LLOutfitAccordionCtrlTab* tab, S32 y);
+static bool show_folders_setting(); // <plus> outfit-hierarchy </plus>
 
 static const LLOutfitTabNameComparator OUTFIT_TAB_NAME_COMPARATOR;
 static const LLOutfitTabFavComparator OUTFIT_TAB_FAV_COMPARATOR;
 
+// <plus> outfit-hierarchy: the order follows the folders
+// Orders tabs by folder path (a folder row is followed by its contents) when the
+// hierarchical view is on, by title otherwise. With fav_first, favorite outfits
+// come first among the rows of the same folder.
+// Every level of the path has the key (rank, name, id); the key of a level depends only on
+// the row that level stands for, so the order is a strict weak ordering.
+static bool compare_outfit_tabs(const LLAccordionCtrlTab* tab1, const LLAccordionCtrlTab* tab2, bool fav_first)
+{
+    const LLOutfitAccordionCtrlTab* taba = static_cast<const LLOutfitAccordionCtrlTab*>(tab1);
+    const LLOutfitAccordionCtrlTab* tabb = static_cast<const LLOutfitAccordionCtrlTab*>(tab2);
+
+    // A row without a path (flat view) counts as a path of its own title
+    const bool flat_a = taba->getSortPath().empty();
+    const bool flat_b = tabb->getSortPath().empty();
+    const size_t size_a = flat_a ? 1 : taba->getSortPath().size();
+    const size_t size_b = flat_b ? 1 : tabb->getSortPath().size();
+    const size_t common = llmin(size_a, size_b);
+
+    for (size_t i = 0; i < common; ++i)
+    {
+        const bool last_a = (i + 1 == size_a);
+        const bool last_b = (i + 1 == size_b);
+        const S32 rank_a = (fav_first && last_a && !taba->isFolderRow() && taba->getFavorite()) ? 0 : 1;
+        const S32 rank_b = (fav_first && last_b && !tabb->isFolderRow() && tabb->getFavorite()) ? 0 : 1;
+        if (rank_a != rank_b)
+        {
+            return rank_a < rank_b;
+        }
+        const S32 c = LLStringUtil::compareDict(flat_a ? taba->getTitle() : taba->getSortPath()[i],
+                                                flat_b ? tabb->getTitle() : tabb->getSortPath()[i]);
+        if (c != 0)
+        {
+            return c < 0;
+        }
+        const LLUUID& id_a = flat_a ? taba->getFolderID() : taba->getSortIds()[i];
+        const LLUUID& id_b = flat_b ? tabb->getFolderID() : tabb->getSortIds()[i];
+        if (id_a != id_b)
+        {
+            return id_a < id_b;
+        }
+    }
+    return size_a < size_b;
+}
+// </plus>
+
 /*virtual*/
 bool LLOutfitTabNameComparator::compare(const LLAccordionCtrlTab* tab1, const LLAccordionCtrlTab* tab2) const
 {
-    return (LLStringUtil::compareDict(tab1->getTitle(), tab2->getTitle()) < 0);
+    return compare_outfit_tabs(tab1, tab2, false); // <plus> outfit-hierarchy </plus>
 }
 
 bool LLOutfitTabFavComparator::compare(const LLAccordionCtrlTab* tab1, const LLAccordionCtrlTab* tab2) const
 {
-    LLOutfitAccordionCtrlTab* taba = (LLOutfitAccordionCtrlTab*)tab1;
-    LLOutfitAccordionCtrlTab* tabb = (LLOutfitAccordionCtrlTab*)tab2;
-    if (taba->getFavorite() != tabb->getFavorite())
-    {
-        return taba->getFavorite();
-    }
-
-    return (LLStringUtil::compareDict(tab1->getTitle(), tab2->getTitle()) < 0);
+    return compare_outfit_tabs(tab1, tab2, true); // <plus> outfit-hierarchy </plus>
 }
 
 struct outfit_accordion_tab_params : public LLInitParam::Block<outfit_accordion_tab_params, LLOutfitAccordionCtrlTab::Params>
@@ -122,6 +164,14 @@ LLOutfitsList::LLOutfitsList()
     ,   mItemSelected(false)
     ,   mSortMenu(nullptr)
 {
+    // <plus> outfit-hierarchy
+    LLControlVariable* show_folders_ctrl = gSavedSettings.getControl("OutfitListShowFolders");
+    if (show_folders_ctrl)
+    {
+        mShowFoldersConnection = show_folders_ctrl->getSignal()->connect(boost::bind(&LLOutfitsList::onShowFoldersChanged, this));
+    }
+    // </plus>
+
     LLControlVariable* ctrl = gSavedSettings.getControl("InventoryFavoritesColorText");
     if (ctrl)
     {
@@ -133,6 +183,8 @@ LLOutfitsList::~LLOutfitsList()
 {
     delete mSortMenu;
     mSavedSettingInvFavColor.disconnect();
+    mShowFoldersConnection.disconnect(); // <plus> outfit-hierarchy </plus>
+    flushOpenFolders(); // <plus> outfit-hierarchy </plus>
     mGearMenuConnection.disconnect();
 }
 
@@ -165,6 +217,7 @@ void LLOutfitsList::onOpen(const LLSD& info)
 {
     if (!mIsInitialized)
     {
+        restoreOpenFolders(); // <plus> outfit-hierarchy </plus>
         // Start observing changes in Current Outfit category.
         LLOutfitObserver::instance().addCOFChangedCallback(boost::bind(&LLOutfitsList::onCOFChanged, this));
     }
@@ -172,7 +225,7 @@ void LLOutfitsList::onOpen(const LLSD& info)
     LLOutfitListBase::onOpen(info);
 
     LLAccordionCtrlTab* selected_tab = mAccordion->getSelectedTab();
-    if (!selected_tab) return;
+    if (!selected_tab || !selected_tab->getVisible()) return; // <plus> outfit-hierarchy: not a tab hidden in a closed folder </plus>
 
     // Pass focus to the selected outfit tab.
     selected_tab->showAndFocusHeader();
@@ -187,12 +240,15 @@ void LLOutfitsList::updateAddedCategory(LLUUID cat_id)
 
     if (!isOutfitFolder(cat))
     {
-        // Assume a subfolder that contains or will contain outfits, track it
-        const LLUUID outfits = gInventory.findCategoryUUIDForType(LLFolderType::FT_MY_OUTFITS);
-        mCategoriesObserver->addCategory(cat_id, [this, outfits]()
+        // <plus> outfit-hierarchy
+        if (useFolderRows() && updateAddedFolder(cat_id, cat))
         {
-            observerCallback(outfits);
-        });
+            return;
+        }
+        // </plus>
+
+        // Assume a subfolder that contains or will contain outfits, track it
+        observeSubfolder(cat_id); // <plus> outfit-hierarchy (was an inline lambda) </plus>
         return;
     }
 
@@ -228,6 +284,17 @@ void LLOutfitsList::updateAddedCategory(LLUUID cat_id)
 
     // Map the new tab with outfit category UUID.
     mOutfitsMap.insert(LLOutfitsList::outfits_map_value_t(cat_id, tab));
+
+    // <plus> outfit-hierarchy
+    if (useFolderRows())
+    {
+        updateRowHierarchy(tab, cat_id);
+        if (getFilterSubString().empty())
+        {
+            tab->setVisible(isRowShown(cat_id)); // hidden from the start inside a closed folder
+        }
+    }
+    // </plus>
 
     tab->setRightMouseDownCallback(boost::bind(&LLOutfitListBase::outfitRightClickCallBack, this,
         _1, _2, _3, cat_id));
@@ -293,6 +360,24 @@ void LLOutfitsList::updateAddedCategory(LLUUID cat_id)
 
 void LLOutfitsList::updateRemovedCategory(LLUUID cat_id)
 {
+    // <plus> outfit-hierarchy
+    outfits_map_t::iterator folder_iter = mFolderTabs.find(cat_id);
+    if (folder_iter != mFolderTabs.end())
+    {
+        LLOutfitAccordionCtrlTab* row = folder_iter->second;
+        mCategoriesObserver->removeCategory(cat_id);
+        mFolderTabs.erase(folder_iter);
+        mOpenFolders.erase(cat_id);
+        mTempOpened.erase(cat_id);
+        if (row)
+        {
+            mAccordion->removeCollapsibleCtrl(row);
+            row->die();
+        }
+        return;
+    }
+    // </plus>
+
     outfits_map_t::iterator outfits_iter = mOutfitsMap.find(cat_id);
     if (outfits_iter != mOutfitsMap.end())
     {
@@ -367,6 +452,7 @@ void LLOutfitListBase::performAction(std::string action)
 
 void LLOutfitsList::onSetSelectedOutfitByUUID(const LLUUID& outfit_uuid)
 {
+    openAncestorFolders(outfit_uuid); // <plus> outfit-hierarchy </plus>
     for (outfits_map_t::iterator iter = mOutfitsMap.begin();
             iter != mOutfitsMap.end();
             ++iter)
@@ -463,6 +549,7 @@ void LLOutfitsList::getSelectedItemsUUIDs(uuid_vec_t& selected_uuids) const
 
 void LLOutfitsList::onCollapseAllFolders()
 {
+    setAllFolders(false); // <plus> outfit-hierarchy </plus>
     for (outfits_map_t::iterator iter = mOutfitsMap.begin();
             iter != mOutfitsMap.end();
             ++iter)
@@ -477,6 +564,7 @@ void LLOutfitsList::onCollapseAllFolders()
 
 void LLOutfitsList::onExpandAllFolders()
 {
+    setAllFolders(true); // <plus> outfit-hierarchy </plus>
     for (outfits_map_t::iterator iter = mOutfitsMap.begin();
             iter != mOutfitsMap.end();
             ++iter)
@@ -500,6 +588,20 @@ bool LLOutfitsList::hasItemSelected()
 
 void LLOutfitsList::updateChangedCategoryName(LLViewerInventoryCategory *cat, std::string name)
 {
+    // <plus> outfit-hierarchy
+    outfits_map_t::iterator folder_iter = mFolderTabs.find(cat->getUUID());
+    if (folder_iter != mFolderTabs.end())
+    {
+        LLOutfitAccordionCtrlTab* row = folder_iter->second;
+        if (row && row->getTitle() != name)
+        {
+            row->setName(name);
+            row->setTitle(name);
+        }
+        return;
+    }
+    // </plus>
+
     outfits_map_t::iterator outfits_iter = mOutfitsMap.find(cat->getUUID());
     if (outfits_iter != mOutfitsMap.end())
     {
@@ -642,6 +744,11 @@ void LLOutfitsList::onFilterSubStringChanged(const std::string& new_string, cons
             restoreOutfitSelection(tab, category_id);
         }
     }
+
+    // <plus> outfit-hierarchy: with a filter the list is flat (the filter decides what is shown);
+    // without one the folders decide. The arrange below covers a change.
+    applyFolderVisibility();
+    // </plus>
 
     mAccordion->arrange();
 }
@@ -804,6 +911,14 @@ void LLOutfitsList::onCOFChanged()
 void LLOutfitsList::getCurrentCategories(uuid_vec_t& vcur)
 {
     // Creating a vector of currently displayed sub-categories UUIDs.
+    // <plus> outfit-hierarchy
+    for (outfits_map_t::const_iterator iter = mFolderTabs.begin();
+        iter != mFolderTabs.end();
+        iter++)
+    {
+        vcur.push_back((*iter).first);
+    }
+    // </plus>
     for (outfits_map_t::const_iterator iter = mOutfitsMap.begin();
         iter != mOutfitsMap.end();
         iter++)
@@ -815,6 +930,11 @@ void LLOutfitsList::getCurrentCategories(uuid_vec_t& vcur)
 
 void LLOutfitsList::sortOutfits()
 {
+    // <plus> outfit-hierarchy: rows first, sort() arranges once
+    convertOutfitLikeFolders();
+    refreshHierarchy();
+    applyFolderVisibility();
+    // </plus>
     mAccordion->sort();
 }
 
@@ -861,6 +981,13 @@ void LLOutfitsList::onChangeSortOrder(const LLSD& userdata)
 
         initComparator();
     }
+    // <plus> outfit-hierarchy
+    else if (sort_data == "show_folders")
+    {
+        // onShowFoldersChanged() follows the setting
+        gSavedSettings.setBOOL("OutfitListShowFolders", !gSavedSettings.getBOOL("OutfitListShowFolders"));
+    }
+    // </plus>
     else if (sort_data == "show_entire_outfit")
     {
         bool new_val = !gSavedSettings.getBOOL("OutfitListFilterFullList");
@@ -1649,6 +1776,7 @@ void LLOutfitListSortMenu::onUpdateItemsVisibility()
     mMenu->setItemVisible("expand", true);
     mMenu->setItemVisible("collapse", true);
     mMenu->setItemVisible("sort_favorites_to_top", true);
+    mMenu->setItemVisible("show_folders", true); // <plus> outfit-hierarchy </plus>
     mMenu->setItemVisible("show_entire_outfit_in_search", true);
 }
 
@@ -1659,6 +1787,12 @@ bool LLOutfitListSortMenu::onEnable(LLSD::String param)
         static LLCachedControl<S32> sort_order(gSavedSettings, "OutfitListSortOrder", 0);
         return sort_order == 1;
     }
+    // <plus> outfit-hierarchy
+    else if ("show_folders" == param)
+    {
+        return show_folders_setting();
+    }
+    // </plus>
     else if ("show_entire_outfit" == param)
     {
         static LLCachedControl<bool> filter_mode(gSavedSettings, "OutfitListFilterFullList", 1);
@@ -1669,6 +1803,514 @@ bool LLOutfitListSortMenu::onEnable(LLSD::String param)
 }
 
 
+// <plus> outfit-hierarchy: the folders of My Outfits as nested rows (setting OutfitListShowFolders)
+//////////////////// Hierarchical view ////////////////////
+
+static const S32 FOLDER_INDENT = 14; // pixels per nesting level
+
+static bool show_folders_setting()
+{
+    static LLCachedControl<bool> show_folders(gSavedSettings, "OutfitListShowFolders", true);
+    return show_folders;
+}
+
+bool LLOutfitsList::useFolderRows() const
+{
+    return show_folders_setting();
+}
+
+// Fills the names (and ids) from the top folder under My Outfits down to cat_id, and the id
+// of its parent folder (null at the top level). False if cat_id is not inside My Outfits or
+// lies inside an outfit.
+// Known limits (rare): a folder row moved into an outfit stays at the top level; an old style
+// outfit (FT_NONE, 4+ items) that gets a subfolder turns into a folder row with indented rows.
+bool LLOutfitsList::getFolderPath(const LLUUID& cat_id, LLUUID& parent_id, std::vector<std::string>& path, std::vector<LLUUID>& ids) const
+{
+    const LLUUID& root = getMyOutfitsId();
+    path.clear();
+    ids.clear();
+    parent_id.setNull();
+
+    LLUUID cur = cat_id;
+    for (S32 guard = 0; guard < 32; ++guard)
+    {
+        LLViewerInventoryCategory* cat = gInventory.getCategory(cur);
+        if (!cat)
+        {
+            return false;
+        }
+        path.push_back(cat->getName());
+        ids.push_back(cur);
+        const LLUUID parent = cat->getParentUUID();
+        if (cur == cat_id && parent != root)
+        {
+            parent_id = parent;
+        }
+        if (parent == root)
+        {
+            std::reverse(path.begin(), path.end());
+            std::reverse(ids.begin(), ids.end());
+            return true;
+        }
+        LLViewerInventoryCategory* parent_cat = gInventory.getCategory(parent);
+        if (!parent_cat || isOutfitFolder(parent_cat))
+        {
+            return false;
+        }
+        cur = parent;
+    }
+    return false;
+}
+
+const LLUUID& LLOutfitsList::getMyOutfitsId() const
+{
+    if (mMyOutfitsId.isNull())
+    {
+        mMyOutfitsId = gInventory.findCategoryUUIDForType(LLFolderType::FT_MY_OUTFITS);
+    }
+    return mMyOutfitsId;
+}
+
+// The folder row above cat_id: null at the top level, and also when the parent is not a folder
+// row (an outfit with an outfit inside stands alone at the top, as getFolderPath says)
+LLUUID LLOutfitsList::getParentFolder(const LLUUID& cat_id) const
+{
+    LLViewerInventoryCategory* cat = gInventory.getCategory(cat_id);
+    if (!cat)
+    {
+        return LLUUID::null;
+    }
+    const LLUUID& parent = cat->getParentUUID();
+    if (parent == getMyOutfitsId())
+    {
+        return LLUUID::null;
+    }
+    LLViewerInventoryCategory* parent_cat = gInventory.getCategory(parent);
+    return (!parent_cat || isOutfitFolder(parent_cat)) ? LLUUID::null : parent;
+}
+
+// A row is shown when every folder above it is open (mOpenFolders is the one place that
+// remembers it, so a row added before its folder row does not flash)
+bool LLOutfitsList::isRowShown(const LLUUID& cat_id) const
+{
+    LLUUID parent = getParentFolder(cat_id);
+    for (S32 guard = 0; parent.notNull() && guard < 32; ++guard)
+    {
+        if (mOpenFolders.count(parent) == 0)
+        {
+            return false;
+        }
+        parent = getParentFolder(parent);
+    }
+    return true;
+}
+
+// Sets parent, sort path and indent of a row. Empty path (flat list) when the setting is off.
+// Returns false if the row has no place in the folders (see getFolderPath); it then stands alone.
+bool LLOutfitsList::updateRowHierarchy(LLOutfitAccordionCtrlTab* tab, const LLUUID& cat_id)
+{
+    LLUUID parent_id;
+    std::vector<std::string> path;
+    std::vector<LLUUID> ids;
+    bool in_folders = false;
+    if (useFolderRows())
+    {
+        in_folders = getFolderPath(cat_id, parent_id, path, ids);
+        if (!in_folders)
+        {
+            path.assign(1, tab->getTitle());
+            ids.assign(1, cat_id);
+            parent_id.setNull();
+        }
+    }
+    tab->setHierarchy(parent_id, path, ids);
+    return in_folders;
+}
+
+// Changes inside a subfolder (new outfits, moves) refresh the whole list
+void LLOutfitsList::observeSubfolder(const LLUUID& cat_id)
+{
+    const LLUUID outfits = getMyOutfitsId();
+    mCategoriesObserver->addCategory(cat_id, [this, outfits]()
+    {
+        observerCallback(outfits);
+    });
+}
+
+bool LLOutfitsList::updateAddedFolder(const LLUUID& cat_id, LLViewerInventoryCategory* cat)
+{
+    outfit_accordion_tab_params tab_params(get_accordion_tab_params());
+    tab_params.cat_id = cat_id;
+    LLOutfitAccordionCtrlTab* row = LLUICtrlFactory::create<LLOutfitAccordionCtrlTab>(tab_params);
+    if (!row)
+    {
+        return false;
+    }
+    row->makeFolderRow();
+    row->setName(cat->getName());
+    row->setTitle(cat->getName());
+    row->setDisplayChildren(false);
+    if (!updateRowHierarchy(row, cat_id))
+    {
+        row->die();
+        return false;
+    }
+    row->setHeaderOnlyOpen(mOpenFolders.count(cat_id) > 0);
+    // A folder row is not an outfit: focusing it clears the outfit selection
+    row->setFocusReceivedCallback([this](LLFocusableElement*)
+    {
+        dropAllListSelections();
+    });
+    row->setDropDownStateChangedCallback([this, cat_id, row](LLUICtrl*, const LLSD&)
+    {
+        onFolderToggled(cat_id, row->getHeaderOnlyOpen());
+    });
+    // hidden from the start when a folder above is closed (or a filter is typed)
+    row->setVisible(getFilterSubString().empty() && isRowShown(cat_id));
+    mAccordion->addCollapsibleCtrl(row);
+
+    observeSubfolder(cat_id);
+
+    mFolderTabs.insert(outfits_map_value_t(cat_id, row));
+    return true;
+}
+
+// Recomputes parent and sort path of every row (renames and moves change them)
+void LLOutfitsList::refreshHierarchy()
+{
+    for (outfits_map_t* rows : { &mOutfitsMap, &mFolderTabs })
+    {
+        for (outfits_map_value_t& entry : *rows)
+        {
+            if (entry.second)
+            {
+                updateRowHierarchy(entry.second, entry.first);
+            }
+        }
+    }
+}
+
+// Shows the rows whose folders are all open. While a filter is typed the folder rows are
+// hidden and the filter alone decides about the outfit rows. Returns true if a row changed
+// (the caller arranges the accordion).
+bool LLOutfitsList::applyFolderVisibility()
+{
+    const bool folders = useFolderRows();
+    const bool filtering = !getFilterSubString().empty();
+    bool changed = false;
+
+    for (outfits_map_t* rows : { &mOutfitsMap, &mFolderTabs })
+    {
+        const bool folder_rows = (rows == &mFolderTabs);
+        for (outfits_map_value_t& entry : *rows)
+        {
+            LLOutfitAccordionCtrlTab* tab = entry.second;
+            if (!tab) continue;
+
+            if (filtering && !folder_rows) continue; // the filter owns the outfit rows
+            const bool visible = !filtering && (!folders || isRowShown(entry.first));
+            if (tab->getVisible() != visible)
+            {
+                tab->setVisible(visible);
+                changed = true;
+                if (!visible && !folder_rows)
+                {
+                    // a hidden outfit is not selected (as with the filter)
+                    dropListSelection(entry.first);
+                }
+            }
+        }
+    }
+    return changed;
+}
+
+// Clears what "Wear" and the gear menu would act on for this outfit: the selection in its
+// list, the outfit selection and the "item selected" flag
+void LLOutfitsList::dropListSelection(const LLUUID& category_id)
+{
+    wearables_lists_map_t::iterator it = mSelectedListsMap.find(category_id);
+    if (it != mSelectedListsMap.end() && it->second)
+    {
+        it->second->resetSelection();
+    }
+    deselectOutfit(category_id); // erases the map entry and clears mSelectedOutfitUUID if it is this outfit
+
+    mItemSelected = false;
+    for (const wearables_lists_map_value_t& entry : mSelectedListsMap)
+    {
+        if (entry.second && entry.second->getSelectedItem())
+        {
+            mItemSelected = true;
+            break;
+        }
+    }
+}
+
+void LLOutfitsList::dropAllListSelections()
+{
+    uuid_vec_t ids;
+    for (const wearables_lists_map_value_t& entry : mSelectedListsMap)
+    {
+        ids.push_back(entry.first);
+    }
+    for (const LLUUID& id : ids)
+    {
+        dropListSelection(id);
+    }
+    dropListSelection(mSelectedOutfitUUID);
+}
+
+void LLOutfitsList::rememberFolderOpen(const LLUUID& cat_id, bool open)
+{
+    if (open)
+    {
+        mOpenFolders.insert(cat_id);
+    }
+    else
+    {
+        mOpenFolders.erase(cat_id);
+    }
+}
+
+void LLOutfitsList::onFolderToggled(const LLUUID& cat_id, bool open)
+{
+    rememberFolderOpen(cat_id, open);
+    mTempOpened.erase(cat_id); // the user decided this one
+    storeOpenFolders();
+    // The accordion arranges after this commit callback (LLAccordionCtrl::onCollapseCtrlCloseOpen)
+    applyFolderVisibility();
+}
+
+// Open folders are kept per account (PlusOutfitOpenFolders), so the list looks the same after a restart.
+// State: mOpenFolders is the live set; the setting holds it without mTempOpened (folders the program
+// opened to show an outfit). Restored once, when the list is first opened; stored after every
+// click on a folder row and after "expand/collapse all"; not stored when the setting
+// OutfitListShowFolders is turned off (the saved value stays for when it is turned on again).
+static const size_t MAX_SAVED_OPEN_FOLDERS = 1024; // out of reach in practice
+static const char* OPEN_FOLDERS_SETTING = "PlusOutfitOpenFolders";
+
+// Drops folders that are gone (deleted, in the Trash) or were moved out of My Outfits, once the
+// inventory is complete; before that a folder that is not loaded yet must stay
+static void prune_open_folders(std::set<LLUUID>& ids, const LLUUID& my_outfits)
+{
+    if (my_outfits.isNull() || !LLInventoryModelBackgroundFetch::instance().isEverythingFetched())
+    {
+        return;
+    }
+    const LLUUID trash = gInventory.findCategoryUUIDForType(LLFolderType::FT_TRASH);
+    for (std::set<LLUUID>::iterator it = ids.begin(); it != ids.end();)
+    {
+        if (!gInventory.getCategory(*it) || gInventory.isObjectDescendentOf(*it, trash)
+            || !gInventory.isObjectDescendentOf(*it, my_outfits))
+        {
+            it = ids.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+    }
+}
+
+void LLOutfitsList::restoreOpenFolders()
+{
+    if (mOpenFoldersRestored || !gSavedPerAccountSettings.controlExists(OPEN_FOLDERS_SETTING))
+    {
+        return;
+    }
+    mOpenFoldersRestored = true;
+
+    const LLSD saved = gSavedPerAccountSettings.getLLSD(OPEN_FOLDERS_SETTING);
+    for (LLSD::array_const_iterator it = saved.beginArray(); it != saved.endArray(); ++it)
+    {
+        const LLUUID id = it->asUUID();
+        if (id.notNull())
+        {
+            mOpenFolders.insert(id);
+        }
+    }
+    prune_open_folders(mOpenFolders, getMyOutfitsId()); // before any cap: old ids must not take the places of live ones
+}
+
+void LLOutfitsList::storeOpenFolders()
+{
+    if (!mOpenFoldersRestored || !gSavedPerAccountSettings.controlExists(OPEN_FOLDERS_SETTING))
+    {
+        return; // not restored yet: storing now would overwrite the saved folders
+    }
+    std::set<LLUUID> ids;
+    for (const LLUUID& id : mOpenFolders)
+    {
+        if (mTempOpened.count(id) == 0)
+        {
+            ids.insert(id);
+        }
+    }
+    prune_open_folders(ids, getMyOutfitsId());
+
+    LLSD array = LLSD::emptyArray();
+    for (const LLUUID& id : ids)
+    {
+        if (array.size() >= (LLSD::Integer)MAX_SAVED_OPEN_FOLDERS)
+        {
+            break;
+        }
+        array.append(id);
+    }
+    gSavedPerAccountSettings.setLLSD(OPEN_FOLDERS_SETTING, array);
+
+    // The file is written a few seconds after the last click (a key held down on a folder row must
+    // not write it for every repeat); logout writes it too.
+    mOpenFoldersDirty = true;
+    if (!mOpenFoldersFlushQueued)
+    {
+        mOpenFoldersFlushQueued = true;
+        LLHandle<LLPanel> handle = getHandle();
+        doAfterInterval([handle]()
+        {
+            LLOutfitsList* self = dynamic_cast<LLOutfitsList*>(handle.get());
+            if (self)
+            {
+                self->mOpenFoldersFlushQueued = false;
+                self->flushOpenFolders();
+            }
+        }, 3.f);
+    }
+}
+
+void LLOutfitsList::flushOpenFolders()
+{
+    if (!mOpenFoldersDirty)
+    {
+        return;
+    }
+    mOpenFoldersDirty = false;
+    if (LLStartUp::getStartupState() == STATE_STARTED)
+    {
+        plus::saveSettingsFile(gSavedPerAccountSettings, gSavedSettings.getString("PerAccountSettingsFile"), true);
+    }
+}
+
+// The setting changed (menu or Debug Settings)
+void LLOutfitsList::onShowFoldersChanged()
+{
+    if (!mAccordion || !mIsInitialized) return;
+
+    if (!useFolderRows())
+    {
+        removeFolderRows();
+    }
+    // Off: the flat list observes the subfolders again; on: the folder rows are added
+    const LLUUID outfits = gInventory.findCategoryUUIDForType(LLFolderType::FT_MY_OUTFITS);
+    refreshList(outfits);
+}
+
+// A folder that was shown as a row can turn out to be an old style outfit (items put into
+// it later, or fetched later): replace its row by an outfit tab
+void LLOutfitsList::convertOutfitLikeFolders()
+{
+    if (mFolderTabs.empty()) return;
+
+    uuid_vec_t converted;
+    for (outfits_map_value_t& entry : mFolderTabs)
+    {
+        if (isOutfitFolder(gInventory.getCategory(entry.first)))
+        {
+            converted.push_back(entry.first);
+        }
+    }
+    for (const LLUUID& cat_id : converted)
+    {
+        updateRemovedCategory(cat_id); // the folder row, with its observer
+        updateAddedCategory(cat_id);   // now an outfit tab
+    }
+}
+
+// Turning the setting off: drop the folder rows and show the flat list again
+void LLOutfitsList::removeFolderRows()
+{
+    for (outfits_map_value_t& entry : mFolderTabs)
+    {
+        LLOutfitAccordionCtrlTab* row = entry.second;
+        mCategoriesObserver->removeCategory(entry.first);
+        if (row)
+        {
+            mAccordion->removeCollapsibleCtrl(row);
+            row->die();
+        }
+    }
+    mFolderTabs.clear();
+
+    // refreshHierarchy() gives the outfit rows empty paths (flat), applyFolderVisibility() shows them
+    sortOutfits();
+}
+
+void LLOutfitsList::setAllFolders(bool open)
+{
+    if (!useFolderRows()) return;
+
+    for (outfits_map_value_t& entry : mFolderTabs)
+    {
+        if (entry.second)
+        {
+            entry.second->setHeaderOnlyOpen(open);
+        }
+        rememberFolderOpen(entry.first, open);
+    }
+    if (!open)
+    {
+        mOpenFolders.clear(); // also the ones without a row yet (still loading) or not folders any more
+    }
+    mTempOpened.clear(); // all of them were decided by the user
+    storeOpenFolders();
+    if (applyFolderVisibility())
+    {
+        mAccordion->arrange();
+    }
+}
+
+// Opens the folders above a row so it is shown
+void LLOutfitsList::openAncestorFolders(const LLUUID& cat_id)
+{
+    if (!useFolderRows()) return;
+    restoreOpenFolders(); // may be called before the list was ever opened: keep the saved folders as saved
+
+    LLUUID parent = getParentFolder(cat_id);
+    for (S32 guard = 0; parent.notNull() && guard < 32; ++guard)
+    {
+        outfits_map_t::const_iterator it = mFolderTabs.find(parent);
+        if (it != mFolderTabs.end() && it->second)
+        {
+            it->second->setHeaderOnlyOpen(true);
+        }
+        if (mOpenFolders.insert(parent).second)
+        {
+            mTempOpened.insert(parent); // opened by the program: not saved
+        }
+        parent = getParentFolder(parent);
+    }
+    if (applyFolderVisibility())
+    {
+        mAccordion->arrange();
+    }
+}
+
+void LLOutfitAccordionCtrlTab::setHierarchy(const LLUUID& parent_id, const std::vector<std::string>& path, const std::vector<LLUUID>& ids)
+{
+    mParentFolderID = parent_id;
+    mSortPath = path;
+    mSortIds = ids;
+    // nesting level = path length - 1 (empty path: flat view)
+    setHeaderIndent(path.empty() ? 0 : (S32)(path.size() - 1) * FOLDER_INDENT);
+    // outfit-folder-icons: folder icon on a folder row, outfit icon on an outfit row (hierarchical view only)
+    mShowIcons = !path.empty();
+    if (!mShowIcons)
+    {
+        setHeaderIcon(nullptr);
+    }
+}
+// </plus>
+
 //////////////////// LLOutfitAccordionCtrlTab ////////////////////
 
 LLUIImage* LLOutfitAccordionCtrlTab::sFavoriteIcon;
@@ -1676,6 +2318,20 @@ LLUIColor LLOutfitAccordionCtrlTab::sFgColor;
 
 void LLOutfitAccordionCtrlTab::draw()
 {
+    // <plus> outfit-folder-icons
+    if (mShowIcons)
+    {
+        static LLUIImage* icons[4] = {}; // looked up once (the UI image registry keeps them alive): folder closed/open, outfit closed/open
+        if (!icons[0])
+        {
+            icons[0] = LLUI::getUIImage("Inv_FolderClosed");
+            icons[1] = LLUI::getUIImage("Inv_FolderOpen");
+            icons[2] = LLUI::getUIImage("Inv_LookFolderClosed");
+            icons[3] = LLUI::getUIImage("Inv_LookFolderOpen");
+        }
+        setHeaderIcon(icons[(mFolderRow ? 0 : 2) + (getArrowOpen() ? 1 : 0)]);
+    }
+    // </plus>
     LLAccordionCtrlTab::draw();
     drawFavoriteIcon();
 }

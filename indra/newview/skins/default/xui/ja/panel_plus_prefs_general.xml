@@ -86,6 +86,37 @@
                         log_in_to_change
                     </text_editor>
                 </panel>
+                <plus_ps_text name="windows_textbox">
+                    ウィンドウ：
+                </plus_ps_text>
+                <plus_ps_text name="window_group_textbox">
+                    接しているウィンドウ：
+                </plus_ps_text>
+                <plus_ps_combo name="window_group_combobox" tool_tip="タイトルバーを掴んで動かすと、接している窓も一緒に動きます。仲間はタイトルバーを押した時に決まります。">
+                    <plus_ps_combo.item name="group_together" label="一緒に動かす（Shiftで1枚だけ）" />
+                    <plus_ps_combo.item name="group_shift" label="Shiftを押した時だけ一緒に" />
+                    <plus_ps_combo.item name="group_off" label="1枚ずつ動かす" />
+                </plus_ps_combo>
+                <plus_ps_text name="window_snap_textbox">
+                    吸着する距離：
+                </plus_ps_text>
+                <plus_ps_combo name="window_snap_combobox" tool_tip="他の窓や画面の端にどれだけ近づくと吸い付くか">
+                    <plus_ps_combo.item name="snap_off" label="なし" />
+                    <plus_ps_combo.item name="snap_short" label="短い" />
+                    <plus_ps_combo.item name="snap_normal" label="標準" />
+                    <plus_ps_combo.item name="snap_long" label="長い" />
+                </plus_ps_combo>
+                <plus_ps_text name="window_gap_textbox">
+                    窓と窓のすきま：
+                </plus_ps_text>
+                <plus_ps_combo name="window_gap_combobox" tool_tip="吸着した2枚の窓の間に残す空き">
+                    <plus_ps_combo.item name="gap_none" label="なし" />
+                    <plus_ps_combo.item name="gap_small" label="2ピクセル" />
+                    <plus_ps_combo.item name="gap_medium" label="4ピクセル" />
+                    <plus_ps_combo.item name="gap_large" label="8ピクセル" />
+                </plus_ps_combo>
+                <plus_ps_check_compat name="window_snap_near_check" label="近くにある窓にだけ吸着する" tool_tip="遠く離れた窓の辺には引っかかりません" />
+                <plus_ps_check_compat name="window_snap_hint_check" label="1枚だけ動かす方法を案内する" tool_tip="接している窓が一緒に動く時、掴んだ窓の上に「Shiftを押しながらタイトルバーを掴むと、この窓だけ動かせます」と出します" />
             </panel>
         </scroll_container>
     </plus_ps_box>

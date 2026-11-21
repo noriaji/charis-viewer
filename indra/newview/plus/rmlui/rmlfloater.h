@@ -27,13 +27,15 @@
 //   - the host's hooks are set and the document loaded from postBuild(); the hooks call the virtuals below,
 //   - the document goes in one order: the focused element is blurred (a text field's own blur ends an IME
 //     composition and the window's blur listener commits the field), commitPending() (text typed and not yet
-//     committed), unbind() (the window's data model and settings signals), then the host's unload(). closeDocument() does it, once: from onClose()
+//     committed), the <select> lists' detach (rmlpopup.h), unbind() (the window's data model and settings signals), then
+//     the host's unload(). closeDocument() does it, once: from onClose()
 //     (the window closed) and from the destructor of the base. A derived class that holds things the document
 //     points at (a data model, listeners) calls closeDocument() first in its own destructor, as its members go
 //     before the base's destructor runs (this base cannot call the derived virtuals then).
 //   - set reuse_instance="false" in the XML: a closed window is destroyed, and then costs nothing (no context,
 //     no signals); RmlUi itself ends 60 s after the last window (research/364 6).
 //     The document is closed once for good (a window shown again without being destroyed would stay empty).
+//   - every <select> of the document gets its list outside the window (rmlpopup.h SelectPopup): nothing to do here.
 
 #ifndef PLUS_RMLFLOATER_H
 #define PLUS_RMLFLOATER_H
@@ -42,10 +44,14 @@
 
 #include "llfloater.h"
 
+#include <memory>
+
 class LLRmlView;
 
 namespace plus::rmlui
 {
+    class SelectPopup;
+
     class RmlFloater : public LLFloater
     {
     public:
@@ -53,6 +59,10 @@ namespace plus::rmlui
         ~RmlFloater() override;
         bool postBuild() override;
         void onClose(bool app_quitting) override;
+        // The first letters typed with a <select> focused, and the wheel over one (PlusComboWheelSelect), as the XUI
+        // combo box takes them (rmlpopup.h).
+        bool handleUnicodeCharHere(llwchar uni_char) override;
+        bool handleScrollWheel(S32 x, S32 y, S32 clicks) override;
 
     protected:
         // Called on the main thread inside RmlUi's work for the host (rmlhost.h Hooks). The defaults do nothing.
@@ -75,10 +85,15 @@ namespace plus::rmlui
         // with this.
         static std::string committedText(Rml::ElementFormControl& box);
         // For the derived class's destructor (see above). Idempotent.
+        // closeFloater() / the window's destruction must not be called inside an RmlUi event (a listener of the window's
+        // document, afterUpdate, onEvent): closeDocument unloads the document, and a <select> list that is open then
+        // closes in the middle of RmlUi's work. Ask for the close from the viewer's idle (doOnIdleRepeating) instead;
+        // SelectPopup::detach warns in the log when it finds itself inside one.
         void closeDocument();
 
     private:
         LLHandle<LLRmlView> mHost;
+        std::unique_ptr<SelectPopup> mSelectPopup;      // null: no host
         bool mDocumentClosed = false;
     };
 }

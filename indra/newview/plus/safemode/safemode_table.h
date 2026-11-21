@@ -85,6 +85,7 @@ namespace plus::safemode
         { L"LLRHI_VK_BIG_BLOCKS", L"0" },
         // Work on other threads (research/63, 66, 179, 188).
         { L"LLRHI_PRESENT_THREAD", L"0" },
+        { L"LLRHI_SUBMIT_LANE", L"0" },         // research/393: off unless set; named here so a stray set value is overridden
         { L"LLRHI_RENDER_THREAD", L"0" },       // research/218 vk-s2f-2: auto when unset (research/208 S2)
         { L"LLRHI_AVATAR_THREADS", L"0" },
         { L"LLRHI_SHADOW_RECORD_THREADS", L"0" },
@@ -158,6 +159,9 @@ namespace plus::safemode
         { L"PlusImpostorBridgeDefer", L"0" },   // pipeline.cpp rebuildPriorityGroups: an impostor's attachment groups are built at once, as before (research/340)
         { L"PlusImpostorCaptureRest", L"0" },   // llvoavatar.cpp updateImpostors: no rest after a long capture, as before (research/340)
         { L"PlusOffscreenAvatarPeriod", L"1" }, // llvoavatar.cpp idleUpdate: an avatar out of view is updated every frame, as before (research/341)
+        { L"PlusFloaterGroupMove", L"0" },       // plus/floatersnap: windows that touch do not move together (research/387)
+        { L"PlusFloaterSnapGap", L"0" },        // plus/floatersnap: no gap left between windows that snapped, as the official one does
+        { L"PlusFloaterSnapNearOnly", L"0" },   // plus/floatersnap: a window snaps to the edge lines of every window, as the official one does
     };
 
     // The environment variable that marks a safe start (the child), with its

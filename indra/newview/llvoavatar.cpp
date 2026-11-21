@@ -117,6 +117,7 @@
 #include "llperfstats.h"
 // <plus>
 #include "plus/hairsway/hairsway.h"
+#include "plus/avatarfilter/avatarfilter.h"
 #include "llrhiavatar.h"    // research/199 (stage 4b): resident palette rows, compute skinning check
 #include "plus/gaze/gaze.h"
 #include "plus/photomode/phototoolsfloater.h" // research/344: inPhotoMode for the flat jelly doll
@@ -2978,12 +2979,8 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
     GrayWire::updateAvatar(this);   // attachments with a texture not loaded yet: the avatar is drawn as a wireframe
     plus_graywire.stop(); // <plus> research/339 22 </plus>
 
-    static LLCachedControl<bool> friends_only(gSavedSettings, "RenderAvatarFriendsOnly", false);
-    if (friends_only()
-        && !isUIAvatar()
-        && !isControlAvatar()
-        && !isSelf()
-        && !isBuddy())
+    // <plus> avatarfilter: friends only / hide others (one shared test)
+    if (plus::isHiddenByAvatarFilter(this))
     {
         if (mNameText)
         {
@@ -2997,6 +2994,7 @@ void LLVOAvatar::idleUpdate(LLAgent &agent, const F64 &time)
 
         return;
     }
+    // </plus>
 
     // record time and refresh "tooSlow" status
     updateTooSlow();
@@ -9060,11 +9058,10 @@ bool LLVOAvatar::shouldRenderRigged() const
 // Maybe better naming could make this clearer?
 bool LLVOAvatar::isVisible() const
 {
-    static LLCachedControl<bool> friends_only(gSavedSettings, "RenderAvatarFriendsOnly", false);
     return mDrawable.notNull()
         && (!mOrphaned || isSelf())
         && (mDrawable->isVisible() || mIsDummy)
-        && (!friends_only() || isUIAvatar() || isSelf() || isControlAvatar() || isBuddy());
+        && !plus::isHiddenByAvatarFilter(this); // <plus> avatarfilter </plus>
 }
 
 // Determine if we have enough avatar data to render
@@ -9471,8 +9468,15 @@ bool LLVOAvatar::isTooSlow() const
         return mTooSlow;
     }
 
+    // <plus> avatarfilter: before the friend / always-render exceptions, so a hidden avatar
+    // (and the lights and particles of its attachments) is also "too slow" for them
+    if (plus::isHiddenByAvatarFilter(this))
+    {
+        return true;
+    }
+    // </plus>
+
     static LLCachedControl<S32> complexity_render_mode(gSavedSettings, "RenderAvatarComplexityMode");
-    static LLCachedControl<bool> friends_only(gSavedSettings, "RenderAvatarFriendsOnly", false);
     bool is_friend = isBuddy();
     bool render_friend = is_friend && complexity_render_mode > AV_RENDER_LIMIT_BY_COMPLEXITY;
 
@@ -9481,10 +9485,6 @@ bool LLVOAvatar::isTooSlow() const
         return false;
     }
     else if (complexity_render_mode == AV_RENDER_ONLY_SHOW_FRIENDS)
-    {
-        return true;
-    }
-    else if (!is_friend && friends_only())
     {
         return true;
     }

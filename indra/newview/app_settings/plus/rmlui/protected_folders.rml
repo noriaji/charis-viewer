@@ -1,0 +1,25 @@
+<rml>
+<!-- The protected folders window (plus/protectedfolders/protectedfoldersrml.cpp, research/386). Its words are "[[name]]":
+     the <string>s of floater_plus_protected_folders_rml.xml (en, ja). The contract with the C++ (ids):
+       filter (text field), filter_hint (the empty field's hint), filter_clear (button), remove (button), list and list_head (RmlList: the heading's click sorts). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare">
+    <div class="protected-folders">
+        <div class="pf-top">
+            <div class="ps-search">
+                <input type="text" class="text" id="filter" maxlength="256" ime-blur="keep" select-on-focus/>
+                <span class="ps-hint" id="filter_hint">[[filter_hint]]</span>
+                <button id="filter_clear" class="clear hidden">x</button>
+            </div>
+            <button id="remove" class="ps-icon" disabled="disabled" title="[[tip_remove]]"></button>
+        </div>
+        <div class="ps-list-box">
+            <div id="list_head" class="ps-list-head"></div>
+            <div id="list" class="ps-list" tabindex="0"></div>
+        </div>
+    </div>
+</body>
+</rml>

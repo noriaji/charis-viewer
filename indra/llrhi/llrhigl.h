@@ -125,6 +125,58 @@ namespace LLRHI
             glCopyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width, height);
         }
     }
+
+    // <plus> research/394 T17: the raw GL calls newview made on its own (names, uniform buffer contents, mipmaps, 2D texture images, framebuffer binds) go through here </plus>
+    // (for these calls only: other GL entry points are still named elsewhere). Same arguments and meaning as the GL calls. The hooks used below are required at startup
+    // (LLVertexBuffer::initClass stops without them), so there is no null check; GL is called only where the hook declines (names, mipmaps, texture images, copies).
+
+    // Names (the backend's wrappers answer them, as for LLVertexBuffer's pool).
+    inline void genBuffers(GLsizei n, GLuint* buffers)         { glGenBuffers(n, buffers); }
+    inline void deleteBuffers(GLsizei n, const GLuint* buffers) { glDeleteBuffers(n, buffers); }
+    inline void genQueries(GLsizei n, GLuint* ids)             { glGenQueries(n, ids); }
+    inline void deleteQueries(GLsizei n, const GLuint* ids)    { glDeleteQueries(n, ids); }
+
+    // The contents of a uniform buffer by name (what glBindBuffer + glBufferData GL_STREAM_DRAW + unbind did; the backend takes the name directly).
+    inline void uniformBufferData(GLuint name, size_t size, const void* data)
+    {
+        sBufferData(name, size, data);
+    }
+
+    // Of the texture `name` bound to target on the active unit, like glGenerateMipmap.
+    inline void generateMipmap(GLuint name, GLenum target)
+    {
+        if (name && sGenerateMipmap(name, target))
+        {
+            return;
+        }
+        glGenerateMipmap(target);
+    }
+
+    // Level `level` of the texture `name` bound to target on the active unit, like glTexImage2D (border 0).
+    inline void texImage2D(GLuint name, GLenum target, GLint level, GLint internal_format, GLsizei width, GLsizei height,
+                           GLenum format, GLenum type, const void* pixels)
+    {
+        if (name && sTexImage2D(name, target, level, (U32)internal_format, width, height, format, type, pixels))
+        {
+            return;
+        }
+        glTexImage2D(target, level, internal_format, width, height, 0, format, type, pixels);
+    }
+
+    inline void bindFramebuffer(GLenum target, GLuint framebuffer)
+    {
+        sBindFramebuffer(target, framebuffer);
+    }
+
+    // From the current read framebuffer into the texture `name` bound to target on the active unit.
+    inline void copyTexSubImage2D(GLuint name, GLenum target, GLint level, GLint xoffset, GLint yoffset,
+                                  GLint x, GLint y, GLsizei width, GLsizei height)
+    {
+        if (!sCopyTexSubImage2D(name, target, level, xoffset, yoffset, x, y, width, height))
+        {
+            glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
+        }
+    }
 }
 
 #endif // LL_LLRHIGL_H

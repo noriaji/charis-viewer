@@ -1,6 +1,6 @@
 /**
  * @file llrhiresource.h
- * @brief Resources by the backend's own handle (research/137 N14): the switch and the hooks.
+ * @brief The vertex buffers' numbers (research/197 stage 1b): the switches and the hooks.
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Charis Viewer Source Code
@@ -27,62 +27,11 @@
 
 #include "stdtypes.h"
 
-// Research/137 N14. In Vulkan mode a vertex buffer's contents already go to
-// the backend by GL name, without a binding (sBufferData / sBufferSubData).
-// LLVertexBuffer sends one sBufferSubData per contiguous range it wrote
-// (_unmapBuffer: one range per attribute block a rebuild touched, often 4 to
-// 8 per buffer), and each call pays the whole round: the backend's lock, the
-// name looked up, the frame's resolved entry forgotten, the copies made from
-// the buffer told (two tables), a new version. With the hooks below the
-// buffer keeps the backend's handle from when it gets its name, and each
-// unmap hands all its ranges over in one call: one round per buffer (the
-// name is looked up once, only to check the handle). The bytes written, and
-// so the frame, are the same.
-//
-// The immediate mode's ring draws (research/137 N9) also stop going through
-// the name table: the backend draws them from the ring's Vulkan buffer
-// itself instead of lending them a stand-in buffer name (llvkimmediate.cpp).
-//
-// What stays by name, on purpose (research/137 1.1: the names stay the
-// resources' ids): the draws (DirectDraw names its buffers; resolving them is
-// already one direct-mapped lookup a frame), the texture uploads and
-// bindings (one lookup next to work that takes microseconds), the creation
-// and deletion of names.
+// The vertex buffers' numbers (research/197 stage 1b). Research/137 N14's resources
+// by the backend's own handle (LLRHI_NATIVE_RESOURCES, off by default) went in
+// research/391: stage 1b's numbers and LLRHI_TEX_HANDLES replaced it.
 namespace LLRHI
 {
-    // LLRHI_NATIVE_RESOURCES=1, read at startup (off by default). Off, or not
-    // installed: the hooks stay null and everything goes by name as before.
-    extern bool sNativeResources;
-
-    // Opaque: the backend's buffer behind a GL buffer name.
-    struct BufferHandle;
-
-    // A byte range of a buffer.
-    struct BufferRange
-    {
-        U32 offset = 0;
-        U32 size = 0;
-    };
-
-    // Set by the Vulkan backend. The buffer behind `name`, which has been given
-    // storage (sBufferData); null when the backend has none. Valid until the
-    // name is deleted (glDeleteBuffers): the holder drops it before it gives the
-    // name back. Main thread.
-    extern BufferHandle* (*sBufferHandle)(U32 name);
-
-    // Set by the Vulkan backend. Writes `count` ranges into `buffer` (whose GL
-    // name is `name`), each from data + offset, where `data` is the buffer's
-    // whole client copy: the same contents as one sBufferSubData(name, offset,
-    // size, data + offset) per range, in one call. A range past the buffer's
-    // storage is skipped, as sBufferSubData skips it. Main thread.
-    extern void (*sBufferWriteRanges)(BufferHandle* buffer, U32 name, const U8* data, const BufferRange* ranges, U32 count);
-
-    // The handle for `name`, or null (no name, the hooks not installed).
-    inline BufferHandle* bufferHandle(U32 name)
-    {
-        return name && sBufferHandle ? sBufferHandle(name) : nullptr;
-    }
-
     // --- Vertex buffer numbers (research/197 stage 1b) -----------------------
     // An LLVertexBuffer's number for its whole life (LLVertexBuffer::mRHIRef).
     // The backend keeps "number -> where the buffer's vertices and indices are
@@ -120,8 +69,7 @@ namespace LLRHI
         // The buffer was allocated again (or its index type changed): the
         // number's place goes, if it was made for another layout.
         static void layout(BufferRef ref, const BufferLayout& now);
-        // Before the same bytes go to the GL name (sBufferSubData,
-        // sBufferWriteRanges): `size` bytes of the vertex buffer (or the
+        // Before the same bytes go to the GL name (sBufferSubData): `size` bytes of the vertex buffer (or the
         // index buffer) at `offset`, from src. Only while sVBNative.
         static void write(BufferRef ref, const BufferLayout& now, bool indices, U32 offset, U32 size, const void* src);
         // The buffer is gone. Its place goes back to the pool after the

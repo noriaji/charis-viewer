@@ -947,14 +947,10 @@ void send_viewer_stats(bool include_preferences)
     body["DisplayNamesShowUsername"] = gSavedSettings.getBOOL("NameTagShowUsernames");
 
     // Preferences
-    if (include_preferences)
-    {
-        bool diffs_only = true; // only log preferences that differ from default
-        body["preferences"]["settings"] = gSavedSettings.asLLSD(diffs_only);
-        body["preferences"]["settings_per_account"] = gSavedPerAccountSettings.asLLSD(diffs_only);
-    }
-    // <plus> privacy (research/123 H2): no API keys and no Charis settings in the
-    // statistics, nor in the log below (PlusSendSettingsStats off: no settings at all)
+    // <plus> privacy (research/123 H2): the settings that differ from the defaults are not sent (and not
+    // in the log below), whatever include_preferences says: what the user changed is not for Linden Lab.
+    // filterStats() also takes any "preferences" out of the body and the Charis names out of the UI counts.
+    (void)include_preferences;
     plus::privacy::filterStats(body);
     // </plus>
 

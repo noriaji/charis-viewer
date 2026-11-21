@@ -3,5 +3,6 @@
 	<menu_item_call name="expand" label="全てのフォルダを開く"/>
 	<menu_item_call name="collapse" label="全てのフォルダを閉じる"/>
 	<menu_item_check name="sort_favorites_to_top" label="お気に入りを上に"/>
+	<!-- plus outfit-hierarchy --><menu_item_check name="show_folders" label="フォルダを階層表示"/><!-- /plus -->
 	<menu_item_check name="show_entire_outfit_in_search" label="検索でアウトフィット全体を表示"/>
 </toggleable_menu>

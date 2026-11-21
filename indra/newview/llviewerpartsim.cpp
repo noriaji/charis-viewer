@@ -42,6 +42,7 @@
 #include "llspatialpartition.h"
 #include "llvoavatarself.h"
 #include "llvovolume.h"
+#include "plus/avatarfilter/avatarfilter.h" // <plus> avatarfilter </plus>
 
 const F32 PART_SIM_BOX_SIDE = 16.f;
 
@@ -720,6 +721,13 @@ void LLViewerPartSim::updateSimulation()
                 {
                     upd = false;
                 }
+
+                // <plus> avatarfilter: attachments of an avatar hidden by friends only / hide others
+                if (vobj->getAvatar() && plus::isHiddenByAvatarFilter(vobj->getAvatar()))
+                {
+                    upd = false;
+                }
+                // </plus>
 
                 LLVOVolume* vvo = (LLVOVolume *)vobj;
                 if (!LLPipeline::sRenderAttachedParticles && vvo && vvo->isAttachment())

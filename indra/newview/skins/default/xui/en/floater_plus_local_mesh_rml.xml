@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Local mesh, RmlUi version (plus/localmesh/localmeshrml.cpp, research/386): the frame and the words. The content is
+  app_settings/plus/rmlui/localmesh.rml in a plus_rml_view filling the floater under its 18 px header (the XUI window,
+  floater_plus_local_mesh.xml, is frozen: safe mode and PlusRmlUiWindows off). why_<reason> are the reasons of
+  plus::localmesh::canShowOn(). reuse_instance="false": a closed window is destroyed (the files and the objects showing
+  them are localmesh.cpp's, and stay).
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ min_width="460"
+ min_height="400"
+ height="440"
+ width="540"
+ layout="topleft"
+ name="plus_local_mesh"
+ title="LOCAL MESH">
+    <string name="status_loading">Loading</string>
+    <string name="status_active">Ready</string>
+    <string name="status_error">Error</string>
+    <string name="unnamed">(an object)</string>
+    <string name="target">Selected: [NAME]</string>
+    <string name="target_shown">Selected: [NAME] (showing a local mesh)</string>
+    <string name="why_NoObject">Click an object in the world to select it. A mesh is shown on the selected object.</string>
+    <string name="why_NotMesh">The selected object is not a mesh object. A local mesh can only be shown on one (rez any mesh you own to use as a stand-in).</string>
+    <string name="why_Rigged">The selected object is a rigged mesh. Rigged meshes are not supported yet.</string>
+    <string name="why_NotLoaded">The selected object's own mesh has not loaded yet. Wait a moment.</string>
+    <string name="files_label">Mesh files on this PC (.dae, .gltf, .glb). Only you see them; nothing is uploaded.</string>
+    <string name="col_status">State</string>
+    <string name="col_name">File</string>
+    <string name="col_lods">LODs</string>
+    <string name="col_meshes">Meshes</string>
+    <string name="col_shown">Shown</string>
+    <string name="tip_lods">The LODs read from files, highest to lowest (3 2 1 0). A missing one shows the next better one. Lower LODs are files beside it named like name_LOD2.dae, name_LOD1.dae, name_LOD0.dae.</string>
+    <string name="tip_shown">Objects showing a mesh of the file</string>
+    <string name="add">Add...</string>
+    <string name="tip_add">Add mesh files (several at once)</string>
+    <string name="reload">Reload</string>
+    <string name="tip_reload">Read the selected file again (after you export it again); the objects showing it get the new version</string>
+    <string name="remove">Remove</string>
+    <string name="tip_remove">Remove the selected file from the list; the objects showing it get their own mesh back</string>
+    <string name="auto_reload">Reload when the file changes</string>
+    <string name="tip_auto_reload">Read a file again by itself when you export it again (checked once a second)</string>
+    <string name="object_label">Show on the selected object</string>
+    <string name="target_default">(selected object)</string>
+    <string name="meshes_label">Mesh:</string>
+    <string name="tip_meshes">The mesh of the file to show (a file can have several)</string>
+    <string name="file_size">Give the object the size of the file</string>
+    <string name="tip_file_size">Off: the mesh is stretched to the object's own size. On: the object takes the size the file has, in meters (only in your viewer; not for attachments).</string>
+    <string name="show">Show on the object</string>
+    <string name="tip_show">Show the mesh on the selected object, in your viewer only. While it shows a local mesh, the object does not take changes from the region.</string>
+    <string name="take_off">Take off</string>
+    <string name="tip_take_off">Give the selected object its own mesh back</string>
+    <string name="log_label">Log of the selected file:</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="localmesh.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="540"
+     height="422" />
+</floater>

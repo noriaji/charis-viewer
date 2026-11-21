@@ -41,7 +41,10 @@
 
 #include "plus.h"
 #include "timeconv.h"
+#include "timeconvrml.h"
+#include "plus/safemode/safemode.h"
 #include "timeconvmath.h"
+#include "timeconvshared.h"
 
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
@@ -67,121 +70,6 @@ namespace plus::timeconv
     {
         constexpr char FLOATER_NAME[] = "plus_time_conv";
 
-        constexpr char SETTING_ZONE2[] = "PlusTimeConvZone2";
-        constexpr char SETTING_ZONE3[] = "PlusTimeConvZone3";
-        constexpr char SETTING_ROWS[]  = "PlusTimeConvRows";
-        constexpr char SETTING_TICK[]  = "PlusTimeConvTick";
-
-        constexpr int MAX_ROWS = 4;
-        enum Field { F_YEAR, F_MONTH, F_DAY, F_HOUR, F_MINUTE, F_COUNT };
-        constexpr const char* FIELD_NAMES[F_COUNT] = { "y", "mo", "d", "h", "mi" };
-
-        // UTC-12 .. UTC+14 in whole hours, for a place that has no name of its own.
-        constexpr int FIXED_HOURS_MIN = -12, FIXED_HOURS_MAX = 14;
-
-        // ---- the zone of a row ---------------------------------------------------------------
-
-        struct RowZone
-        {
-            bool pc = false;               // the clock of this PC (its offset is asked of the OS)
-            Zone zone = fixedZone("utc", 0);
-        };
-
-        // The offset of this PC from UTC at a moment, in minutes (summer time of the PC included).
-        int pcOffsetAt(Minutes utc)
-        {
-            const std::time_t t = static_cast<std::time_t>(utc * 60);
-            std::tm local{};
-#ifdef _WIN32
-            if (localtime_s(&local, &t) != 0)
-            {
-                return 0;
-            }
-#else
-            if (!localtime_r(&t, &local))
-            {
-                return 0;
-            }
-#endif
-            Civil c;
-            c.year   = local.tm_year + 1900;
-            c.month  = local.tm_mon + 1;
-            c.day    = local.tm_mday;
-            c.hour   = local.tm_hour;
-            c.minute = local.tm_min;
-            return static_cast<int>(wallMinutes(c) - utc);
-        }
-
-        Civil toLocal(const RowZone& rz, Minutes utc)
-        {
-            return rz.pc ? civilFromWallMinutes(utc + pcOffsetAt(utc)) : utcToLocal(rz.zone, utc);
-        }
-
-        Minutes toUtc(const RowZone& rz, const Civil& c, Note* note)
-        {
-            if (note)
-            {
-                *note = Note::None;
-            }
-            if (!rz.pc)
-            {
-                return localToUtc(rz.zone, c, note);
-            }
-            // The PC's offset depends on the moment: ask at the guess, then again at the answer.
-            const Minutes w = wallMinutes(c);
-            const Minutes guess = w - pcOffsetAt(w);
-            return w - pcOffsetAt(guess);
-        }
-
-        int offsetAt(const RowZone& rz, Minutes utc)
-        {
-            return rz.pc ? pcOffsetAt(utc) : offsetMinutes(rz.zone, utc);
-        }
-
-        // "PDT", "JST", "UTC+9" : what the clock is called, for the copied text.
-        std::string zoneName(const RowZone& rz, Minutes utc)
-        {
-            if (!rz.pc)
-            {
-                const std::string abbr = abbrText(rz.zone, isDst(rz.zone, utc));
-                if (!abbr.empty())
-                {
-                    return abbr;
-                }
-            }
-            return offsetText(offsetAt(rz, utc));
-        }
-
-        // The id of a combo item: "pc", a name of zones() or "u<minutes>" (UTC+N).
-        bool resolveZone(const std::string& id, RowZone& out)
-        {
-            out = RowZone();
-            if (id == "pc")
-            {
-                out.pc = true;
-                return true;
-            }
-            if (id.size() > 1 && id[0] == 'u')
-            {
-                const int minutes = std::atoi(id.c_str() + 1);
-                if (minutes < FIXED_HOURS_MIN * 60 || minutes > FIXED_HOURS_MAX * 60)
-                {
-                    return false;
-                }
-                out.zone = fixedZone("fixed", minutes);
-                return true;
-            }
-            for (const Zone& z : zones())
-            {
-                if (id == z.id)
-                {
-                    out.zone = z;
-                    return true;
-                }
-            }
-            return false;
-        }
-
         void setIfChanged(LLLineEditor* ed, const std::string& text)
         {
             if (ed->getText() != text)
@@ -196,12 +84,6 @@ namespace plus::timeconv
             {
                 tb->setText(text);
             }
-        }
-
-        void copyText(const std::string& text)
-        {
-            const LLWString w = utf8str_to_wstring(text);
-            LLClipboard::instance().copyToClipboard(w, 0, static_cast<S32>(w.length()));
         }
 
         // ---- a field of the window -----------------------------------------------------------
@@ -675,10 +557,20 @@ namespace plus::timeconv
             std::string mSummaryBuf;
         };
 
+        // The window is the RmlUi one (timeconvrml.cpp, research/385). This XUI version is frozen (not changed
+        // any more) and is used in safe mode, where RmlUi is not started, and with PlusRmlUiWindows off (the
+        // choice is made once, here: it takes effect at the next start).
         void init()
         {
-            LLFloaterReg::add(FLOATER_NAME, "floater_plus_time_conv.xml",
-                              (LLFloaterBuildFunc)&LLFloaterReg::build<TimeConvFloater>);
+            if (plus::safemode::active() || !gSavedSettings.getBOOL("PlusRmlUiWindows"))
+            {
+                LLFloaterReg::add(FLOATER_NAME, "floater_plus_time_conv.xml",
+                                  (LLFloaterBuildFunc)&LLFloaterReg::build<TimeConvFloater>);
+            }
+            else
+            {
+                addRmlFloater(FLOATER_NAME);
+            }
         }
 
         plus::FeatureRegistration sRegistration({ "timeconv", &init, {} });

@@ -6,11 +6,15 @@
 # the button (panel_plus_import_settings.xml).
 
 list(APPEND plus_SOURCE_FILES
+    plus/importsettings/importcontroller.cpp
     plus/importsettings/importer.cpp
+    plus/importsettings/importrml.cpp
     plus/importsettings/importsettings.cpp
     plus/importsettings/sources.cpp
     )
 
 list(APPEND plus_HEADER_FILES
+    plus/importsettings/importcontroller.h
+    plus/importsettings/importrml.h
     plus/importsettings/importsettings.h
     )

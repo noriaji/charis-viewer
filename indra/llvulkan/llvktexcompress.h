@@ -50,7 +50,7 @@ namespace LLVKTexCompress
 
     // The device samples, filters, copies into and blits from BC7, the
     // encoder can encode (its first pipelines are made: see prepare), and its
-    // self check has not failed. bc7-fault: nor did a frame's encodings take
+    // verdicts have not turned it off. bc7-fault: nor did a frame's encodings take
     // far too long on the GPU, nor the last session lose the GPU while
     // encoding on this GPU and driver (noteDeviceLost). False: textures stay
     // as they are.
@@ -109,8 +109,8 @@ namespace LLVKTexCompress
     // than Budget::never (the counters and the report).
     void noteLeftPlain();
     // research/285 X3: a texture of this size may still be stored BC7 this
-    // session: the encoder is not off (the device cannot, the self check
-    // failed, a fault blocked it, a frame's encodings took too long) and,
+    // session: the encoder is not off (the device cannot, the verdicts
+    // turned it off, a fault blocked it, a frame's encodings took too long) and,
     // once the GPU's speed is sure, it is not past Budget::never. Under
     // LLVKGL's sLock, as frameBudget and the encoder's flags (ensure_image).
     bool mayEncode(U32 width, U32 height, U32 levels);
@@ -138,11 +138,40 @@ namespace LLVKTexCompress
 
     // Room this frame for one more texture (descriptor sets).
     bool hasRoom();
+    // research/395: room in the frame's slot for the texture's check (the
+    // readback of its tiles) too; false: next frame (the texture stays queued).
+    // False for good when its tiles do not fit a slot at all (tooLarge).
+    // on_compute: the compute queue's batch (asyncRoom first).
+    bool hasRoomFor(U32 width, U32 height, U32 levels, bool on_compute = false);
+    bool tooLarge(U32 width, U32 height, U32 levels);
+
+    // research/395: the verdict. Every encoding is checked, every level, in
+    // the commands that encode it, and read when they are done (two frames
+    // on). The caller keeps the texture's plain image until then: GOOD: the
+    // encoded image takes its place; BAD: it is thrown away and the texture
+    // stays RGBA8 until it is written, made again or moved by the pool compaction (which keeps the verdict); NONE: no result (the commands never ran, or the
+    // check was not recorded): thrown away, the texture queued again.
+    enum class Verdict : U8 { GOOD, BAD, NONE };
+    struct VerdictResult
+    {
+        U64 ticket = 0;
+        Verdict verdict = Verdict::NONE;
+    };
+    // Appends the results ready now to out (a render thread's call, once a
+    // frame after beginFrame).
+    void takeVerdicts(std::vector<VerdictResult>& out);
+    // Encodings made now get a verdict (Encoded::ticket != 0): the quality
+    // check is the safe form with the rule, no tint, mode 6 allowed. Not
+    // active (ticket 0): the caller takes the encoding at once, as before.
+    bool verdictActive();
+    // One log line with the verdicts of the session (at shutdown).
+    void logSummary();
 
     struct Encoded
     {
         VkImage image = VK_NULL_HANDLE;
         VmaAllocation memory = nullptr;
+        U64 ticket = 0;     // research/395: the verdict's number (0: none)
     };
     // Records into cmd (the frame's upload commands) the encoding of levels
     // 0..levels-1 of source (R8G8B8A8_UNORM, sampled usage, every level in
@@ -152,6 +181,10 @@ namespace LLVKTexCompress
     // with these commands. name: the GL texture (logs). False: nothing
     // recorded, out untouched. verify: verifySerial's number (research/200),
     // 0 for none.
+    // With a verdict (out.ticket != 0, verdictActive) the source stays the
+    // texture's image until the verdict comes (takeVerdicts): the caller holds
+    // the encoded image, and a barrier at the end orders later writes to the
+    // source after the encoder's and the check's compute reads (research/395).
     bool encode(VkCommandBuffer cmd, VkImage source, U32 width, U32 height, U32 levels, U32 name, Encoded& out, U64 verify = 0);
 
     // ---- research/200: encoding on the compute queue (LLVKQueues) ----

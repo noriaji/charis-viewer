@@ -127,6 +127,13 @@ LLFloaterView* gPlusDetachedFloaterView = NULL;
 // such a floater, fit it as usual. Set by the plus code.
 bool (*gPlusFitFloater)(LLFloaterView* view, LLFloater* floater) = nullptr;
 // </plus>
+// <plus> plus/floatersnap (research/387): false when floater must not snap to other (the windows of a group that
+// move together do not snap to each other, a window far off on the other axis is not a place to snap to). Set by the plus code.
+bool (*gPlusFloaterCanSnap)(const LLFloater* floater, const LLView* other) = nullptr;
+// Told before (done false) and after (done true) LLFloaterView::reshape() lays the floaters out again (the window or the UI
+// scale changed), so the floaters that touched can be put back together. Set by the plus code.
+void (*gPlusFloaterViewReshape)(LLFloaterView* view, bool done) = nullptr;
+// </plus>
 
 /*==========================================================================*|
 // DEV-38598: The fundamental problem with this operation is that it can only
@@ -1162,6 +1169,13 @@ bool LLFloater::canSnapTo(const LLView* other_view)
         LL_WARNS() << "other_view is NULL" << LL_ENDL;
         return false;
     }
+
+    // <plus> plus/floatersnap (research/387)
+    if (gPlusFloaterCanSnap && !gPlusFloaterCanSnap(this, other_view))
+    {
+        return false;
+    }
+    // </plus>
 
     if (other_view != getParent())
     {
@@ -2471,6 +2485,12 @@ LLFloaterView::LLFloaterView (const Params& p)
 // By default, adjust vertical.
 void LLFloaterView::reshape(S32 width, S32 height, bool called_from_parent)
 {
+    // <plus> plus/floatersnap (research/387)
+    if (gPlusFloaterViewReshape)
+    {
+        gPlusFloaterViewReshape(this, false);
+    }
+    // </plus>
     LLView::reshape(width, height, called_from_parent);
 
     mLastSnapRect = getSnapRect();
@@ -2527,6 +2547,12 @@ void LLFloaterView::reshape(S32 width, S32 height, bool called_from_parent)
             }
         }
     }
+    // <plus> plus/floatersnap (research/387)
+    if (gPlusFloaterViewReshape)
+    {
+        gPlusFloaterViewReshape(this, true);
+    }
+    // </plus>
 }
 
 

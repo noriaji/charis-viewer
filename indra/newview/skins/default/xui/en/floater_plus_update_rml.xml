@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Update check window, RmlUi version (plus/updatecheck/updatecheck.cpp UpdateRmlFloater, research/386): the frame and the
+  words. The content is app_settings/plus/rmlui/update.rml in a plus_rml_view under the 18 px header. The XUI window
+  (floater_plus_update.xml, frozen) is used in safe mode and with PlusRmlUiWindows off. The text is plain: no links in it
+  (research/130 M1). [VERSION] and [CURRENT] are versions; the message of the update file follows the body.
+-->
+<floater
+ positioning="centered"
+ save_rect="false"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="false"
+ can_minimize="false"
+ can_close="true"
+ legacy_header_height="18"
+ height="236"
+ width="460"
+ layout="topleft"
+ name="plus_update"
+ title="NEW VERSION OF CHARIS VIEWER">
+    <string name="body">Charis Viewer [VERSION] is out. You are using [CURRENT].</string>
+    <string name="body_required">Charis Viewer [CURRENT] is no longer supported. Please update to [VERSION].</string>
+    <string name="notes">What's new: [URL]</string>
+    <string name="page">Download page: [URL]</string>
+    <string name="btn_download">Open download page</string>
+    <string name="tip_download">Opens the download page in your web browser</string>
+    <string name="btn_notes">Open what's new</string>
+    <string name="btn_notes_tip">Opens the page of what's new in your web browser (the update file names no download page)</string>
+    <string name="btn_install">Download</string>
+    <string name="btn_install_tip">Downloads the new version from GitHub (you can go on using the viewer; the bottom right shows how far it is). It is put in when you quit, or with "Restart and update".</string>
+    <string name="later">Later</string>
+    <string name="tip_later">Closes this. You are told again at the next start, at the login screen.</string>
+    <string name="skip">Skip This Version</string>
+    <string name="tip_skip">You are told again only when a version newer than this one is out</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="update.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="460"
+     height="218" />
+</floater>

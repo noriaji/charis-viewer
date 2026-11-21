@@ -232,7 +232,7 @@ namespace
                                             // reports speak in the chat; keywords and protected folders are the
                                             // user's own lists
                                             "PlusUpdateCheck", "PlusSend", "PlusRadarReport", "PlusKeywords",
-                                            "PlusProtectedFolders",
+                                            "PlusProtectedFolders", "PlusOutfitOpenFolders",
                                             // RLVa: remote scripted viewer controls are switched on by the user, never through the server
                                             "RestrainedLove", "RLVa",
                                             // appearance requests to the server, plugin watchdogs, forced failures

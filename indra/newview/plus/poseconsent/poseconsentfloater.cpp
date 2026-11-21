@@ -34,9 +34,11 @@
 #include "plus/poseshare/poseshare.h"
 
 #include "plus/rlv/rlvhooks.h"
+#include "plus/safemode/safemode.h"
 
 #include "llfloater.h"
 #include "llfloaterreg.h"
+#include "llviewercontrol.h"
 #include "llscrolllistctrl.h"
 #include "llscrolllistitem.h"
 #include "lluictrl.h"
@@ -58,6 +60,12 @@ namespace plus::poseconsent
         unsigned showNamesGeneration()
         {
             return plus::rlv::enabled() ? plus::rlv::showNamesGeneration() : 0;
+        }
+
+        GrantedRowStrings rowStrings(const LLFloater& floater)
+        {
+            return { floater.getString("loading"), floater.getString("withdraw_waiting_row"),
+                     floater.getString("reflect_now_row"), floater.getString("reflect_row") };
         }
 
         class PoseConsentFloater : public LLFloater
@@ -86,8 +94,7 @@ namespace plus::poseconsent
 
             void draw() override
             {
-                if (mGeneration != grantedGeneration() || mReflectGeneration != reflect::grantedGeneration() ||
-                    mPushedGeneration != plus::poseshare::pushedGeneration() || mNames != sNamesArrived || mShowNames != showNamesGeneration())
+                if (mStamp != grantedStamp())
                 {
                     rebuild();
                 }
@@ -97,11 +104,7 @@ namespace plus::poseconsent
         private:
             void rebuild()
             {
-                mGeneration = grantedGeneration();
-                mReflectGeneration = reflect::grantedGeneration();
-                mPushedGeneration = plus::poseshare::pushedGeneration();
-                mNames = sNamesArrived;
-                mShowNames = showNamesGeneration();
+                mStamp = grantedStamp();
 
                 uuid_vec_t selected;
                 for (LLScrollListItem* item : mList->getAllSelected())
@@ -109,37 +112,13 @@ namespace plus::poseconsent
                     selected.push_back(item->getUUID());
                 }
                 mList->deleteAllItems();
+                const GrantedRowStrings strings = rowStrings(*this);
                 for (const Granted& granted : grantedList())
                 {
-                    std::string name;
-                    if (!avatarName(granted.peer, name, &onNameArrived))
-                    {
-                        name = getString("loading");
-                    }
-                    if (granted.withdrawPending)
-                    {
-                        // Withdrawn, the withdraw not sent yet (the bridge busy or not there). The whole row is the
-                        // language's string, so that each places its own space and brackets.
-                        LLStringUtil::format_map_t args;
-                        args["[NAME]"] = name;
-                        name = getString("withdraw_waiting_row", args);
-                    }
-                    else if (plus::poseshare::isPushedBy(granted.peer))
-                    {
-                        LLStringUtil::format_map_t args;     // their pose is on our avatar now
-                        args["[NAME]"] = name;
-                        name = getString("reflect_now_row", args);
-                    }
-                    else if (reflect::mayReflect(granted.peer))
-                    {
-                        LLStringUtil::format_map_t args;     // allowed to show their poses on our screen
-                        args["[NAME]"] = name;
-                        name = getString("reflect_row", args);
-                    }
                     LLSD row;
                     row["value"] = granted.peer;
                     row["columns"][0]["column"] = "name";
-                    row["columns"][0]["value"] = name;
+                    row["columns"][0]["value"] = grantedRowText(granted, strings);
                     mList->addElement(row);
                 }
                 if (mList->isEmpty())
@@ -203,17 +182,67 @@ namespace plus::poseconsent
             LLUICtrl* mWithdraw = nullptr;
             LLUICtrl* mWithdrawAll = nullptr;
             LLUICtrl* mReflectStop = nullptr;
-            unsigned mReflectGeneration = ~0u;
-            unsigned mPushedGeneration = ~0u;
-            unsigned mGeneration = ~0u;     // never a generation at first: the first draw builds the list
-            unsigned mNames = ~0u;
-            unsigned mShowNames = ~0u;
+            GrantedStamp mStamp;            // never a stamp at first (all ~0): the first draw builds the list
         };
     }
 
+    std::string grantedRowText(const Granted& granted, const GrantedRowStrings& strings)
+    {
+        std::string name;
+        if (!avatarName(granted.peer, name, &onNameArrived))
+        {
+            name = strings.loading;
+        }
+        // The whole row is the language's string, so that each places its own space and brackets. First match wins:
+        // withdrawn with the withdraw not sent yet (the bridge busy or not there); their pose is on our avatar now;
+        // allowed to show their poses on our screen.
+        const std::string* row = nullptr;
+        if (granted.withdrawPending)
+        {
+            row = &strings.withdraw_waiting;
+        }
+        else if (plus::poseshare::isPushedBy(granted.peer))
+        {
+            row = &strings.reflect_now;
+        }
+        else if (reflect::mayReflect(granted.peer))
+        {
+            row = &strings.reflect;
+        }
+        if (!row)
+        {
+            return name;
+        }
+        std::string text = *row;
+        LLStringUtil::format_map_t args;
+        args["[NAME]"] = name;
+        LLStringUtil::format(text, args);
+        return text;
+    }
+
+    GrantedStamp grantedStamp()
+    {
+        GrantedStamp stamp;
+        stamp.granted = grantedGeneration();
+        stamp.reflect = reflect::grantedGeneration();
+        stamp.pushed = plus::poseshare::pushedGeneration();
+        stamp.names = sNamesArrived;
+        stamp.show_names = showNamesGeneration();
+        return stamp;
+    }
+
+    // The window is the RmlUi one (poseconsentrml.cpp, research/386). This XUI version is frozen and is used in safe
+    // mode and with PlusRmlUiWindows off (the choice is made once, here: it takes effect at the next start).
     void registerFloater()
     {
-        LLFloaterReg::add(FLOATER_NAME, "floater_plus_pose_consent.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<PoseConsentFloater>);
+        if (plus::safemode::active() || !gSavedSettings.getBOOL("PlusRmlUiWindows"))
+        {
+            LLFloaterReg::add(FLOATER_NAME, "floater_plus_pose_consent.xml", (LLFloaterBuildFunc)&LLFloaterReg::build<PoseConsentFloater>);
+        }
+        else
+        {
+            addRmlFloater();
+        }
     }
 
     void showGrantedFloater(bool take_focus)

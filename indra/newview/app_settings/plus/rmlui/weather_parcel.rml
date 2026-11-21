@@ -1,0 +1,56 @@
+<rml>
+<!-- The parcel weather window (plus/slwx/slwxparcelrml.cpp, research/389). Its words are "[[name]]": the <string>s of
+     floater_plus_weather_parcel_rml.xml (en, ja). The layout is the XUI window's own (positions are its tops minus the
+     18 px header); the style is charis.rcss's "parcel weather" section. The contract with the C++ (data model "weather"):
+       v_rain v_snow v_wind_dir v_wind_speed v_gust v_storm   float   the sliders (data-value)
+       t_rain ... t_storm                                      text    the number beside each slider
+       reason preview bytes warning                            text    the four texts
+       apply_ok clear_ok                                       bool    the two buttons may be pressed
+     The six number boxes t_<name> have ime="off" (the host's part: the XUI number box has no IME, lllineeditor.cpp:2303).
+     ids the C++ listens to: s_<name> (change), t_<name> (focus, blur, change, keydown), apply and clear (click). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare" data-model="weather">
+    <div class="wx">
+        <div class="note" style="top: 8dp; height: 48dp">{{ reason }}</div>
+        <div class="srow" style="top: 60dp" title="[[tip_rain]]">
+            <span class="slabel">[[rain]]</span>
+            <input type="range" id="s_rain" min="0" max="1" step="0.05" data-value="v_rain"/>
+            <input type="text" class="text value-box" ime="off" id="t_rain" maxlength="16" style="width: 32dp" data-attr-value="t_rain"/>
+        </div>
+        <div class="srow" style="top: 84dp" title="[[tip_snow]]">
+            <span class="slabel">[[snow]]</span>
+            <input type="range" id="s_snow" min="0" max="1" step="0.05" data-value="v_snow"/>
+            <input type="text" class="text value-box" ime="off" id="t_snow" maxlength="16" style="width: 32dp" data-attr-value="t_snow"/>
+        </div>
+        <div class="srow" style="top: 108dp" title="[[tip_wind_dir]]">
+            <span class="slabel">[[wind_dir]]</span>
+            <input type="range" id="s_wind_dir" min="0" max="360" step="5" data-value="v_wind_dir"/>
+            <input type="text" class="text value-box" ime="off" id="t_wind_dir" maxlength="16" style="width: 29dp" data-attr-value="t_wind_dir"/>
+        </div>
+        <div class="srow" style="top: 132dp" title="[[tip_wind_speed]]">
+            <span class="slabel">[[wind_speed]]</span>
+            <input type="range" id="s_wind_speed" min="0" max="40" step="0.5" data-value="v_wind_speed"/>
+            <input type="text" class="text value-box" ime="off" id="t_wind_speed" maxlength="16" style="width: 32dp" data-attr-value="t_wind_speed"/>
+        </div>
+        <div class="srow" style="top: 156dp" title="[[tip_gust]]">
+            <span class="slabel">[[gust]]</span>
+            <input type="range" id="s_gust" min="0" max="1" step="0.05" data-value="v_gust"/>
+            <input type="text" class="text value-box" ime="off" id="t_gust" maxlength="16" style="width: 32dp" data-attr-value="t_gust"/>
+        </div>
+        <div class="srow" style="top: 180dp" title="[[tip_storm]]">
+            <span class="slabel">[[storm]]</span>
+            <input type="range" id="s_storm" min="0" max="1" step="0.05" data-value="v_storm"/>
+            <input type="text" class="text value-box" ime="off" id="t_storm" maxlength="16" style="width: 32dp" data-attr-value="t_storm"/>
+        </div>
+        <div class="note" style="top: 202dp; height: 32dp">[[storm_note]]</div>
+        <div class="note" style="top: 238dp; height: 48dp">{{ preview }}</div>
+        <div class="note" style="top: 290dp; height: 32dp">{{ bytes }}</div>
+        <div class="note warn" style="top: 326dp; height: 32dp">{{ warning }}</div>
+        <button id="apply" class="act" style="left: 12dp; top: 364dp; width: 200dp" data-attrif-disabled="!apply_ok">[[apply]]</button>
+        <button id="clear" class="act" style="left: 220dp; top: 364dp; width: 148dp" data-attrif-disabled="!clear_ok">[[clear]]</button>
+    </div>
+</body>
+</rml>

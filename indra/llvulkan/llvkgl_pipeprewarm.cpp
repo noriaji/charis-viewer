@@ -977,7 +977,16 @@ void LLVKGL::stopPrewarm()
         sWorker->stop();        // the object stays (as the device); later posts are dropped
     }
     stop_shader_prewarm();
+    LLVKTexCompress::logSummary();      // research/395: the BC7 verdicts of the session
     LLVKTexCompress::stopBuilding();    // bc7-fast-start: the BC7 encoder's compile threads (research/88 section 13)
+    LLVKGL::savePrewarmKeys();
+}
+
+// fast-exit (research/276): the part of stopPrewarm that must reach the disk, callable without stopping
+// the threads (the fast exit ends the process instead of joining them).
+void LLVKGL::savePrewarmKeys()
+{
+    using namespace llvkgl;
     // fix-round14 3: the keys since the last periodic save (up to SAVE_SECONDS
     // of them) are written now, on this thread. A periodic save still being
     // written is waited for first (up to 2 s), so its older list cannot land
@@ -1011,6 +1020,10 @@ void LLVKGL::prewarmPipelines()
 }
 
 void LLVKGL::stopPrewarm()
+{
+}
+
+void LLVKGL::savePrewarmKeys()
 {
 }
 

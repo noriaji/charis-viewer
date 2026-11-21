@@ -342,7 +342,14 @@ private:
     void idleNetwork();
 
     void sendLogoutRequest();
-    void disconnectViewer();
+    void disconnectViewer(bool keep_world = false); // <plus> fast-exit (research/276): keep_world: the objects are kept (the process ends) </plus>
+    // <plus> fast-exit (research/276)
+    void saveDataAtExit();                          // the saves of cleanup(), shared with fastExit()
+    enum class BackgroundTasks { All, WritersOnly };
+    void finishBackgroundTasks(BackgroundTasks which, F64 max_idle_time);  // cleanup()'s "Let threads finish" loop
+    bool wantFastExit() const;                      // the setting, and no rare exit
+    bool fastExit();                                // the saves, then the end of the process; false: do the official exit
+    // </plus>
 
     // *FIX: the app viewer class should be some sort of singleton, no?
     // Perhaps its child class is the singleton and this should be an abstract base.

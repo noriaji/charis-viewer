@@ -38,7 +38,6 @@
 #include "llvkrender.h"      // research/208 S2: the render thread
 #include "llvkrecorder.h"    // research/208 S3: LLVKRecorder::tStream
 #include "llvktracker.h"
-#include "llvktranslate.h"   // research/206: no shadow draws with a translation thread
 
 #include "vk_mem_alloc.h"
 #include "llvkdispatch.h"     // after VMA: it declares members with Vulkan function names
@@ -5374,7 +5373,7 @@ namespace
         {
             return true;    // chosen (verify)
         }
-        if (!ctx.view_proj || (!ctx.passes && ctx.pass_count) || LLVKTranslate::wanted() != 0 ||
+        if (!ctx.view_proj || (!ctx.passes && ctx.pass_count) ||
             !mTableAddress[LLVKSceneTable::TABLE_RECORDS] || !mTableAddress[LLVKSceneTable::TABLE_TRANSFORMS])
         {
             mShadowPending.sampled.clear();
@@ -5544,8 +5543,7 @@ namespace
     {
         std::lock_guard<LLVKTrackerMutex> lock(LLVKTracker::lock());
         return mShadowMasksReady && mReady && !mBroken && mExpandReady && mTexTableAddress != 0 &&
-               mTableAddress[LLVKSceneTable::TABLE_UV] != 0 && mTableAddress[LLVKSceneTable::TABLE_MATERIALS] != 0 &&
-               LLVKTranslate::wanted() == 0;
+               mTableAddress[LLVKSceneTable::TABLE_UV] != 0 && mTableAddress[LLVKSceneTable::TABLE_MATERIALS] != 0;
     }
 
     // research/219: the skinned shaders read the record's flags (its palette
@@ -5554,8 +5552,7 @@ namespace
     bool Scene::shadowSkins() const
     {
         std::lock_guard<LLVKTrackerMutex> lock(LLVKTracker::lock());
-        return mShadowSkinsReady && mReady && !mBroken && mTableAddress[LLVKSceneTable::TABLE_RECORDS] != 0 &&
-               LLVKTranslate::wanted() == 0;
+        return mShadowSkinsReady && mReady && !mBroken && mTableAddress[LLVKSceneTable::TABLE_RECORDS] != 0;
     }
 
     bool Scene::takeShadowDraws(LLVKScene::ShadowDraws& out)

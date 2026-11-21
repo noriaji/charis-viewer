@@ -11,6 +11,7 @@ list(APPEND plus_SOURCE_FILES
     plus/poseconsent/posereflect.cpp
     plus/poseconsent/poseconsentcore.cpp
     plus/poseconsent/poseconsentfloater.cpp
+    plus/poseconsent/poseconsentrml.cpp
     )
 
 list(APPEND plus_HEADER_FILES

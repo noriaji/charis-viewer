@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <strings>
+  <string name="PlusFloaterSnapCustom">カスタム（[VALUE]）</string>
+  <string name="PlusFloaterSnapHint">Shiftを押しながらタイトルバーを掴むと、この窓だけ動かせます</string>
 	<string name="Command_PlusQuickprefs_Label">
 		簡易設定
 	</string>
@@ -156,6 +158,7 @@
 	<string name="PlusRadarRegionLeave">
 		がリージョンから出ていきました。
 	</string>
+	<string name="PlusProtectedFolderSuffix">(保護)</string>
 	<string name="PlusProtectedFolderMoveRefused">
 		フォルダ「[NAME]」は保護されているので、移動も削除もしませんでした。先に保護を外してください（右クリック、または Charis メニューの「保護したフォルダ」）。
 	</string>
@@ -521,4 +524,5 @@
 	<string name="plus_full_distance_off">
 		オフ
 	</string>
+	<string name="PlusRmlSelectMore">…他 [COUNT] 件</string>
 </strings>

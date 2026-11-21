@@ -280,6 +280,12 @@ LLRmlView::Scope::Scope(LLRmlView* host)
 
 LLRmlView::Scope::~Scope()
 {
+    if (mHost && mHost->mBusy == 1)
+    {
+        // The outermost Scope ends: the input is complete, so the parts' waiting work runs now (select on focus needs
+        // the field's own focus handling done), still inside the Scope and before an unload() asked meanwhile.
+        mHost->mParts.endInput();
+    }
     sCurrent = mPrevious;
     if (mHost && --mHost->mBusy == 0 && mHost->mUnloadPending)
     {
@@ -369,6 +375,7 @@ void LLRmlView::load()
         fail(Status::Failed, "rml_failed");
         return;
     }
+    mParts.attach(*this, *mDocument);   // before the window's after_load: the window's listeners come after the parts'
     if (mHooks.after_load)
     {
         mHooks.after_load(*mDocument);
@@ -402,6 +409,8 @@ void LLRmlView::unloadNow()
     mUnloadPending = false;
     mBlurredField.reset();
     mBlurPlace.reset();
+    mParts.detach();    // its listeners and waiting work go while the document is still there
+    mEditMenu.hide();
     releaseEditMenu();
     RmlPreeditor::instance().forgetHost(this);
     if (mMouseCaptured)
@@ -520,6 +529,14 @@ LLCoordGL LLRmlView::contextToGL(Rml::Vector2f point) const
     return LLCoordGL(gl_x + ll_round(point.x), gl_y + mHeightPx - ll_round(point.y));
 }
 
+void LLRmlView::contextToLocal(Rml::Vector2f point, S32& x, S32& y) const
+{
+    const LLVector2 scale = inputScale();
+    const S32 height = mHeightPx > 0 ? mHeightPx : ll_round((F32)getRect().getHeight() * scale.mV[VY]);
+    x = ll_round(point.x / scale.mV[VX]);
+    y = ll_round(((F32)height - point.y) / scale.mV[VY]);
+}
+
 LLRect LLRmlView::contextRectToGL(const Rml::Rectanglef& rect) const
 {
     const LLCoordGL top_left = contextToGL(Rml::Vector2f(rect.Left(), rect.Top()));
@@ -547,6 +564,29 @@ void LLRmlView::syncSize(const LLVector2& scale)
         mHeightPx = height;
         mContext->SetDimensions(Rml::Vector2i(width, height));
         mDirty |= DIRTY_SIZE;
+    }
+}
+
+// One Context::Update, counted, and the time of the next one from what RmlUi asks for after it.
+void LLRmlView::runUpdate(F64 now)
+{
+    const bool timed = statsOn();
+    const F64 update_start = timed ? seconds() : 0.0;
+    mContext->Update();
+    if (timed)
+    {
+        stats().update_ms += (seconds() - update_start) * 1000.0;
+    }
+    ++stats().updates;
+    const double delay = mContext->GetNextUpdateDelay();
+    mNextUpdateAt = (delay >= 0.0 && delay < MAX_DELAY_SECONDS) ? now + delay : NO_DEADLINE;
+}
+
+void LLRmlView::updateAgain()
+{
+    if (mContext)
+    {
+        runUpdate(seconds());
     }
 }
 
@@ -590,15 +630,8 @@ void LLRmlView::draw()
             {
                 mHooks.before_update();
             }
-            const F64 update_start = timed ? seconds() : 0.0;
-            mContext->Update();
-            if (timed)
-            {
-                counts.update_ms += (seconds() - update_start) * 1000.0;
-            }
-            ++counts.updates;
-            const double delay = mContext->GetNextUpdateDelay();
-            mNextUpdateAt = (delay >= 0.0 && delay < MAX_DELAY_SECONDS) ? now + delay : NO_DEADLINE;
+            runUpdate(now);
+            mParts.afterUpdate();       // before the window's hook: the layout it reads is the parts' too
             if (mHooks.after_update)
             {
                 mHooks.after_update();  // the new layout's sizes (what changes there is for the next update)
@@ -662,6 +695,11 @@ void LLRmlView::reshape(S32 width, S32 height, bool called_from_parent)
 void LLRmlView::onVisibilityChange(bool new_visibility)
 {
     LLUICtrl::onVisibilityChange(new_visibility);
+    if (!new_visibility)
+    {
+        mEditMenu.hide();
+        mParts.pressEnded();
+    }
     if (!new_visibility && mMouseCaptured)
     {
         mMouseCaptured = false;
@@ -705,6 +743,12 @@ bool LLRmlView::handleHover(S32 x, S32 y, MASK mask)
     {
         Scope host(this);
         moveMouse(x, y, mask);
+        // The viewer sends every frame's hover to the view that has the mouse capture (as it does to an XUI button,
+        // which repeats from it): a held number-box arrow steps here, with the host's Scope open and not inside a draw.
+        if (mMouseCaptured && mParts.tick(seconds()))
+        {
+            mDirty |= DIRTY_INPUT;
+        }
     }
     if (LLWindow* window = getWindow())
     {
@@ -736,10 +780,54 @@ bool LLRmlView::pressMouse(S32 x, S32 y, MASK mask, int button, bool capture)
     {
         Scope host(this);
         moveMouse(x, y, mask);
-        mContext->ProcessMouseButtonDown(button, modifiers(mask));
+        // The right press is not a selecting click: RmlUi would grow a field's selection to the point with Shift held, and
+        // the XUI's menu does not look at Shift (nothing of the windows reads the Shift of a right mousedown either).
+        mContext->ProcessMouseButtonDown(button, modifiers(button == 1 ? (mask & ~MASK_SHIFT) : mask));
+        if (button == 1)
+        {
+            const Rml::ObserverPtr<Rml::Element> field = mParts.takeRightClickField();
+            if (field)
+            {
+                showEditMenu(field);
+            }
+        }
     }
     mDirty |= DIRTY_INPUT;
     return true;
+}
+
+void LLRmlView::showEditMenu(const Rml::ObserverPtr<Rml::Element>& field)
+{
+    // The right press has reached the document unstopped (it went to RmlUi without Shift), and Parts has put the field's
+    // selection back when the press landed inside it (RmlUi's own press cleared it). The field is looked at through the
+    // observer.
+    auto* control = rmlui_dynamic_cast<Rml::ElementFormControl*>(field.get());
+    if (!control || control->IsDisabled() || !mContext)
+    {
+        return;
+    }
+    // As the XUI field: a field without the focus takes it (the caret is where the press put it).
+    if (mContext->GetFocusElement() != field.get())
+    {
+        control->Focus();
+        mParts.selectJustFocused();     // a select-on-focus field selects all now: the menu's items are decided at once
+    }
+    if (!field || mContext->GetFocusElement() != field.get())
+    {
+        return;
+    }
+    takeEditMenu();     // the menu's Edit.* act on this view as the edit menu's handler
+    if (!mEditMenu.create("menu_text_editor.xml"))
+    {
+        return;
+    }
+    // The spell check items are for the XUI editors that have a spell checker (their suggestions hide themselves
+    // here: the menu's spawning view is no spell check handler); these four do not.
+    for (const char* name : { "Suggestion Separator", "Add to Dictionary", "Add to Ignore", "Spellcheck Separator" })
+    {
+        mEditMenu.setItemVisible(name, false);
+    }
+    mEditMenu.open(*this, Rml::Vector2f((F32)mMousePx.x, (F32)mMousePx.y));
 }
 
 bool LLRmlView::releaseMouse(S32 x, S32 y, MASK mask, int button)
@@ -756,6 +844,7 @@ bool LLRmlView::releaseMouse(S32 x, S32 y, MASK mask, int button)
     if (button == 0)
     {
         releaseCapture();
+        mParts.pressEnded();
     }
     mDirty |= DIRTY_INPUT;
     return true;
@@ -776,6 +865,7 @@ void LLRmlView::releaseCapture()
 void LLRmlView::leaveMouse()
 {
     mMouseInside = false;
+    mParts.pressEnded();
     if (!ready())
     {
         return;
@@ -863,6 +953,25 @@ bool LLRmlView::handleScrollWheel(S32 x, S32 y, S32 clicks)
     return !not_consumed;   // nothing scrolled: the parent's scroll gets the wheel
 }
 
+void LLRmlView::showToolTip(Rml::Element* element, const std::string& text)
+{
+    static LLCachedControl<bool> allow_ui_tooltips(*LLUI::getInstance()->mSettingGroups["config"], "BasicUITooltips", true);
+    if (!allow_ui_tooltips)
+    {
+        return;
+    }
+    // The element's box in this view's UI units, for the tool tip's sticky rectangle.
+    const LLVector2 scale = inputScale();
+    const Rml::Vector2f corner = element->GetAbsoluteOffset(Rml::BoxArea::Border);
+    const Rml::Vector2f size = element->GetBox().GetSize(Rml::BoxArea::Border);
+    const S32 height = mHeightPx;
+    const LLRect local(ll_round(corner.x / scale.mV[VX]), ll_round(((F32)height - corner.y) / scale.mV[VY]),
+                       ll_round((corner.x + size.x) / scale.mV[VX]), ll_round(((F32)height - corner.y - size.y) / scale.mV[VY]));
+    LLRect screen;
+    localRectToScreen(local, &screen);
+    LLToolTipMgr::instance().show(LLToolTip::Params().message(text).sticky_rect(screen).delay_time(getTooltipTimeout()));
+}
+
 bool LLRmlView::handleToolTip(S32 x, S32 y, MASK mask)
 {
     if (!ready())
@@ -870,8 +979,8 @@ bool LLRmlView::handleToolTip(S32 x, S32 y, MASK mask)
         return LLUICtrl::handleToolTip(x, y, mask);
     }
     const Rml::Vector2i point = toContext(x, y);
-    for (Rml::Element* element = mContext->GetElementAtPoint(Rml::Vector2f((F32)point.x, (F32)point.y)); element;
-         element = element->GetParentNode())
+    Rml::Element* hit = mContext->GetElementAtPoint(Rml::Vector2f((F32)point.x, (F32)point.y));
+    for (Rml::Element* element = hit; element; element = element->GetParentNode())
     {
         const Rml::Variant* title = element->GetAttribute("title");
         if (!title)
@@ -888,49 +997,24 @@ bool LLRmlView::handleToolTip(S32 x, S32 y, MASK mask)
         }
         if (text.empty())
         {
-            break;
+            return LLUICtrl::handleToolTip(x, y, mask);     // an empty title: no tool tip here (not the cut text's either)
         }
-        static LLCachedControl<bool> allow_ui_tooltips(*LLUI::getInstance()->mSettingGroups["config"], "BasicUITooltips", true);
-        if (allow_ui_tooltips)
-        {
-            // The element's box in this view's UI units, for the tool tip's sticky rectangle.
-            const LLVector2 scale = inputScale();
-            const Rml::Vector2f corner = element->GetAbsoluteOffset(Rml::BoxArea::Border);
-            const Rml::Vector2f size = element->GetBox().GetSize(Rml::BoxArea::Border);
-            const S32 height = mHeightPx;
-            const LLRect local(ll_round(corner.x / scale.mV[VX]), ll_round(((F32)height - corner.y) / scale.mV[VY]),
-                               ll_round((corner.x + size.x) / scale.mV[VX]), ll_round(((F32)height - corner.y - size.y) / scale.mV[VY]));
-            LLRect screen;
-            localRectToScreen(local, &screen);
-            LLToolTipMgr::instance().show(LLToolTip::Params().message(text).sticky_rect(screen).delay_time(getTooltipTimeout()));
-        }
+        showToolTip(element, text);
+        return true;
+    }
+    // No title: a name cut short by text-overflow shows whole (the XUI list's cell does the same, only when it is cut).
+    std::string whole;
+    if (Rml::Element* box = plus::rmlui::clippedTextBox(hit, whole))
+    {
+        showToolTip(box, whole);
         return true;
     }
     return LLUICtrl::handleToolTip(x, y, mask);
 }
 
-bool LLRmlView::textFieldFocused() const
+plus::rmlui::FieldKind LLRmlView::focusedFieldKind() const
 {
-    if (!mContext)
-    {
-        return false;
-    }
-    Rml::Element* focus = mContext->GetFocusElement();
-    if (!focus)
-    {
-        return false;
-    }
-    const Rml::String& tag = focus->GetTagName();
-    if (tag == "textarea")
-    {
-        return true;
-    }
-    if (tag != "input")
-    {
-        return false;
-    }
-    const Rml::String type = focus->GetAttribute<Rml::String>("type", "text");
-    return type == "text" || type == "password";
+    return mContext ? fieldKind(mContext->GetFocusElement()) : FieldKind::None;
 }
 
 bool LLRmlView::keyForDocument(KEY key, MASK mask, bool not_consumed) const
@@ -949,7 +1033,14 @@ bool LLRmlView::keyForDocument(KEY key, MASK mask, bool not_consumed) const
     {
         return false;   // nothing of the document has the focus; Esc is the floater's
     }
-    if (textFieldFocused())
+    const FieldKind kind = fieldKind(focus);
+    if (kind == FieldKind::ReadOnly)
+    {
+        // Only the keys readOnlyKeyRoute sent on reach here (modifiers, Tab, the selecting keys, Ctrl+A / C); what the
+        // field did not use (Tab at the end of the ring) is not the document's.
+        return false;
+    }
+    if (isTypable(kind))
     {
         if (mask & MASK_ALT)
         {
@@ -979,6 +1070,24 @@ bool LLRmlView::processKey(KEY key, MASK mask, KeyMove move)
     if (id == Rml::Input::KI_UNKNOWN)
     {
         return false;
+    }
+    if (focusedFieldKind() == FieldKind::ReadOnly)
+    {
+        // A read-only field (research/387 3.1): the keys that select and copy go to RmlUi, the arrows and page keys
+        // scroll it, the rest is not used (the viewer gets it: W walks, as with an XUI read-only text).
+        switch (readOnlyKeyRoute(key, mask))
+        {
+        case KeyRoute::Scroll:
+            if (move == KeyMove::Down)
+            {
+                mParts.scrollReadOnly(mContext->GetFocusElement(), key);
+            }
+            return true;
+        case KeyRoute::Skip:
+            return false;
+        case KeyRoute::Send:
+            break;
+        }
     }
     if (move == KeyMove::Down && key != KEY_SHIFT && key != KEY_CONTROL && key != KEY_ALT)
     {
@@ -1021,7 +1130,7 @@ bool LLRmlView::handleUnicodeCharHere(llwchar uni_char)
 
 bool LLRmlView::typeCharacter(llwchar uni_char)
 {
-    if (!ready() || uni_char < 0x20 || uni_char == 0x7f || !textFieldFocused())
+    if (!ready() || uni_char < 0x20 || uni_char == 0x7f || !typableFocused())
     {
         return false;
     }
@@ -1065,7 +1174,7 @@ void LLRmlView::onFocusReceived()
     mBlurPlace.reset();
     // A text field kept RmlUi's focus while the view had none (or got it without a Focus event: the same element
     // is not focused twice): the edit menu and the IME are the view's again.
-    if (ready() && textFieldFocused())
+    if (ready() && selectableFocused())
     {
         takeEditMenu();
         RmlPreeditor::instance().hostFocusChanged(*this);
@@ -1079,7 +1188,7 @@ void LLRmlView::onFocusLost()
     {
         Scope host(this);
         // (taken back by onFocusReceived; assigned every time, so an older one does not stay)
-        mBlurredField = textFieldFocused() ? mContext->GetFocusElement()->GetObserverPtr() : Rml::ObserverPtr<Rml::Element>();
+        mBlurredField = selectableFocused() ? mContext->GetFocusElement()->GetObserverPtr() : Rml::ObserverPtr<Rml::Element>();
         if (Rml::Element* focus = mContext->GetFocusElement())
         {
             focus->Blur();  // a text field lets the IME and the edit menu go (RmlPreeditor::OnDeactivate)
@@ -1114,7 +1223,8 @@ void LLRmlView::releaseEditMenu()
 
 void LLRmlView::sendEditKey(Rml::Input::KeyIdentifier key, int modifiers)
 {
-    if (!ready() || !textFieldFocused())
+    // (the caller checked that the command is allowed for this field: canCut() ...)
+    if (!ready())
     {
         return;
     }
@@ -1130,57 +1240,74 @@ void LLRmlView::sendEditKey(Rml::Input::KeyIdentifier key, int modifiers)
     mDirty |= DIRTY_INPUT;
 }
 
+// The edit menu's commands. What each needs is the XUI line editor's: cut and copy a selection (none out of a
+// password field), paste and delete in a field that takes characters, select all in any field (a read-only one too).
 void LLRmlView::cut()
 {
-    sendEditKey(Rml::Input::KI_X, Rml::Input::KM_CTRL);
+    if (canCut())
+    {
+        sendEditKey(Rml::Input::KI_X, Rml::Input::KM_CTRL);
+    }
 }
 
 bool LLRmlView::canCut() const
 {
-    return ready() && textFieldFocused() && !passwordFocused();
+    return ready() && typableFocused() && !passwordFocused() && hasSelection(mContext->GetFocusElement());
 }
 
 void LLRmlView::copy()
 {
-    sendEditKey(Rml::Input::KI_C, Rml::Input::KM_CTRL);
+    if (canCopy())
+    {
+        sendEditKey(Rml::Input::KI_C, Rml::Input::KM_CTRL);
+    }
 }
 
 bool LLRmlView::canCopy() const
 {
-    return ready() && textFieldFocused() && !passwordFocused();
+    return ready() && selectableFocused() && !passwordFocused() && hasSelection(mContext->GetFocusElement());
 }
 
 void LLRmlView::paste()
 {
-    sendEditKey(Rml::Input::KI_V, Rml::Input::KM_CTRL);
+    if (canPaste())
+    {
+        sendEditKey(Rml::Input::KI_V, Rml::Input::KM_CTRL);
+    }
 }
 
 bool LLRmlView::canPaste() const
 {
-    return ready() && textFieldFocused();
+    return ready() && typableFocused();
 }
 
 void LLRmlView::doDelete()
 {
-    sendEditKey(Rml::Input::KI_DELETE, 0);
+    if (canDoDelete())
+    {
+        sendEditKey(Rml::Input::KI_DELETE, 0);
+    }
 }
 
 bool LLRmlView::canDoDelete() const
 {
-    return ready() && textFieldFocused();
+    return ready() && typableFocused();
 }
 
 void LLRmlView::selectAll()
 {
-    sendEditKey(Rml::Input::KI_A, Rml::Input::KM_CTRL);
+    if (canSelectAll())
+    {
+        sendEditKey(Rml::Input::KI_A, Rml::Input::KM_CTRL);
+    }
 }
 
 bool LLRmlView::canSelectAll() const
 {
-    return ready() && textFieldFocused();
+    return ready() && selectableFocused();
 }
 
 bool LLRmlView::acceptsTextInput() const
 {
-    return ready() && textFieldFocused();
+    return ready() && typableFocused();     // a read-only field does not: the key bindings get the keys, as with an XUI read-only text
 }

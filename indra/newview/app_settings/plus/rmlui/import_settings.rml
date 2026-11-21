@@ -1,0 +1,32 @@
+<rml>
+<!-- The bring-settings-over window (plus/importsettings/importrml.cpp, research/386). Its words are "[[name]]": the
+     <string>s of floater_plus_import_settings_rml.xml (en, ja). The ids the C++ uses: intro (a text), sources_head and
+     sources (plus::rmlui::RmlList with columns), btn_browse, btn_import, btn_close (buttons), chk_general chk_graphics
+     chk_keys chk_accounts chk_chat chk_files (check boxes: the attribute "checked"), status (the read-only text: a <textarea readonly>,
+     the host's part, put in with setLogText). The places are the XUI window's own, in the 580 x 462 body under the header. -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare">
+    <div class="imp">
+        <p id="intro" class="imp-intro">[[intro]]</p>
+        <div class="ps-list-box imp-list">
+            <div id="sources_head" class="ps-list-head"></div>
+            <div id="sources" class="ps-list" tabindex="0"></div>
+        </div>
+        <button id="btn_browse" class="imp-browse" title="[[tip_browse]]">[[btn_browse]]</button>
+        <p class="imp-hint">[[browse_hint]]</p>
+        <p class="imp-what">[[what_label]]</p>
+        <div class="line imp-check" style="top: 213dp"><input type="checkbox" id="chk_general" checked="checked"/><label for="chk_general">[[chk_general]]</label></div>
+        <div class="line imp-check" style="top: 233dp" title="[[tip_graphics]]"><input type="checkbox" id="chk_graphics"/><label for="chk_graphics">[[chk_graphics]]</label></div>
+        <div class="line imp-check" style="top: 253dp"><input type="checkbox" id="chk_keys" checked="checked"/><label for="chk_keys">[[chk_keys]]</label></div>
+        <div class="line imp-check" style="top: 273dp" title="[[tip_accounts]]"><input type="checkbox" id="chk_accounts" checked="checked"/><label for="chk_accounts">[[chk_accounts]]</label></div>
+        <div class="line imp-check" style="top: 293dp"><input type="checkbox" id="chk_chat" checked="checked"/><label for="chk_chat">[[chk_chat]]</label></div>
+        <div class="line imp-check" style="top: 313dp"><input type="checkbox" id="chk_files" checked="checked"/><label for="chk_files">[[chk_files]]</label></div>
+        <div class="imp-status"><textarea id="status" class="ps-readonly" readonly></textarea></div>
+        <button id="btn_import" class="imp-import" disabled="disabled">[[btn_import]]</button>
+        <button id="btn_close" class="imp-close" title="[[tip_close]]">[[btn_close]]</button>
+    </div>
+</body>
+</rml>

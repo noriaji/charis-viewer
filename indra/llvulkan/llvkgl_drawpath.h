@@ -635,6 +635,8 @@ namespace llvkgl
         VkPipelineLayout resolve_layout = VK_NULL_HANDLE;
         LLVKShader::Program resolve_vertex;
         LLVKShader::Program resolve_fragment;
+        LLVKShader::Program resolve_direct_fragment;    // research/395: the same with BLEND (dual-source output, no background)
+        bool direct_ready = false;      // research/395: the direct resolve can be used (dualSrcBlend, the shader built, LLRHI_OIT_DIRECT not 0)
         VkPipelineLayout bounds_layout = VK_NULL_HANDLE;
         VkPipeline bounds = VK_NULL_HANDLE;     // the bounds pass without the copy
         std::unordered_map<U32, VkPipeline> bounds_copy;    // with it, by the copy's format (null: none)
@@ -644,6 +646,7 @@ namespace llvkgl
         VkDescriptorSet sets[LLVKMirror::FRAMES_IN_FLIGHT][OIT_SESSIONS_PER_FRAME] = {};
         OITReadback readback[LLVKMirror::FRAMES_IN_FLIGHT];
         std::unordered_map<std::vector<U32>, VkPipeline, KeyHash> resolve_pipelines;    // by the target's formats
+        std::unordered_map<std::vector<U32>, VkPipeline, KeyHash> resolve_direct_pipelines;     // the same, the direct resolve's (null: none)
         U32 max_nodes = 0;
         // Sized resources.
         U32 width = 0;
@@ -678,10 +681,15 @@ namespace llvkgl
         U32 slot = 0;
         U32 entry = 0;
         U32 node_draws = 0;             // the session's draws with an OIT variant
+        bool complex = false;           // research/395: one of them has a blend that reads the color behind it (oit_state_blend_affine): no direct resolve
         F32 depth_a = 0.f;              // the session's projection (LLRHI::sOITBegin)
         F32 depth_b = 0.f;
         // Since the last perf report.
         U32 sessions = 0, refused = 0, dropped = 0, draws = 0, classic_draws = 0;
+        // research/395: resolves by the direct blend; by the copy of the target, and why: a node blend that reads the color
+        // behind it (complex), a fixed-point or non-blending target (format), no direct pipeline for the format (pipeline),
+        // the direct resolve off (off: LLRHI_OIT_DIRECT=0, no dual-source blend, its shader failed)
+        U32 direct_resolves = 0, copy_complex = 0, copy_format = 0, copy_pipeline = 0, copy_off = 0;
         U32 hybrid_sessions = 0, avatarless = 0, split_draws = 0;  // hybrid: sessions, those without avatar nodes, world draws split
         U32 set_binds = 0;              // set 2 binds (oit_bind_set)
         U32 empty_streak = 0;           // hybrid sessions in a row (as read back) whose avatar half appended nothing
@@ -722,6 +730,7 @@ namespace llvkgl
         sOIT.node_draws += v ? 1 : 0;
         if (v)
         {
+            sOIT.complex |= !oit_state_blend_affine(sState);     // research/395: sState is the state the draw's pipeline is made from
             mode = sOIT.world ? OIT_DRAW_SPLIT : OIT_DRAW_NODES;
             sOIT.split_draws += sOIT.world ? 1 : 0;
         }

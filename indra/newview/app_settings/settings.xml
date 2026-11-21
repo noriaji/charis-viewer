@@ -14666,6 +14666,19 @@
       <key>Value</key>
       <integer>0</integer>
     </map>
+    <!-- plus outfit-hierarchy -->
+    <key>OutfitListShowFolders</key>
+    <map>
+      <key>Comment</key>
+      <string>Show the folders of My Outfits as nested rows in the outfit list (as in the inventory). 0 - flat list of outfits.</string>
+      <key>Persist</key>
+      <integer>1</integer>
+      <key>Type</key>
+      <string>Boolean</string>
+      <key>Value</key>
+      <integer>1</integer>
+    </map>
+    <!-- /plus -->
     <key>OutfitListFilterFullList</key>
     <map>
       <key>Comment</key>

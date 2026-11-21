@@ -26,6 +26,8 @@
 
 #include "llviewerprecompiledheaders.h"
 
+#include "plus/fastexit/fastexit.h" // <plus> fast-exit (research/276) </plus>
+
 #include "llaudioengine.h"
 #include "llagent.h"
 #include "llagentcamera.h"
@@ -401,7 +403,7 @@ void audio_update_volume(bool force_update)
     static LLCachedControl<F32> master_volume(gSavedSettings, "AudioLevelMaster");
     static LLCachedControl<bool> mute_audio_setting(gSavedSettings, "MuteAudio");
     static LLCachedControl<bool> mute_when_minimized(gSavedSettings, "MuteWhenMinimized");
-    bool mute_audio = mute_audio_setting();
+    bool mute_audio = mute_audio_setting() || plus::fastexit::hidden(); // <plus> fast-exit (research/276): a hidden window is silent </plus>
 
     if (!gViewerWindow->getActive() && mute_when_minimized())
     {
@@ -413,7 +415,7 @@ void audio_update_volume(bool force_update)
     {
         // Sound Effects
 
-        gAudiop->setMasterGain (master_volume());
+        gAudiop->setMasterGain (plus::fastexit::hidden() ? 0.f : master_volume()); // <plus> fast-exit </plus>
 
         const F32 AUDIO_LEVEL_DOPPLER = 1.f;
         gAudiop->setDopplerFactor(AUDIO_LEVEL_DOPPLER);
@@ -489,7 +491,10 @@ void audio_update_volume(bool force_update)
         voice_inst->setVoiceVolume(voice_mute() ? 0.f : voice_volume);
         voice_inst->setMicGain(voice_mute() ? 0.f : voice_mic_setting());
 
-        if (!gViewerWindow->getActive() && mute_when_minimized())
+        // <plus> fast-exit (research/276): the microphone is closed too while the window is hidden
+        if ((!gViewerWindow->getActive() && mute_when_minimized())
+            || plus::fastexit::hidden())
+        // </plus>
         {
             voice_inst->setMuteMic(true);
         }

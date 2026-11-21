@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!-- The Count button's menu of the RmlUi test window (plus/rmlui/rmldemo.cpp: Plus.RmlDemo.Menu; research/387 3.2). -->
+<context_menu
+ layout="topleft"
+ name="plus_rml_demo_menu">
+    <menu_item_call label="Add One" layout="topleft" name="add">
+        <menu_item_call.on_click function="Plus.RmlDemo.Menu" parameter="add" />
+    </menu_item_call>
+    <menu_item_call label="Reset the Count" layout="topleft" name="reset">
+        <menu_item_call.on_click function="Plus.RmlDemo.Menu" parameter="reset" />
+    </menu_item_call>
+</context_menu>

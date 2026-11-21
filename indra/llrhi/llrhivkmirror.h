@@ -41,6 +41,8 @@ namespace LLRHIVKMirror
     // The viewer is closing (or recreating) its GL context: saves the Vulkan
     // pipeline cache, since the Vulkan device itself is never shut down.
     void onGLShutdown();
+    // LLRHI::onFastExit: the saves of onGLShutdown, with no thread stopped.
+    void onFastExit();
     // A main loop that shows nothing (minimized): its frame ends unshown (fix-pipeleak).
     void onFrameNotShown();
     // LLRHI::frameRecording (research/261): a Vulkan frame is open (true

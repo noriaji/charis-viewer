@@ -1,0 +1,42 @@
+<rml>
+<!-- The group titles window (plus/grouptitles/grouptitlesrml.cpp, research/386). Its words are "[[name]]": the
+     <string>s of floater_plus_group_titles_rml.xml (en, ja). The layout is the XUI window's (560 x 442 body):
+     charis.rcss's ".gt". The contract with the C++ (ids): filter (text field), filter_hint, filter_clear, list_head and
+     list (RmlList, with columns), btnSetRegion, btnSetRegionManual, btnClearRegion, none (check box; the setting is not
+     a gSavedSettings one: the C++ reads and writes it), btnInfo, btnActivate, btnRefresh (buttons). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare">
+    <div class="gt">
+        <div class="gt-filter">
+            <div class="ps-search" title="[[tip_filter]]">
+                <input type="text" class="text" id="filter" maxlength="60" ime-blur="keep" select-on-focus/>
+                <span class="ps-hint" id="filter_hint">[[filter_hint]]</span>
+                <button id="filter_clear" class="clear hidden">x</button>
+            </div>
+        </div>
+        <div class="ps-list-box gt-list">
+            <div id="list_head" class="ps-list-head"></div>
+            <div id="list" class="ps-list" tabindex="0"></div>
+        </div>
+        <p class="gt-label">[[auto_region]]</p>
+        <div class="gt-row gt-regions">
+            <button id="btnSetRegion" class="ps-btn" title="[[tip_set_region]]">[[btn_set_region]]</button>
+            <button id="btnSetRegionManual" class="ps-btn" title="[[tip_type_region]]">[[btn_type_region]]</button>
+            <button id="btnClearRegion" class="ps-btn" title="[[tip_clear_region]]">[[btn_clear_region]]</button>
+        </div>
+        <div class="line gt-check" title="[[tip_none]]">
+            <input type="checkbox" id="none"/>
+            <label for="none">[[none_on_unassigned]]</label>
+        </div>
+        <div class="gt-row gt-bottom">
+            <button id="btnInfo" class="ps-btn" title="[[tip_info]]">[[btn_info]]</button>
+            <div class="gt-spacer"></div>
+            <button id="btnActivate" class="ps-btn gt-activate" title="[[tip_activate]]">[[btn_activate]]</button>
+            <button id="btnRefresh" class="ps-btn ps-iconbtn gt-refresh" title="[[tip_refresh]]"><span class="glyph"></span></button>
+        </div>
+    </div>
+</body>
+</rml>

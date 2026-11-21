@@ -6,6 +6,8 @@
 # registered from the feature's init.
 
 list(APPEND plus_SOURCE_FILES
+    plus/contactsets/addtoset.cpp
+    plus/contactsets/addtosetrml.cpp
     plus/contactsets/contactsets.cpp
     plus/contactsets/fsfloateraddtocontactset.cpp
     plus/contactsets/fsfloatercontactsetconfiguration.cpp
@@ -13,6 +15,8 @@ list(APPEND plus_SOURCE_FILES
     )
 
 list(APPEND plus_HEADER_FILES
+    plus/contactsets/addtoset.h
+    plus/contactsets/addtosetrml.h
     plus/contactsets/contactsets.h
     plus/contactsets/fsfloateraddtocontactset.h
     plus/contactsets/fsfloatercontactsetconfiguration.h

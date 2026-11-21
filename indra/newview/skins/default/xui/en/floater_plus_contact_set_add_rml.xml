@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Adding avatars to a contact set, RmlUi version (plus/contactsets/addtosetrml.cpp, research/386): the frame and the
+  words. The content is app_settings/plus/rmlui/contact_set_add.rml in a plus_rml_view under the 18 px header, 320 x
+  160. The XUI window (floater_plus_contact_set_add.xml, frozen) is used in safe mode and with PlusRmlUiWindows off.
+-->
+<floater
+ name="floater_fs_add_contact"
+ title="Add to Contact Set"
+ width="320"
+ height="178"
+ layout="topleft"
+ legacy_header_height="18"
+ positioning="centered"
+ reuse_instance="false"
+ can_resize="false"
+ can_minimize="false"
+ can_close="true">
+    <string name="no_sets">No contact sets yet (make one with +)</string>
+    <string name="text_add_single">The contact set to add [NAME] to:</string>
+    <string name="text_add_multiple">The contact set to add [COUNT] avatars to:</string>
+    <string name="add">Add to set</string>
+    <string name="cancel">Cancel</string>
+    <string name="tip_add_set">Make a new contact set</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="contact_set_add.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="320"
+     height="160" />
+</floater>

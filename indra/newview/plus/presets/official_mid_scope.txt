@@ -110,6 +110,7 @@ sub       PlusRainUmbrella PlusRain
 sub       PlusRainUmbrellaNames PlusRain
 taste     PlusSnow
 taste     PlusWeatherAllowParcel
+taste     PlusSkyWeather
 render    PlusSnowAccumulate
 taste     PlusSnowGround
 render    PlusVolumetric
@@ -130,6 +131,10 @@ ui        PlusDetachedMaxFps
 ui        PlusDetachedIdleFps
 ui        PlusDetachedMaxWindows
 ui        PlusDetachAutoOnDrag
+ui        PlusFloaterGroupMove
+ui        PlusFloaterSnapNearOnly
+ui        PlusFloaterSnapGap
+ui        PlusFloaterSnapHint
 marker    PlusGraphicPreset
 marker    PlusGraphicPresetRevision
 ui        PlusPresetMigrated
@@ -311,7 +316,6 @@ backend   PlusMediaReapDistance
 backend   PlusMediaReapTeleportSeconds
 backend   PlusMediaReapUISeconds
 diag      PlusSelfFirstLog
-ui        PlusSendSettingsStats
 ui        PlusSupportURL
 ui        PlusReleaseNotesURL
 ui        PlusReleaseQAModeCleared
@@ -412,6 +416,7 @@ ui        PlusRadarReportRegionLeave
 ui        PlusLocalMeshAutoReload
 ui        PlusLocalMeshFileSize
 ui        PlusProtectedFolders
+ui        PlusOutfitOpenFolders
 backend   PlusJ2CDecoder
 backend   PlusJ2CDecoderThreads
 backend   PlusJ2CDecoderThreadsMinArea
@@ -445,6 +450,7 @@ ui        PlusFpsCornerOn
 ui        PlusFpsCornerPosition
 ui        PlusAnimQuickPreview
 transient PlusAnimQuickInworld
+transient PlusHideOtherAvatars    # World menu: hide everyone but me. Not saved (off at every start)
 taste     PlusFpsLimit
 taste     PlusMultiBackgroundFps
 taste     PlusMultiBackgroundPriority
@@ -453,6 +459,7 @@ taste     PlusBackgroundKeepVisible
 sub       PlusBackgroundHiddenStop PlusBackgroundKeepVisible
 diag      PlusHitchLogMs
 diag      PlusExitTimeLog
+diag      PlusFastExit
 diag      PlusExitWatchdog
 diag      PlusExitWatchdogSeconds
 render    PlusRainWetAll
@@ -467,6 +474,7 @@ ui        PlusFlycamSpeedMul
 ui        PlusFlycamRollSpeed
 backend   PlusGpuDrivenDGC
 backend   PlusGpuDrivenDGCLostCount
+backend   PlusTexBC7GPU
 backend   PlusRegionPark
 backend   PlusRegionParkMax
 backend   PlusRegionParkTextureHold
@@ -592,3 +600,4 @@ ui        FSContactSetsColorizeChat
 ui        FSContactSetsColorizeFriends
 ui        FSContactSetsNotificationToast
 ui        FSContactSetsNotificationNearbyChat
+official ui        OutfitListShowFolders  # Charis が settings.xml に足した。容姿窓の自分のアウトフィットをフォルダの階層で表示（既定 1）

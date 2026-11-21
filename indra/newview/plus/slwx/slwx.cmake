@@ -8,6 +8,8 @@ list(APPEND plus_SOURCE_FILES
     plus/slwx/slwx.cpp
     plus/slwx/slwxfloater.cpp
     plus/slwx/slwxparcel.cpp
+    plus/slwx/slwxparceledit.cpp
+    plus/slwx/slwxparcelrml.cpp
     plus/slwx/slwxsync.cpp
     plus/slwx/slwxtag.cpp
     )
@@ -16,6 +18,8 @@ list(APPEND plus_HEADER_FILES
     plus/slwx/slwx.h
     plus/slwx/slwxfloater.h
     plus/slwx/slwxparcel.h
+    plus/slwx/slwxparceledit.h
+    plus/slwx/slwxparcelrml.h
     plus/slwx/slwxsync.h
     plus/slwx/slwxtag.h
     )

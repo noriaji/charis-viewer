@@ -192,9 +192,9 @@ namespace plus::starfield
         image->setFilteringOption(LLTexUnit::TFO_TRILINEAR);
 
         gGL.getTexUnit(0)->bind(image);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, 0, GL_RGBA, GL_FLOAT, picture.rgba.data());
+        LLRHI::texImage2D(image->getTexName(), GL_TEXTURE_2D, 0, GL_RGBA16F, width, height, GL_RGBA, GL_FLOAT, picture.rgba.data());
         LLImageGLMemory::alloc_tex_image(width, height, GL_RGBA16F, 1);
-        glGenerateMipmap(GL_TEXTURE_2D);
+        LLRHI::generateMipmap(image->getTexName(), GL_TEXTURE_2D);
         gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
         mTexture = image;       // the one before (if any) goes with its last reference

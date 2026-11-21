@@ -10,11 +10,15 @@ list(APPEND plus_SOURCE_FILES
     plus/localmesh/localmeshdae.cpp
     plus/localmesh/localmeshfloater.cpp
     plus/localmesh/localmeshgltf.cpp
+    plus/localmesh/localmeshrml.cpp
+    plus/localmesh/localmeshsession.cpp
     )
 
 list(APPEND plus_HEADER_FILES
     plus/localmesh/localmesh.h
     plus/localmesh/localmeshread.h
+    plus/localmesh/localmeshrml.h
+    plus/localmesh/localmeshsession.h
     )
 
 # The DAE reader reads the text through libxml2 (the COLLADA DOM's own XML library, already

@@ -1,0 +1,26 @@
+<rml>
+<!-- The attachments window (plus/avatarattach/attachrml.cpp, research/386). Its words are "[[name]]": the <string>s of
+     floater_plus_avatar_attachments_rml.xml (en, ja). The ids the C++ uses: status (a text), list_head and list
+     (plus::rmlui::RmlList with columns), copy_name, copy_id, inspect, refresh (buttons). The places are the XUI window's
+     own (status 8 / 4, the list 6 / 24 to 34 from the bottom, the buttons 22 high, 6 from the bottom). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare">
+    <div class="attach">
+        <p id="status" class="at-status"></p>
+        <div class="ps-list-box" title="[[tip_list]]">
+            <div id="list_head" class="ps-list-head"></div>
+            <div id="list" class="ps-list" tabindex="0"></div>
+        </div>
+        <div class="at-row">
+            <button id="copy_name" title="[[tip_copy_name]]" disabled="disabled">[[copy_name]]</button>
+            <button id="copy_id" title="[[tip_copy_id]]" disabled="disabled">[[copy_id]]</button>
+            <button id="inspect" title="[[tip_inspect]]" disabled="disabled">[[inspect]]</button>
+            <div class="at-gap"></div>
+            <button id="refresh" class="at-refresh" title="[[tip_refresh]]">[[refresh]]</button>
+        </div>
+    </div>
+</body>
+</rml>

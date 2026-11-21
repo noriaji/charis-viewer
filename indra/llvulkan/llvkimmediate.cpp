@@ -27,7 +27,6 @@
 #include "llvkimmediate.h"
 
 #include "llrhiimmediate.h"
-#include "llvkresource.h"
 // Before the #if: llvkgl_internal.h brings llglheaders.h, which defines
 // LL_GL_FUNC_POINTER (as in the llvkgl*.cpp files).
 #include "llvkgl_internal.h"
@@ -47,10 +46,6 @@
 // gpu_buffer_named). The ring block has none, so the draw names the stream
 // name below, and right before the draw (under the lock) that name's entry in
 // the frame's resolved buffers (sResolvedBuffers) is made to say the ring.
-// With LLRHI_NATIVE_RESOURCES (research/137 N14, LLVKResource::installed) the
-// draw brings the ring's Vulkan buffer instead (tDirectVertexBuffer, which
-// direct_inputs takes) and names no buffer; the stream name and the entry go
-// once that way is the only one.
 namespace
 {
     using namespace llvkgl;
@@ -164,28 +159,11 @@ namespace
         {
             attributes[i].offset += (U32)offset;
         }
-        bool drawn = false;
-        if (LLVKResource::installed())
-        {
-            // research/137 N14: the draw brings the ring's Vulkan buffer itself
-            // (direct_inputs takes it); no GL name, no entry of the name table's
-            // frame cache is borrowed.
-            d.vertex_buffer = 0;
-            struct RingScope
-            {
-                explicit RingScope(VkBuffer buffer) { tDirectVertexBuffer = buffer; }
-                ~RingScope() { tDirectVertexBuffer = VK_NULL_HANDLE; }
-            } ring_scope(ring);
-            drawn = direct_draw(d);         // takes sLock again (a recursive mutex)
-        }
-        else
-        {
-            ResolvedBuffer& entry = sResolvedBuffers[STREAM_NAME & (RESOLVED_BUFFERS - 1)];
-            entry.name = STREAM_NAME;
-            entry.frame = sFrame;
-            entry.gpu = ring;
-            drawn = direct_draw(d);         // takes sLock again (a recursive mutex)
-        }
+        ResolvedBuffer& entry = sResolvedBuffers[STREAM_NAME & (RESOLVED_BUFFERS - 1)];
+        entry.name = STREAM_NAME;
+        entry.frame = sFrame;
+        entry.gpu = ring;
+        const bool drawn = direct_draw(d);  // takes sLock again (a recursive mutex)
         llassert(drawn);                    // what it refuses was asked above, under the same lock
         ++sCounts.draws;
         sCounts.vertices += in.vertex_count;

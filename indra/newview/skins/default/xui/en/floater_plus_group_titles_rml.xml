@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- Group titles, RmlUi version (plus/grouptitles/grouptitlesrml.cpp, research/386): the frame and the words. The
+     content is app_settings/plus/rmlui/grouptitles.rml in a plus_rml_view filling the floater under its 18 px header
+     (the XUI window's 560 x 442 body, floater_plus_group_titles.xml, frozen: safe mode and PlusRmlUiWindows off).
+     reuse_instance="false": a closed window is destroyed. -->
+<floater
+ name="plus_group_titles"
+ title="Group Titles"
+ width="560"
+ height="460"
+ min_width="560"
+ min_height="360"
+ layout="topleft"
+ legacy_header_height="18"
+ positioning="cascading"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ can_drag_on_left="false">
+    <string name="NoGroupTitle">&lt;No group title&gt;</string>
+    <string name="ClearAllRegions">Clear All Regions</string>
+    <string name="UnknownTitle">(title of a group you are not in)</string>
+    <string name="NotMember">(not a member)</string>
+    <string name="filter_hint">Filter Group Titles</string>
+    <string name="tip_filter">Show only the titles whose title or group holds these letters (Ctrl+F)</string>
+    <string name="col_title">Title</string>
+    <string name="col_group">Group</string>
+    <string name="col_region">Auto Region</string>
+    <string name="tip_col_region">The regions where this title is made active when you arrive</string>
+    <string name="auto_region">Auto Region: arriving in a region makes its title active</string>
+    <string name="btn_set_region">This Region</string>
+    <string name="tip_set_region">Give the selected title to the region you are in</string>
+    <string name="btn_type_region">Type Region...</string>
+    <string name="tip_type_region">Type the name of a region to give the selected title to (it is looked up on the map first)</string>
+    <string name="btn_clear_region">Clear Region</string>
+    <string name="tip_clear_region">Take the selected title away from its region (with several, choose which)</string>
+    <string name="none_on_unassigned">Set to 'none' in unassigned regions</string>
+    <string name="tip_none">In a region without a title, no group is active (no title over your head)</string>
+    <string name="btn_info">Info</string>
+    <string name="tip_info">Show info about group of selected title</string>
+    <string name="btn_activate">Activate</string>
+    <string name="tip_activate">Activate selected group title</string>
+    <string name="tip_refresh">Refresh list of available group titles</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="grouptitles.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="560"
+     height="442" />
+</floater>

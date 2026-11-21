@@ -904,7 +904,7 @@ U32 LLOcclusionCullingGroup::getNewOcclusionQueryObjectName()
     {
         //seed 1024 query names into the free query pool
         GLuint queries[1024];
-        glGenQueries(1024, queries);
+        LLRHI::genQueries(1024, queries); // <plus> research/394 T17 </plus>
         for (int i = 0; i < 1024; ++i)
         {
             sFreeQueries.push(queries[i]);

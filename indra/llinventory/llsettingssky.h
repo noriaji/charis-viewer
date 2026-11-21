@@ -30,6 +30,9 @@
 
 #include "llsettingsbase.h"
 #include "v4coloru.h"
+// <plus> sky-weather (research/371)
+#include "llskyweather.h"
+// </plus>
 
 const F32 EARTH_RADIUS  =      6.370e6f;
 const F32 SUN_RADIUS    =    695.508e6f;
@@ -99,6 +102,10 @@ public:
 
     static const std::string SETTING_REFLECTION_PROBE_AMBIANCE;
 
+    // <plus> sky-weather (research/371)
+    static const std::string SETTING_WEATHER; // "weather": optional map, see LLSkyWeather
+    // </plus>
+
     static const std::string SETTING_LEGACY_HAZE;
 
     static const LLUUID DEFAULT_ASSET_ID;
@@ -139,6 +146,14 @@ public:
     F32 getSkyMoistureLevel() const;
     F32 getSkyDropletRadius() const;
     F32 getSkyIceLevel() const;
+
+    // <plus> sky-weather (research/371)
+    // true when this sky decides the weather (a "weather" map is present).
+    bool hasWeather() const { return mHasWeather; }
+    const LLSkyWeather& getWeather() const { return mWeather; }
+    void setWeather(const LLSkyWeather& weather);   // also turns hasWeather() on
+    void clearWeather();                             // hasWeather() off; the key is not saved
+    // </plus>
 
     // get the probe ambiance setting as stored in the sky settings asset
     // auto_adjust - if true and canAutoAdjust() is true, return 1.0
@@ -405,6 +420,11 @@ protected:
     F32 mSkyDropletRadius;
     F32 mSkyIceLevel;
     F32 mPlanetRadius;
+
+    // <plus> sky-weather (research/371)
+    LLSkyWeather mWeather;
+    bool mHasWeather = false;
+    // </plus>
 
     F32 mHazeHorizon;
     F32 mHazeDensity;

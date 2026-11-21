@@ -852,6 +852,7 @@ bool LLVKDevice::createDevice()
         LL_INFOS("Vulkan") << "robust buffer access on" << LL_ENDL;
     }
     mFragmentStores = have.features.fragmentStoresAndAtomics;
+    mDualSrcBlend = have.features.dualSrcBlend == VK_TRUE;
     mFillModeNonSolid = have.features.fillModeNonSolid == VK_TRUE;
     mPipelineStatistics = want.features.pipelineStatisticsQuery;
     mMultiDrawIndirect = have.features.multiDrawIndirect;
@@ -2854,14 +2855,14 @@ void LLVKDevice::savePipelineCacheIfDue()
     }).detach();
 }
 
-bool LLVKDevice::claimPipelineCacheSave()
+bool LLVKDevice::claimPipelineCacheSave(U32 max_wait_ms)
 {
-    // Up to 10 s for a background save in flight (one save at a time: the
+    // Up to 10 s (fast exit: 2 s) for a background save in flight (one save at a time: the
     // hash of the file and the read size are shared).
     bool idle = false;
     for (U32 tries = 0; !mPipelineCacheSaving.compare_exchange_strong(idle, true); ++tries)
     {
-        if (tries >= 1000)
+        if (tries >= max_wait_ms / 10)
         {
             return false;
         }
@@ -2906,13 +2907,13 @@ void LLVKDevice::saveClaimedPipelineCache()
     }
 }
 
-void LLVKDevice::savePipelineCache()
+void LLVKDevice::savePipelineCache(U32 max_wait_ms)
 {
     if (!mPipelineCache || mPipelineCachePath.empty())
     {
         return;
     }
-    if (!claimPipelineCacheSave())
+    if (!claimPipelineCacheSave(max_wait_ms))
     {
         LL_WARNS("Vulkan") << "pipeline cache: a background save is still running; not saved" << LL_ENDL;
         return;

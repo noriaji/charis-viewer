@@ -6,9 +6,13 @@
 
 list(APPEND plus_SOURCE_FILES
     plus/grouptitles/grouptitles.cpp
+    plus/grouptitles/grouptitlescore.cpp
     plus/grouptitles/grouptitlesfloater.cpp
+    plus/grouptitles/grouptitlesrml.cpp
     )
 
 list(APPEND plus_HEADER_FILES
     plus/grouptitles/grouptitles.h
+    plus/grouptitles/grouptitlescore.h
+    plus/grouptitles/grouptitlesrml.h
     )

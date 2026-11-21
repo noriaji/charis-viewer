@@ -42,6 +42,7 @@ static const std::string DD_HEADER_NAME = "dd_header";
 static const S32 HEADER_HEIGHT = 25;
 static const S32 HEADER_IMAGE_LEFT_OFFSET = 5;
 static const S32 HEADER_TEXT_LEFT_OFFSET = 30;
+static const S32 HEADER_ICON_SPACE = 20; // <plus> outfit-folder-icons </plus>
 static const F32 AUTO_OPEN_TIME = 1.f;
 static const S32 VERTICAL_MULTIPLE = 16;
 static const S32 PARENT_BORDER_MARGIN = 5;
@@ -76,6 +77,8 @@ public:
     void setTitleColor(LLUIColor);
 
     void setSelected(bool is_selected) { mIsSelected = is_selected; }
+    void setIndent(S32 pixels); // <plus> outfit-hierarchy </plus>
+    void setIcon(LLUIImage* icon); // <plus> outfit-folder-icons </plus>
 
     virtual void onMouseEnter(S32 x, S32 y, MASK mask);
     virtual void onMouseLeave(S32 x, S32 y, MASK mask);
@@ -108,6 +111,15 @@ private:
 
     bool mNeedsHighlight;
     bool mIsSelected;
+    // <plus> outfit-hierarchy
+    S32 mIndent = 0;
+    // outfit-folder-icons: an icon between the arrow and the title (the title moves right by HEADER_ICON_SPACE)
+    LLPointer<LLUIImage> mIcon;
+    S32 titleLeft() const { return HEADER_TEXT_LEFT_OFFSET + (mIcon.notNull() ? HEADER_ICON_SPACE : 0); }
+
+    // the indent never pushes the title out of a narrow header
+    S32 effectiveIndent(S32 width) const { return llclamp(mIndent, 0, llmax(0, width - HEADER_TEXT_LEFT_OFFSET - 40)); }
+    // </plus>
 
     LLFrameTimer mAutoOpenTimer;
 };
@@ -206,7 +218,7 @@ void LLAccordionCtrlTab::LLAccordionCtrlTabHeader::draw()
 
     LLAccordionCtrlTab* parent = dynamic_cast<LLAccordionCtrlTab*>(getParent());
     bool collapsible = parent && parent->getCollapsible();
-    bool expanded = parent && parent->getDisplayChildren();
+    bool expanded = parent && parent->getArrowOpen(); // <plus> outfit-hierarchy </plus>
 
     // Handle overlay images, if needed
     // Only show green "focus" background image if the accordion is open,
@@ -239,8 +251,16 @@ void LLAccordionCtrlTab::LLAccordionCtrlTabHeader::draw()
         {
             overlay_image = mImageCollapsed;
         }
-        overlay_image->draw(HEADER_IMAGE_LEFT_OFFSET, (height - overlay_image->getHeight()) / 2);
+        overlay_image->draw(HEADER_IMAGE_LEFT_OFFSET + effectiveIndent(width), (height - overlay_image->getHeight()) / 2); // <plus> outfit-hierarchy </plus>
     }
+
+    // <plus> outfit-folder-icons
+    if (mIcon.notNull())
+    {
+        const S32 size = HEADER_ICON_SPACE - 4;
+        mIcon->draw(HEADER_TEXT_LEFT_OFFSET - 2 + effectiveIndent(width), (height - size) / 2, size, size);
+    }
+    // </plus>
 
     LLUICtrl::draw();
 }
@@ -250,7 +270,7 @@ void LLAccordionCtrlTab::LLAccordionCtrlTabHeader::reshape(S32 width, S32 height
     S32 header_height = mHeaderTextbox->getTextPixelHeight();
     LLRect old_header_rect = mHeaderTextbox->getRect();
 
-    LLRect textboxRect(HEADER_TEXT_LEFT_OFFSET, (height + header_height) / 2, width, (height - header_height) / 2);
+    LLRect textboxRect(titleLeft() + effectiveIndent(width), (height + header_height) / 2, width, (height - header_height) / 2); // <plus> outfit-hierarchy </plus>
     if (old_header_rect.getHeight() != textboxRect.getHeight()
         || old_header_rect.mLeft != textboxRect.mLeft
         || old_header_rect.mTop != textboxRect.mTop
@@ -274,6 +294,43 @@ void LLAccordionCtrlTab::LLAccordionCtrlTabHeader::reshape(S32 width, S32 height
         setToolTip(LLStringUtil::null);
     }
 }
+
+// <plus> outfit-hierarchy
+void LLAccordionCtrlTab::LLAccordionCtrlTabHeader::setIndent(S32 pixels)
+{
+    if (mIndent == pixels) return;
+    mIndent = pixels;
+    reshape(getRect().getWidth(), getRect().getHeight());
+}
+
+// outfit-folder-icons
+void LLAccordionCtrlTab::LLAccordionCtrlTabHeader::setIcon(LLUIImage* icon)
+{
+    if (mIcon.get() == icon) return;
+    const bool had_icon = mIcon.notNull();
+    mIcon = icon;
+    if (had_icon != mIcon.notNull())
+    {
+        reshape(getRect().getWidth(), getRect().getHeight()); // the title moves only when the icon appears or goes
+    }
+}
+
+void LLAccordionCtrlTab::setHeaderIcon(LLUIImage* icon)
+{
+    if (mHeader)
+    {
+        mHeader->setIcon(icon);
+    }
+}
+
+void LLAccordionCtrlTab::setHeaderIndent(S32 pixels)
+{
+    if (mHeader)
+    {
+        mHeader->setIndent(pixels);
+    }
+}
+// </plus>
 
 void LLAccordionCtrlTab::LLAccordionCtrlTabHeader::onMouseEnter(S32 x, S32 y, MASK mask)
 {
@@ -307,7 +364,7 @@ bool LLAccordionCtrlTab::LLAccordionCtrlTabHeader::handleDragAndDrop(S32 x, S32 
 {
     LLAccordionCtrlTab* parent = dynamic_cast<LLAccordionCtrlTab*>(getParent());
 
-    if (parent && !parent->getDisplayChildren() && parent->getCollapsible() && parent->canOpenClose())
+    if (parent && !parent->getArrowOpen() && parent->getCollapsible() && parent->canOpenClose()) // <plus> outfit-hierarchy </plus>
     {
         if (mAutoOpenTimer.getStarted())
         {
@@ -401,6 +458,13 @@ LLAccordionCtrlTab::~LLAccordionCtrlTab()
 
 void LLAccordionCtrlTab::setDisplayChildren(bool display)
 {
+    // <plus> outfit-hierarchy
+    if (mHeaderOnly)
+    {
+        // a header-only row has no body to show
+        display = false;
+    }
+    // </plus>
     mDisplayChildren = display;
     LLRect rect = getRect();
 
@@ -450,6 +514,18 @@ void LLAccordionCtrlTab::reshape(S32 width, S32 height, bool called_from_parent 
 
 void LLAccordionCtrlTab::changeOpenClose(bool is_open)
 {
+    // <plus> outfit-hierarchy
+    if (mHeaderOnly)
+    {
+        // Folder row: no body to open, only flip the arrow and tell the owner.
+        mHeaderOnlyOpen = !is_open;
+        if (mCommitSignal)
+        {
+            (*mCommitSignal)(this, mHeaderOnlyOpen);
+        }
+        return;
+    }
+    // </plus>
     if (is_open)
         mExpandedHeight = getRect().getHeight();
 
@@ -531,7 +607,7 @@ bool LLAccordionCtrlTab::handleMouseDown(S32 x, S32 y, MASK mask)
         if (y >= (getRect().getHeight() - HEADER_HEIGHT))
         {
             mHeader->setFocus(true);
-            changeOpenClose(getDisplayChildren());
+            changeOpenClose(getArrowOpen()); // <plus> outfit-hierarchy </plus>
 
             // Reset stored state
             mWasStateStored = false;
@@ -859,24 +935,24 @@ bool LLAccordionCtrlTab::handleKey(KEY key, MASK mask, bool called_from_parent)
 
     if ((key == KEY_RETURN) && mask == MASK_NONE)
     {
-        changeOpenClose(getDisplayChildren());
+        changeOpenClose(getArrowOpen()); // <plus> outfit-hierarchy </plus>
         return true;
     }
 
     if ((key == KEY_ADD || key == KEY_RIGHT) && mask == MASK_NONE)
     {
-        if (!getDisplayChildren())
+        if (!getArrowOpen()) // <plus> outfit-hierarchy </plus>
         {
-            changeOpenClose(getDisplayChildren());
+            changeOpenClose(getArrowOpen()); // <plus> outfit-hierarchy </plus>
             return true;
         }
     }
 
     if ((key == KEY_SUBTRACT || key == KEY_LEFT) && mask == MASK_NONE)
     {
-        if (getDisplayChildren())
+        if (getArrowOpen()) // <plus> outfit-hierarchy </plus>
         {
-            changeOpenClose(getDisplayChildren());
+            changeOpenClose(getArrowOpen()); // <plus> outfit-hierarchy </plus>
             return true;
         }
     }
@@ -944,7 +1020,7 @@ void LLAccordionCtrlTab::restoreOpenCloseState()
         return;
     if (getDisplayChildren() != mStoredOpenCloseState)
     {
-        changeOpenClose(getDisplayChildren());
+        changeOpenClose(getArrowOpen()); // <plus> outfit-hierarchy </plus>
     }
     mWasStateStored = false;
 }

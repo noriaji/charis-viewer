@@ -631,7 +631,7 @@ std::string LLVKGL::perfReport(U32 frames)
             out << "; immediate ring: " << immediate;
         }
     }
-    // research/137 N14: buffer writes and texture data (both ways, to compare LLRHI_NATIVE_RESOURCES 0 and 1).
+    // Buffer writes and texture data.
     out << "; " << LLVKResource::report(frames);
     // Calls recorded into spliced streams were counted by their stream (research/66 step 1).
     LLVKRecorder::takeStreamCounts(LLVKDispatch::sCounts, LLVKDispatch::COUNTER_COUNT);

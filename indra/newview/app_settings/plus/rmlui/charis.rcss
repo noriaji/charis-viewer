@@ -383,3 +383,1418 @@ body.bare
 {
     border-color: var(--check-border);
 }
+
+/* ---- parcel weather window (research/389: the XUI window's own positions, kept; weather_parcel.rml) ----
+   Every part is placed by its top (the XUI window's, less its 18 px header), left 12, width 356. The slider row is the
+   XUI slider control: a 130 label, 4 apart, the bar, 4 apart, the number box, 18 high. */
+.wx
+{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-size: var(--font-small);
+}
+.wx .note
+{
+    position: absolute;
+    left: 12dp;
+    width: 356dp;
+    color: var(--text-label);
+}
+.wx .note.warn
+{
+    color: #e64d33;
+}
+.wx .srow
+{
+    position: absolute;
+    left: 12dp;
+    width: 356dp;
+    height: 18dp;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.wx .slabel
+{
+    flex: none;
+    width: 130dp;
+    margin-right: 4dp;
+    color: var(--text-label);
+    white-space: nowrap;
+    overflow: hidden;
+}
+.wx input.text.value-box
+{
+    height: 18dp;
+    line-height: 16dp;
+    margin-left: 4dp;
+    padding: 0 3dp;
+}
+.wx button.act
+{
+    position: absolute;
+    flex: none;
+    box-sizing: border-box;
+    height: 24dp;
+    line-height: 22dp;
+    margin-right: 0;
+    padding: 0;
+    font-size: var(--font-small);
+}
+.wx button.act:disabled
+{
+    opacity: var(--state-disabled);
+    cursor: default;
+}
+
+/* ---- the time converter window (research/385: timeconv.rml). Everything is under .timeconv. The XUI window's own layout
+   kept: places in dp are floater_plus_time_conv.xml's (a row is 28dp high at a 30dp pitch, fields 22dp, 16dp check box, 12dp
+   text), each part placed from the row's or the window's corner. The two colours (a wrong field, the note) are that window's own
+   (1 0.35 0.35 and 0.9 0.6 0.2): the tokens have no warning colour. ---- */
+.timeconv
+{
+    --tc-bad: #ff5959;
+    --tc-note: #e69933;
+    position: relative;
+    width: 568dp;
+    height: 234dp;
+    font-size: var(--font-small);
+}
+.timeconv .tcrows
+{
+    position: absolute;
+    left: 4dp;
+    top: 8dp;
+}
+.timeconv .tcrow
+{
+    position: relative;
+    width: 560dp;
+    height: 28dp;
+    margin-bottom: 2dp;
+}
+.timeconv .tcrow.gone
+{
+    display: none;
+}
+.timeconv .tclabel
+{
+    position: absolute;
+    left: 8dp;
+    top: 7dp;
+    width: 118dp;
+    height: 16dp;
+    white-space: nowrap;
+    overflow: hidden;
+    color: var(--text-label);
+}
+.timeconv .tcfw
+{
+    position: absolute;
+    top: 0;
+    height: 28dp;
+}
+.timeconv input.text
+{
+    position: absolute;
+    left: 0;
+    top: 3dp;
+    flex: none;
+    box-sizing: border-box;
+    height: 22dp;
+    line-height: 20dp;
+    padding: 0 4dp;
+}
+.timeconv input.text.bad
+{
+    color: var(--tc-bad);
+}
+.timeconv .tcu
+{
+    position: absolute;
+    width: 14dp;
+    height: 16dp;
+    white-space: nowrap;
+    color: var(--text-label);
+}
+.timeconv .tcinfo
+{
+    position: absolute;
+    left: 382dp;
+    top: 7dp;
+    width: 100dp;
+    height: 16dp;
+    white-space: nowrap;
+    overflow: hidden;
+    color: var(--text-label);
+}
+.timeconv button
+{
+    position: absolute;
+    flex: none;
+    box-sizing: border-box;
+    height: 22dp;
+    line-height: 20dp;
+    margin-right: 0;
+    padding: 0;
+    font-size: var(--font-small);
+}
+.timeconv .tccopy
+{
+    left: 486dp;
+    top: 3dp;
+    width: 48dp;
+}
+.timeconv .tcrm
+{
+    left: 536dp;
+    top: 3dp;
+    width: 22dp;
+}
+.timeconv .tcnote
+{
+    position: absolute;
+    left: 12dp;
+    top: 132dp;
+    width: 544dp;
+    height: 16dp;
+    white-space: nowrap;
+    overflow: hidden;
+    color: var(--tc-note);
+}
+.timeconv .tcsummary
+{
+    position: absolute;
+    left: 12dp;
+    top: 190dp;
+    width: 448dp;
+    height: 16dp;
+    white-space: nowrap;
+    overflow: hidden;
+    color: var(--text-label);
+}
+.timeconv .tcbox
+{
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    height: 16dp;
+}
+.timeconv .tcbox input.checkbox
+{
+    flex: none;
+    box-sizing: border-box;
+    width: 16dp;
+    height: 16dp;
+    margin-right: 6dp;
+}
+.timeconv .tcbox label
+{
+    flex: 1;
+    white-space: nowrap;
+}
+
+/* the place choice: the shared select.ps-select (a combo, as psui's; its list is popup.rml's, outside the window); here its
+   place and size, and its text and arrow for the 118dp width (the XUI combo's text had about 95dp). The 22dp at the right of the
+   text is the chevron (--combo-chevron 14dp, selectarrow below) + its 4dp margin + a 4dp gap: it follows them if either changes. */
+.timeconv select.tczone
+{
+    position: absolute;
+    left: 8dp;
+    top: 3dp;
+    width: 118dp;
+    height: 22dp;
+    line-height: 20dp;
+    padding: 0;
+    tab-index: auto;
+    focus: auto;
+}
+.timeconv select.tczone:disabled
+{
+    opacity: var(--state-disabled);
+}
+.timeconv select.tczone selectvalue
+{
+    display: block;
+    height: 20dp;
+    line-height: 20dp;
+    margin-right: 0;
+    padding: 0 22dp 0 4dp;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.timeconv select.tczone selectarrow
+{
+    display: block;
+    margin: 3dp 4dp 0 0;
+    image-color: var(--icon-light);
+}
+
+/* ---- shared parts of RmlUi windows that list, choose and read (research/386; plus/rmlui/rmllist.h) ----
+   Not tied to a window: a window puts its own sizes on the box (a class of its own) and uses these classes for the look. */
+
+/* a list of one-line rows (RmlList): the box has the border and the heading; the rows scroll under it */
+.ps-list-box
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 1dp var(--field-border);
+    background-color: var(--field-bg);
+}
+.ps-list-head
+{
+    flex: none;
+    box-sizing: border-box;
+    height: 18dp;
+    line-height: 18dp;
+    padding: 0 6dp;
+    color: var(--text-label);
+    border-bottom: 1dp var(--field-border);
+    background-color: var(--panel-mid);
+}
+.ps-list
+{
+    flex: 1;
+    overflow-y: auto;
+    tab-index: auto;
+    focus: auto;
+    cursor: default;
+}
+.ps-list-row
+{
+    box-sizing: border-box;
+    height: 18dp;
+    line-height: 18dp;
+    padding: 0 6dp;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;    /* a name too long for the row ends with "..." and shows whole in a tool tip (research/387) */
+    color: var(--list-row-text);
+}
+.ps-list-row:nth-child(even)
+{
+    background-color: #ffffff0a;
+}
+.ps-list-row:hover
+{
+    background-color: var(--row-hover-bg);
+}
+.ps-list-row.selected
+{
+    color: var(--text-white);
+    background-color: var(--list-selected);
+}
+.ps-list-row.italic
+{
+    font-style: italic;
+}
+
+/* a drop-down (<select>), as psui's combo */
+select.ps-select
+{
+    display: block;
+    box-sizing: border-box;
+    cursor: pointer;
+    height: 33dp;
+    line-height: 31dp;
+    padding: 0 var(--combo-pad);
+    color: var(--text-white);
+    border: 1dp var(--combo-border);
+    border-radius: var(--combo-radius);
+    background-color: var(--combo-fill);
+}
+select.ps-select:hover
+{
+    border-color: var(--check-border-hover);
+}
+select.ps-select:focus-visible
+{
+    border-color: var(--accent);
+}
+select.ps-select selectvalue
+{
+    margin-right: 20dp;     /* the chevron (--combo-chevron 14dp) and 6dp (RmlUi 6.3 has no calc) */
+}
+select.ps-select selectarrow
+{
+    width: var(--combo-chevron);
+    height: var(--combo-chevron);
+    margin: 8dp 0 0 0;
+    decorator: image(ui-image/Plus_PS_Icon_chevron_down);
+    image-color: var(--head-chevron-color);
+}
+/* (the list of a select is popup.rml's, outside the window: plus/rmlui/rmlpopup.cpp, popup.rcss. While it is open the
+   code gives the select the class popup-open and, inline, the accent border and the arrow turned up: any select's style
+   sheet, not only this one's, gets the open look.) */
+
+/* a search field: the text field with a clear button on its right (the button is shown when there is text) */
+.ps-search
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+.ps-search input.text
+{
+    flex: 1;
+}
+.ps-search button.clear
+{
+    flex: none;
+    width: 22dp;
+    height: 22dp;
+    line-height: 20dp;
+    margin: 0 0 0 -22dp;
+    padding: 0;
+    border: 0;
+    background-color: transparent;
+    color: var(--default-btn-color);
+}
+.ps-search button.clear:hover
+{
+    color: var(--default-btn-color-hover);
+}
+.ps-search button.clear.hidden
+{
+    display: none;
+}
+
+/* a read-only text area that can be selected and copied (<textarea readonly>) */
+textarea.ps-readonly
+{
+    box-sizing: border-box;
+    cursor: text;
+    caret-color: transparent;   /* no caret in a read-only text (the XUI draws none) */
+    color: var(--text-white);
+    border: 1dp var(--field-border);
+    border-radius: var(--value-radius);
+    background-color: var(--field-bg);
+    padding: 4dp 6dp;
+    overflow-y: auto;
+}
+textarea.ps-readonly selection
+{
+    color: var(--text-white);
+    background-color: var(--selection-bg);
+}
+
+/* an icon button (an image of the UI images: decorator: image(ui-image/<name>)) */
+button.ps-icon
+{
+    flex: none;
+    margin-right: 0;
+    padding: 0;
+}
+
+/* the hint of a search field while it is empty and does not have the focus (LLSearchEditor's label) */
+.ps-search .ps-hint
+{
+    position: absolute;
+    left: 6dp;
+    top: 0;
+    height: 22dp;
+    line-height: 22dp;
+    pointer-events: none;
+    color: var(--text-dim);
+}
+.ps-search .ps-hint.hidden
+{
+    display: none;
+}
+.ps-search
+{
+    position: relative;
+}
+/* a disabled button (RmlUi 6.3 has no :disabled for a button: the attribute is matched; the window ignores its clicks) */
+button[disabled]
+{
+    opacity: var(--state-disabled);
+    cursor: default;
+    tab-index: none;
+    focus: none;
+}
+button[disabled]:hover
+{
+    border-color: var(--button-border);
+    background-color: var(--button-fill);
+}
+
+/* the protected folders window (plus/protectedfolders/protectedfoldersrml.cpp): the XUI window's own sizes */
+.protected-folders
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 6dp;
+    font-size: var(--font-small);
+}
+.protected-folders .pf-top
+{
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    height: 22dp;
+    margin-bottom: 6dp;
+}
+.protected-folders .ps-search
+{
+    flex: 1;
+    height: 22dp;
+}
+.protected-folders .ps-search input.text
+{
+    flex: 1;
+    box-sizing: border-box;
+    height: 22dp;
+    line-height: 20dp;
+}
+.protected-folders button.ps-icon
+{
+    box-sizing: border-box;
+    width: 28dp;
+    height: 22dp;
+    margin-left: 4dp;
+    decorator: image(ui-image/Plus_ProtFolders_Trash scale-none center center);
+}
+.protected-folders .ps-list-box
+{
+    flex: 1;
+}
+
+/* the empty list's line (RmlList::setEmptyText) */
+.ps-list-empty
+{
+    padding: 4dp 6dp;
+    color: var(--text-dim);
+}
+
+/* a psui-sized button (40dp high), for the windows laid out in psui's sizes */
+button.ps-btn
+{
+    flex: none;
+    box-sizing: border-box;
+    height: 40dp;
+    line-height: 38dp;
+    margin: 0;
+    padding: 0;
+}
+
+/* the window of who may pose my avatar (plus/poseconsent/poseconsentrml.cpp): the XUI window's own sizes
+   (a panel; 14 from the sides, the note 56 high, the list the rest, two 160 buttons and a 328 one, 40 high) */
+.pose-consent
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 10dp 14dp 12dp 14dp;
+    border: 1dp var(--panel-border);
+    border-radius: var(--panel-radius);
+    decorator: vertical-gradient(var(--panel-top) var(--panel-bottom));
+}
+.pose-consent .pc-note
+{
+    flex: none;
+    height: 56dp;
+    margin-bottom: 6dp;
+    font-size: var(--font-small);
+    color: var(--text-hint);
+}
+.pose-consent .ps-list-box
+{
+    flex: 1;
+    margin-bottom: 6dp;
+}
+.pose-consent .pc-row
+{
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    height: 40dp;
+    margin-bottom: 4dp;
+}
+.pose-consent .pc-row button.ps-btn
+{
+    width: 160dp;
+}
+.pose-consent .pc-row button.ps-btn + button.ps-btn
+{
+    margin-left: 8dp;
+}
+.pose-consent button.pc-wide
+{
+    width: 328dp;
+}
+
+/* a link in a text (an element the window's code opens: the avatar's name of a text, ...) */
+.ps-link
+{
+    color: var(--accent-line);
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/* a button with an icon of the UI images in its middle (a child .glyph; the icon is 21dp, psui's ICONBTN_ICON) */
+button.ps-iconbtn
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+button.ps-iconbtn .glyph
+{
+    width: var(--iconbtn-icon);
+    height: var(--iconbtn-icon);
+    image-color: var(--icon-light);
+}
+button.ps-iconbtn.plus .glyph
+{
+    decorator: image(ui-image/Plus_PS_Icon_plus);
+}
+
+/* the window that adds avatars to a contact set (plus/contactsets/addtosetrml.cpp): the XUI window's own places,
+   in the 320 x 160 body (the text 14,12 292 x 40; the set 14,60 244 x 33 and the "+" 266,56 40 x 40; the buttons at 108) */
+.csa
+{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border: 1dp var(--panel-border);
+    border-radius: var(--panel-radius);
+    decorator: vertical-gradient(var(--panel-top) var(--panel-bottom));
+}
+.csa .csa-text
+{
+    position: absolute;
+    left: 14dp;
+    top: 12dp;
+    width: 292dp;
+    height: 40dp;
+    color: var(--text-label);
+}
+.csa select.ps-select
+{
+    position: absolute;
+    left: 14dp;
+    top: 60dp;
+    width: 244dp;
+}
+.csa button.ps-btn
+{
+    position: absolute;
+    top: 108dp;
+    width: 142dp;
+}
+.csa button.ps-iconbtn
+{
+    top: 56dp;
+    left: 266dp;
+    width: 40dp;
+}
+.csa button#add
+{
+    left: 14dp;
+}
+.csa button#cancel
+{
+    left: 164dp;
+}
+
+/* the new-version window (plus/updatecheck/updatecheck.cpp, UpdateRmlFloater): the XUI window's own places in its 460 x 218 body */
+.upd
+{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-size: var(--font-small);
+}
+.upd .ro
+{
+    position: absolute;
+    left: 10dp;
+    top: 8dp;
+    width: 440dp;
+    height: 160dp;
+}
+.upd textarea.ps-readonly
+{
+    width: 100%;
+    height: 100%;
+    caret-color: transparent;
+}
+.upd button
+{
+    position: absolute;
+    top: 182dp;
+    height: 23dp;
+    line-height: 21dp;
+    margin: 0;
+    padding: 0;
+}
+.upd button#btn_download
+{
+    left: 10dp;
+    width: 160dp;
+}
+.upd button#btn_later
+{
+    left: 176dp;
+    width: 90dp;
+}
+.upd button#btn_skip
+{
+    left: 272dp;
+    width: 178dp;
+}
+.upd button.hidden
+{
+    display: none;
+}
+
+/* a list with columns (RmlList::setColumns): the heading row and the cells follow the columns' widths. The list's scroll
+   bar is there only while the rows overflow (.ps-list: overflow-y auto); RmlList::afterUpdate puts the class has-bar on
+   the heading then, which shows the spacer at its end (.ps-head-bar, the bar's width), so the heading's columns stay
+   above the cells with and without the bar (no calc() in RmlUi 6.3: a spacer in place of a sum). */
+.ps-list-head.grid
+{
+    display: flex;
+}
+/* (its width is the token the bar itself takes, scrollbarvertical { width: var(--scroll-width) } above: when that rule
+   gets another width, or the bar a margin, this one follows it) */
+.ps-head-bar
+{
+    flex: none;
+    display: none;
+    width: var(--scroll-width);
+}
+.ps-list-head.has-bar .ps-head-bar
+{
+    display: block;
+}
+.ps-head-cell
+{
+    flex: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-right: 4dp;
+}
+.ps-head-cell.sortable
+{
+    cursor: pointer;
+}
+.ps-head-cell.sortable:hover
+{
+    color: var(--text-white);
+}
+.ps-head-cell.flex, .ps-cell.flex
+{
+    flex: 1;
+}
+.ps-list-row.grid
+{
+    display: flex;
+}
+.ps-cell
+{
+    flex: none;
+    box-sizing: border-box;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;    /* a name too long for its column ends with "..." and shows whole in a tool tip (research/387; the cell's text is its direct child) */
+    padding-right: 4dp;
+}
+.ps-cell.bold
+{
+    font-weight: bold;
+}
+.ps-cell.italic
+{
+    font-style: italic;
+}
+
+/* the attachments window (plus/avatarattach/attachrml.cpp): the XUI window's places in the 560 x 302 body (the status
+   8 from the sides and 4 from the top, 16 high; the list 6 from the sides; the buttons 22 high, 6 from the bottom,
+   three 112 wide 4 apart and "Refresh" 90 wide at the right) */
+.attach
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 4dp 6dp 6dp 6dp;
+    font-size: var(--font-small);
+}
+.attach .at-status
+{
+    flex: none;
+    height: 16dp;
+    margin: 0 2dp 4dp 2dp;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--text-label);
+}
+.attach .ps-list-box
+{
+    flex: 1;
+    margin-bottom: 6dp;
+}
+.attach .at-row
+{
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    height: 22dp;
+}
+.attach .at-row button
+{
+    flex: none;
+    box-sizing: border-box;
+    width: 112dp;
+    height: 22dp;
+    line-height: 20dp;
+    margin: 0 4dp 0 0;
+    padding: 0;
+    font-size: var(--font-small);
+}
+.attach .at-row button.at-refresh
+{
+    width: 90dp;
+    margin-right: 0;
+}
+.attach .at-row .at-gap
+{
+    flex: 1;
+}
+
+/* the bring-settings-over window (plus/importsettings/importrml.cpp): the XUI window's own places in the 580 x 462 body
+   (the intro 12,6 556 x 32; the list 12,42 556 x 112; "Choose a folder" 12,160 150 x 23 and its hint at 170,164; the
+   label 12,193; six check boxes from 213, 20 apart, 16 high; the status 12,339 556 x 72; two buttons 12 and 160 at 421,
+   140 x 23) */
+.imp
+{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-size: var(--font-small);
+}
+.imp > p, .imp > button, .imp > div
+{
+    position: absolute;
+    margin: 0;
+}
+.imp .imp-intro
+{
+    left: 12dp;
+    top: 6dp;
+    width: 556dp;
+    height: 32dp;
+    color: var(--text-label);
+}
+.imp .imp-list
+{
+    left: 12dp;
+    top: 42dp;
+    width: 556dp;
+    height: 112dp;
+}
+.imp button
+{
+    box-sizing: border-box;
+    height: 23dp;
+    line-height: 21dp;
+    padding: 0;
+    font-size: var(--font-small);
+}
+.imp .imp-browse
+{
+    left: 12dp;
+    top: 160dp;
+    width: 150dp;
+}
+.imp .imp-hint
+{
+    left: 170dp;
+    top: 164dp;
+    width: 398dp;
+    height: 16dp;
+    color: var(--text-hint);
+}
+.imp .imp-what
+{
+    left: 12dp;
+    top: 193dp;
+    width: 556dp;
+    height: 16dp;
+    color: var(--text-label);
+}
+.imp .imp-check
+{
+    left: 20dp;
+    width: 548dp;
+}
+.imp .imp-status
+{
+    left: 12dp;
+    top: 339dp;
+    width: 556dp;
+    height: 72dp;
+}
+.imp .imp-status textarea.ps-readonly
+{
+    width: 100%;
+    height: 100%;
+    caret-color: transparent;
+}
+.imp .imp-import
+{
+    left: 12dp;
+    top: 421dp;
+    width: 140dp;
+}
+.imp .imp-close
+{
+    left: 160dp;
+    top: 421dp;
+    width: 140dp;
+}
+
+/* ---- parts the host gives (research/387; plus/rmlui/rmlparts.h tells how a window uses them) ---- */
+
+/* a name cut with "..." that shows whole in a tool tip when it is cut: the text is the box's direct child */
+.ps-ellipsis
+{
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* a number box (the XUI's spin control): the text field and two arrows, the arrows' chevrons from the photo screen's
+   icons. The look of the field is input.text's; 80dp wide (the field 60dp, the 2dp gap and the arrows 18dp = --spin-arrow-width:
+   RmlUi 6.3 has no calc(), so the sum is written here and does NOT follow when those tokens change); a window gives the box another width when it needs one (the field takes
+   what the arrows leave). The arrow buttons are 12dp high (--value-height 26dp / 2 - 1dp) with 2dp between. */
+.ps-spin
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex: none;
+    width: 80dp;
+}
+.ps-spin input.text
+{
+    flex: 1;
+    min-width: 0;
+}
+.ps-spin .arrows
+{
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    width: var(--spin-arrow-width);
+    height: var(--value-height);
+    margin-left: 2dp;
+    focus: none;                /* a press on an arrow does not take the focus from the field (the host gives it back) */
+}
+.ps-spin button
+{
+    flex: none;
+    width: 100%;
+    height: 12dp;
+    line-height: 0;
+    margin: 0 0 2dp 0;
+    padding: 0;
+    border-radius: 3dp;
+    focus: none;
+    tab-index: none;
+    image-color: var(--head-chevron-color);
+}
+.ps-spin button.down
+{
+    margin-bottom: 0;
+}
+.ps-spin button.up
+{
+    decorator: image(ui-image/Plus_PS_Icon_chevron_up contain center center);
+}
+.ps-spin button.down
+{
+    decorator: image(ui-image/Plus_PS_Icon_chevron_down contain center center);
+}
+
+/* the test window's samples of the parts (rmldemo.cpp) */
+.demo-log
+{
+    width: 100%;
+    height: 64dp;
+    margin-bottom: var(--panel-gap);
+}
+.demo-narrow
+{
+    width: 150dp;
+    color: var(--text-white);
+}
+
+/* the radar window (plus/radar/radarrml.cpp): the XUI window's places in the 420 x 402 body (the tab strip 20 high at 2
+   from the sides; the panels below it; in the list panel the filter 4,4 22 high, the list from 30 to 28 above the bottom, the
+   counter 8 from the sides and 8 up; in the settings panel the places of the XUI boxes, fixed) */
+.rd
+{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    font-size: var(--font-small);
+}
+.rd .a
+{
+    position: absolute;
+    margin: 0;
+}
+.rd-tabs
+{
+    position: absolute;
+    left: 2dp;
+    top: 2dp;
+    right: 2dp;
+    height: 20dp;
+    display: flex;
+    flex-direction: row;
+}
+.rd-tabs button.rd-tab
+{
+    flex: none;
+    box-sizing: border-box;
+    min-width: 80dp;
+    height: 20dp;
+    line-height: 18dp;
+    margin: 0 2dp 0 0;
+    padding: 0 12dp;
+    font-size: var(--font-small);
+    border-radius: 4dp 4dp 0 0;
+    border-bottom-width: 0;
+    background-color: var(--button-fill);
+}
+.rd-tabs button.rd-tab.active
+{
+    color: var(--text-white);
+    background-color: var(--field-bg);
+    border-color: var(--accent);
+}
+.rd-panel
+{
+    position: absolute;
+    left: 2dp;
+    right: 2dp;
+    top: 22dp;
+    bottom: 2dp;
+    box-sizing: border-box;
+    border: 1dp var(--field-border);
+}
+.rd-panel.hidden
+{
+    display: none;
+}
+.rd .rd-filter
+{
+    left: 4dp;
+    right: 4dp;
+    top: 4dp;
+    height: 22dp;
+}
+.rd .rd-list
+{
+    left: 4dp;
+    right: 4dp;
+    top: 30dp;
+    bottom: 28dp;
+}
+.rd .rd-counter
+{
+    left: 8dp;
+    right: 8dp;
+    bottom: 8dp;
+    height: 16dp;
+    overflow: hidden;
+    white-space: nowrap;
+    color: var(--text-label);
+}
+.rd select.ps-select
+{
+    height: 22dp;
+}
+.rd .rd-spin
+{
+    width: 80dp;
+    height: 20dp;
+}
+.rd .rd-spin input.text
+{
+    box-sizing: border-box;
+    height: 20dp;
+}
+.rd .rd-spin .arrows
+{
+    height: 20dp;
+    margin-left: 0;
+}
+.rd .rd-spin button
+{
+    height: 9dp;
+}
+
+/* ---- the subtitles window (plus/subtitle/subtitlerml.cpp, subtitle.rml): the XUI window's own rows ----
+   10dp at the sides, the status and the model button on top (30dp, 8dp from the top), the log taking what the window
+   leaves (the XUI follows="all"), the rows under it 4dp apart, and 44dp under the last. */
+.st
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 8dp 10dp 44dp 10dp;
+    font-size: var(--font-small);
+}
+.st .st-top
+{
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    height: 30dp;
+    margin-right: -6dp;
+}
+.st .st-status
+{
+    flex: 1;
+    margin-right: 6dp;
+    overflow: hidden;
+    color: var(--text-white);
+}
+.st button.st-btn
+{
+    flex: none;
+    box-sizing: border-box;
+    width: 110dp;
+    height: 22dp;
+    line-height: 20dp;
+    margin: 0;
+    padding: 0;
+}
+.st .invis
+{
+    visibility: hidden;
+}
+.st .st-log
+{
+    flex: 1;
+    min-height: 32dp;
+    margin-top: 4dp;
+}
+.st .st-log textarea.ps-readonly
+{
+    width: 100%;
+    height: 100%;
+    caret-color: transparent;
+}
+.st .st-gap4
+{
+    margin-top: 4dp;
+}
+.st .st-gap6
+{
+    margin-top: 6dp;
+}
+.st .line
+{
+    flex: none;
+}
+.st .st-row
+{
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    height: 20dp;
+}
+.st select.ps-select
+{
+    flex: none;
+    height: 20dp;
+    line-height: 18dp;
+}
+.st select.ps-select selectarrow
+{
+    margin-top: 4dp;
+}
+.st .st-w140 { width: 140dp; }
+.st .st-w150 { width: 150dp; }
+.st .st-w160 { width: 160dp; margin-left: 12dp; }
+.st .st-lgap6 { margin-left: 6dp; }
+.st button.st-fetch
+{
+    flex: none;
+    box-sizing: border-box;
+    width: 150dp;
+    height: 20dp;
+    line-height: 18dp;
+    margin-right: 0;
+    padding: 0;
+}
+.st .st-spin
+{
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 110dp;
+    height: 20dp;
+}
+.st .st-spin-label
+{
+    flex: none;
+    width: 50dp;
+    white-space: nowrap;
+}
+.st .ps-spin.st-spinbox
+{
+    flex: 1;
+    width: auto;
+    height: 20dp;
+}
+.st input.st-spin-box
+{
+    box-sizing: border-box;
+    height: 20dp;
+    line-height: 18dp;
+}
+.st .ps-spin .arrows
+{
+    width: 14dp;
+    height: 20dp;
+    margin-left: 0;
+}
+.st .ps-spin button
+{
+    height: 9dp;
+}
+
+/* ---- the group titles window (plus/grouptitles/grouptitlesrml.cpp, grouptitles.rml): the XUI window's own places in the
+   560 x 442 body: 14 from the sides, 12 from the top; the filter 33 high, the list the rest (8 around), the label 24,
+   the region buttons 40 (172 wide, 8 apart), the check 30, the buttons 40; 12 at the bottom ---- */
+.gt
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 12dp 14dp 12dp 14dp;
+    font-size: var(--font-small);
+}
+.gt .gt-filter
+{
+    flex: none;
+    box-sizing: border-box;
+    height: 33dp;
+    padding: 4dp;
+    border: 1dp var(--field-border);
+    background-color: var(--field-bg);
+}
+.gt .ps-search
+{
+    height: 25dp;
+}
+.gt .ps-search input.text
+{
+    flex: 1;
+    box-sizing: border-box;
+    height: 25dp;
+    line-height: 23dp;
+}
+.gt .gt-list
+{
+    flex: 1;
+    min-height: 117dp;
+    margin: 8dp 0 8dp 0;
+}
+.gt .gt-label
+{
+    flex: none;
+    height: 24dp;
+    margin: 0 0 4dp 0;
+    color: var(--text-white);
+    white-space: nowrap;
+    overflow: hidden;
+}
+.gt .gt-row
+{
+    flex: none;
+    display: flex;
+    flex-direction: row;
+    height: 40dp;
+}
+.gt .gt-regions button.ps-btn
+{
+    width: 172dp;
+    margin-right: 8dp;
+}
+.gt .gt-regions button.ps-btn:last-child
+{
+    margin-right: 0;
+}
+.gt .gt-check
+{
+    flex: none;
+    height: 30dp;
+    margin: 4dp 0 10dp 0;
+}
+.gt .gt-spacer
+{
+    flex: 1;
+}
+.gt .gt-bottom button#btnInfo
+{
+    width: 172dp;
+}
+.gt .gt-bottom button.gt-activate
+{
+    width: 172dp;
+    margin-right: 8dp;
+}
+.gt .gt-bottom button.gt-refresh
+{
+    width: 40dp;
+}
+button.ps-iconbtn.gt-refresh .glyph
+{
+    decorator: image(ui-image/Plus_PS_Icon_rotate_cw);
+}
+
+/* ---- the local mesh window (plus/localmesh/localmeshrml.cpp, localmesh.rml): the XUI window's own rows in the 540 x 422
+   body: 8 at the sides (the texts 10), the files label 6 from the top, the list 120 high, the rows 6 apart, the log the
+   rest (76 at the XUI height), 12 under it ---- */
+.lm
+{
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 0 8dp 12dp 8dp;
+    font-size: var(--font-small);
+}
+.lm .lm-text
+{
+    flex: none;
+    height: 16dp;
+    margin: 0 0 0 2dp;
+    color: var(--text-white);
+    white-space: nowrap;
+    overflow: hidden;
+}
+.lm .lm-files
+{
+    margin-top: 6dp;
+}
+.lm .lm-list
+{
+    flex: none;
+    height: 120dp;
+    margin-top: 2dp;
+}
+.lm .lm-row
+{
+    flex: none;
+    display: flex;
+    flex-direction: row;
+}
+.lm .lm-buttons
+{
+    height: 22dp;
+    margin-top: 6dp;
+}
+.lm button.inline
+{
+    flex: none;
+    box-sizing: border-box;
+    height: 22dp;
+    line-height: 20dp;
+    margin: 0;
+    padding: 0;
+    font-size: var(--font-small);
+}
+.lm button.lm-btn100 { width: 100dp; }
+.lm button.lm-btn170 { width: 170dp; }
+.lm button.lm-gap6 { margin-left: 6dp; }
+.lm .lm-auto
+{
+    flex: none;
+    margin: 3dp 0 0 10dp;
+}
+.lm .lm-object
+{
+    margin-top: 11dp;
+    font-weight: bold;
+}
+.lm .lm-target
+{
+    height: 30dp;
+    margin-top: 2dp;
+    white-space: normal;
+}
+.lm .lm-meshrow
+{
+    height: 22dp;
+    margin-top: 3dp;
+}
+.lm .lm-meshes-label
+{
+    width: 60dp;
+    margin: 3dp 0 0 2dp;
+}
+.lm select.lm-meshes
+{
+    flex: 1;
+    height: 22dp;
+    line-height: 20dp;
+    margin: 0 2dp 0 4dp;
+}
+.lm select.lm-meshes selectarrow
+{
+    margin-top: 5dp;
+}
+.lm .lm-size
+{
+    flex: none;
+    margin-top: 6dp;
+}
+.lm .lm-show
+{
+    height: 22dp;
+    margin-top: 6dp;
+}
+.lm .lm-logl
+{
+    margin-top: 10dp;
+}
+.lm .lm-log
+{
+    flex: 1;
+    min-height: 36dp;
+    margin-top: 2dp;
+}
+.lm .lm-log textarea.ps-readonly
+{
+    width: 100%;
+    height: 100%;
+    caret-color: transparent;
+}

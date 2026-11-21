@@ -5,7 +5,9 @@
      ranges) in the psui look (charis-ui-style, plus/prefscharis/prefs_tab_template.xml).
      Height of the list (1080 base): 10 + language 33 + note 18 + time 33 + 10 + maturity 33 + its text 18
      + favourites 30 + note 18 + 10 + heading 40 + name tags 33 + 4 + checks 30 + 30 + group tags 33 + 10
-     + heading 40 + letter keys 33 + 10 + away 33 + 10 + label 24 + reply 60 + 14 = 617 (scrolls in 515).
+     + heading 40 + letter keys 33 + 10 + away 33 + 10 + label 24 + reply 60 + 14
+     + heading 40 + moving together 33 + 10 + snap distance 33 + 10 + gap 33 + 10 + check 30 + 14
+     (plus/floatersnap) = 830 (scrolls in 515).
      Rows at left 14, 529 wide: label 230 | 12 | drop-down 287 (the longest language name is 255);
      two columns of 258; the rating icons (the C++ shows them by the maturity) after its drop-down (223).
      ja: 38 characters a row. -->
@@ -42,7 +44,7 @@
              name="general_scroll_panel"
              background_visible="false"
              follows="left|top"
-             height="617"
+             height="860"
              layout="topleft"
              left="0"
              mouse_opaque="false"
@@ -529,6 +531,166 @@
                         log_in_to_change
                     </text_editor>
                 </panel>
+                <plus_ps_text
+                 name="windows_textbox"
+                 follows="left|top|right"
+                 height="40"
+                 kind="title"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="617"
+                 type="string"
+                 width="529">
+                    Windows:
+                </plus_ps_text>
+                <plus_ps_text
+                 name="window_group_textbox"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="657"
+                 type="string"
+                 width="230">
+                    Windows that touch:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="window_group_combobox"
+                 control_name="PlusFloaterGroupMove"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="256"
+                 tool_tip="Dragging a window by its title bar takes the windows touching it along. The group is found when you press the title bar."
+                 top="657"
+                 width="287">
+                    <plus_ps_combo.item
+                     name="group_together"
+                     label="Move together (Shift: one)"
+                     value="1" />
+                    <plus_ps_combo.item
+                     name="group_shift"
+                     label="Move together with Shift"
+                     value="2" />
+                    <plus_ps_combo.item
+                     name="group_off"
+                     label="Move one at a time"
+                     value="0" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="window_snap_textbox"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="700"
+                 type="string"
+                 width="230">
+                    Snap distance:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="window_snap_combobox"
+                 control_name="SnapMargin"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="256"
+                 tool_tip="How near a window must come to another window or the edge of the screen to snap to it"
+                 top="700"
+                 width="287">
+                    <plus_ps_combo.item
+                     name="snap_off"
+                     label="Off"
+                     value="0" />
+                    <plus_ps_combo.item
+                     name="snap_short"
+                     label="Short"
+                     value="5" />
+                    <plus_ps_combo.item
+                     name="snap_normal"
+                     label="Normal"
+                     value="10" />
+                    <plus_ps_combo.item
+                     name="snap_long"
+                     label="Long"
+                     value="20" />
+                </plus_ps_combo>
+                <plus_ps_text
+                 name="window_gap_textbox"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="14"
+                 length="1"
+                 top="743"
+                 type="string"
+                 width="230">
+                    Gap between windows:
+                </plus_ps_text>
+                <plus_ps_combo
+                 name="window_gap_combobox"
+                 control_name="PlusFloaterSnapGap"
+                 follows="left|top"
+                 height="33"
+                 layout="topleft"
+                 left="256"
+                 tool_tip="The space left between two windows that snapped together"
+                 top="743"
+                 width="287">
+                    <plus_ps_combo.item
+                     name="gap_none"
+                     label="None"
+                     value="0" />
+                    <plus_ps_combo.item
+                     name="gap_small"
+                     label="2 pixels"
+                     value="2" />
+                    <plus_ps_combo.item
+                     name="gap_medium"
+                     label="4 pixels"
+                     value="4" />
+                    <plus_ps_combo.item
+                     name="gap_large"
+                     label="8 pixels"
+                     value="8" />
+                </plus_ps_combo>
+                <plus_ps_check_compat
+                 name="window_snap_near_check"
+                 control_name="PlusFloaterSnapNearOnly"
+                 follows="left|top|right"
+                 height="30"
+                 label="Snap only to windows that are near"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="A window far above or below does not catch the window you move"
+                 top="786"
+                 width="529" />
+                <plus_ps_check_compat
+                 name="window_snap_hint_check"
+                 control_name="PlusFloaterSnapHint"
+                 follows="left|top|right"
+                 height="30"
+                 label="Show how to move one window alone"
+                 layout="topleft"
+                 left="14"
+                 tool_tip="While windows move together, a line over the window you drag says: hold Shift as you grab the title bar to move only this window"
+                 top="816"
+                 width="529" />
+                <!-- floatersnap: shows "Custom (N)" in the snap distance and gap drop-downs for a value that is not listed
+                     (plus/floatersnap). A point on the drop-downs' own place; the parent view draws it by the window's rectangle, not the scroll's clip, so it also runs while scrolled out of sight -->
+                <plus_snap_choices
+                 name="snap_choices"
+                 follows="left|top"
+                 height="1"
+                 layout="topleft"
+                 left="256"
+                 mouse_opaque="false"
+                 tab_stop="false"
+                 top="700"
+                 width="1" />
             </panel>
         </scroll_container>
     </plus_ps_box>

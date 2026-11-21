@@ -37,6 +37,7 @@
 #include "llfloater.h"
 #include "llcombobox.h"
 
+#include "addtoset.h"
 #include "lggcontactsets.h"
 
 class FSFloaterAddToContactSet : public LLFloater
@@ -55,11 +56,7 @@ private:
     void updateSets(LGGContactSets::EContactSetUpdate type);
     boost::signals2::connection mContactSetChangedConnection;
 
-    bool mHasMultipleAgents{ false };
-    bool mIsMoveOperation{ false };
-    LLUUID mAgentID;
-    uuid_vec_t mAgentIDs;
-    std::string mSourceSet;
+    plus::contactsets::AddToSetTarget mTarget;
 
     LLComboBox* mContactSetsCombo{ nullptr };
 };

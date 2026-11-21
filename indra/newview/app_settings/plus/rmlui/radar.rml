@@ -1,0 +1,61 @@
+<rml>
+<!-- The radar window (plus/radar/radarrml.cpp, research/386). Its words are "[[name]]": the <string>s of
+     floater_plus_radar_rml.xml (en, ja). The contract with the C++ (a name on each side):
+       data model "radar" (plus::rmlui::SettingsModel): limit_range show_muted report_chat_enter report_chat_leave
+         report_draw_enter report_draw_leave report_region_enter report_region_leave   bool  PlusRadar*
+         range range_now  number  PlusRadarRange (10..4096; shown in the number box by data-attr-value, kept back while its field has the
+           focus; range_now: always the setting, what Esc puts back; written from the box's "commit")
+       ids the C++ uses: tab_list tab_settings (the tabs), panel_list panel_settings, filter filter_hint filter_clear
+         (plus::rmlui::SearchBox), list_head and list (plus::rmlui::RmlList with columns), counter (a text), name_format
+         (a select: its list opens outside the window, RmlPopup), spin (the host's number box, rmlparts.h 5.: the range, its
+         "commit"), c_region c_sitting c_age c_payment c_seen c_range (the columns' boxes: the attribute "checked").
+     The places are the XUI window's own: the tab strip 20 high at 2 from the sides, the panels' places inside it. -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare" data-model="radar">
+    <div class="rd">
+        <div class="rd-tabs">
+            <button id="tab_list" class="rd-tab active">[[tab_list]]</button>
+            <button id="tab_settings" class="rd-tab">[[tab_settings]]</button>
+        </div>
+        <div id="panel_list" class="rd-panel">
+            <div class="ps-search a rd-filter" title="[[tip_filter]]">
+                <input type="text" class="text" id="filter" maxlength="256" ime-blur="keep" select-on-focus/>
+                <span class="ps-hint" id="filter_hint">[[filter_hint]]</span>
+                <button id="filter_clear" class="clear hidden">x</button>
+            </div>
+            <div class="ps-list-box a rd-list">
+                <div id="list_head" class="ps-list-head"></div>
+                <div id="list" class="ps-list" tabindex="0"></div>
+            </div>
+            <p id="counter" class="a rd-counter"></p>
+        </div>
+        <div id="panel_settings" class="rd-panel hidden">
+            <p class="a" style="left: 12dp; top: 12dp; width: 70dp; height: 16dp">[[names_label]]</p>
+            <select id="name_format" class="ps-select a" style="left: 86dp; top: 8dp; width: 220dp" title="[[tip_name_format]]"></select>
+        <div class="line a" style="left: 12dp; top: 40dp; width: 140dp" title="[[tip_limit_range]]"><input type="checkbox" id="c_limit" data-checked="limit_range"/><label for="c_limit">[[limit_range]]</label></div>
+        <div class="a ps-spin rd-spin" id="spin" min="10" max="4096" step="10" decimals="0" style="left: 160dp; top: 38dp">
+            <input type="text" class="text" id="range" maxlength="4" ime="off" data-attr-value="range" data-attr-spin-shown="range_now"/>
+            <div class="arrows"><button class="up"></button><button class="down"></button></div>
+        </div>
+        <div class="line a" style="left: 12dp; top: 66dp; width: 300dp"><input type="checkbox" id="c_muted" data-checked="show_muted"/><label for="c_muted">[[show_muted]]</label></div>
+        <p class="a" style="left: 12dp; top: 96dp; width: 390dp; height: 16dp">[[report_label]]</p>
+        <div class="line a" style="left: 24dp; top: 118dp; width: 340dp"><input type="checkbox" id="c_report_chat_enter" data-checked="report_chat_enter"/><label for="c_report_chat_enter">[[report_chat_enter]]</label></div>
+        <div class="line a" style="left: 24dp; top: 140dp; width: 340dp"><input type="checkbox" id="c_report_chat_leave" data-checked="report_chat_leave"/><label for="c_report_chat_leave">[[report_chat_leave]]</label></div>
+        <div class="line a" style="left: 24dp; top: 162dp; width: 340dp"><input type="checkbox" id="c_report_draw_enter" data-checked="report_draw_enter"/><label for="c_report_draw_enter">[[report_draw_enter]]</label></div>
+        <div class="line a" style="left: 24dp; top: 184dp; width: 340dp"><input type="checkbox" id="c_report_draw_leave" data-checked="report_draw_leave"/><label for="c_report_draw_leave">[[report_draw_leave]]</label></div>
+        <div class="line a" style="left: 24dp; top: 206dp; width: 340dp"><input type="checkbox" id="c_report_region_enter" data-checked="report_region_enter"/><label for="c_report_region_enter">[[report_region_enter]]</label></div>
+        <div class="line a" style="left: 24dp; top: 228dp; width: 340dp"><input type="checkbox" id="c_report_region_leave" data-checked="report_region_leave"/><label for="c_report_region_leave">[[report_region_leave]]</label></div>
+        <p class="a" style="left: 12dp; top: 258dp; width: 390dp; height: 16dp">[[columns_label]]</p>
+        <div class="line a" style="left: 24dp; top: 280dp; width: 180dp"><input type="checkbox" id="c_region"/><label for="c_region">[[lbl_col_region]]</label></div>
+        <div class="line a" style="left: 214dp; top: 280dp; width: 180dp"><input type="checkbox" id="c_sitting"/><label for="c_sitting">[[lbl_col_sitting]]</label></div>
+        <div class="line a" style="left: 24dp; top: 302dp; width: 180dp"><input type="checkbox" id="c_age"/><label for="c_age">[[lbl_col_age]]</label></div>
+        <div class="line a" style="left: 214dp; top: 302dp; width: 180dp"><input type="checkbox" id="c_payment"/><label for="c_payment">[[lbl_col_payment]]</label></div>
+        <div class="line a" style="left: 24dp; top: 324dp; width: 180dp"><input type="checkbox" id="c_seen"/><label for="c_seen">[[lbl_col_seen]]</label></div>
+        <div class="line a" style="left: 214dp; top: 324dp; width: 180dp"><input type="checkbox" id="c_range"/><label for="c_range">[[lbl_col_range]]</label></div>
+        </div>
+    </div>
+</body>
+</rml>

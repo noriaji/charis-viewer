@@ -38,7 +38,7 @@ namespace plus::slwx
 {
     struct Effective            // the weather now
     {
-        bool  fromParcel;       // the parcel's weather is in effect
+        bool  fromOutside;      // a weather other than the settings' is in effect: the parcel's tag or the sky's (plus/skyweather)
         S32   rainLevel;        // 0..3 (as PlusRain: 1 drizzle, 2 rain, 3 downpour)
         F32   rainMm;           // mm/h of rain (blended; the level is taken from it): plus/rain grows the drops with it
         S32   snowLevel;        // 0..3 (as PlusSnow: 1 light, 2 snow, 3 heavy)
@@ -54,6 +54,16 @@ namespace plus::slwx
     // both 0 (the viewer's own weather wins), and the parcel has a tag (or its
     // fall is still fading out).
     bool effective(Effective& out);
+
+    // <plus> skyweather-ui
+    // Only the parcel's tag, as it stands now (no blending): for the sky
+    // editors' import button, which must not be answered by the sky's own weather.
+    // False when PlusWeatherAllowParcel is off or the parcel has no tag. Unlike effective(),
+    // windFromDeg is the tag's own direction (without its wavering), the pair of windBaseSpeed.
+    // compute()'s fade state is not touched; the parcel's observation is advanced (update()),
+    // which compute() starts over (reset()) when it takes the tag up again, so nothing stays.
+    bool parcelEffective(Effective& out);
+    // </plus> skyweather-ui
 
     // PlusWeatherAllowParcel (off by default): take the weather other people
     // wrote into their parcel. Nothing is sent. Off: effective() is always false.

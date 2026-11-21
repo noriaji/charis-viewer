@@ -39,9 +39,13 @@ namespace llvkgl
     // depth attachment), clears the list heads and the node count and opens
     // the session. Draws into that target then write nodes (draw_one: the
     // program's OIT variant, oit_variant), others draw as before.
-    // oit_resolve: copies the target's color, composites every pixel's nodes
-    // over the copy into the target, and copies the node count for the size
-    // check (oit_harvest, once the frame slot comes round again).
+    // oit_resolve: composites every pixel's nodes over the target and copies
+    // the node count for the size check (oit_harvest, once the frame slot comes
+    // round again). Direct (research/395; float targets, nodes whose blends do
+    // not read the color behind them): the composite is written as a + b * d
+    // and the pipeline's blend applies it to the target itself. Else the
+    // target's color is copied first (at the pixels with a list) and the
+    // composite is written over it.
     //
     // Resources: the heads image (r32ui), the copy (the target's format) and
     // the rest image (r32ui x OIT_REST_LAYERS, made when a session first ran out of nodes at that size: oit_resources)
@@ -75,6 +79,8 @@ namespace
     const U32 sOITGrowLayers = llmax(env_count("LLRHI_OIT_GROW_LAYERS", 1, 64, 8), sOITLayers);
     const U32 sOITMaxLayers = env_count("LLRHI_OIT_MAX_LAYERS", 1, OIT_MAX_LAYERS, 16);
     const U32 sOITMaxMB = env_count("LLRHI_OIT_MAX_MB", 16, 4000, 768);
+    // research/395: LLRHI_OIT_DIRECT=0 switches the direct resolve (blend, no copy of the target) off; unset or anything else: on.
+    const bool sOITDirect = LLRHI::envFirstChar("LLRHI_OIT_DIRECT") != '0';
     constexpr U32 OIT_SET_BINDINGS = 6;
     constexpr VkShaderStageFlags OIT_RESOLVE_STAGES = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     constexpr U32 OIT_HEADER_WORDS = OIT_HEADER_BYTES / 4;
@@ -407,6 +413,19 @@ namespace
             LL_WARNS("VKGL") << "OIT: resolve shaders failed: " << sOIT.resolve_vertex.log << sOIT.resolve_fragment.log << LL_ENDL;
             return false;
         }
+        // research/395: the direct resolve's shader (the resolve's with BLEND defined after #version). Not built, or
+        // failing to build, only leaves every session on the resolve above.
+        if (sOITDirect && device.hasDualSrcBlend())
+        {
+            std::string direct = OIT_RESOLVE_FRAGMENT;
+            direct.insert(direct.find('\n') + 1, "#define BLEND 1\n");
+            sOIT.direct_ready = LLVKShader::build({ { LLVKShader::Stage::Fragment, direct } }, sOIT.resolve_direct_fragment) &&
+                                !sOIT.resolve_direct_fragment.modules.empty();
+            if (!sOIT.direct_ready)
+            {
+                LL_WARNS("VKGL") << "OIT: direct resolve shader failed (the target is copied as before): " << sOIT.resolve_direct_fragment.log << LL_ENDL;
+            }
+        }
         sOIT.bounds = oit_bounds_pipeline(nullptr);
         if (!sOIT.bounds)
         {
@@ -471,6 +490,8 @@ namespace
         const U64 max_bytes = llmin((U64)sOITMaxMB << 20, (U64)device.getLimits().maxStorageBufferRange);
         sOIT.max_nodes = (U32)llmin((max_bytes - OIT_HEADER_BYTES) / (OIT_NODE_WORDS * 4), (U64)0x7fffffffu / OIT_NODE_WORDS);
         sOIT.ready = true;
+        LL_INFOS("VKGL") << "OIT direct resolve (float targets, blends that do not read the color behind): "
+                         << (sOIT.direct_ready ? "on" : !sOITDirect ? "off (LLRHI_OIT_DIRECT=0)" : "off (no dual-source blend or no shader)") << LL_ENDL;
         LL_INFOS("VKGL") << "OIT ready: " << sOITLayers << " nodes per pixel to start with, at most " << sOIT.max_nodes << " nodes"
                          << ", skip alpha " << oit_skip_text() << (sOITSkipAlpha.bad ? " (LLRHI_OIT_SKIP_ALPHA not a number: the default)" : "")
                          << ", rest image " << oit_rest_text() << (sOITRest.bad ? " (LLRHI_OIT_REST not lazy, sticky or eager: sticky)" : "")
@@ -709,12 +730,24 @@ namespace
         return true;
     }
 
-    // The resolve pass's pipeline for the target's attachments.
-    VkPipeline oit_resolve_pipeline(const LLVKMirror::Target& target)
+    // A fixed-point target that blends: GL clamps the blend's inputs and results there (the resolve's clamp_colors).
+    bool oit_clamp_colors(VkFormat format)
+    {
+        return (format_features(format) & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT) &&
+               !(format == VK_FORMAT_R16G16B16A16_SFLOAT || format == VK_FORMAT_R32G32B32A32_SFLOAT ||
+                 format == VK_FORMAT_B10G11R11_UFLOAT_PACK32 || format == VK_FORMAT_R16G16B16_SFLOAT ||
+                 format == VK_FORMAT_R16G16_SFLOAT || format == VK_FORMAT_R16_SFLOAT ||
+                 format == VK_FORMAT_R32_SFLOAT || format == VK_FORMAT_R32G32_SFLOAT);
+    }
+
+    // The resolve pass's pipeline for the target's attachments. direct (research/395): the direct resolve's
+    // (its fragment shader's out_color + out_factor * d, applied by the blend), else the one that reads the copy.
+    VkPipeline oit_resolve_pipeline(const LLVKMirror::Target& target, bool direct)
     {
         std::vector<U32> key = { (U32)target.color_formats[0], (U32)target.depth_format, target.stencil ? 1u : 0u };
-        auto it = sOIT.resolve_pipelines.find(key);
-        if (it != sOIT.resolve_pipelines.end())
+        auto& cache = direct ? sOIT.resolve_direct_pipelines : sOIT.resolve_pipelines;
+        auto it = cache.find(key);
+        if (it != cache.end())
         {
             return it->second;
         }
@@ -724,7 +757,7 @@ namespace
         stages[0].module = sOIT.resolve_vertex.modules[0];
         stages[0].pName = "main";
         stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        stages[1].module = sOIT.resolve_fragment.modules[0];
+        stages[1].module = (direct ? sOIT.resolve_direct_fragment : sOIT.resolve_fragment).modules[0];
         stages[1].pName = "main";
         const VkSpecializationMapEntry layers_entry = { 0, 0, sizeof(U32) };     // MAX_LAYERS
         VkSpecializationInfo layers = {};
@@ -748,6 +781,17 @@ namespace
         VkPipelineDepthStencilStateCreateInfo depth = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };   // no tests, no writes
         VkPipelineColorBlendAttachmentState blend = {};
         blend.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        if (direct)
+        {
+            // result = out_color + target * out_factor (the second output, per channel).
+            blend.blendEnable = VK_TRUE;
+            blend.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+            blend.dstColorBlendFactor = VK_BLEND_FACTOR_SRC1_COLOR;
+            blend.colorBlendOp = VK_BLEND_OP_ADD;
+            blend.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+            blend.dstAlphaBlendFactor = VK_BLEND_FACTOR_SRC1_ALPHA;
+            blend.alphaBlendOp = VK_BLEND_OP_ADD;
+        }
         VkPipelineColorBlendStateCreateInfo color = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
         color.attachmentCount = 1;
         color.pAttachments = &blend;
@@ -777,8 +821,13 @@ namespace
         if (vkCreateGraphicsPipelines(LLVKDevice::instance().getDevice(), LLVKDevice::instance().usePipelineCache(), 1, &info, nullptr, &pipeline) != VK_SUCCESS)
         {
             pipeline = VK_NULL_HANDLE;
+            if (direct)
+            {
+                LL_WARNS_ONCE("VKGL") << "OIT: no direct resolve pipeline for target format " << (S32)target.color_formats[0]
+                                      << " (resolved by the copy of the target there)" << LL_ENDL;
+            }
         }
-        sOIT.resolve_pipelines[key] = pipeline;
+        cache[key] = pipeline;
         return pipeline;
     }
 
@@ -1079,6 +1128,7 @@ namespace
         sOIT.slot = slot;
         sOIT.entry = entry;
         sOIT.node_draws = 0;
+        sOIT.complex = false;
         sOIT.depth_a = depth_a;
         sOIT.depth_b = depth_b;
         ++sOIT.sessions;
@@ -1173,16 +1223,30 @@ namespace
             ++sOIT.dropped;
             return;
         }
-        const VkPipeline pipeline = oit_resolve_pipeline(target.target);
+        Texture& color = *sOIT.color;
+        // research/395: the direct resolve (the nodes folded into one blend over the target, no copy of it) for a float
+        // target and nodes whose blends do not read the color behind them; else the copy as before.
+        const bool clamp_colors = oit_clamp_colors(color.format.format);
+        const bool format_ok = !clamp_colors && (format_features(color.format.format) & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT);
+        bool direct = sOIT.direct_ready && !sOIT.complex && format_ok;
+        VkPipeline pipeline = direct ? oit_resolve_pipeline(target.target, true) : VK_NULL_HANDLE;
+        const bool no_pipeline = direct && !pipeline;   // none for this format: the copy
+        direct = direct && pipeline;
+        if (!direct)
+        {
+            pipeline = oit_resolve_pipeline(target.target, false);
+        }
         if (!pipeline)
         {
             LL_WARNS_ONCE("VKGL") << "OIT: no resolve pipeline, alpha is dropped" << LL_ENDL;
             ++sOIT.dropped;
             return;
         }
-        Texture& color = *sOIT.color;
-        // The bounds pass's copy samples the view the session's set has.
-        const char* qualifier = sOIT.color_view && color.attach_view == sOIT.color_view ? oit_copy_qualifier(color.format.format) : nullptr;
+        // Why not direct, first reason that holds (the order of the tests above).
+        ++(direct ? sOIT.direct_resolves : !sOIT.direct_ready ? sOIT.copy_off : sOIT.complex ? sOIT.copy_complex :
+           !format_ok ? sOIT.copy_format : no_pipeline ? sOIT.copy_pipeline : sOIT.copy_off);
+        // The bounds pass's copy samples the view the session's set has (not copied when direct).
+        const char* qualifier = !direct && sOIT.color_view && color.attach_view == sOIT.color_view ? oit_copy_qualifier(color.format.format) : nullptr;
         VkPipeline bounds = sOIT.bounds;
         if (qualifier)
         {
@@ -1201,14 +1265,27 @@ namespace
         written.srcAccessMask = VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT;
         written.dstStageMask = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT | VK_PIPELINE_STAGE_2_ALL_TRANSFER_BIT;
         written.dstAccessMask = VK_ACCESS_2_SHADER_STORAGE_READ_BIT | VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT | VK_ACCESS_2_TRANSFER_READ_BIT;
+        if (direct)
+        {
+            // The target's color as the session's draws left it, before the resolve's blend reads it: the layout
+            // changes of the copy's way (below) ordered it otherwise.
+            written.srcStageMask |= VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+            written.srcAccessMask |= VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+            written.dstStageMask |= VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+            written.dstAccessMask |= VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
+        }
         VkDependencyInfo dependency = { VK_STRUCTURE_TYPE_DEPENDENCY_INFO };
         dependency.memoryBarrierCount = 1;
         dependency.pMemoryBarriers = &written;
         vkCmdPipelineBarrier2(cmd, &dependency);
 
         // What is behind the nodes: the target as the session leaves it, at the
-        // pixels with a list (the bounds pass), else all of it.
-        if (qualifier)
+        // pixels with a list (the bounds pass), else all of it. Direct: the blend reads the target itself.
+        if (direct)
+        {
+            // Nothing to copy: the target stays as it is.
+        }
+        else if (qualifier)
         {
             transition(cmd, color, VK_IMAGE_LAYOUT_GENERAL);
             LLVKMirror::imageBarrier(cmd, sOIT.copy.image, VK_IMAGE_ASPECT_COLOR_BIT, sOIT.copy.layout, VK_IMAGE_LAYOUT_GENERAL, 1, 1);
@@ -1244,8 +1321,11 @@ namespace
         vkCmdCopyBuffer(cmd, sOIT.nodes, sOIT.readback[sOIT.slot].buffer, 1, &count_copy);
         sOIT.readback[sOIT.slot].copied[sOIT.entry] = true;
         // The copy (written by the transfer or the bounds pass) for sampling.
-        LLVKMirror::imageBarrier(cmd, sOIT.copy.image, VK_IMAGE_ASPECT_COLOR_BIT, sOIT.copy.layout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
-        sOIT.copy.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        if (!direct)
+        {
+            LLVKMirror::imageBarrier(cmd, sOIT.copy.image, VK_IMAGE_ASPECT_COLOR_BIT, sOIT.copy.layout, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, 1, 1);
+            sOIT.copy.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        }
         transition(cmd, color, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
         // The depth stays as the session's draws had it.
         target.target.depth_read_only = target.depth->layout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
@@ -1257,13 +1337,8 @@ namespace
         VkCommandBuffer draw = mirror.beginRendering(target.target);
         vkCmdBindPipeline(draw, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
         vkCmdBindDescriptorSets(draw, VK_PIPELINE_BIND_POINT_GRAPHICS, sOIT.resolve_layout, 0, 1, &sOIT.set, 0, nullptr);
-        const U32 clamp_colors = (format_features(color.format.format) & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT) &&
-                                 !(color.format.format == VK_FORMAT_R16G16B16A16_SFLOAT || color.format.format == VK_FORMAT_R32G32B32A32_SFLOAT ||
-                                   color.format.format == VK_FORMAT_B10G11R11_UFLOAT_PACK32 || color.format.format == VK_FORMAT_R16G16B16_SFLOAT ||
-                                   color.format.format == VK_FORMAT_R16G16_SFLOAT || color.format.format == VK_FORMAT_R16_SFLOAT ||
-                                   color.format.format == VK_FORMAT_R32_SFLOAT || color.format.format == VK_FORMAT_R32G32_SFLOAT) ? 1u : 0u;
         OITResolveConstants constants;
-        constants.clamp_colors = clamp_colors;
+        constants.clamp_colors = clamp_colors ? 1u : 0u;
         constants.depth_a = sOIT.depth_a;
         constants.depth_b = sOIT.depth_b;
         // Window depth to clip depth: [0, 1] -> [-1, 1], GL's clip depth
@@ -1525,10 +1600,13 @@ namespace
             << sOIT.capacity << ", overflows " << sOIT.overflows << ", grows " << sOIT.grows << ", rest " << (sOIT.rest.image ? "on" : "off") << " (" << oit_rest_text() << ", wanted up to "
             << (sOIT.rest_wanted_pixels == ~(U64)0 ? std::string("any size") : std::to_string(sOIT.rest_wanted_pixels) + " pixels") << ")"
             << ", skip alpha " << oit_skip_text()
+            << ", resolves direct " << sOIT.direct_resolves / frames << " by copy (blend " << sOIT.copy_complex / frames << ", format " << sOIT.copy_format / frames
+            << ", pipeline " << sOIT.copy_pipeline / frames << ", off " << sOIT.copy_off / frames << ")"
             << ", variants " << sOIT.variants << " (none " << sOIT.variants_failed << ")";
         sOIT.sessions = sOIT.refused = sOIT.dropped = sOIT.draws = sOIT.classic_draws = 0;
         sOIT.hybrid_sessions = sOIT.avatarless = sOIT.split_draws = sOIT.set_binds = 0;
         sOIT.peak = sOIT.overflows = sOIT.grows = 0;
+        sOIT.direct_resolves = sOIT.copy_complex = sOIT.copy_format = sOIT.copy_pipeline = sOIT.copy_off = 0;
         return out.str();
     }
 

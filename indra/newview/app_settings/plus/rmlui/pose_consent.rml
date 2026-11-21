@@ -1,0 +1,22 @@
+<rml>
+<!-- The window of who may pose my avatar (plus/poseconsent/poseconsentrml.cpp, research/386). Its words are "[[name]]":
+     the <string>s of floater_plus_pose_consent_rml.xml (en, ja). The ids the C++ uses: list (RmlList), withdraw,
+     withdraw_all, reflect_stop (buttons). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare">
+    <div class="pose-consent">
+        <p class="pc-note">[[note]]</p>
+        <div class="ps-list-box">
+            <div id="list" class="ps-list" tabindex="0"></div>
+        </div>
+        <div class="pc-row">
+            <button id="withdraw" class="ps-btn" disabled="disabled" title="[[tip_withdraw]]">[[withdraw]]</button>
+            <button id="withdraw_all" class="ps-btn" disabled="disabled" title="[[tip_withdraw_all]]">[[withdraw_all]]</button>
+        </div>
+        <button id="reflect_stop" class="ps-btn pc-wide" disabled="disabled" title="[[tip_reflect_stop]]">[[reflect_stop]]</button>
+    </div>
+</body>
+</rml>

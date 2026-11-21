@@ -1,0 +1,50 @@
+<rml>
+<!-- The time converter window (plus/timeconv/timeconvrml.cpp, research/385). The XUI window's own layout (floater_plus_time_conv.xml,
+     its y minus the 18 px header; the sizes and places are charis.rcss's ".timeconv"). Four rows with the same children come from
+     data-for; each row's five fields come from a data-for too. The contract with the C++ (a name on each side):
+       data model "timeconv":
+         rows[]    {label, is_zone, removable, copy, tip_copy, tip_zone, remove, tip_remove}   (static: made once)
+         fields[]  {style, istyle, ustyle, maxlen, tip, unit}                                          (static: made once)
+         tick      bool   the window's own variable (a getter and a setter in the C++, not SettingsModel: only the window's followClock writes the setting)
+       Outside the data-for the words are "[[name]]" (the <string>s of floater_plus_time_conv_rml.xml); inside it they come from the
+       model (what a clone of a text node holds is not looked at again).
+       The text of the fields, the info texts, the note and the summary are written by the C++ directly (as the XUI window's
+       setIfChanged did: a typed row is left alone, the cursor stays); the zone lists are options the C++ adds to the selects.
+       ids / classes the C++ listens to: tc (keydown, mousescroll, textinput as capture; change, click), .tcf (focus, blur as capture: after RmlUi's own), the selects.
+       The fields are the host's parts (rmlparts.h): select-on-focus (the whole text is selected when a field gets the focus) and ime="off"
+       (digits only: no IME). The zone lists of the selects open outside the window (RmlPopup, automatic: rmlpopup.h). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare" data-model="timeconv">
+    <div class="timeconv" id="tc">
+        <div class="tcrows">
+            <div class="tcrow" data-for="row : rows">
+                <span class="tclabel" data-if="!row.is_zone">{{ row.label }}</span>
+                <select class="ps-select tczone" data-if="row.is_zone" data-attr-title="row.tip_zone"></select>
+                <div class="tcfw" data-for="f : fields" data-attr-style="f.style">
+                    <input type="text" class="text tcf" select-on-focus ime="off" data-attr-style="f.istyle" data-attr-maxlength="f.maxlen" data-attr-title="f.tip"/>
+                    <span class="tcu" data-attr-style="f.ustyle">{{ f.unit }}</span>
+                </div>
+                <span class="tcinfo"></span>
+                <button class="tccopy" data-attr-title="row.tip_copy">{{ row.copy }}</button>
+                <button class="tcrm" data-if="row.removable" data-attr-title="row.tip_remove">{{ row.remove }}</button>
+            </div>
+        </div>
+        <span class="tcnote" id="note"></span>
+        <button id="add_row" class="tcbtn" style="left: 12dp; top: 100dp; width: 116dp" title="[[tip_add_row]]">[[add_row]]</button>
+        <button id="now" class="tcbtn" style="left: 12dp; top: 154dp; width: 96dp" title="[[tip_now]]">[[now]]</button>
+        <div class="tcbox" style="left: 116dp; top: 157dp; width: 140dp" title="[[tip_tick]]">
+            <input type="checkbox" id="c_tick" data-checked="tick"/>
+            <label for="c_tick">[[tick]]</label>
+        </div>
+        <button id="plus_hour" class="tcbtn" style="left: 270dp; top: 154dp; width: 64dp">[[plus_hour]]</button>
+        <button id="plus_day" class="tcbtn" style="left: 338dp; top: 154dp; width: 64dp">[[plus_day]]</button>
+        <button id="minus_hour" class="tcbtn" style="left: 406dp; top: 154dp; width: 64dp">[[minus_hour]]</button>
+        <button id="minus_day" class="tcbtn" style="left: 474dp; top: 154dp; width: 64dp">[[minus_day]]</button>
+        <span class="tcsummary" id="summary"></span>
+        <button id="copy_all" class="tcbtn" style="left: 466dp; top: 187dp; width: 90dp" title="[[tip_copy_all]]">[[copy_all]]</button>
+    </div>
+</body>
+</rml>

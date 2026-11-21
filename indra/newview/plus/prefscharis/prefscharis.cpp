@@ -122,6 +122,7 @@ namespace plus::prefscharis
             { "c_safe_mode_next",   "Plus.SafeMode.NextStart.Is", "Plus.SafeMode.NextStart.Choosable", Use::VALUE },   // plus/safemode
             { "cb_fps_position",    "Plus.FpsCorner.IsPosition",  nullptr,                             Use::VALUE },   // plus/fpscorner
             { "cb_dgc",             "Plus.GpuDrivenDGC.Is",       "Plus.GpuDrivenDGC.Choosable",       Use::VALUE },   // plus/gpudgc
+            { "c_bc7_gpu",          "Plus.TexBC7.Is",             "Plus.TexBC7.Choosable",             Use::VALUE },   // plus/texbc7
             { "note_comparison_on", "Plus.Presets.IsComparison",  nullptr,                             Use::VISIBLE }, // plus/presets
         };
 

@@ -81,6 +81,7 @@
 #include "plus/safemode/safemode.h" // <plus> safe mode (research/254) </plus>
 #include "plus/fastexit/exittime.h" // <plus> exit-measure (research/276) </plus>
 #include "plus/fastexit/exitwatch.h" // <plus> exit-hang (research/292) </plus>
+#include "plus/fastexit/fastexit.h" // <plus> fast-exit (research/276) </plus>
 
 // Bugsplat (http://bugsplat.com) crash reporting tool
 #ifdef LL_BUGSPLAT
@@ -545,6 +546,7 @@ int APIENTRY WINMAIN(HINSTANCE hInstance,
         }
     }
 
+    plus::fastexit::waitForClosingInstance(); // <plus> fast-exit (research/276): a viewer whose window is gone but which is still saving </plus>
     LLAppViewerWin32* viewer_app_ptr = new LLAppViewerWin32(ll_convert_wide_to_string(pCmdLine).c_str());
 
     gOldTerminateHandler = std::set_terminate(exceptionTerminateHandler);

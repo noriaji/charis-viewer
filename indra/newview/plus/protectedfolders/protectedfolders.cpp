@@ -42,6 +42,7 @@
 
 #include "llfoldertype.h"
 #include "llinventorymodel.h"
+#include "llinventoryobserver.h"
 #include "llnotificationsutil.h"
 #include "llstartup.h"
 #include "lltimer.h"
@@ -88,10 +89,44 @@ namespace plus::protectedfolders
             }
         }
 
+        // The folders whose protection changed get their label made again, for the "(Protected)" suffix
+        // (LLFolderBridge::getLabelSuffix). The ones that only come with the account's values at login are not
+        // in the inventory yet; their labels are made when they are built.
+        void refreshLabels(const std::unordered_set<LLUUID>& before, const std::unordered_set<LLUUID>& after)
+        {
+            bool any = false;
+            for (const LLUUID& id : before)
+            {
+                if (after.count(id) == 0)
+                {
+                    gInventory.addChangedMask(LLInventoryObserver::LABEL, id);
+                    any = true;
+                }
+            }
+            for (const LLUUID& id : after)
+            {
+                if (before.count(id) == 0)
+                {
+                    gInventory.addChangedMask(LLInventoryObserver::LABEL, id);
+                    any = true;
+                }
+            }
+            if (any)
+            {
+                gInventory.notifyObservers();
+            }
+        }
+
         void onSettingChanged(LLControlVariable* control, const LLSD&, const LLSD&)
         {
+            State& s = state();
+            const std::unordered_set<LLUUID> before = s.set;
             rebuild(control->getValue());
-            state().changed();
+            if (LLStartUp::getStartupState() == STATE_STARTED)     // before that the labels are made as the folders are built
+            {
+                refreshLabels(before, s.set);
+            }
+            s.changed();
         }
 
         void ensureConnected()

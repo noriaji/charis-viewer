@@ -30,6 +30,10 @@
 //                      1000 rows of which only the visible ones are elements, tool tips (title), and two
 //                      buttons that switch CSS variables: the accent colour (set from C++, as a user's theme
 //                      will be: research/320) and the body text size (a class that sets the variable).
+//                      The host's parts (research/387, rmlparts.h): a read-only log that follows its end, a field
+//                      that selects all when it gets the focus, a number box (arrows, wheel, Up / Down, Esc), a
+//                      name cut with "..." and shown whole in a tool tip, the text editor menu on a right click of
+//                      any field, and the window's own menu (a right click on the Count button: rmlmenu.h).
 //   plus_rml_demo_xui  the same with psui's parts and the official widgets (the list: a scroll_list).
 // The words are each window's <string>s (en and ja).
 
@@ -37,6 +41,7 @@
 #define PLUS_RMLDEMO_H
 
 #include "rmlcommon.h"
+#include "rmlmenu.h"
 
 #include "llfloater.h"
 
@@ -64,6 +69,10 @@ namespace plus::rmlui
         // The number box beside the slider was committed (Enter or the focus left): into the range, or back to the
         // value it had when the text is no number. The slider and the box follow mAmount (the data model).
         void commitAmount(Rml::Event& event);
+        // The right click on the Count button: its own menu (research/387 3.2), and what its two items do.
+        void showCountMenu(Rml::Event& event);
+        void onMenu(const std::string& what);
+        void addLogLine();
         // The rows the list shows now (its scroll position): spacers above and below the elements made.
         void fillRows();
 
@@ -79,6 +88,11 @@ namespace plus::rmlui
         S32 mRowCount = 0;
         F32 mListHeightPx = -1.f;               // the list's client height after the last update (-1: not seen yet)
         std::string mRowFormat;                 // "Row [N]"
+        std::string mLogFormat;                 // "Log line [N]"
+        std::string mLog;                       // the read-only log's text (the newest lines)
+        int mLogLines = 0;
+        int mSpinValue = 50;                    // the number box's value (the data model: spin_value)
+        plus::rmlui::ContextMenu mMenu;         // the Count button's menu
     };
 
     class RmlDemoXuiFloater : public LLFloater

@@ -98,6 +98,12 @@ namespace plus
             struct Impl;
             std::unique_ptr<Impl> mImpl;
         };
+
+        // The one download of the recognition model of the viewer. It lives outside the subtitle window, so that
+        // closing (or destroying) the window does not cancel it, and a window opened again follows it (the window used to
+        // be only hidden when closed, and kept its own download alive; a window that is destroyed on close needs this).
+        // Made on first use and never destroyed; the viewer quitting cancels it (as sharedTranslateFetch).
+        ModelDownload& sharedModelDownload();
     }
 }
 

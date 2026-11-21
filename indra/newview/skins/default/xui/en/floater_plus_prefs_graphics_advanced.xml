@@ -38,7 +38,7 @@
        Rendering left: 10 + 40 + 40 + 30 + 10 + 40 + 33 + 14 = 217; right: 10 + 40 + 30 + 31 + 31 + 33 + 33 + 31 + 14 = 253.
        Depth of field: 10 + 30 + 30 + 5 x 31 + 14 = 239.
        Charis left: 10 + 40 + 33 + 2 x 31 + 10 + 40 + 30 + 33 + 2 x 31 + 30 + 31 + 14 = 395;
-       right: 10 + 40 + 30 + 18 + 33 + 30 + 10 + 40 + 30 + 31 + 33 + 30 + 30 + 31 + 33 + 14 = 443.
+       right: 10 + 40 + 30 + 18 + 33 + 30 + 31 + 10 + 40 + 30 + 31 + 33 + 30 + 30 + 31 + 33 + 14 = 474 (the water mirror rate slider, 31, after the OIT rows).
      The bottom row: Reset to recommended settings 260 at 14, OK and Cancel 120 at 698 and 826 (14 from the right).
        de, es, fr, it, pl, pt and ru give the reset button width 400 in their files: their labels are 31 (ru) to 41
        (de, es, fr, pt) letters, up to about 300 at the Medium font with the button's padding (research/275 L075; 260
@@ -1905,7 +1905,7 @@
                  name="charis_scroll_panel"
                  background_visible="false"
                  follows="left|top"
-                 height="443"
+                 height="474"
                  layout="topleft"
                  left="0"
                  mouse_opaque="false"
@@ -2210,6 +2210,24 @@
                      tool_tip="Snapshots are rendered with OIT on everything, whatever the setting above is. Slower to take."
                      top="131"
                      width="439" />
+                    <plus_ps_slider_compat
+                     name="PlusWaterMirrorRate"
+                     control_name="PlusWaterMirrorRate"
+                     decimal_digits="0"
+                     follows="left|top"
+                     height="31"
+                     increment="1"
+                     initial_value="1"
+                     label="Water mirror interval:"
+                     label_width="200"
+                     layout="topleft"
+                     left="474"
+                     max_val="4"
+                     min_val="1"
+                     text_width="58"
+                     tool_tip="Redraws the water mirror once every this many frames (2 halves its cost). While the camera stays still the last picture is reused; moving about 1 m or turning about 10 degrees redraws it at once. No effect when the Water mirror in Photo mode is None."
+                     top="171"
+                     width="439" />
                     <!-- ObjectFxText is where Plus.ObjectFx.ShowPrefs scrolls to, down to the bottom of PlusDerezPalette (the group's last row; both are children of this panel). The swatches are not bound by control_name: plus/objectfx shows and writes them -->
                     <plus_ps_text
                      name="ObjectFxText"
@@ -2219,7 +2237,7 @@
                      layout="topleft"
                      left="474"
                      length="1"
-                     top="171"
+                     top="202"
                      type="string"
                      use_ellipses="true"
                      width="439">
@@ -2235,7 +2253,7 @@
                      layout="topleft"
                      left="474"
                      tool_tip="While its textures load, an object is drawn as glowing lines; when they arrive, a band of light sweeps up it and leaves the real surfaces behind. Objects whose textures are already at hand (the cache) show at once, without it. Needs the wireframe while textures load (the debug setting RenderGrayTextureWireframe, on by default)."
-                     top="211"
+                     top="242"
                      width="439" />
                     <plus_ps_slider_compat
                      name="PlusMaterializeSeconds"
@@ -2254,7 +2272,7 @@
                      min_val="0.4"
                      text_width="58"
                      tool_tip="How long the band of light takes to sweep from the bottom of an object to its top, in seconds."
-                     top="241"
+                     top="272"
                      width="439" />
                     <plus_ps_text
                      name="PlusMaterializePaletteText"
@@ -2263,7 +2281,7 @@
                      layout="topleft"
                      left="474"
                      length="1"
-                     top="272"
+                     top="303"
                      type="string"
                      use_ellipses="true"
                      width="196">
@@ -2278,7 +2296,7 @@
                      layout="topleft"
                      left="682"
                      tool_tip="The colour of the lines and of the band of light. Custom: the colour of the swatch on the right."
-                     top="272"
+                     top="303"
                      width="140">
                         <plus_ps_combo.item
                          name="0"
@@ -2309,7 +2327,7 @@
                      layout="topleft"
                      left="834"
                      mouse_opaque="false"
-                     top="272"
+                     top="303"
                      width="52">
                         <color_swatch
                          name="PlusMaterializeColor"
@@ -2344,7 +2362,7 @@
                      layout="topleft"
                      left="474"
                      tool_tip="An avatar drawn as glowing lines while it loads (yours after login, others whose clothes are not loaded yet) is swept once by the band of light from its feet to its head when it has everything, and the real body, clothes and attachments appear. Up to 8 avatars at once; avatars already at hand show at once."
-                     top="305"
+                     top="336"
                      width="439" />
                     <plus_ps_check_compat
                      name="PlusDerez"
@@ -2356,7 +2374,7 @@
                      layout="topleft"
                      left="474"
                      tool_tip="When an object near you is deleted or returned (yours or someone else's), it breaks into small glowing cubes that drift up and fade, instead of vanishing at once. Not for attachments, avatars, physical objects or teleports."
-                     top="335"
+                     top="366"
                      width="439" />
                     <plus_ps_slider_compat
                      name="PlusDerezSeconds"
@@ -2375,7 +2393,7 @@
                      min_val="0.4"
                      text_width="58"
                      tool_tip="How long a vanishing object takes to crumble away, in seconds."
-                     top="365"
+                     top="396"
                      width="439" />
                     <plus_ps_text
                      name="PlusDerezPaletteText"
@@ -2384,7 +2402,7 @@
                      layout="topleft"
                      left="474"
                      length="1"
-                     top="396"
+                     top="427"
                      type="string"
                      use_ellipses="true"
                      width="196">
@@ -2399,7 +2417,7 @@
                      layout="topleft"
                      left="682"
                      tool_tip="The colour of the glowing edge where the object breaks apart. Custom: the colour of the swatch on the right."
-                     top="396"
+                     top="427"
                      width="140">
                         <plus_ps_combo.item
                          name="0"
@@ -2430,7 +2448,7 @@
                      layout="topleft"
                      left="834"
                      mouse_opaque="false"
-                     top="396"
+                     top="427"
                      width="52">
                         <color_swatch
                          name="PlusDerezColor"

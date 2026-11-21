@@ -1,0 +1,18 @@
+<rml>
+<!-- The window that adds avatars to a contact set, or moves them (plus/contactsets/addtosetrml.cpp, research/386). Its
+     words are "[[name]]": the <string>s of floater_plus_contact_set_add_rml.xml (en, ja). The ids the C++ uses:
+     text (the sentence; its avatar link is a span "who"), sets (the select), add_set, add, cancel (buttons). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare">
+    <div class="csa">
+        <p id="text" class="csa-text"></p>
+        <select id="sets" class="ps-select"></select>
+        <button id="add_set" class="ps-btn ps-iconbtn plus" title="[[tip_add_set]]"><span class="glyph"></span></button>
+        <button id="add" class="ps-btn">[[add]]</button>
+        <button id="cancel" class="ps-btn">[[cancel]]</button>
+    </div>
+</body>
+</rml>

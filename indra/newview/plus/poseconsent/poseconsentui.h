@@ -27,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include "poseconsent.h"
+
 class LLUUID;
 
 namespace plus::poseconsent
@@ -40,6 +42,30 @@ namespace plus::poseconsent
     // The reminder window of who may pose us (floater_plus_pose_consent.xml).
     constexpr char FLOATER_NAME[] = "plus_pose_consent";
     void registerFloater();
+    // The RmlUi version of the window (poseconsentrml.cpp, floater_plus_pose_consent_rml.xml), registered under FLOATER_NAME.
+    void addRmlFloater();
+
+    // What both windows (the XUI one and the RmlUi one, poseconsentrml.cpp) show of the list of who may pose us, kept
+    // in poseconsentfloater.cpp so that they cannot differ:
+    // - the row of one person: the name (or "loading"), with the withdraw-waiting, reflect-now or reflect wording; the
+    //   strings hold [NAME], each language placing its own space and brackets;
+    struct GrantedRowStrings
+    {
+        std::string loading, withdraw_waiting, reflect_now, reflect;
+    };
+    std::string grantedRowText(const Granted& granted, const GrantedRowStrings& strings);
+    // - what the list depends on: the list is made again when this is not what it was made with.
+    struct GrantedStamp
+    {
+        unsigned granted = ~0u, reflect = ~0u, pushed = ~0u, names = ~0u, show_names = ~0u;
+        bool operator==(const GrantedStamp& other) const
+        {
+            return granted == other.granted && reflect == other.reflect && pushed == other.pushed && names == other.names &&
+                   show_names == other.show_names;
+        }
+        bool operator!=(const GrantedStamp& other) const { return !(*this == other); }
+    };
+    GrantedStamp grantedStamp();    // the stamp now (a name that arrives changes it)
     // Opens it; without taking the keyboard focus when opened by itself (someone was just allowed).
     void showGrantedFloater(bool take_focus);
     // Bumped whenever the list of who may pose us changes (the window redraws its list then).

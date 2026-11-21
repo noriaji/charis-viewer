@@ -80,13 +80,13 @@ void load_exr(const std::string& filename)
 
         gGL.getTexUnit(0)->bind(gEXRImage);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGBA, GL_FLOAT, out);
+        LLRHI::texImage2D(gEXRImage->getTexName(), GL_TEXTURE_2D, 0, GL_RGB16F, width, height, GL_RGBA, GL_FLOAT, out); // <plus> research/394 T17 </plus>
 
         LLImageGLMemory::alloc_tex_image(width, height, GL_RGB16F, 1);
 
         free(out); // release memory of image data
 
-        glGenerateMipmap(GL_TEXTURE_2D);
+        LLRHI::generateMipmap(gEXRImage->getTexName(), GL_TEXTURE_2D); // <plus> research/394 T17 </plus>
 
         gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
 
@@ -585,7 +585,7 @@ GLuint LLReflectionMapManager::allocateQuery()
     if (mQueryPool.empty())
     {
         GLuint query;
-        glGenQueries(1, &query);
+        LLRHI::genQueries(1, &query); // <plus> research/394 T17 </plus>
         return query;
     }
 
@@ -1326,21 +1326,12 @@ void LLReflectionMapManager::updateUniforms()
     //copy mProbeData into uniform buffer object
     if (mUBO == 0)
     {
-        glGenBuffers(1, &mUBO);
+        LLRHI::genBuffers(1, &mUBO); // <plus> research/394 T17 </plus>
     }
 
     {
         LL_PROFILE_ZONE_NAMED_CATEGORY_DISPLAY("rmmsu - update buffer");
-        if (LLRHI::sGLDrawsDisabled && LLRHI::sBufferData) // LLRHI: native, by name
-        {
-            LLRHI::sBufferData(mUBO, sizeof(ReflectionProbeData), &mProbeData);
-        }
-        else
-        {
-            glBindBuffer(GL_UNIFORM_BUFFER, mUBO);
-            glBufferData(GL_UNIFORM_BUFFER, sizeof(ReflectionProbeData), &mProbeData, GL_STREAM_DRAW);
-            glBindBuffer(GL_UNIFORM_BUFFER, 0);
-        }
+        LLRHI::uniformBufferData(mUBO, sizeof(ReflectionProbeData), &mProbeData); // <plus> research/394 T17: native by name; the GL branch moved into LLRHI::uniformBufferData </plus>
     }
 
 #if 0
@@ -1597,7 +1588,7 @@ void LLReflectionMapManager::cleanup()
     mDefaultProbe = nullptr;
     mUpdatingProbe = nullptr;
 
-    glDeleteBuffers(1, &mUBO);
+    LLRHI::deleteBuffers(1, &mUBO); // <plus> research/394 T17 </plus>
     mUBO = 0;
 
     cleanupQueryPool();
@@ -1612,7 +1603,7 @@ void LLReflectionMapManager::cleanupQueryPool()
     {
         LL_PROFILE_ZONE_NAMED_CATEGORY_DISPLAY("cleanup query pool");
         std::vector<GLuint> queries(mQueryPool.begin(), mQueryPool.end());
-        glDeleteQueries(static_cast<GLsizei>(queries.size()), queries.data());
+        LLRHI::deleteQueries(static_cast<GLsizei>(queries.size()), queries.data()); // <plus> research/394 T17 </plus>
         mQueryPool.clear();
     }
 }

@@ -1,0 +1,86 @@
+<rml>
+<!-- The subtitles window (plus/subtitle/subtitlerml.cpp, research/386). Its words are "[[name]]": the <string>s of
+     floater_plus_subtitle_rml.xml (en, ja). The layout is the XUI window's own (the rows of floater_plus_subtitle.xml):
+     charis.rcss's ".st". The contract with the C++ (a name on each side):
+       data model "subtitle" (plus::rmlui::SettingsModel, subtitlerml.cpp's entries):
+         translate radio                                     bool    PlusSubtitleTranslate / PlusSubtitleStream
+         service to dialect language                         text    (a <select>: PlusSubtitleTranslateService / TranslateTo / PlusTranslateDialect / Language)
+         threads                                             number  PlusSubtitleThreads (1..16; shown in the number box by data-attr-value, kept back while its field has the focus (threads_now: always the setting, what Esc puts back); written from its "commit")
+       ids the C++ uses: status, log (read-only text: a <textarea readonly>), download_model, download_translate_model (buttons), threads_spin (the host's number box, rmlparts.h 5.: its "commit" is passed
+       to the setting), service, to (their change is passed to the core), spin / spin_label (the widths of the XUI window's language).
+     The drop-down lists of the <select>s open outside this window (RmlPopup, automatic: rmlpopup.h). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare" data-model="subtitle">
+    <div class="st">
+        <div class="st-top">
+            <div id="status" class="st-status"></div>
+            <button id="download_model" class="inline st-btn invis" title="[[tip_download]]"></button>
+        </div>
+        <div class="st-log">
+            <textarea id="log" class="ps-readonly" readonly></textarea>
+        </div>
+        <div class="line st-gap4">
+            <input type="checkbox" id="c_translate" data-checked="translate"/>
+            <label for="c_translate">[[translate]]</label>
+        </div>
+        <div class="st-row st-gap4">
+            <select id="service" class="ps-select st-w140" title="[[tip_service]]" data-value="service">
+                <option value="service">[[opt_service]]</option>
+                <option value="local">[[opt_local]]</option>
+            </select>
+            <select id="to" class="ps-select st-w150 st-lgap6" title="[[tip_to]]" data-value="to">
+                <option value="">[[to_chat]]</option>
+                <option value="ja">[[lang_ja]]</option>
+                <option value="en">[[lang_en]]</option>
+                <option value="zh">[[lang_zh]]</option>
+                <option value="es">[[lang_es]]</option>
+                <option value="fr">[[lang_fr]]</option>
+                <option value="de">[[lang_de]]</option>
+                <option value="ru">[[lang_ru]]</option>
+                <option value="it">[[lang_it]]</option>
+                <option value="pt">[[lang_pt]]</option>
+            </select>
+        </div>
+        <div class="st-row st-gap4">
+            <select id="dialect" class="ps-select st-w140" title="[[tip_dialect]]" data-value="dialect">
+                <option value="">[[dialect_standard]]</option>
+                <option value="kansai">[[dialect_kansai]]</option>
+                <option value="hakata">[[dialect_hakata]]</option>
+                <option value="tohoku">[[dialect_tohoku]]</option>
+            </select>
+            <button id="download_translate_model" class="inline st-fetch st-lgap6 invis" title="[[tip_fetch]]"></button>
+        </div>
+        <div class="line st-gap4" title="[[tip_radio]]">
+            <input type="checkbox" id="c_radio" data-checked="radio"/>
+            <label for="c_radio">[[radio]]</label>
+        </div>
+        <div class="st-row st-gap6">
+            <div id="spin" class="st-spin" title="[[tip_threads]]">
+                <span id="spin_label" class="text-only st-spin-label">[[threads]]</span>
+                <div id="threads_spin" class="ps-spin st-spinbox" min="1" max="16" step="1" decimals="0">
+                    <input type="text" class="text st-spin-box" id="threads" maxlength="2" ime="off" data-attr-value="threads" data-attr-spin-shown="threads_now"/>
+                    <div class="arrows">
+                        <button class="up" title="[[tip_up]]"></button>
+                        <button class="down" title="[[tip_down]]"></button>
+                    </div>
+                </div>
+            </div>
+            <select id="language" class="ps-select st-w160" title="[[tip_language]]" data-value="language">
+                <option value="auto">[[lang_auto]]</option>
+                <option value="ja">[[lang_ja]]</option>
+                <option value="en">[[lang_en]]</option>
+                <option value="zh">[[lang_zh]]</option>
+                <option value="ko">[[lang_ko]]</option>
+                <option value="es">[[lang_es]]</option>
+                <option value="fr">[[lang_fr]]</option>
+                <option value="de">[[lang_de]]</option>
+                <option value="pt">[[lang_pt]]</option>
+                <option value="ru">[[lang_ru]]</option>
+            </select>
+        </div>
+    </div>
+</body>
+</rml>

@@ -3556,6 +3556,9 @@ void FSFloaterPoser::onShareButton()
     if (!menu)
         return;
     mShareMenuHandle = menu->getHandle();
+    // show() first, as the hand preset menu does: it lays the items out and makes the menu visible; showPopup then
+    // puts it under the button (the menu did not appear with showPopup alone)
+    menu->show(0, 0, mShareBtn);
     LLMenuGL::showPopup(mShareBtn, menu, 0, 0);
     mConsentUiKey = {}; // the label is written again at the next tick, whatever was chosen
 }

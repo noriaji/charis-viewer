@@ -32,6 +32,7 @@
 #include "plus/photoscreen/psui/psstyle.h"
 
 #include "llfloaterreg.h"
+#include "lluictrl.h"
 #include "llscrolllistctrl.h"
 
 #include <cmath>
@@ -132,6 +133,7 @@ namespace plus::rmlui
 
     RmlDemoFloater::~RmlDemoFloater()
     {
+        mMenu.hide();   // its functions call this window
         // The document goes before this floater's members: its data model points at them, its hooks call us.
         if (LLRmlView* host = mHost.get())
         {
@@ -148,6 +150,7 @@ namespace plus::rmlui
         }
         mHost = host->getRmlHandle();
         mRowFormat = getString("list_item");
+        mLogFormat = getString("log_line");
         LLRmlView::Hooks hooks;
         hooks.before_load = [this](Rml::Context& context) { beforeLoad(context); };
         hooks.after_load = [this](Rml::ElementDocument& document) { afterLoad(document); };
@@ -169,6 +172,7 @@ namespace plus::rmlui
         model.Bind("clicks", &mClicks);
         model.Bind("option", &mOption);     // data-checked: the check box writes it
         model.Bind("amount", &mAmount);     // data-value: the slider writes it
+        model.Bind("spin_value", &mSpinValue);  // data-attr-value: the number box shows it; its "commit" event writes it
         mModel = model.GetModelHandle();
     }
 
@@ -184,6 +188,9 @@ namespace plus::rmlui
             host->listen(document.GetElementById(id), "click");
         }
         host->listen(document.GetElementById("list"), "scroll");
+        host->listen(document.GetElementById("b_count"), "mousedown");      // the right press: the window's own menu
+        host->listen(document.GetElementById("d_append"), "click");
+        host->listen(document.GetElementById("d_spin"), "commit");
         host->listen(document.GetElementById("t_amount"), "change");
         host->listen(document.GetElementById("t_amount"), "blur");
         // (A "resize" event goes to documents only and does not bubble: the list's height is looked at after each
@@ -232,10 +239,33 @@ namespace plus::rmlui
         const Rml::String& id = element->GetId();
         if (id == "b_count")
         {
-            ++mClicks;
+            if (event.GetId() == Rml::EventId::Mousedown)
+            {
+                if (event.GetParameter<int>("button", 0) == 1)
+                {
+                    showCountMenu(event);
+                }
+            }
+            else
+            {
+                ++mClicks;
+                if (mModel)
+                {
+                    mModel.DirtyVariable("clicks");
+                }
+            }
+        }
+        else if (id == "d_append")
+        {
+            addLogLine();
+        }
+        else if (id == "d_spin")
+        {
+            // The number box committed (Enter, the focus left after typing, an arrow, the wheel): its value, in its range.
+            mSpinValue = (int)std::lround(event.GetParameter<double>("value", (double)mSpinValue));
             if (mModel)
             {
-                mModel.DirtyVariable("clicks");
+                mModel.DirtyVariable("spin_value");
             }
         }
         else if (id == "b_colour")
@@ -260,6 +290,61 @@ namespace plus::rmlui
             }
         }
         host->markDirty();
+    }
+
+    void RmlDemoFloater::showCountMenu(Rml::Event& event)
+    {
+        LLRmlView* host = mHost.get();
+        if (!host)
+        {
+            return;
+        }
+        event.StopPropagation();    // the right press is this window's: the host offers no menu of its own for it
+        LLUICtrl::CommitCallbackRegistry::ScopedRegistrar registrar;    // the menu's function, alive while the menu is made
+        registrar.add("Plus.RmlDemo.Menu", [this](LLUICtrl*, const LLSD& param) { onMenu(param.asString()); });
+        if (mMenu.create("menu_plus_rml_demo.xml"))
+        {
+            mMenu.open(*host, Rml::Vector2f(event.GetParameter<float>("mouse_x", 0.f), event.GetParameter<float>("mouse_y", 0.f)));
+        }
+    }
+
+    void RmlDemoFloater::onMenu(const std::string& what)
+    {
+        // (the menu's function: LLUI's own dispatch, outside RmlUi's events)
+        if (what == "add")
+        {
+            ++mClicks;
+        }
+        else if (what == "reset")
+        {
+            mClicks = 0;
+        }
+        if (mModel)
+        {
+            mModel.DirtyVariable("clicks");
+        }
+        if (LLRmlView* host = mHost.get())
+        {
+            host->markDirty();
+        }
+    }
+
+    void RmlDemoFloater::addLogLine()
+    {
+        LLRmlView* host = mHost.get();
+        Rml::ElementDocument* document = host ? host->getDocument() : nullptr;
+        if (!document)
+        {
+            return;
+        }
+        constexpr size_t LOG_KEEP_BYTES = 60000;
+        mLog += rowText(mLogFormat, mLogLines++) + "\n";
+        if (mLog.size() > LOG_KEEP_BYTES)
+        {
+            const size_t cut = mLog.find('\n', mLog.size() - LOG_KEEP_BYTES);
+            mLog.erase(0, cut == std::string::npos ? mLog.size() : cut + 1);
+        }
+        plus::rmlui::setLogText(*host, document->GetElementById("d_log"), mLog, plus::rmlui::Follow::End);
     }
 
     void RmlDemoFloater::commitAmount(Rml::Event& event)

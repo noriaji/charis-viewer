@@ -572,6 +572,8 @@ public:
      */
     void removeSpeakerVolume(const LLUUID& speaker_id);
 
+    void saveAtExit() { save(); } // <plus> fast-exit (research/276): cleanupSingleton() is not run by the fast exit </plus>
+
 private:
     const static std::string SETTINGS_FILE_NAME;
 

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_local_mesh" title="ローカルメッシュ">
+    <string name="status_loading">読み込み中</string>
+    <string name="status_active">使える</string>
+    <string name="status_error">エラー</string>
+    <string name="unnamed">（オブジェクト）</string>
+    <string name="target">選択中: [NAME]</string>
+    <string name="target_shown">選択中: [NAME]（ローカルメッシュを表示中）</string>
+    <string name="why_NoObject">ワールドのオブジェクトをクリックして選んでください。選んだオブジェクトにメッシュを貼ります。</string>
+    <string name="why_NotMesh">選んだオブジェクトはメッシュではありません。貼れるのはメッシュのオブジェクトだけです（自分のメッシュを何か置いて台にしてください）。</string>
+    <string name="why_Rigged">選んだオブジェクトはリグ付きメッシュです。リグ付きにはまだ対応していません。</string>
+    <string name="why_NotLoaded">選んだオブジェクトのメッシュがまだ読み込まれていません。少し待ってください。</string>
+    <string name="files_label">この PC のメッシュ（.dae .gltf .glb）。自分にだけ見え、アップロードしません。</string>
+    <string name="col_status">状態</string>
+    <string name="col_name">ファイル</string>
+    <string name="col_lods">LOD</string>
+    <string name="col_meshes">メッシュ</string>
+    <string name="col_shown">表示中</string>
+    <string name="tip_lods">ファイルから読めた LOD（高→最低の順に 3 2 1 0）。ない LOD は一つ上の LOD で代用します。下の LOD は同じフォルダの 名前_LOD2.dae、名前_LOD1.dae、名前_LOD0.dae のようなファイルです。</string>
+    <string name="tip_shown">このファイルのメッシュを表示しているオブジェクトの数</string>
+    <string name="add">追加…</string>
+    <string name="tip_add">メッシュファイルを追加します（複数まとめて選べます）</string>
+    <string name="reload">読み直す</string>
+    <string name="tip_reload">選んだファイルを読み直します（書き出し直した後に）。表示中のオブジェクトも新しい形になります</string>
+    <string name="remove">外す</string>
+    <string name="tip_remove">選んだファイルを一覧から外します。表示中のオブジェクトは元のメッシュに戻ります</string>
+    <string name="auto_reload">ファイルが変わったら読み直す</string>
+    <string name="tip_auto_reload">書き出し直すと自動で読み直します（1 秒ごとに確認）</string>
+    <string name="object_label">選んだオブジェクトに貼る</string>
+    <string name="target_default">（選んだオブジェクト）</string>
+    <string name="meshes_label">メッシュ:</string>
+    <string name="tip_meshes">ファイルの中のどのメッシュを貼るか（1 つのファイルに複数あることがあります）</string>
+    <string name="file_size">オブジェクトの大きさをファイルに合わせる</string>
+    <string name="tip_file_size">オフ: メッシュをオブジェクトの今の大きさに合わせて伸ばします。オン: ファイルの大きさ（メートル）にします（自分の画面だけ。装着物は変えません）。</string>
+    <string name="show">オブジェクトに貼る</string>
+    <string name="tip_show">選んだオブジェクトにメッシュを貼ります。見えるのは自分だけです。貼っている間、そのオブジェクトはリージョンからの変更を受け取りません。</string>
+    <string name="take_off">元に戻す</string>
+    <string name="tip_take_off">選んだオブジェクトを元のメッシュに戻します</string>
+    <string name="log_label">選んだファイルのログ:</string>
+    <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+    <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、以前の窓に戻ります。</string>
+</floater>

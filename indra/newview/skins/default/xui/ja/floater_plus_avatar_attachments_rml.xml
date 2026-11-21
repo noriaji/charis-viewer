@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<floater name="plus_avatar_attachments" title="装着物の一覧">
+	<string name="title_format">装着物の一覧: [NAME]</string>
+	<string name="loading">読み込み中…</string>
+	<string name="name_unavailable">（取得できません）</string>
+	<string name="no_name">（名前なし）</string>
+	<string name="hud_point">HUD の[POINT]</string>
+	<string name="hud_distance">HUD</string>
+	<string name="count_self">装着物 [COUNT] 個</string>
+	<string name="count_other">装着物 [COUNT] 個（他の人の HUD は見えません）</string>
+	<string name="none">何も装着していません。</string>
+	<string name="gone">このアバターは見える範囲にいません（立ち去ったか、遠すぎます）。</string>
+	<string name="col_point">装着箇所</string>
+	<string name="col_name">名前</string>
+	<string name="col_creator">制作者</string>
+	<string name="col_prims">プリム</string>
+	<string name="col_distance">距離 (m)</string>
+	<string name="tip_creator">オブジェクトを作った人</string>
+	<string name="tip_prims">リンクセットのプリム数（ルートと子プリムの合計）</string>
+	<string name="tip_distance">自分からの距離（メートル）</string>
+	<string name="tip_list">行をダブルクリックすると、そのオブジェクトを調べます</string>
+	<string name="copy_name">名前をコピー</string>
+	<string name="copy_id">UUID をコピー</string>
+	<string name="inspect">調べる</string>
+	<string name="refresh">更新</string>
+	<string name="tip_copy_name">選んだオブジェクトの名前をコピーします</string>
+	<string name="tip_copy_id">選んだオブジェクトの UUID をコピーします</string>
+	<string name="tip_inspect">そのオブジェクトを選んで、情報のウィンドウを出します（オブジェクトの右クリックの「調べる」と同じ）</string>
+	<string name="tip_refresh">今すぐ一覧を更新し、名前が来なかったものをもう一度問い合わせます</string>
+	<string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+	<string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、今までの窓になります。</string>
+</floater>

@@ -542,31 +542,7 @@ void LLFace::renderSelected(LLViewerTexture *imagep, const LLColor4& color)
 
         if (mDrawablep->isState(LLDrawable::RIGGED))
         {
-#if 0 // TODO --  there is no way this won't destroy our GL machine as implemented, rewrite it to not rely on software skinning
-            LLVOVolume* volume = mDrawablep->getVOVolume();
-            if (volume)
-            {
-                LLRiggedVolume* rigged = volume->getRiggedVolume();
-                if (rigged)
-                {
-                    // called when selecting a face during edit of a mesh object
-                    LLGLEnable offset(GL_POLYGON_OFFSET_FILL);
-                    glPolygonOffset(-1.f, -1.f);
-                    gGL.multMatrix((F32*) volume->getRelativeXform().mMatrix);
-                    const LLVolumeFace& vol_face = rigged->getVolumeFace(getTEOffset());
-                    LLVertexBuffer::unbind();
-                    glVertexPointer(3, GL_FLOAT, 16, vol_face.mPositions);
-                    if (vol_face.mTexCoords)
-                    {
-                        glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                        glTexCoordPointer(2, GL_FLOAT, 8, vol_face.mTexCoords);
-                    }
-                    gGL.syncMatrices();
-                    glDrawElements(GL_TRIANGLES, vol_face.mNumIndices, GL_UNSIGNED_SHORT, vol_face.mIndices);
-                    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-                }
-            }
-#endif
+            // <plus> research/394 T17: the disabled (#if 0) software-skinned selection outline, built on GL 1 client arrays (glVertexPointer, glDrawElements), is gone </plus>
         }
         else
         {

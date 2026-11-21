@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_update" title="Charis Viewer の新しい版">
+  <string name="body">Charis Viewer の新しい版 [VERSION] が出ています。今お使いの版は [CURRENT] です。</string>
+  <string name="body_required">今お使いの版 [CURRENT] はサポートが終わりました。[VERSION] に更新してください。</string>
+  <string name="notes">更新内容: [URL]</string>
+  <string name="page">ダウンロードページ: [URL]</string>
+  <string name="btn_download">ダウンロードページへ</string>
+  <string name="tip_download">ダウンロードページをブラウザで開きます</string>
+  <string name="btn_notes">更新内容を開く</string>
+  <string name="btn_notes_tip">更新内容のページをブラウザで開きます（ダウンロードページの指定がないため）</string>
+  <string name="btn_install">ダウンロード</string>
+  <string name="btn_install_tip">新しい版を GitHub からダウンロードします（その間もビューワは使えます。進み具合は右下に出ます）。入れ替えるのは、ビューワを終了した時か［再起動して更新］を押した時です。</string>
+  <string name="later">あとで</string>
+  <string name="tip_later">閉じます。次の起動時に、ログイン画面でもう一度お知らせします。</string>
+  <string name="skip">この版は通知しない</string>
+  <string name="tip_skip">これより新しい版が出るまで、お知らせしません</string>
+  <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+  <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、今までの窓になります。</string>
+</floater>

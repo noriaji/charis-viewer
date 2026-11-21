@@ -26,7 +26,9 @@
 
 #include "llvkmirror.h"
 #include "llrhi.h"
+#include "llrhivbcensus.h"
 #include "llvkdevice.h"
+#include "llvkqueues.h"
 #include "llvkswapchain.h"
 
 #include "vk_mem_alloc.h"
@@ -371,6 +373,7 @@ VkDescriptorPool LLVKMirror::createDescriptorPool()
 
 void LLVKMirror::waitAll()
 {
+    drainLane();    // research/393: a slot's fence is signaled by the lane's submit
     VkDevice device = LLVKDevice::instance().getDevice();
     for (Slot& slot : mSlots)
     {
@@ -633,6 +636,13 @@ void LLVKMirror::beginFrame(U32 width, U32 height)
     VkDevice device = LLVKDevice::instance().getDevice();
     CostLap lap(LLRHI::sFrameCost);
     selectSlot((mSlot + 1) % FRAMES_IN_FLIGHT);
+    if (mLaneQueued && mLaneSlot == mSlot)
+    {
+        // A defence: present_frame's waitMainPresent (before endFrame) has already waited for the lane on
+        // every path known today. It would matter after a target that could not be made (selectSlot went
+        // on, the frame was skipped): the frame the lane holds has this slot's fence, which its submit signals.
+        drainLane();
+    }
     if (mSlots[mSlot].unsubmitted)
     {
         // Its frame never reached the GPU (fix-submitfail B): what it deferred
@@ -830,6 +840,7 @@ bool LLVKMirror::submitAndWait()
     {
         return false;
     }
+    drainLane();    // research/393: the last frame's submit goes to the queue before this one
     CostLap lap(LLRHI::sFrameCost);
     ++mCost.sync_submits;
     {
@@ -1156,6 +1167,7 @@ void LLVKMirror::retirePersistentSets()
 
 void LLVKMirror::immediate(const std::function<void(VkCommandBuffer)>& commands)
 {
+    drainLane();    // research/393: the last frame's submit goes to the queue before this one
     VkDevice device = LLVKDevice::instance().getDevice();
     CostLap lap(LLRHI::sFrameCost);
     ++mCost.immediates;
@@ -1218,28 +1230,134 @@ void LLVKMirror::presentExtraWindow(LLVKSwapchain* swapchain, VkImage image, U32
 void LLVKMirror::waitExtraPresents()
 {
     std::unique_lock<std::mutex> lock(mPresentMutex);
-    mPresentDone.wait(lock, [this]() { return mPresentQueue.empty() && !mPresenting; });
+    mPresentDone.wait(lock, [this]() { return presentIdle(); });
+}
+
+void LLVKMirror::ensurePresentThread()
+{
+    if (!mPresentThreadRunning)
+    {
+        mPresentStop = false;
+        mPresentThreadRunning = true;
+        std::thread([this]() { presentLoop(); }).detach();
+    }
+}
+
+void LLVKMirror::drainLane()
+{
+    if (mLaneQueued)
+    {
+        waitMainPresent();  // the same wait: the lane submits, then presents
+    }
+}
+
+// The result is the caller's to report (reportResult): on the present thread that must not make the
+// GPU fault report (llvkdevice.h: a present thread only marks the device lost).
+VkResult LLVKMirror::abandonSubmit(const VkSemaphore* waits, U32 count, VkFence fence, U32 slot_index)
+{
+    const std::vector<VkPipelineStageFlags> stages(count, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
+    VkSubmitInfo submit = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    submit.waitSemaphoreCount = count;
+    submit.pWaitSemaphores = count ? waits : nullptr;
+    submit.pWaitDstStageMask = stages.empty() ? nullptr : stages.data();
+    const VkResult result = LLVKDevice::instance().submit(submit, fence);
+    if (result == VK_ERROR_DEVICE_LOST)
+    {
+        LLVKDevice::instance().noteDeviceLost();    // any thread; the report is made by the frame's thread
+    }
+    Slot& slot = mSlots[slot_index];
+    slot.unsubmitted = result != VK_SUCCESS;
+    // Its timestamps and counts were never reset or written: not read back.
+    slot.timed = false;
+    slot.census_on = false;
+    LL_WARNS_ONCE("Vulkan") << "A frame's submission failed: the frame is dropped (its uploads and layout changes are lost)" << LL_ENDL;
+    if (slot.unsubmitted)
+    {
+        // The GPU takes no work at all; the acquire semaphores stay signaled
+        // and must not be acquired with again: the frame's fence is never
+        // waited for. The viewer ends at this present (submitFailed).
+        LL_WARNS("Vulkan") << "The empty submission in a failed frame's place failed too (" << (S32)result
+                           << "): the frame's fence is not waited for" << LL_ENDL;
+        submitFailed(result, "empty, in place of a failed frame");
+    }
+    return result;
+}
+
+// research/393, on the present thread: what endFrame does for the main window's
+// frame (the same submit, then the same failure handling), then its present.
+void LLVKMirror::submitClosedFrame(const ClosedFrame& frame, U32& presents, F64& present_ms, F64& submit_ms,
+                                   VkResult& submit_result, VkResult& abandon_result)
+{
+    const VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    VkSubmitInfo submit = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    submit.commandBufferCount = 2;
+    submit.pCommandBuffers = frame.buffers;
+    submit.waitSemaphoreCount = 1;
+    submit.pWaitSemaphores = &frame.wait;
+    submit.pWaitDstStageMask = &wait_stage;
+    submit.signalSemaphoreCount = 1;
+    submit.pSignalSemaphores = &frame.signal;
+    const CostClock::time_point start = CostClock::now();
+    const VkResult stuck = stuckSubmitResult();    // a failure after the hand-over: dropped as in endFrame
+    const VkResult result = stuck != VK_SUCCESS ? stuck : LLVKDevice::instance().submit(submit, frame.fence);
+    submit_ms += std::chrono::duration<F64, std::milli>(CostClock::now() - start).count();
+    if (result != VK_SUCCESS)
+    {
+        // Reported by the frame's thread (waitMainPresent): a lost device only marked here (reportResult
+        // would make the GPU fault report on this thread, which reads what the frame's thread owns).
+        if (stuck == VK_SUCCESS && submit_result == VK_SUCCESS)
+        {
+            submit_result = result;
+        }
+        if (result == VK_ERROR_DEVICE_LOST)
+        {
+            LLVKDevice::instance().noteDeviceLost();
+        }
+        submitFailed(result, "end of frame");
+        const VkResult abandoned = abandonSubmit(&frame.wait, 1, frame.fence, frame.slot);
+        if (abandoned != VK_SUCCESS && abandon_result == VK_SUCCESS)
+        {
+            abandon_result = abandoned;
+        }
+        frame.swapchain->dropUnpresented();     // never presented: the window's next acquire recreates it
+        return;
+    }
+    const CostClock::time_point present_start = CostClock::now();
+    frame.swapchain->present(frame.image_index);
+    present_ms += std::chrono::duration<F64, std::milli>(CostClock::now() - present_start).count();
+    ++presents;
 }
 
 void LLVKMirror::presentLoop()
 {
     std::vector<ExtraWindow> work;
+    ClosedFrame frames[FRAMES_IN_FLIGHT];
     std::unique_lock<std::mutex> lock(mPresentMutex);
     for (;;)
     {
-        mPresentWake.wait(lock, [this]() { return mPresentStop || !mPresentQueue.empty(); });
-        if (mPresentQueue.empty())
+        mPresentWake.wait(lock, [this]() { return mPresentStop || !mPresentQueue.empty() || mLaneCount; });
+        if (mPresentQueue.empty() && !mLaneCount)
         {
             mPresentThreadRunning = false;  // stopping, nothing left
             mPresentDone.notify_all();
             return;
         }
         work.swap(mPresentQueue);
-        mPresenting = true;
+        const U32 lane_count = mLaneCount;
+        std::copy(mLaneFrames, mLaneFrames + lane_count, frames);
+        mLaneCount = 0;
+        mPresenting = true;     // in the same hold of the lock: presentIdle is never true between the two
         lock.unlock();
         // LLVKDevice::present holds the queue: submits wait while the driver presents.
         U32 main_presents = 0;
         F64 main_ms = 0.0;
+        F64 lane_ms = 0.0;
+        VkResult lane_submit_result = VK_SUCCESS;
+        VkResult lane_abandon_result = VK_SUCCESS;
+        for (U32 i = 0; i < lane_count; ++i)
+        {
+            submitClosedFrame(frames[i], main_presents, main_ms, lane_ms, lane_submit_result, lane_abandon_result);
+        }
         for (const ExtraWindow& window : work)
         {
             if (window.main)
@@ -1259,8 +1377,18 @@ void LLVKMirror::presentLoop()
         lock.lock();
         mMainPresents += main_presents;
         mMainPresentMs += main_ms;
+        mLaneSubmits += lane_count;
+        mLaneSubmitMs += lane_ms;
+        if (lane_submit_result != VK_SUCCESS && mLaneSubmitResult == VK_SUCCESS)
+        {
+            mLaneSubmitResult = lane_submit_result;
+        }
+        if (lane_abandon_result != VK_SUCCESS && mLaneAbandonResult == VK_SUCCESS)
+        {
+            mLaneAbandonResult = lane_abandon_result;
+        }
         mPresenting = false;
-        if (mPresentQueue.empty())
+        if (presentIdle())
         {
             mPresentDone.notify_all();
         }
@@ -1274,15 +1402,35 @@ void LLVKMirror::waitMainPresent()
         return;
     }
     CostLap lap(LLRHI::sFrameCost);
+    VkResult lane_submit_result = VK_SUCCESS;
+    VkResult lane_abandon_result = VK_SUCCESS;
     {
         std::unique_lock<std::mutex> lock(mPresentMutex);
-        mPresentDone.wait(lock, [this]() { return mPresentQueue.empty() && !mPresenting; });
+        mPresentDone.wait(lock, [this]() { return presentIdle(); });
         mCost.main_presents += mMainPresents;
         mCost.main_present_call += mMainPresentMs;
         mMainPresents = 0;
         mMainPresentMs = 0.0;
+        mCost.lane_submits += mLaneSubmits;
+        mCost.lane_submit_call += mLaneSubmitMs;
+        mLaneSubmits = 0;
+        mLaneSubmitMs = 0.0;
+        lane_submit_result = mLaneSubmitResult;
+        lane_abandon_result = mLaneAbandonResult;
+        mLaneSubmitResult = mLaneAbandonResult = VK_SUCCESS;
     }
     mMainPresentQueued = false;
+    mLaneQueued = false;
+    // What the lane's submits returned (on the present thread nothing is reported): the GPU fault report
+    // and the one-time log are made here, by the thread that owns what they read.
+    if (lane_submit_result != VK_SUCCESS)
+    {
+        reportResult(lane_submit_result, "vkQueueSubmit (end of frame, present thread)");
+    }
+    if (lane_abandon_result != VK_SUCCESS)
+    {
+        reportResult(lane_abandon_result, "vkQueueSubmit (empty, in place of a failed frame)");
+    }
     lap(mCost.main_present_wait);
 }
 
@@ -1307,28 +1455,7 @@ void LLVKMirror::abandonFrame(LLVKSwapchain* swapchain)
     // the fence after every earlier frame, as the frame would have.
     std::vector<VkSemaphore> waits(mSubmitWaits);
     waits.insert(waits.end(), mWindowWaits.begin(), mWindowWaits.end());
-    const std::vector<VkPipelineStageFlags> stages(waits.size(), VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-    VkSubmitInfo submit = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-    submit.waitSemaphoreCount = (U32)waits.size();
-    submit.pWaitSemaphores = waits.empty() ? nullptr : waits.data();
-    submit.pWaitDstStageMask = stages.empty() ? nullptr : stages.data();
-    const VkResult result = LLVKDevice::instance().submit(submit, mFence);
-    reportResult(result, "vkQueueSubmit (empty, in place of a failed frame)");
-    Slot& slot = mSlots[mSlot];
-    slot.unsubmitted = result != VK_SUCCESS;
-    // Its timestamps and counts were never reset or written: not read back.
-    slot.timed = false;
-    slot.census_on = false;
-    LL_WARNS_ONCE("Vulkan") << "A frame's submission failed: the frame is dropped (its uploads and layout changes are lost)" << LL_ENDL;
-    if (slot.unsubmitted)
-    {
-        // The GPU takes no work at all; the acquire semaphores stay signaled
-        // and must not be acquired with again: the frame's fence is never
-        // waited for. The viewer ends at this present (submitFailed).
-        LL_WARNS("Vulkan") << "The empty submission in a failed frame's place failed too (" << (S32)result
-                           << "): the frame's fence is not waited for" << LL_ENDL;
-        submitFailed(result, "empty, in place of a failed frame");
-    }
+    reportResult(abandonSubmit(waits.data(), (U32)waits.size(), mFence, mSlot), "vkQueueSubmit (empty, in place of a failed frame)");
     // The images acquired for this frame are never presented: the windows'
     // next acquire recreates their swapchains, which gives them back.
     if (swapchain)
@@ -1495,9 +1622,52 @@ bool LLVKMirror::endFrame(std::vector<U8>* capture, LLVKSwapchain* swapchain)
     submit.pSignalSemaphores = mSubmitSignals.data();
     lap(mCost.record_end);
     VkResult submitted = VK_SUCCESS;
-    const VkResult stuck = stuckSubmitResult();
     flush_ring(mRingMemory, mRingHead.load(std::memory_order_relaxed));
-    if (stuck != VK_SUCCESS)
+    // research/393 (LLRHI_SUBMIT_LANE): the submit goes to the present thread, which presents after it.
+    // Only for the main window's frame alone: without VSync (the thread presents), no capture (it waits for the
+    // fence), no other windows (their batch and presents stay here), no snapshot (high resolution shots and
+    // 360s submit and wait for themselves) and no failure so far.
+    // No compute queue: submitCompute waits for the graphics submissions already published (research/200 H1),
+    // so a frame the lane has not submitted yet would let BC7 jobs run before the uploads they read.
+    const bool lane_ok = LLRHI::sSubmitLane && presenting && LLRHI::sPresentThread && !mPresentThreadStopped &&
+                         !swapchain->waitsForDisplay() && !capture && !windows_cmd &&
+                         !LLRHIVBCensus::sSnapshot.load(std::memory_order_relaxed) && !LLVKQueues::instance().active();
+    if (!lane_ok)
+    {
+        drainLane();    // nothing of an earlier frame is still to be submitted when this one is
+    }
+    // After the drain: a submit that failed in the lane is seen here (fix-round6 1), also with no swapchain
+    // (waitMainPresent was skipped above).
+    const VkResult stuck = stuckSubmitResult();
+    const bool use_lane = lane_ok && stuck == VK_SUCCESS;
+    if (lane_ok && !use_lane)
+    {
+        drainLane();
+    }
+    if (use_lane)
+    {
+        ClosedFrame frame;
+        frame.buffers[0] = mUploadBuffer;
+        frame.buffers[1] = mCommandBuffer;
+        frame.fence = mFence;
+        frame.wait = acquired;
+        frame.signal = swapchain->renderDone(image_index);
+        frame.swapchain = swapchain;
+        frame.image_index = image_index;
+        frame.slot = mSlot;
+        {
+            std::unique_lock<std::mutex> lock(mPresentMutex);
+            ensurePresentThread();
+            // The frame before this one was waited for (waitMainPresent above), so this never waits.
+            mPresentDone.wait(lock, [this]() { return mLaneCount < FRAMES_IN_FLIGHT; });
+            mLaneFrames[mLaneCount++] = frame;
+        }
+        mMainPresentQueued = true;
+        mLaneQueued = true;
+        mLaneSlot = mSlot;
+        mPresentWake.notify_one();
+    }
+    else if (stuck != VK_SUCCESS)
     {
         // An earlier submission of this frame (submitAndWait) or between
         // frames (immediate) failed: this frame may draw on what it lost, so
@@ -1543,8 +1713,8 @@ bool LLVKMirror::endFrame(std::vector<U8>* capture, LLVKSwapchain* swapchain)
     // (waitForDisplay) reads the presents' ids right after this.
     // Nor after stopPresentThread (the viewer shutting down): the thread is
     // not started again for the main window.
-    const bool main_on_thread = presenting && LLRHI::sPresentThread && !mPresentThreadStopped && !swapchain->waitsForDisplay();
-    if (presenting && !main_on_thread)
+    const bool main_on_thread = presenting && !use_lane && LLRHI::sPresentThread && !mPresentThreadStopped && !swapchain->waitsForDisplay();
+    if (presenting && !main_on_thread && !use_lane)
     {
         swapchain->present(image_index);
         lap(mCost.present);
@@ -1556,12 +1726,7 @@ bool LLVKMirror::endFrame(std::vector<U8>* capture, LLVKSwapchain* swapchain)
         // not submit again before the next frame.
         {
             std::lock_guard<std::mutex> lock(mPresentMutex);
-            if (!mPresentThreadRunning)
-            {
-                mPresentStop = false;
-                mPresentThreadRunning = true;
-                std::thread([this]() { presentLoop(); }).detach();
-            }
+            ensurePresentThread();
             if (main_on_thread)
             {
                 ExtraWindow window;

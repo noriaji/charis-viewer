@@ -1162,6 +1162,13 @@ void LLFloaterEditExtDayCycle::updateSkyTabs(const LLSettingsSkyPtr_t &p_sky)
     {
         panel->setSky(p_sky);
     }
+    // <plus> skyweather-ui: the weather tab (research/371)
+    panel = dynamic_cast<LLPanelSettingsSky*>(tab_container->findChildView("weather_panel"));
+    if (panel)
+    {
+        panel->setSky(p_sky);
+    }
+    // </plus>
 }
 
 void LLFloaterEditExtDayCycle::updateLabels()

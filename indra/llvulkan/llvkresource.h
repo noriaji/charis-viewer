@@ -31,18 +31,8 @@
 
 namespace LLVKResource
 {
-    // Installs LLRHI::sBufferHandle and LLRHI::sBufferWriteRanges
-    // (llrhiresource.h) with LLRHI_NATIVE_RESOURCES=1, only while the
-    // native buffer data hooks are in. Logs one line when it was asked for.
-    // Called from LLRHIVKMirror::install.
-    void install();
-
-    // Whether install put the hooks in (the immediate ring then draws from
-    // its Vulkan buffer by itself, llvkimmediate.cpp).
-    bool installed();
-
     // The resource counts per frame over `frames` since the last call, in
-    // words: buffer writes (calls, ranges, the calls by handle, KB, and with
+    // words: buffer writes (calls, ranges, KB, and with
     // LLRHI_VK_PERF their ms), texture data (images, new images, sub-images,
     // mip chains, ms); resets them. Under the backend's lock (LLVKGL::perfReport).
     std::string report(U32 frames);

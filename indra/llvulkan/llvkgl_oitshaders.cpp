@@ -225,7 +225,9 @@ void main()
 layout(set = 0, binding = 0, r32ui) uniform readonly uimage2D heads;
 layout(std430, set = 0, binding = 1) readonly buffer Nodes { uint count; uint capacity; uint flags; uint pad; uvec4 bounds; uint words[]; } nodes;
 layout(set = 0, binding = 2, r32ui) uniform readonly uimage2DArray rest;     // layers 0-5 the rest, 6-11 the front
+#ifndef BLEND
 layout(set = 0, binding = 3) uniform sampler2D background;
+#endif
 // clamp_colors: a fixed-point target (GL clamps the blend's inputs and result).
 // The distance from the eye: depth_a, depth_b (the projection's [2][2] and
 // [3][2]) on the clip depth (window depth * ndc_scale + ndc_bias). Layers at
@@ -248,7 +250,16 @@ layout(push_constant) uniform Resolve
     float height;
     float coplanar;
 } pc;
+// BLEND (research/395, the direct resolve): no background is read. The pixel's whole composite is written as
+// result = out_color + out_factor * d (d: what the target holds), which the pipeline's blend (ONE, SRC1_COLOR /
+// ONE, SRC1_ALPHA, both ADD) applies to the target itself. Only for float targets and sessions whose nodes'
+// blends do not read the color behind them (oit_blend_affine), so neither side clamps.
+#ifdef BLEND
+layout(location = 0, index = 0) out vec4 out_color;
+layout(location = 0, index = 1) out vec4 out_factor;
+#else
 layout(location = 0) out vec4 out_color;
+#endif
 
 // The nodes of a pixel kept in order (LLRHI_OIT_MAX_LAYERS): the nearest;
 // the others are summed behind them.
@@ -319,6 +330,39 @@ bool modifier(uint w)
 {
     return (w & 255u) == 16u || ((w >> 22u) & 7u) == 0u;
 }
+
+#ifdef BLEND
+// The composite so far, outermost layer first: acc_a + acc_b * d. fold: one more layer inside it, a + b * d.
+void fold(inout vec4 acc_a, inout vec4 acc_b, vec4 a, vec4 b)
+{
+    acc_a += acc_b * a;
+    acc_b *= b;
+}
+
+// over_average as a + b * d: the weighted average color over d (rgb), the glow added to the alpha.
+void fold_average(inout vec4 acc_a, inout vec4 acc_b, vec3 sum_c, float sum_a, float t, float glow)
+{
+    vec4 a = vec4(0.0, 0.0, 0.0, glow);
+    vec4 b = vec4(1.0);
+    if (sum_a > 0.0)
+    {
+        a.rgb = sum_c / sum_a * (1.0 - t);
+        b = vec4(t);
+    }
+    fold(acc_a, acc_b, a, b);
+}
+
+// One node as a + b * d, as blend() with an ADD equation and factors that do not read d (the destination
+// argument of the factors is never used). A channel the node does not write is d itself.
+void fold_node(inout vec4 acc_a, inout vec4 acc_b, vec4 s, uint w)
+{
+    vec4 none = vec4(0.0);
+    vec4 a = vec4(s.rgb * factor_rgb(w & 15u, s, none), s.a * factor_a((w >> 8u) & 15u, s, none));
+    vec4 b = vec4(factor_rgb((w >> 4u) & 15u, s, none), factor_a((w >> 12u) & 15u, s, none));
+    bvec4 written = notEqual((uvec4(w) >> uvec4(22u, 23u, 24u, 25u)) & 1u, uvec4(0u));
+    fold(acc_a, acc_b, mix(vec4(0.0), a, written), mix(vec4(1.0), b, written));
+}
+#endif
 
 // The distance from the eye of a window depth.
 float eye_distance(uint depth_bits)
@@ -524,6 +568,41 @@ void main()
         previous = distance;
     }
 
+#ifdef BLEND
+    // The layers, outermost first: the front, the nodes nearest first, the tail, the rest (blend order of the
+    // other branch, from the inside out: the rest, the tail, the nodes farthest first, the front).
+    vec4 acc_a = vec4(0.0);
+    vec4 acc_b = vec4(1.0);
+    if (has_rest && (nodes.flags & 2u) != 0u)
+    {
+        uint front_a = imageLoad(rest, ivec3(p, 9)).x;
+        uint front_glow = imageLoad(rest, ivec3(p, 11)).x;
+        if (front_a != 0u || front_glow != 0u)
+        {
+            vec3 sum_c = vec3(imageLoad(rest, ivec3(p, 6)).x, imageLoad(rest, ivec3(p, 7)).x, imageLoad(rest, ivec3(p, 8)).x) * FIXED;
+            float t = exp2(-float(imageLoad(rest, ivec3(p, 10)).x) * FIXED);
+            fold_average(acc_a, acc_b, sum_c, float(front_a) * FIXED, t, float(front_glow) * FIXED);
+        }
+    }
+    for (uint k = 0u; k < n; ++k)
+    {
+        uint at = ids[k] * 6u;
+        vec4 s = vec4(unpackHalf2x16(nodes.words[at]), unpackHalf2x16(nodes.words[at + 1u]));
+        fold_node(acc_a, acc_b, s, nodes.words[at + 3u]);
+    }
+    if (tail_a > 0.0 || tail_glow != 0.0)
+    {
+        fold_average(acc_a, acc_b, tail_c, tail_a, tail_t, tail_glow);
+    }
+    if (rest_a != 0u || rest_glow != 0u)
+    {
+        vec3 sum_c = vec3(imageLoad(rest, ivec3(p, 0)).x, imageLoad(rest, ivec3(p, 1)).x, imageLoad(rest, ivec3(p, 2)).x) * FIXED;
+        float t = exp2(-float(imageLoad(rest, ivec3(p, 4)).x) * FIXED);
+        fold_average(acc_a, acc_b, sum_c, float(rest_a) * FIXED, t, float(rest_glow) * FIXED);
+    }
+    out_color = acc_a;
+    out_factor = acc_b;
+#else
     vec4 d = texelFetch(background, p, 0);
     if (pc.clamp_colors != 0u)
     {
@@ -556,6 +635,7 @@ void main()
         }
     }
     out_color = d;
+#endif
 }
 )GLSL";
 

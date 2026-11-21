@@ -28,7 +28,9 @@
 // objects showing them live in localmesh.cpp, not in the window: closing it keeps them.
 //
 // While the window is open, a click in the world selects an object (the inspect tool, as
-// Firestorm's window), and the selected object is the one a mesh is shown on.
+// Firestorm's window), and the selected object is the one a mesh is shown on. The tools and
+// the target are localmeshsession.cpp's, shared with the RmlUi window (localmeshrml.cpp); this
+// XUI window is frozen: it is used in safe mode and with PlusRmlUiWindows off.
 //
 // Changed from Firestorm's: one page instead of three tabs (the list, the selected object
 // and the log of the selected file are seen together); the window says which object is
@@ -39,25 +41,21 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "localmesh.h"
+#include "localmeshrml.h"
+#include "localmeshsession.h"
 #include "plus.h"
+#include "plus/safemode/safemode.h"
 
 #include "llbutton.h"
 #include "llcheckboxctrl.h"
 #include "llcombobox.h"
-#include "llfilepicker.h"
 #include "llfloater.h"
 #include "llfloaterreg.h"
 #include "llscrolllistctrl.h"
 #include "llscrolllistitem.h"
-#include "llselectmgr.h"
 #include "lltextbox.h"
 #include "lltexteditor.h"
-#include "lltoolcomp.h"
-#include "lltoolmgr.h"
 #include "llviewercontrol.h"
-#include "llviewermenufile.h"
-#include "llviewerobject.h"
-#include "llviewerobjectlist.h"
 
 namespace plus::localmesh
 {
@@ -91,11 +89,11 @@ namespace plus::localmesh
                 mRemove = getChild<LLButton>("remove");
 
                 mFiles->setCommitCallback([this](LLUICtrl*, const LLSD&) { onFileSelected(); });
-                getChild<LLButton>("add")->setCommitCallback([this](LLUICtrl*, const LLSD&) { onAdd(); });
+                getChild<LLButton>("add")->setCommitCallback([this](LLUICtrl*, const LLSD&) { addFilesFromPicker(); });
                 mReload->setCommitCallback([this](LLUICtrl*, const LLSD&) { reloadFile(selectedFile()); });
                 mRemove->setCommitCallback([this](LLUICtrl*, const LLSD&) { removeFile(selectedFile()); });
                 mShow->setCommitCallback([this](LLUICtrl*, const LLSD&) { onShow(); });
-                mTakeOff->setCommitCallback([this](LLUICtrl*, const LLSD&) { takeOff(gObjectList.findObject(mTargetID)); });
+                mTakeOff->setCommitCallback([this](LLUICtrl*, const LLSD&) { takeOffTarget(mTracker.state().id); });
 
                 mChangedConnection = setChangedCallback([this]() { refreshFiles(); });
                 refreshFiles();
@@ -104,35 +102,12 @@ namespace plus::localmesh
 
             void onOpen(const LLSD& key) override
             {
-                // a click in the world selects (Firestorm's toggleSelectTool(true)); the value
-                // before is kept only by the first open: an open again (after minimizing) would
-                // keep our own true, and closing would leave the forced selection on
-                const bool old_force = LLSelectMgr::getInstance()->setForceSelection(true);
-                if (!mForcing)
-                {
-                    mOldForceSelection = old_force;
-                    mForcing = true;
-                }
-                LLToolMgr::getInstance()->setTransientTool(LLToolCompInspect::getInstance());
-                mSelection = LLSelectMgr::getInstance()->getSelection();
+                mTools.open();
             }
 
             void onClose(bool app_quitting) override
             {
-                if (app_quitting)
-                {
-                    return;
-                }
-                if (mForcing)
-                {
-                    LLSelectMgr::getInstance()->setForceSelection(mOldForceSelection);
-                    mForcing = false;
-                }
-                if (LLToolMgr::getInstance()->getCurrentTool() == LLToolCompInspect::getInstance())
-                {
-                    LLToolMgr::getInstance()->clearTransientTool();
-                }
-                mSelection = static_cast<LLObjectSelection*>(nullptr);
+                mTools.close(app_quitting);
             }
 
             void draw() override
@@ -150,28 +125,7 @@ namespace plus::localmesh
 
             const FileInfo* selectedInfo() const
             {
-                const LLUUID id = selectedFile();
-                for (const FileInfo& info : mInfos)
-                {
-                    if (info.id == id)
-                    {
-                        return &info;
-                    }
-                }
-                return nullptr;
-            }
-
-            void onAdd()
-            {
-                LLFilePickerReplyThread::startPicker(
-                    [](const std::vector<std::string>& paths, LLFilePicker::ELoadFilter, LLFilePicker::ESaveFilter)
-                    {
-                        for (const std::string& path : paths)
-                        {
-                            addFile(path);
-                        }
-                    },
-                    LLFilePicker::FFLOAD_MODEL, true);
+                return findFile(mInfos, selectedFile());
             }
 
             void onShow()
@@ -179,7 +133,7 @@ namespace plus::localmesh
                 const FileInfo* info = selectedInfo();
                 if (info)
                 {
-                    show(info->id, mMeshes->getFirstSelectedIndex(), gObjectList.findObject(mTargetID), mFileSize->get());
+                    showOnTarget(*info, mMeshes->getFirstSelectedIndex(), mTracker.state().id, mFileSize->get());
                 }
             }
 
@@ -192,11 +146,6 @@ namespace plus::localmesh
                 mFiles->deleteAllItems();
                 for (const FileInfo& info : mInfos)
                 {
-                    std::string lods;
-                    for (S32 lod = LOD_HIGH; lod >= 0; --lod)
-                    {
-                        lods += info.lods[lod] ? std::to_string(lod) : std::string("-");
-                    }
                     LLSD row;
                     row["value"] = info.id;
                     row["columns"][0]["column"] = "status";
@@ -206,7 +155,7 @@ namespace plus::localmesh
                     row["columns"][1]["column"] = "name";
                     row["columns"][1]["value"] = info.name;
                     row["columns"][2]["column"] = "lods";
-                    row["columns"][2]["value"] = lods;
+                    row["columns"][2]["value"] = lodsText(info);
                     row["columns"][3]["column"] = "meshes";
                     row["columns"][3]["value"] = (S32)info.meshes.size();
                     row["columns"][4]["column"] = "shown";
@@ -267,31 +216,20 @@ namespace plus::localmesh
             // The selected object, what can be done with it, and the buttons.
             void refreshTarget(bool force)
             {
-                LLViewerObject* object = LLSelectMgr::getInstance()->getSelection()->getFirstObject();
-                std::string why_not;
-                const bool can_show = canShowOn(object, &why_not);
-                const bool shown = isShownOn(object);
-                const LLUUID id = object ? object->getID() : LLUUID::null;
-                if (!force && id == mTargetID && why_not == mTargetWhyNot && shown == mTargetShown)
+                if (!mTracker.update(force))
                 {
                     return;
                 }
-                mTargetID = id;
-                mTargetWhyNot = why_not;
-                mTargetShown = shown;
-
-                if (!can_show)
+                const TargetState& target = mTracker.state();
+                if (!target.can_show)
                 {
-                    mTarget->setText(getString("why_" + why_not));
+                    mTarget->setText(getString("why_" + target.why_not));
                 }
                 else
                 {
-                    LLSelectNode* node = LLSelectMgr::getInstance()->getSelection()->findNode(object);
                     LLStringUtil::format_map_t args;
-                    // The object's name is its owner's: no links of theirs in this text box,
-                    // which trusts its text.
-                    args["[NAME]"] = (node && node->mValid && !node->mName.empty()) ? plus::safeText(node->mName) : getString("unnamed");
-                    mTarget->setText(getString(shown ? "target_shown" : "target", args));
+                    args["[NAME]"] = target.name.empty() ? getString("unnamed") : target.name;
+                    mTarget->setText(getString(target.shown ? "target_shown" : "target", args));
                 }
 
                 const FileInfo* info = selectedInfo();
@@ -299,8 +237,8 @@ namespace plus::localmesh
                 mReload->setEnabled(info && !loading);
                 mRemove->setEnabled(info && !loading);
                 mMeshes->setEnabled(info && info->status == Status::Active);
-                mShow->setEnabled(can_show && info && info->status == Status::Active && mMeshes->getFirstSelectedIndex() >= 0);
-                mTakeOff->setEnabled(shown);
+                mShow->setEnabled(target.can_show && info && info->status == Status::Active && mMeshes->getFirstSelectedIndex() >= 0);
+                mTakeOff->setEnabled(target.shown);
             }
 
             LLScrollListCtrl* mFiles = nullptr;
@@ -315,19 +253,25 @@ namespace plus::localmesh
 
             std::vector<FileInfo> mInfos;
             LLUUID mMeshesFile;
-            LLUUID mTargetID;
-            std::string mTargetWhyNot;
-            bool mTargetShown = false;
-            bool mOldForceSelection = false;
-            bool mForcing = false;              // setForceSelection(true) is ours until onClose
-            LLObjectSelectionHandle mSelection;     // keeps the inspect tool's selection (as Firestorm's)
+            ToolSession mTools;
+            TargetTracker mTracker;
             boost::signals2::connection mChangedConnection;
         };
 
+        // The window is the RmlUi one (localmeshrml.cpp, research/386). This XUI version is frozen (not changed any
+        // more: a setting added to the window goes to both) and is used in safe mode, where RmlUi is not started, and
+        // with PlusRmlUiWindows off (the choice is made once, here: it takes effect at the next start).
         void init()
         {
-            LLFloaterReg::add(FLOATER_NAME, "floater_plus_local_mesh.xml",
-                              (LLFloaterBuildFunc)&LLFloaterReg::build<LocalMeshFloater>);
+            if (plus::safemode::active() || !gSavedSettings.getBOOL("PlusRmlUiWindows"))
+            {
+                LLFloaterReg::add(FLOATER_NAME, "floater_plus_local_mesh.xml",
+                                  (LLFloaterBuildFunc)&LLFloaterReg::build<LocalMeshFloater>);
+            }
+            else
+            {
+                addRmlFloater(FLOATER_NAME);
+            }
         }
 
         plus::FeatureRegistration sRegistration({ "localmesh", &init, {} });

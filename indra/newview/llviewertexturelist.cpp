@@ -309,6 +309,31 @@ void LLViewerTextureList::shutdown()
     // clear out preloads
     mImagePreloads.clear();
 
+    saveTextureList(); // <plus> fast-exit (research/276): the part that was here, in a function the fast exit calls </plus>
+
+    //
+    // Clean up "loaded" callbacks.
+    //
+    mCallbackList.clear();
+
+    // Flush all of the references
+    while (!mCreateTextureList.empty())
+    {
+        mCreateTextureList.front()->mCreatePending = false;
+        mCreateTextureList.pop();
+    }
+    mFastCacheList.clear();
+
+    mUUIDMap.clear();
+
+    mImageList.clear();
+
+    mInitialized = false ; //prevent loading textures again.
+}
+
+// <plus> fast-exit (research/276): the list of the loaded textures for precaching on startup (shutdown()'s first part, unchanged)
+void LLViewerTextureList::saveTextureList()
+{
     // Write out list of currently loaded textures for precaching on startup
     typedef std::set<std::pair<S32,LLViewerFetchedTexture*> > image_area_list_t;
     image_area_list_t image_area_list;
@@ -361,26 +386,8 @@ void LLViewerTextureList::shutdown()
         LL_DEBUGS() << "saving " << imagelist.size() << " image list entries" << LL_ENDL;
         LLSDSerialize::toPrettyXML(imagelist, file);
     }
-
-    //
-    // Clean up "loaded" callbacks.
-    //
-    mCallbackList.clear();
-
-    // Flush all of the references
-    while (!mCreateTextureList.empty())
-    {
-        mCreateTextureList.front()->mCreatePending = false;
-        mCreateTextureList.pop();
-    }
-    mFastCacheList.clear();
-
-    mUUIDMap.clear();
-
-    mImageList.clear();
-
-    mInitialized = false ; //prevent loading textures again.
 }
+// </plus>
 
 void LLViewerTextureList::dump()
 {

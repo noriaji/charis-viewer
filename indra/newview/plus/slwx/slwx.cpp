@@ -34,6 +34,7 @@
 #include "slwxtag.h"
 
 #include "plus/freeze/freeze.h"
+#include "plus/skyweather/skyweather.h"
 #include "skinsss/skinsss.h"
 
 #include "llcallbacklist.h"
@@ -85,7 +86,7 @@ namespace plus::slwx
         U64 sFrame = ~(U64)0;               // the frame the answer below is for
         bool sAnswer = false;
         Effective sEffective = {};
-        bool sRainWasOn = false;
+        bool sRainWasOn = false;            // the avatars' splash mark follows the answer given (effective() below)
 
         void leave()
         {
@@ -95,11 +96,6 @@ namespace plus::slwx
                 plus::slwx::parcel::reset();
                 sLast = Values();
                 sFrom = Values();
-                if (sRainWasOn)
-                {
-                    sRainWasOn = false;
-                    doOnIdleOneTime(&plus::skinsss::markWantChanged);
-                }
             }
         }
 
@@ -166,15 +162,10 @@ namespace plus::slwx
             {
                 // Faded out: the settings' values stand again.
                 sLast = Values();
-                if (sRainWasOn)
-                {
-                    sRainWasOn = false;
-                    doOnIdleOneTime(&plus::skinsss::markWantChanged);
-                }
                 return false;
             }
 
-            sEffective.fromParcel = true;
+            sEffective.fromOutside = true;
             sEffective.rainLevel = tag::rainLevelOfMm(now.mm);
             sEffective.rainMm = llmax(now.mm, 0.f);
             sEffective.snowLevel = tag::snowLevelOfCm(now.cm);
@@ -189,14 +180,6 @@ namespace plus::slwx
             sEffective.windFromDeg = from_deg;
             sEffective.storm = llclamp(now.storm, 0.f, 1.f);
 
-            // The avatars' mark for the rain's splashes comes and goes with the rain.
-            // (as plus/rain's avatarMarkWanted: it rains and does not snow)
-            const bool rain_on = sEffective.rainLevel > 0 && sEffective.snowLevel == 0;
-            if (rain_on != sRainWasOn)
-            {
-                sRainWasOn = rain_on;
-                doOnIdleOneTime(&plus::skinsss::markWantChanged);
-            }
             return true;
         }
 
@@ -223,7 +206,25 @@ namespace plus::slwx
         if (frame != sFrame)
         {
             sFrame = frame;
-            sAnswer = compute();
+            // The sky's own weather (plus/skyweather: a saved sky or day cycle) is asked
+            // first; the parcel's tag stands in only when the sky has none to give.
+            if (plus::skyweather::effective(sEffective))
+            {
+                leave();    // the tag's state is taken up afresh when it is wanted again
+                sAnswer = true;
+            }
+            else
+            {
+                sAnswer = compute();
+            }
+            // The avatars' mark for the rain's splashes comes and goes with the rain (as plus/rain's
+            // avatarMarkWanted: it rains and does not snow), whichever source the answer is from.
+            const bool rain_on = sAnswer && sEffective.rainLevel > 0 && sEffective.snowLevel == 0;
+            if (rain_on != sRainWasOn)
+            {
+                sRainWasOn = rain_on;
+                doOnIdleOneTime(&plus::skinsss::markWantChanged);
+            }
         }
         if (sAnswer)
         {
@@ -231,6 +232,39 @@ namespace plus::slwx
         }
         return sAnswer;
     }
+
+    // <plus> skyweather-ui
+    bool parcelEffective(Effective& out)
+    {
+        if (!allowParcel())
+        {
+            return false;
+        }
+        // A read of the tag as it stands: the same values compute() aims at, with no fade
+        // and none of its fade state (the sky may be answering effective() while this is asked).
+        // update() advances the parcel's observation; compute() resets it when it takes the tag up.
+        parcel::update();
+        const parcel::Target& target = parcel::target();
+        if (!target.active)
+        {
+            return false;
+        }
+        const tag::Params& p = target.params;
+        const sync::Wind w = sync::wind(p, target.seed, sync::now());
+        const F32 mm = tag::rainMm(p);
+        const F32 cm = tag::snowCm(p);
+        out = Effective();
+        out.fromOutside = true;
+        out.rainLevel = tag::rainLevelOfMm(mm);
+        out.rainMm = llmax(mm, 0.f);
+        out.snowLevel = tag::snowLevelOfCm(cm);
+        out.windSpeed = llclamp(w.speed, 0.f, tag::WIND_SPEED_MAX);
+        out.windBaseSpeed = llclamp(p.wind_speed, 0.f, tag::WIND_SPEED_MAX);
+        out.windFromDeg = p.wind_from;      // the tag's own direction, as windBaseSpeed is its own speed
+        out.storm = llclamp(p.storm, 0.f, 1.f);
+        return true;
+    }
+    // </plus> skyweather-ui
 
     bool allowParcel()
     {

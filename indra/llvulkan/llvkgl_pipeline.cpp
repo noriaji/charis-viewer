@@ -253,9 +253,9 @@ namespace
 namespace
 {
 
-    // The GL blend state as an OIT node keeps it (research/41, OIT_FACTOR_*),
-    // from a pipeline's key.
-    U32 oit_blend_word(const std::vector<U32>& key)
+    // The GL blend state as an OIT node keeps it (research/41, OIT_FACTOR_*):
+    // blending off is the color replacing what is behind it (ONE, ZERO).
+    U32 oit_blend_word_of(bool blend, GLenum src_rgb_f, GLenum dst_rgb_f, GLenum src_a_f, GLenum dst_a_f, GLenum eq_rgb_f, GLenum eq_a_f, U32 mask)
     {
         auto factor = [](GLenum f) -> U32
         {
@@ -281,16 +281,20 @@ namespace
             return e == GL_FUNC_SUBTRACT ? OIT_EQ_SUBTRACT : e == GL_FUNC_REVERSE_SUBTRACT ? OIT_EQ_REVERSE_SUBTRACT :
                    e == GL_MIN ? OIT_EQ_MIN : e == GL_MAX ? OIT_EQ_MAX : OIT_EQ_ADD;
         };
-        // Blending off: the color replaces what is behind it (ONE, ZERO).
-        const bool blend = key[PK_BLEND] != 0;
-        const U32 src_rgb = blend ? factor(key[PK_SRC_RGB]) : OIT_FACTOR_ONE;
-        const U32 dst_rgb = blend ? factor(key[PK_DST_RGB]) : OIT_FACTOR_ZERO;
-        const U32 src_a = blend ? factor(key[PK_SRC_A]) : OIT_FACTOR_ONE;
-        const U32 dst_a = blend ? factor(key[PK_DST_A]) : OIT_FACTOR_ZERO;
-        const U32 eq_rgb = blend ? equation(key[PK_EQ_RGB]) : OIT_EQ_ADD;
-        const U32 eq_a = blend ? equation(key[PK_EQ_A]) : OIT_EQ_ADD;
-        const U32 mask = key[PK_COLOR_MASK];
+        const U32 src_rgb = blend ? factor(src_rgb_f) : OIT_FACTOR_ONE;
+        const U32 dst_rgb = blend ? factor(dst_rgb_f) : OIT_FACTOR_ZERO;
+        const U32 src_a = blend ? factor(src_a_f) : OIT_FACTOR_ONE;
+        const U32 dst_a = blend ? factor(dst_a_f) : OIT_FACTOR_ZERO;
+        const U32 eq_rgb = blend ? equation(eq_rgb_f) : OIT_EQ_ADD;
+        const U32 eq_a = blend ? equation(eq_a_f) : OIT_EQ_ADD;
         return src_rgb | (dst_rgb << 4) | (src_a << 8) | (dst_a << 12) | (eq_rgb << 16) | (eq_a << 19) | (mask << 22);
+    }
+
+    // From a pipeline's key.
+    U32 oit_blend_word(const std::vector<U32>& key)
+    {
+        return oit_blend_word_of(key[PK_BLEND] != 0, key[PK_SRC_RGB], key[PK_DST_RGB], key[PK_SRC_A], key[PK_DST_A], key[PK_EQ_RGB], key[PK_EQ_A],
+                                 key[PK_COLOR_MASK]);
     }
 
     // research/381 A: whether a node of this blend word (oit_blend_word's layout), at source alpha 0, leaves the
@@ -324,7 +328,36 @@ namespace
         const bool alpha = (mask & 8u) == 0 || (eq_a == OIT_EQ_ADD && zero_at_alpha_0(src_a, true) && one_at_alpha_0(dst_a));
         return rgb && alpha;
     }
+
+    // research/395 (A-OIT): whether a node of this blend word is an affine function of the color behind it that
+    // the resolve can fold into one blend (result = A + B * d per channel; OIT_RESOLVE_FRAGMENT with BLEND): the
+    // equation is ADD (or its channel group is not written), and neither factor reads the destination (DST_COLOR,
+    // DST_ALPHA and their complements, SRC_ALPHA_SATURATE: min(s.a, 1 - d.a)). An allow list: anything else,
+    // SUBTRACT, MIN and MAX included, makes the session resolve as before (that needs the color behind).
+    bool oit_blend_affine(U32 blend_word)
+    {
+        const U32 eq_rgb = (blend_word >> 16) & 7u;
+        const U32 eq_a = (blend_word >> 19) & 7u;
+        const U32 mask = (blend_word >> 22) & 15u;
+        auto independent = [](U32 f)
+        {
+            return f == OIT_FACTOR_ZERO || f == OIT_FACTOR_ONE || f == OIT_FACTOR_SRC_COLOR || f == OIT_FACTOR_ONE_MINUS_SRC_COLOR ||
+                   f == OIT_FACTOR_SRC_ALPHA || f == OIT_FACTOR_ONE_MINUS_SRC_ALPHA || f == OIT_FACTOR_CONSTANT ||
+                   f == OIT_FACTOR_ONE_MINUS_CONSTANT;
+        };
+        const bool rgb = (mask & 7u) == 0 || (eq_rgb == OIT_EQ_ADD && independent(blend_word & 15u) && independent((blend_word >> 4) & 15u));
+        const bool alpha = (mask & 8u) == 0 || (eq_a == OIT_EQ_ADD && independent((blend_word >> 8) & 15u) && independent((blend_word >> 12) & 15u));
+        return rgb && alpha;
+    }
 } // namespace
+
+    // The same, of a draw's GL state (oit_for_draw, the scene's heads): whether its node can go to the direct resolve.
+    bool oit_state_blend_affine(const State& s)
+    {
+        const U32 mask = (U32)s.color_mask[0] | ((U32)s.color_mask[1] << 1) | ((U32)s.color_mask[2] << 2) | ((U32)s.color_mask[3] << 3);
+        return oit_blend_affine(oit_blend_word_of(s.blend, s.blend_src_rgb, s.blend_dst_rgb, s.blend_src_a, s.blend_dst_a, s.blend_eq_rgb,
+                                                  s.blend_eq_a, mask));
+    }
 
     // Everything get_pipeline creates a pipeline from is in its key, but the
     // program's objects (research/111 B-PL: the prewarm makes a pipeline from

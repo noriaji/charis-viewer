@@ -45,10 +45,10 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "radar.h"
+#include "radarui.h"
+#include "radarrml.h"
 #include "plus.h"
-#include "plus/camerashot/camerashot.h"
-#include "plus/contactsethooks/cshooks.h"
-#include "plus/rlv/rlvhooks.h"
+#include "plus/safemode/safemode.h"
 
 #include <cstdlib>
 #include <unordered_map>
@@ -86,55 +86,9 @@ namespace plus::radar
         constexpr char SETTING_COLUMNS[]  = "PlusRadarColumns";
         constexpr char SETTING_NAME_FMT[] = "PlusRadarNameFormat";
 
-        // How near the camera comes to an avatar that is zoomed in on, in meters.
-        constexpr F32 ZOOM_DISTANCE = 2.8f;
-        // The avatar's position is its pelvis: a little above it is where one looks.
-        constexpr F64 ZOOM_LOOK_HEIGHT = 0.3;
-
-        struct ColumnDef
-        {
-            const char* name;   // also the strings col_<name> (label) and tip_<name> (tool tip)
-            S32 width;
-            U32 bit;
-        };
-
-        const ColumnDef COLUMNS[] = {
-            { "name",    160, 0  },     // always shown
-            { "region",  24,  1  },
-            { "sitting", 24,  2  },
-            { "age",     44,  4  },
-            { "payment", 30,  8  },
-            { "seen",    58,  16 },
-            { "range",   56,  32 },
-        };
-
-        // The first number in a cell's text ("12.5", ">162"); the sort puts ">" (not known) last.
-        F64 numberIn(const std::string& text)
-        {
-            if (!text.empty() && text[0] == '>')
-            {
-                return 1e12;
-            }
-            const size_t start = text.find_first_of("0123456789");
-            return start == std::string::npos ? -1.0 : std::strtod(text.c_str() + start, nullptr);
-        }
-
-        // "h:mm:ss" in seconds.
-        S32 secondsIn(const std::string& text)
-        {
-            S32 h = 0, m = 0, s = 0;
-            if (sscanf(text.c_str(), "%d:%d:%d", &h, &m, &s) == 3)
-            {
-                return h * 3600 + m * 60 + s;
-            }
-            return 0;
-        }
-
-        // RLVa @shownames: the avatar's name may not be shown (plus/rlv, research/248 3.4).
-        bool nameHidden(const LLUUID& id)
-        {
-            return plus::rlv::enabled() && !plus::rlv::canShowMenuName(id);
-        }
+        using ui::COLUMNS;
+        using ui::ColumnDef;
+        using ui::nameHidden;
 
         // The list, with a menu of the floater's on a right click.
         class AvatarList : public LLScrollListCtrl
@@ -174,30 +128,6 @@ namespace plus::radar
 
         LLDefaultChildRegistry::Register<AvatarList> sAvatarListRegistration("plus_radar_list");
 
-        // The camera in front of an avatar, looking at it (Firestorm's LLAvatarActions::zoomIn()).
-        void zoomTo(LLVOAvatar* avatar)
-        {
-            // A camera shot running would move the camera on from here the next frame.
-            plus::camerashot::stop();
-            // The flycam would override the move.
-            if (LLViewerJoystick::getInstance()->getOverrideCamera())
-            {
-                gAgentCamera.toggleFlycam(); // off (the flycam of the 3D mouse and of game control, official 26.5)
-            }
-            LLViewerJoystick::getInstance()->setCameraNeedsUpdate(true);
-
-            gAgentCamera.setFocusOnAvatar(false, ANIMATE);
-
-            LLVector3d target = avatar->getPositionGlobal();
-            target.mdV[VZ] += ZOOM_LOOK_HEIGHT;
-            LLVector3d camera_dir = gAgentCamera.getCameraPositionGlobal() - target;
-            if (camera_dir.normalize() == 0.0)
-            {
-                camera_dir = LLVector3d::x_axis;
-            }
-            gAgentCamera.setCameraPosAndFocusGlobal(target + camera_dir * ZOOM_DISTANCE, target, avatar->getID());
-        }
-
         class RadarFloater : public LLFloater
         {
             friend class ::LLFloaterReg;
@@ -205,6 +135,11 @@ namespace plus::radar
         public:
             bool postBuild() override
             {
+                mMarks.parcel = getString("mark_parcel");
+                mMarks.region = getString("mark_region");
+                mMarks.sitting = getString("mark_sitting");
+                mMarks.age_hidden = getString("age_hidden");
+                mMarks.age_unknown = getString("age_unknown");
                 mList    = getChild<AvatarList>("radar_list");
                 mCounter = getChild<LLTextBox>("counter");
 
@@ -335,70 +270,26 @@ namespace plus::radar
 
             std::string cellText(const Entry& entry, const std::string& column) const
             {
-                if (column == "name")
-                {
-                    return entry.name;
-                }
-                if (column == "region")
-                {
-                    return entry.onParcel ? getString("mark_parcel") : (entry.inRegion ? getString("mark_region") : std::string());
-                }
-                if (column == "sitting")
-                {
-                    return entry.sitting ? getString("mark_sitting") : std::string();
-                }
-                if (column == "age")
-                {
-                    if (nameHidden(entry.id))
-                    {
-                        return std::string();   // RLVa @shownames: no age either (FSRadar::updateRadarList())
-                    }
-                    if (entry.age >= 0)
-                    {
-                        return llformat("%d", entry.age);
-                    }
-                    return entry.age == -2 ? getString("age_hidden") : (entry.age == -3 ? getString("age_unknown") : std::string());
-                }
-                if (column == "payment")
-                {
-                    return (entry.flags & AVATAR_TRANSACTED) ? "$$" : ((entry.flags & AVATAR_IDENTIFIED) ? "$" : "");
-                }
-                if (column == "seen")
-                {
-                    const S32 seconds = (S32)difftime(time(nullptr), entry.firstSeen);
-                    return llformat("%d:%02d:%02d", seconds / 3600, (seconds / 60) % 60, seconds % 60);
-                }
-                if (column == "range")
-                {
-                    // Not known: farther than the draw distance.
-                    return entry.range > UNKNOWN_RANGE ? llformat("%.1f", entry.range)
-                                                       : llformat(">%d", (S32)gSavedSettings.getF32("RenderFarClip"));
-                }
-                return std::string();
+                return ui::cellText(entry, column, mMarks);
             }
 
             // Colors and styles of a row: the range by how far one is heard, friends bold, the muted in italic.
             void styleRow(LLScrollListItem* item, const Entry& entry)
             {
-                static const LLColor4 say_color(1.f, 0.4f, 0.4f, 1.f);
-                static const LLColor4 shout_color(1.f, 0.85f, 0.45f, 1.f);
-                const LLColor4 other_color = LLUIColorTable::instance().getColor("DefaultListText", LLColor4::white).get();
+                const LLColor4 other_color = ui::listTextColour();
                 for (S32 i = 0; i < item->getNumColumns(); ++i)
                 {
                     LLScrollListText* cell = static_cast<LLScrollListText*>(item->getColumn(i));
                     const std::string& name = mList->getColumn(i)->mName;
                     if (name == "name")
                     {
-                        // RLVa @shownames: a friend is not told by the bold either (FSRadar::updateRadarList()).
-                        const bool bold = entry.friendship && !nameHidden(entry.id);
-                        cell->setFontStyle(static_cast<U8>((bold ? LLFontGL::BOLD : 0) | (entry.muted ? LLFontGL::ITALIC : 0)));
-                        // The contact set colour (FSContactSetsColorizeRadar; not under @shownames, cshooks). A cell
-                        // keeps a colour once given one (LLScrollListText), so a row that had a set colour and has none
+                        const ui::Style style = ui::nameStyle(entry);
+                        cell->setFontStyle(static_cast<U8>((style.bold ? LLFontGL::BOLD : 0) | (style.italic ? LLFontGL::ITALIC : 0)));
+                        // A cell keeps a colour once given one (LLScrollListText), so a row that had a set colour and has none
                         // now gets the list's text colour; the others keep the list's own (selected rows differ).
-                        LLColor4 set_color;
-                        if (plus::cshooks::colorFor(entry.id, ContactSetType::RADAR, set_color))
+                        if (style.coloured)
                         {
-                            cell->setColor(set_color);
+                            cell->setColor(style.colour);
                             mSetColoredRows.insert(entry.id);
                         }
                         else if (mSetColoredRows.erase(entry.id))
@@ -408,25 +299,14 @@ namespace plus::radar
                     }
                     else if (name == "range")
                     {
-                        const bool known = entry.range > UNKNOWN_RANGE;
-                        cell->setColor(known && entry.range <= CHAT_RANGE_SAY ? say_color
-                                       : (known && entry.range <= CHAT_RANGE_SHOUT ? shout_color : other_color));
-                        // In bold when the avatar is drawn.
-                        cell->setFontStyle(static_cast<U8>(entry.inDraw ? LLFontGL::BOLD : LLFontGL::NORMAL));
+                        const ui::Style style = ui::rangeStyle(entry);
+                        cell->setColor(style.coloured ? style.colour : other_color);
+                        cell->setFontStyle(static_cast<U8>(style.bold ? LLFontGL::BOLD : LLFontGL::NORMAL));
                     }
                 }
             }
 
-            bool matchesFilter(const Entry& entry) const
-            {
-                if (mFilter.empty())
-                {
-                    return true;
-                }
-                std::string name = entry.name;
-                LLStringUtil::toLower(name);
-                return name.find(mFilter) != std::string::npos;
-            }
+            bool matchesFilter(const Entry& entry) const { return ui::matchesFilter(entry, mFilter); }
 
             // After each sweep: rows of those who left go, new ones come, the others change in
             // place (so the selection and the scroll stay).
@@ -519,9 +399,7 @@ namespace plus::radar
                 }
 
                 LLStringUtil::format_map_t args;
-                args["[TOTAL]"]  = llformat("%d", engine->stats().total);
-                args["[REGION]"] = llformat("%d", engine->stats().region);
-                args["[CHAT]"]   = llformat("%d", engine->stats().chatRange);
+                ui::counterArgs(engine->stats(), args);
                 mCounter->setText(getString("counter", args));
             }
 
@@ -538,13 +416,13 @@ namespace plus::radar
                 const std::string text_b = cell_b->getValue().asString();
                 if (def->mName == "range" || def->mName == "age")
                 {
-                    const F64 number_a = numberIn(text_a);
-                    const F64 number_b = numberIn(text_b);
+                    const F64 number_a = ui::sortNumber(text_a);
+                    const F64 number_b = ui::sortNumber(text_b);
                     return number_a < number_b ? -1 : (number_a > number_b ? 1 : 0);
                 }
                 if (def->mName == "seen")
                 {
-                    return secondsIn(text_a) - secondsIn(text_b);
+                    return ui::sortSeconds(text_a) - ui::sortSeconds(text_b);
                 }
                 return LLStringUtil::compareDict(text_a, text_b);
             }
@@ -568,13 +446,6 @@ namespace plus::radar
                 LLNotificationsUtil::add("SystemMessageTip", args);
             }
 
-            // The avatar's object when it is drawn (the camera needs it).
-            LLVOAvatar* drawnAvatar(const LLUUID& id) const
-            {
-                LLVOAvatar* avatar = dynamic_cast<LLVOAvatar*>(gObjectList.findObject(id));
-                return avatar && !avatar->isDead() ? avatar : nullptr;
-            }
-
             void onDoubleClick()
             {
                 const uuid_vec_t ids = selectedIds();
@@ -582,13 +453,18 @@ namespace plus::radar
                 {
                     return;
                 }
-                if (LLVOAvatar* avatar = drawnAvatar(ids.front()))
-                {
-                    zoomTo(avatar);
-                }
-                else
+                tell(ui::zoomToId(ids.front()));
+            }
+
+            void tell(ui::Notice notice)
+            {
+                if (notice == ui::Notice::NoFocus)
                 {
                     notify("no_focus");
+                }
+                else if (notice == ui::Notice::NoPosition)
+                {
+                    notify("no_position");
                 }
             }
 
@@ -611,7 +487,7 @@ namespace plus::radar
                 LLUICtrl::CommitCallbackRegistry::ScopedRegistrar registrar;
                 LLUICtrl::EnableCallbackRegistry::ScopedRegistrar enable_registrar;
                 registrar.add("Plus.Radar.Action", [this](LLUICtrl*, const LLSD& param) { onMenuAction(param.asString()); });
-                enable_registrar.add("Plus.Radar.Enable", [this](LLUICtrl*, const LLSD& param) { return menuEnabled(param.asString()); });
+                enable_registrar.add("Plus.Radar.Enable", [this](LLUICtrl*, const LLSD& param) { return ui::menuEnabled(param.asString(), selectedIds()); });
 
                 LLContextMenu* menu = LLUICtrlFactory::getInstance()->createFromFile<LLContextMenu>(
                     "menu_plus_radar.xml", LLMenuGL::sMenuContainer, LLViewerMenuHolderGL::child_registry_t::instance());
@@ -624,181 +500,19 @@ namespace plus::radar
                 LLMenuGL::showPopup(mList, menu, x, y);
             }
 
-            bool menuEnabled(const std::string& what) const
-            {
-                const uuid_vec_t ids = selectedIds();
-                if (ids.empty())
-                {
-                    return false;
-                }
-                if (what == "any")
-                {
-                    return true;
-                }
-                if (what == "offer_teleport")
-                {
-                    return LLAvatarActions::canOfferTeleport(ids);
-                }
-                if (what == "call")
-                {
-                    return LLAvatarActions::canCall();     // one: a call; several: a conference call
-                }
-                if (ids.size() != 1)
-                {
-                    return false;
-                }
-                const LLUUID& id   = ids.front();
-                const Entry* entry = Engine::getInstance()->find(id);
-                if (what == "one")
-                {
-                    return true;
-                }
-                if (what == "add_friend")
-                {
-                    return !LLAvatarActions::isFriend(id);
-                }
-                if (what == "remove_friend")
-                {
-                    return LLAvatarActions::isFriend(id);
-                }
-                if (what == "map")
-                {
-                    return is_agent_mappable(id) || gAgent.isGodlike();
-                }
-                if (what == "position")
-                {
-                    return entry && entry->range > UNKNOWN_RANGE;
-                }
-                if (what == "zoom")
-                {
-                    return entry && entry->inDraw;
-                }
-                if (what == "block")
-                {
-                    return LLAvatarActions::canBlock(id);
-                }
-                return false;
-            }
-
             void onMenuAction(const std::string& action)
             {
-                const uuid_vec_t ids = selectedIds();
-                if (ids.empty())
-                {
-                    return;
-                }
-                const LLUUID& id = ids.front();
-                const bool one   = ids.size() == 1;
-                if (action == "profile")
-                {
-                    LLAvatarActions::showProfile(id);
-                }
-                else if (action == "add_friend")
-                {
-                    LLAvatarActions::requestFriendshipDialog(id);
-                }
-                else if (action == "remove_friend")
-                {
-                    LLAvatarActions::removeFriendDialog(id);
-                }
-                else if (action == "im")
-                {
-                    one ? LLAvatarActions::startIM(id) : LLAvatarActions::startConference(ids);
-                }
-                else if (action == "call")
-                {
-                    one ? LLAvatarActions::startCall(id) : LLAvatarActions::startAdhocCall(ids);
-                }
-                else if (action == "map")
-                {
-                    LLAvatarActions::showOnMap(id);
-                }
-                else if (action == "track")
-                {
-                    Engine::getInstance()->startTracking(id);
-                }
-                else if (action == "teleport_to")
-                {
-                    const Entry* entry = Engine::getInstance()->find(id);
-                    if (entry && entry->range > UNKNOWN_RANGE)
-                    {
-                        gAgent.teleportViaLocation(entry->position);
-                    }
-                    else
-                    {
-                        notify("no_position");
-                    }
-                }
-                else if (action == "zoom")
-                {
-                    if (LLVOAvatar* avatar = drawnAvatar(id))
-                    {
-                        zoomTo(avatar);
-                    }
-                    else
-                    {
-                        notify("no_focus");
-                    }
-                }
-                else if (action == "offer_teleport")
-                {
-                    LLAvatarActions::offerTeleport(ids);
-                }
-                else if (action == "request_teleport")
-                {
-                    LLAvatarActions::teleportRequest(id);
-                }
-                else if (action == "share")
-                {
-                    LLAvatarActions::share(id);
-                }
-                else if (action == "pay")
-                {
-                    LLAvatarActions::pay(id);
-                }
-                else if (action == "invite_group")
-                {
-                    LLAvatarActions::inviteToGroup(id);
-                }
-                else if (action == "block")
-                {
-                    LLAvatarActions::toggleBlock(id);
-                }
-                else if (action == "copy_name")
-                {
-                    copyToClipboard(false);
-                }
-                else if (action == "copy_id")
-                {
-                    copyToClipboard(true);
-                }
-                else if (action == "select_all")
+                if (action == "select_all")
                 {
                     mList->selectAll();
-                }
-            }
-
-            // The names (or the ids) of the selected rows, one to a line.
-            void copyToClipboard(bool ids)
-            {
-                std::string text;
-                for (const LLUUID& id : selectedIds())
-                {
-                    if (!text.empty())
-                    {
-                        text += "\n";
-                    }
-                    const Entry* entry = Engine::getInstance()->find(id);
-                    text += ids ? id.asString() : (entry ? entry->name : id.asString());
-                }
-                if (text.empty())
-                {
                     return;
                 }
-                const LLWString wide = utf8str_to_wstring(text);
-                LLClipboard::instance().copyToClipboard(wide, 0, static_cast<S32>(wide.length()));
+                tell(ui::runAction(action, selectedIds()));
             }
 
+            void copyToClipboard(bool ids) { ui::copyToClipboard(selectedIds(), ids); }
+
+            ui::Marks       mMarks;     // the marks of the cells (the window's strings, read once)
             AvatarList*     mList        = nullptr;
             LLTextBox*      mCounter     = nullptr;
             LLSearchEditor* mQuickFilter = nullptr;
@@ -809,8 +523,18 @@ namespace plus::radar
 
         void init()
         {
-            LLFloaterReg::add(FLOATER_NAME, "floater_plus_radar.xml",
-                              (LLFloaterBuildFunc)&LLFloaterReg::build<RadarFloater>);
+            // The window is the RmlUi one (radarrml.cpp, research/386). This XUI version is frozen (not changed any
+            // more: a setting added to the window goes to both) and is used in safe mode, where RmlUi is not started,
+            // and with PlusRmlUiWindows off (the choice is made once, here: it takes effect at the next start).
+            if (plus::safemode::active() || !gSavedSettings.getBOOL("PlusRmlUiWindows"))
+            {
+                LLFloaterReg::add(FLOATER_NAME, "floater_plus_radar.xml",
+                                  (LLFloaterBuildFunc)&LLFloaterReg::build<RadarFloater>);
+            }
+            else
+            {
+                addRmlFloater(FLOATER_NAME);
+            }
         }
 
         // At login: the reports work with the window closed.

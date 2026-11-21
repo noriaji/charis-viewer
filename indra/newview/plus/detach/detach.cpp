@@ -84,6 +84,7 @@
 #include "detachview.h"
 #include "detachwin32.h"
 
+#include "plus/floatersnap/floatersnap.h"
 #include "plus/photoscreen/psui/psstyle.h"
 
 #include "llapp.h"
@@ -1649,7 +1650,8 @@ namespace
                 mDragOut.idles_up = 0;
                 LLDragHandle* handle = dynamic_cast<LLDragHandle*>(captor);
                 LLFloater* floater = handle ? dynamic_cast<LLFloater*>(handle->getParent()) : nullptr;
-                const bool ctrl = (gKeyboard->currentMask(true) & MASK_CONTROL) != 0;
+                // Ctrl held, or a group of touching windows dragged together (plus/floatersnap): the floater stays in the main window.
+                const bool ctrl = (gKeyboard->currentMask(true) & MASK_CONTROL) != 0 || plus::floatersnap::isGroupDrag(captor);
                 if (!auto_on_drag || ctrl || !floater || !enabled() || dragHandleOf(floater) != handle || !autoDetachable(floater))
                 {
                     return;

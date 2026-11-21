@@ -42,7 +42,10 @@
 // the keyboard focus and the mouse capture, a lost capture ends the press without a click; the wheel goes to
 // the parent when the document does not scroll; keys belong to the document while a text field has its focus
 // (acceptsTextInput: the key bindings do not get them), else only the keys it uses go to it; typed characters
-// go to the focused text field; the IME through rmlime.h.
+// go to the focused text field; the IME through rmlime.h. What the fields do beyond RmlUi's own (read-only text, select
+// on focus, number boxes, the edit menu on a right click, the cut name's tool tip) is rmlparts.h's, the official menus
+// a window opens are rmlmenu.h's (research/387). A field that is read-only (the attribute readonly) takes no
+// characters, so it is not "a text field" for acceptsTextInput, but it selects, copies and scrolls.
 //
 // The owner (the floater) sets its hooks and calls load() from its postBuild, and unload() from its destructor
 // (its data model and callbacks go before it does).
@@ -51,6 +54,8 @@
 #define PLUS_RMLHOST_H
 
 #include "rmlcommon.h"
+#include "rmlmenu.h"
+#include "rmlparts.h"
 #include "rmlrender.h"
 
 #include "llcursortypes.h"
@@ -102,8 +107,17 @@ public:
     // Something changed outside RmlUi's input (a data model dirtied, a property set): update on the next frame.
     void markDirty();
 
+    // The layout is made again at once, in the window's after_update hook: a class that was set from the new layout
+    // (RmlList's has-bar) takes effect in this frame's drawing. Counted like the update, and what RmlUi asks for in
+    // it (the next update's time) replaces the first one's.
+    void updateAgain();
+
     Rml::Context* getContext() const { return mContext; }
     Rml::ElementDocument* getDocument() const { return mDocument; }
+    // The host's field parts (rmlparts.h: read-only text, select on focus, number boxes ...). Valid from load() to unload().
+    plus::rmlui::Parts& parts() { return mParts; }
+    // A point of the view (UI units, y up) in the context's pixels: the conversion the host's own mouse input uses.
+    Rml::Vector2i pointToContext(S32 x, S32 y) const { return toContext(x, y); }
 
     // ---- for rmlsystem.cpp and rmlime.cpp ----
     // The host RmlUi is working for now (its input, update, render, load), or null.
@@ -129,6 +143,8 @@ public:
     // A context pixel point and rectangle in the window's GL coordinates (pixels from the bottom-left), for the IME.
     LLCoordGL contextToGL(Rml::Vector2f point) const;
     LLRect contextRectToGL(const Rml::Rectanglef& rect) const;
+    // The same point in this view's own units (x right, y up from the bottom), the reverse of toContext (rmlmenu.cpp).
+    void contextToLocal(Rml::Vector2f point, S32& x, S32& y) const;
     // One character typed into the focused text field (a key, or one of an IME's result).
     bool typeCharacter(llwchar uni_char);
     LLHandle<LLRmlView> getRmlHandle() const { return getDerivedHandle<LLRmlView>(); }
@@ -212,18 +228,28 @@ private:
     bool ready() const { return mStatus == Status::Loaded && mContext; }
     void fail(Status status, const char* message_name);
     void drawMessage() const;
+    void runUpdate(F64 now);
     // The context's size and dp ratio for this frame's UI scale (marks the size dirty when it changed).
     void syncSize(const LLVector2& scale);
     LLVector2 inputScale() const;
     Rml::Vector2i toContext(S32 x, S32 y) const;
     // ProcessMouseMove when the mouse is somewhere else than last time (hover comes every frame).
     void moveMouse(S32 x, S32 y, MASK mask);
+    // A tool tip with text over the element's box (the tool tip manager's sticky rectangle).
+    void showToolTip(Rml::Element* element, const std::string& text);
+    // The right press landed on a field of the document that no listener of the window took: the official text editor
+    // menu there (research/387 3.2). Inside a Scope.
+    void showEditMenu(const Rml::ObserverPtr<Rml::Element>& field);
     bool pressMouse(S32 x, S32 y, MASK mask, int button, bool capture);
     bool releaseMouse(S32 x, S32 y, MASK mask, int button);
     void releaseCapture();
     // The mouse left with a press held (capture lost, hidden): hover gone, the press ends without a click.
     void leaveMouse();
-    bool textFieldFocused() const;
+    // What the focused element is to the keyboard (rmlparts.h fieldKind): typable = takes characters (the IME, typed
+    // text, cut / paste / delete); selectable = also a read-only field (the edit menu: copy, select all).
+    plus::rmlui::FieldKind focusedFieldKind() const;
+    bool typableFocused() const { return plus::rmlui::isTypable(focusedFieldKind()); }
+    bool selectableFocused() const { return plus::rmlui::isSelectable(focusedFieldKind()); }
     enum class KeyMove { Down, Up };
     bool processKey(KEY key, MASK mask, KeyMove move);
     // Whether a key RmlUi had stays the document's (true) or goes on to the viewer (research/364 2.2.2).
@@ -247,6 +273,8 @@ private:
     Rml::Context* mContext = nullptr;       // RmlUi owns it; RemoveContext(mContextName) in unload()
     Rml::ElementDocument* mDocument = nullptr;
     plus::rmlui::DrawList mDrawList;
+    plus::rmlui::Parts mParts;
+    plus::rmlui::ContextMenu mEditMenu;     // the text editor menu (a window's own menus are its own ContextMenu)
     U32 mDirty = DIRTY_ALL;
     F64 mNextUpdateAt = 0.0;                // LLTimer::getTotalSeconds(); NO_DEADLINE: none
     LLVector2 mPixelScale;                  // context pixels per UI unit (this frame's UI scale), 0: not yet

@@ -1082,6 +1082,29 @@
           <menu_item_check.on_check
            function="World.IsMasterAudioMuted"/>
         </menu_item_check>
+        <!-- plus avatarfilter: as Firestorm, "Show Friends only" at the end of the World menu; "Hide everyone but me" is Charis' own -->
+        <menu_item_separator/>
+        <menu_item_check
+          label="Show Friends only"
+          name="Render Friends Only">
+          <menu_item_check.on_click
+           function="ToggleControl"
+           parameter="RenderAvatarFriendsOnly"/>
+          <menu_item_check.on_check
+           function="CheckControl"
+           parameter="RenderAvatarFriendsOnly"/>
+        </menu_item_check>
+        <menu_item_check
+          label="Hide everyone but me"
+          name="Hide Other Avatars">
+          <menu_item_check.on_click
+           function="ToggleControl"
+           parameter="PlusHideOtherAvatars"/>
+          <menu_item_check.on_check
+           function="CheckControl"
+           parameter="PlusHideOtherAvatars"/>
+        </menu_item_check>
+        <!-- /plus -->
 <!--
 	    <menu
 	     create_jump_keys="true"

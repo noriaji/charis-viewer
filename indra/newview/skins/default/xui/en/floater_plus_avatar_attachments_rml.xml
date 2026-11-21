@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  The attachments of an avatar, RmlUi version (plus/avatarattach/attachrml.cpp, research/386): the frame and the words.
+  The content is app_settings/plus/rmlui/attachments.rml in a plus_rml_view under the 18 px header. The XUI window
+  (floater_plus_avatar_attachments.xml, frozen) is used in safe mode and when PlusRmlUiWindows is off. The words are
+  the XUI window's (the strings, the column titles and tool tips, the button labels and tool tips).
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ min_width="480"
+ min_height="200"
+ height="320"
+ width="560"
+ layout="topleft"
+ name="plus_avatar_attachments"
+ title="ATTACHMENTS">
+    <string name="title_format">Attachments: [NAME]</string>
+    <string name="loading">Loading...</string>
+    <string name="name_unavailable">(not available)</string>
+    <string name="no_name">(no name)</string>
+    <string name="hud_point">HUD [POINT]</string>
+    <string name="hud_distance">HUD</string>
+    <string name="count_self">[COUNT] attachments</string>
+    <string name="count_other">[COUNT] attachments (the HUDs of others are not sent to you)</string>
+    <string name="none">Nothing attached.</string>
+    <string name="gone">This avatar is not in view (gone, or too far away).</string>
+    <string name="col_point">Attached to</string>
+    <string name="col_name">Name</string>
+    <string name="col_creator">Creator</string>
+    <string name="col_prims">Prims</string>
+    <string name="col_distance">Dist. (m)</string>
+    <string name="tip_creator">Who made the object</string>
+    <string name="tip_prims">Prims of the linkset (the root and its children)</string>
+    <string name="tip_distance">Distance from you in meters</string>
+    <string name="tip_list">Double-click a row to inspect the object</string>
+    <string name="copy_name">Copy Name</string>
+    <string name="copy_id">Copy UUID</string>
+    <string name="inspect">Inspect</string>
+    <string name="refresh">Refresh</string>
+    <string name="tip_copy_name">Copy the name of the selected object</string>
+    <string name="tip_copy_id">Copy the UUID of the selected object</string>
+    <string name="tip_inspect">Select the object and show its properties (as Inspect on its own menu)</string>
+    <string name="tip_refresh">Update the list now and ask again for the names that did not come</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="attachments.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="560"
+     height="302" />
+</floater>

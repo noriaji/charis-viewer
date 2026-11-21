@@ -27,6 +27,10 @@
 #ifndef LL_LLOUTFITSLIST_H
 #define LL_LLOUTFITSLIST_H
 
+#include <set> // <plus> outfit-hierarchy </plus>
+#include <string> // <plus> outfit-hierarchy </plus>
+#include <vector> // <plus> outfit-hierarchy </plus>
+
 #include "llaccordionctrl.h"
 #include "llpanel.h"
 
@@ -283,6 +287,19 @@ public:
     U32 getFilterGeneration() const { return mFilterGeneration; }
     void setFilterGeneration(U32 generation) { mFilterGeneration = generation; }
 
+    // <plus> outfit-hierarchy
+    // Hierarchical view (folders of My Outfits shown as nested rows).
+    // A folder row has only a header; its arrow shows whether the folder is open.
+    void makeFolderRow() { mFolderRow = true; setHeaderOnly(true); }
+    bool isFolderRow() const { return mFolderRow; }
+    // parent_id is null for the top level; path holds the names from the top folder to this row.
+    // ids holds the folder id of every name in path (the last one is this row's own id).
+    void setHierarchy(const LLUUID& parent_id, const std::vector<std::string>& path, const std::vector<LLUUID>& ids);
+    const LLUUID& getParentFolderID() const { return mParentFolderID; }
+    const std::vector<std::string>& getSortPath() const { return mSortPath; }
+    const std::vector<LLUUID>& getSortIds() const { return mSortIds; }
+    // </plus>
+
     static LLUIImage* sFavoriteIcon;
     static LLUIColor sFgColor;
 
@@ -297,6 +314,13 @@ public:
     void drawFavoriteIcon();
 
     LLUUID mFolderID;
+    // <plus> outfit-hierarchy
+    LLUUID mParentFolderID;
+    std::vector<std::string> mSortPath; // empty in the flat view
+    std::vector<LLUUID> mSortIds;       // same length as mSortPath
+    bool mFolderRow = false;
+    bool mShowIcons = false; // outfit-folder-icons
+    // </plus>
     bool mIsFavorite = false;
     bool mIsSelected = false;
     U32 mFilterGeneration = 0;
@@ -446,6 +470,39 @@ private:
     typedef outfits_map_t::value_type                   outfits_map_value_t;
     outfits_map_t                   mOutfitsMap;
 
+    // <plus> outfit-hierarchy
+    // Hierarchical view ("OutfitListShowFolders"): rows for the folders of My Outfits.
+    bool useFolderRows() const;
+    LLUUID getParentFolder(const LLUUID& cat_id) const;
+    bool isRowShown(const LLUUID& cat_id) const;
+    bool updateRowHierarchy(LLOutfitAccordionCtrlTab* tab, const LLUUID& cat_id);
+    void observeSubfolder(const LLUUID& cat_id);
+    void rememberFolderOpen(const LLUUID& cat_id, bool open);
+    void dropListSelection(const LLUUID& category_id);
+    void dropAllListSelections();
+    bool updateAddedFolder(const LLUUID& cat_id, LLViewerInventoryCategory* cat);
+    bool getFolderPath(const LLUUID& cat_id, LLUUID& parent_id, std::vector<std::string>& path, std::vector<LLUUID>& ids) const;
+    void convertOutfitLikeFolders();
+    void onShowFoldersChanged();
+    void refreshHierarchy();
+    bool applyFolderVisibility();
+    void onFolderToggled(const LLUUID& cat_id, bool open);
+    void removeFolderRows();
+    void setAllFolders(bool open);
+    void openAncestorFolders(const LLUUID& cat_id);
+    outfits_map_t                   mFolderTabs;   // folder rows, by folder id
+    std::set<LLUUID>                mOpenFolders;  // open folders (kept across toggling the setting)
+    std::set<LLUUID>                mTempOpened;   // opened by the program (openAncestorFolders), not by the user: not saved
+    bool                            mOpenFoldersRestored = false;
+    bool                            mOpenFoldersDirty = false;   // the setting changed, the file is not written yet
+    bool                            mOpenFoldersFlushQueued = false;
+    mutable LLUUID                  mMyOutfitsId;                // My Outfits, found once
+    const LLUUID& getMyOutfitsId() const;
+    void restoreOpenFolders();
+    void storeOpenFolders();
+    void flushOpenFolders();
+    // </plus>
+
     // IDs of original items which are worn and linked in COF.
     // Used to monitor COF changes for updating items worn state. See EXT-8636.
     uuid_vec_t                      mCOFLinkedItems;
@@ -459,6 +516,7 @@ private:
     bool                            mItemSelected;
 
     boost::signals2::connection                   mSavedSettingInvFavColor;
+    boost::signals2::connection                   mShowFoldersConnection; // <plus> outfit-hierarchy </plus>
 };
 
 #endif //LL_LLOUTFITSLIST_H

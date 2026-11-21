@@ -368,6 +368,20 @@
 <key>keywords_ja</key><string>区画 天候 天気 土地 説明欄 同期 共有 スリップストリーム</string>
 </map>
 <map>
+<key>setting</key><string>PlusSkyWeather</string>
+<key>kind</key><string>check</string>
+<key>tab</key><string>light</string>
+<key>detail</key><boolean>0</boolean>
+<key>rebuild</key><integer>0</integer>
+<key>look</key><integer>0</integer>
+<key>label_en</key><string>Use the Sky's Weather</string>
+<key>label_ja</key><string>空に保存された天気を使う</string>
+<key>tip_en</key><string>Uses the weather saved in the sky or day cycle you have on (its Weather tab): rain, snow and wind. It follows the day cycle's time. Skies with no weather are not touched. It comes ahead of a parcel's weather and is used only while Rain and Snow above are both Off. A weather that came with a parcel's, a region's or a script's environment (and any copy of it you made) counts only while Use the Parcel's Weather is on.</string>
+<key>tip_ja</key><string>今使っている空・デイサイクルに保存された天気（「天気」タブ）の雨・雪・風を使います。デイサイクルの時刻に合わせて変わります。天気の入っていない空には何もしません。区画の天候より優先され、上の「雨を降らせる」「雪を降らせる」が両方「なし」の時だけ効きます。区画・リージョン・スクリプトの環境に付いてきた天気は（それを写した物も）、「区画の天候を受け取る」がオンの時だけ使います。</string>
+<key>keywords_en</key><string>sky weather day cycle saved rain snow wind eep</string>
+<key>keywords_ja</key><string>空 天気 天候 デイサイクル 保存 雨 雪 風</string>
+</map>
+<map>
 <key>heading</key><string>air</string>
 <key>tab</key><string>light</string>
 <key>label_en</key><string>Fog, Light Shafts and Fireflies</string>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Protected folders, RmlUi version (plus/protectedfolders/protectedfoldersrml.cpp, research/386): the frame and the words.
+  The content is app_settings/plus/rmlui/protected_folders.rml in a plus_rml_view under the 18 px header. The XUI window
+  (floater_plus_protected_folders.xml, frozen) is used in safe mode and when PlusRmlUiWindows is off. Same size,
+  minimum size and saved rectangle as the XUI one.
+-->
+<floater
+ positioning="cascading"
+ legacy_header_height="18"
+ save_rect="true"
+ save_visibility="true"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ min_width="220"
+ min_height="150"
+ height="350"
+ width="320"
+ layout="topleft"
+ name="plus_protected_folders"
+ title="PROTECTED FOLDERS">
+    <string name="unknown_folder">(unknown folder)</string>
+    <string name="filter_hint">Narrow the list by name</string>
+    <string name="tip_remove">Take the selected folders off the list (they can then be deleted and moved again)</string>
+    <string name="folder">Folder</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="protected_folders.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="320"
+     height="332" />
+</floater>

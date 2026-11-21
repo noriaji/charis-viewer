@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_pose_consent" title="自分のアバターをポーズできる人">
+  <string name="nobody">今は誰もあなたのアバターをポーズできません。</string>
+  <string name="loading">（名前を読み込み中）</string>
+  <string name="withdraw_waiting_row">[NAME]（取り下げ待ち）</string>
+  <string name="reflect_row">[NAME]（ポーズを自分の画面に出す）</string>
+  <string name="reflect_now_row">[NAME]（今ポーズが出ています）</string>
+  <string name="note">この人たちは、あなたのアバターを、相手の画面の中で、このセッションの間だけポーズできます。印の付いた人は、そのポーズをあなたのアバターにも出せます。「反映を止める」はそれだけを止めます。</string>
+  <string name="withdraw">取り下げる</string>
+  <string name="withdraw_all">全員取り下げる</string>
+  <string name="reflect_stop">反映を止める</string>
+  <string name="tip_withdraw">選んだ人に、あなたのアバターをポーズさせるのをやめます（その人のポーズを自分の画面に出すのもやめます）</string>
+  <string name="tip_reflect_stop">選んだ人のポーズを、あなた自身のアバターに出すのをやめます。相手の画面の中でポーズさせるのはそのままです。</string>
+  <string name="tip_withdraw_all">誰にもあなたのアバターをポーズさせないようにします</string>
+  <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+  <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、今までの窓になります。</string>
+</floater>

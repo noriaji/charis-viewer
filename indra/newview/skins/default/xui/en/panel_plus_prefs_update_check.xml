@@ -20,10 +20,10 @@
      control_name="PlusUpdateCheck"
      follows="left|top"
      height="30"
-     label="Tell me when a new Charis Viewer is out (checked at start, once a day)"
+     label="Tell me when a new Charis Viewer is out (checked at every start)"
      layout="topleft"
      left="0"
-     tool_tip="On by default. Reads one small file from the update site (setting PlusUpdateCheckURL, a file on GitHub by default; nothing is read while it is empty) at most once a day, at start, and tells of a newer version at the login screen. As with any web page, the site keeps your IP address and the viewer's version in its log. Nothing about your account or avatar is sent. Off: nothing is read or shown."
+     tool_tip="On by default. Reads one small file from the update site (setting PlusUpdateCheckURL, a file on GitHub by default; nothing is read while it is empty) at every start (not again within 10 minutes of the last try), and tells of a newer version at the login screen. As with any web page, the site keeps your IP address and the viewer's version in its log. Nothing about your account or avatar is sent. Off: nothing is read or shown."
      top="0"
      width="529" />
     <plus_ps_combo

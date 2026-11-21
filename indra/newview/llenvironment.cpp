@@ -62,6 +62,7 @@
 #include "llviewergenericmessage.h"
 #include "llexperiencelog.h"
 #include "plus/envmemo/envmemo.h" // <plus> research/187 N4 </plus>
+#include "plus/skyweather/skyweather.h" // <plus> sky-weather: mark the land's weather as it arrives </plus>
 
 //=========================================================================
 namespace
@@ -931,6 +932,11 @@ bool LLEnvironment::canEdit() const
 
 LLSettingsSky::ptr_t LLEnvironment::getCurrentSky() const
 {
+    if (!mCurrentEnvironment)
+    {
+        // Asked before initSingleton() made the default environment (plus/skyweather via plus/rain).
+        return nullptr;
+    }
     LLSettingsSky::ptr_t psky = mCurrentEnvironment->getSky();
 
     if (!psky && mCurrentEnvironment->getEnvironmentSelection() >= ENV_EDIT)
@@ -949,6 +955,10 @@ LLSettingsSky::ptr_t LLEnvironment::getCurrentSky() const
 
 LLSettingsWater::ptr_t LLEnvironment::getCurrentWater() const
 {
+    if (!mCurrentEnvironment)
+    {
+        return nullptr;
+    }
     LLSettingsWater::ptr_t pwater = mCurrentEnvironment->getWater();
 
     if (!pwater && mCurrentEnvironment->getEnvironmentSelection() >= ENV_EDIT)
@@ -2072,6 +2082,7 @@ void LLEnvironment::coroUpdateEnvironment(S32 parcel_id, S32 track_no, UpdateInf
     if (updates->mDayp)
     {
         body[KEY_ENVIRONMENT][KEY_DAYCYCLE] = updates->mDayp->getSettings();
+        LLSkyWeather::stripFromDayCycle(body[KEY_ENVIRONMENT][KEY_DAYCYCLE]); // <plus> sky-weather (research/371): the server may refuse keys it does not know </plus>
     }
     else if (!updates->mSettingsAsset.isNull())
     {
@@ -2255,6 +2266,7 @@ LLEnvironment::EnvironmentInfo::ptr_t LLEnvironment::EnvironmentInfo::extract(LL
     if (environment.has(KEY_DAYCYCLE))
     {
         pinfo->mDayCycle = LLSettingsVODay::buildFromEnvironmentMessage(environment[KEY_DAYCYCLE]);
+        plus::skyweather::markFromLand(pinfo->mDayCycle); // <plus> sky-weather: every environment the server sends is other people's </plus>
         pinfo->mDayLength = LLSettingsDay::Seconds(environment.has(KEY_DAYLENGTH) ? environment[KEY_DAYLENGTH].asInteger() : -1);
         pinfo->mDayOffset = LLSettingsDay::Seconds(environment.has(KEY_DAYOFFSET) ? environment[KEY_DAYOFFSET].asInteger() : -1);
         pinfo->mDayHash = environment.has(KEY_DAYHASH) ? environment[KEY_DAYHASH].asInteger() : 0;
@@ -2330,6 +2342,7 @@ LLEnvironment::EnvironmentInfo::ptr_t LLEnvironment::EnvironmentInfo::extractLeg
     pinfo->mDayLength = LLSettingsDay::DEFAULT_DAYLENGTH;
     pinfo->mDayOffset = LLSettingsDay::DEFAULT_DAYOFFSET;
     pinfo->mDayCycle = LLSettingsVODay::buildFromLegacyMessage(pinfo->mRegionId, legacy[1], legacy[2], legacy[3]);
+    plus::skyweather::markFromLand(pinfo->mDayCycle); // <plus> sky-weather: (a legacy environment has no weather; the same rule for every one the server sends) </plus>
     if (pinfo->mDayCycle)
         pinfo->mDayHash = pinfo->mDayCycle->getHash();
 
@@ -2567,6 +2580,8 @@ void LLEnvironment::onSetExperienceEnvAssetLoaded(LLUUID experience_id, LLSettin
         updateenvironment = true;
     }
 
+    plus::skyweather::markFromLand(settings); // <plus> sky-weather: a script's weather is other people's </plus>
+
     if (settings->getSettingsType() == "daycycle")
     {
         environment->setInjectedDay(std::static_pointer_cast<LLSettingsDay>(settings), experience_id, LLSettingsBase::Seconds(transition_time));
@@ -2605,6 +2620,7 @@ void LLEnvironment::setExperienceEnvironment(LLUUID experience_id, LLSD data, F3
         updateenvironment = true;
     }
 
+    plus::skyweather::markSkyLLSDFromLand(sky); // <plus> sky-weather: a script's weather is other people's </plus>
     if (!sky.isUndefined())
     {
         environment->injectSkySettings(sky, experience_id, LLSettingsBase::Seconds(transition_time));
@@ -2910,7 +2926,9 @@ void LLEnvironment::saveToSettings()
             {
                 const std::string name = day->getName();
                 const LLUUID asset_id = day->getAssetId();
-                if (asset_id.notNull())
+                // <plus> sky-weather: a day cycle with a weather is not saved by its id (the asset is the author's, with no mark and not the weather as it is now): whole, or not at all
+                if (asset_id.notNull() && !plus::skyweather::hasAnyWeather(day))
+                // </plus>
                 {
                     // just save the id
                     env_data["day_id"] = asset_id;
@@ -2934,7 +2952,9 @@ void LLEnvironment::saveToSettings()
             {
                 const std::string name = sky->getName();
                 const LLUUID asset_id = sky->getAssetId();
-                if (asset_id.notNull())
+                // <plus> sky-weather: a sky with a weather is not saved by its id (the asset is the author's, with no mark and not the weather as it is now): whole, or not at all
+                if (asset_id.notNull() && !plus::skyweather::hasAnyWeather(sky))
+                // </plus>
                 {
                     // just save the id
                     env_data["sky_id"] = asset_id;

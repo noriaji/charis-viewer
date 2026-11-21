@@ -78,6 +78,7 @@ public:
     // every pipeline takes GL's -1..1 clip depth (negativeOneToOne), and the
     // depth buffer holds (z + 1) / 2 as GL's does.
     bool hasFragmentStores() const { return mFragmentStores; }
+    bool hasDualSrcBlend() const { return mDualSrcBlend; }    // research/395: the OIT resolve's direct blend
     // Indirect draws: several per call, and a first instance other than 0.
     bool hasMultiDrawIndirect() const { return mMultiDrawIndirect; }
     bool hasDrawIndirectFirstInstance() const { return mDrawIndirectFirstInstance; }
@@ -161,7 +162,8 @@ public:
     // last save, a periodic save went by the size alone, or the driver data
     // size differs from the last read (shutdown). Waits for a background save
     // still in flight.
-    void savePipelineCache();
+    // max_wait_ms: how long to wait for that background save (the fast exit waits 2 s).
+    void savePipelineCache(U32 max_wait_ms = 10000);
 
     // Queue access is shared by the render thread and texture upload threads.
     // With the compute queue in use (research/200, LLVKQueues), the batches
@@ -419,7 +421,7 @@ private:
     // cache is then left alone, and so must the device be (shutdown).
     bool destroyPipelineCache();
     // mPipelineCacheSaving taken, waiting up to 10 s for a save in flight.
-    bool claimPipelineCacheSave();
+    bool claimPipelineCacheSave(U32 max_wait_ms = 10000);
     // The save at shutdown, with mPipelineCacheSaving taken.
     void saveClaimedPipelineCache();
     bool readPipelineCacheData(std::vector<U8>& data);
@@ -442,6 +444,7 @@ private:
     // succeeds on the other GPU (depthclip-wording).
     std::vector<std::string> mPassedOverNotes;
     bool mFragmentStores = false;
+    bool mDualSrcBlend = false;
     bool mMultiDrawIndirect = false;
     bool mDrawIndirectFirstInstance = false;
     bool mGeometryShader = false;

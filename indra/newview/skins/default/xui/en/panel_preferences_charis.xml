@@ -220,7 +220,7 @@
             name="list_graphics"
             background_visible="false"
             follows="left|top"
-            height="285"
+            height="365"
             layout="topleft"
             left="0"
             mouse_opaque="false"
@@ -347,6 +347,37 @@
               layout="topleft"
               left="14"
               top="253"
+              width="529" />
+            <plus_ps_check
+              name="c_bc7_gpu"
+              follows="left|top|right"
+              height="30"
+              label="Compress textures on the GPU (BC7)"
+              layout="topleft"
+              left="14"
+              tool_tip="On: textures take a quarter of the video memory. Applies to textures loaded afterwards. Not used in safe mode, nor on some drivers known to fail in it. Greyed out while the environment variable LLRHI_TEX_BCN decides."
+              top="291"
+              width="529">
+              <plus_ps_check.commit_callback
+                function="Plus.TexBC7.Toggle" />
+            </plus_ps_check>
+            <plus_ps_label
+              name="note_bc7_1"
+              height="18"
+              kind="dim"
+              label="If objects show coloured blocks or noise, turn this off."
+              layout="topleft"
+              left="14"
+              top="321"
+              width="529" />
+            <plus_ps_label
+              name="note_bc7_2"
+              height="18"
+              kind="dim"
+              label="Off uses more video memory (4 times per texture)."
+              layout="topleft"
+              left="14"
+              top="339"
               width="529" />
           </panel>
         </scroll_container>

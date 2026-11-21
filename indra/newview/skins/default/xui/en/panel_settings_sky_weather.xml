@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!-- The weather tab of the sky editors (plus/skyweather/skyweatherpanel.cpp, research/371).
+     Inside the scroll: switch 31 + notice 24 + header 31 + rain 31 + hint 22 + snow 31 + hint 22
+     + header 31 + five wind rows 31 each (155) + button 40, with the gaps = 488 high, 640 wide
+     (controls 14 .. 614). -->
+<panel
+  name="panel_settings_sky_weather"
+  border="true"
+  follows="all"
+  label="Weather"
+  layout="topleft"
+  left="0"
+  top="0"
+  height="380"
+  width="690">
+  <string name="rain_hint">About [MM] mm/h</string>
+  <string name="snow_hint">About [CM] cm/h</string>
+  <string name="notice_own">The photo tools' rain/snow is on, so this sky's weather is not shown. Turn it off to see it.</string>
+  <string name="notice_off">The photo tools' "use the sky's weather" switch is off, so this sky's weather is not used.</string>
+  <scroll_container
+    name="weather_scroll"
+    border_visible="false"
+    follows="all"
+    layout="topleft"
+    left="0"
+    top="0"
+    height="380"
+    width="690"
+    opaque="false"
+    reserve_scroll_corner="false">
+    <!-- a real panel holds the box, as the other scroll windows do (a box straight in the scroll drew nothing) -->
+    <panel
+      name="weather_scroll_panel"
+      background_visible="false"
+      follows="left|top"
+      layout="topleft"
+      left="0"
+      mouse_opaque="false"
+      top="0"
+      height="488"
+      width="640">
+    <plus_ps_box
+      name="weather_body"
+      kind="panel"
+      follows="left|top"
+      layout="topleft"
+      left="0"
+      top="0"
+      height="488"
+      width="640">
+      <plus_ps_switch
+        name="sw_weather"
+        height="31"
+        layout="topleft"
+        left="14"
+        top="8"
+        width="31"
+        tool_tip="Save the weather into this sky (and into the day cycle's key frames). Off: this sky says nothing about the weather." />
+      <plus_ps_label
+        name="l_switch"
+        kind="white"
+        height="31"
+        layout="topleft"
+        left="54"
+        top="8"
+        width="560"
+        label="Save the weather in this sky" />
+      <plus_ps_label
+        name="l_notice"
+        kind="hint"
+        height="24"
+        layout="topleft"
+        left="14"
+        top="42"
+        width="600"
+        visible="false"
+        label="" />
+      <plus_ps_header
+        name="h_fall"
+        size="sub"
+        collapsible="false"
+        height="31"
+        layout="topleft"
+        left="14"
+        top="72"
+        width="600"
+        label="Rain and snow" />
+      <plus_ps_slider
+        name="s_rain"
+        decimal_digits="0"
+        height="31"
+        increment="1"
+        layout="topleft"
+        left="14"
+        top="106"
+        width="600"
+        label="Rain"
+        min_value="0"
+        max_value="100"
+        unit=" %" />
+      <plus_ps_label
+        name="l_rain_hint"
+        kind="hint"
+        height="22"
+        layout="topleft"
+        left="14"
+        top="138"
+        width="600"
+        label="" />
+      <plus_ps_slider
+        name="s_snow"
+        decimal_digits="0"
+        height="31"
+        increment="1"
+        layout="topleft"
+        left="14"
+        top="162"
+        width="600"
+        label="Snow"
+        min_value="0"
+        max_value="100"
+        unit=" %" />
+      <plus_ps_label
+        name="l_snow_hint"
+        kind="hint"
+        height="22"
+        layout="topleft"
+        left="14"
+        top="194"
+        width="600"
+        label="" />
+      <plus_ps_header
+        name="h_wind"
+        size="sub"
+        collapsible="false"
+        height="31"
+        layout="topleft"
+        left="14"
+        top="224"
+        width="600"
+        label="Wind" />
+      <plus_ps_slider
+        name="s_wind"
+        decimal_digits="1"
+        height="31"
+        increment="0.5"
+        layout="topleft"
+        left="14"
+        top="258"
+        width="600"
+        label="Speed"
+        min_value="0"
+        max_value="40"
+        unit=" m/s" />
+      <plus_ps_slider
+        name="s_wind_dir"
+        decimal_digits="0"
+        height="31"
+        increment="1"
+        layout="topleft"
+        left="14"
+        top="292"
+        width="600"
+        label="Blows from"
+        tool_tip="Where the wind comes from: 0 north, 90 east, 180 south, 270 west."
+        min_value="0"
+        max_value="360"
+        unit="°" />
+      <plus_ps_slider
+        name="s_wind_var"
+        decimal_digits="0"
+        height="31"
+        increment="1"
+        layout="topleft"
+        left="14"
+        top="326"
+        width="600"
+        label="Variation"
+        tool_tip="How much the wind's strength rises and falls."
+        min_value="0"
+        max_value="100"
+        unit=" %" />
+      <plus_ps_slider
+        name="s_gust"
+        decimal_digits="0"
+        height="31"
+        increment="1"
+        layout="topleft"
+        left="14"
+        top="360"
+        width="600"
+        label="Gusts"
+        tool_tip="How strong the sudden gusts are."
+        min_value="0"
+        max_value="100"
+        unit=" %" />
+      <plus_ps_slider
+        name="s_wind_dir_var"
+        decimal_digits="0"
+        height="31"
+        increment="1"
+        layout="topleft"
+        left="14"
+        top="394"
+        width="600"
+        label="Direction sway"
+        tool_tip="How far the wind direction wavers to each side."
+        min_value="0"
+        max_value="180"
+        unit="°" />
+      <plus_ps_button
+        name="b_import"
+        height="40"
+        layout="topleft"
+        left="14"
+        top="436"
+        width="600"
+        label="Copy the current weather"
+        tool_tip="Fills in the rain, snow and wind of the photo tools. With none of your own, and the setting to receive parcel weather on, it takes the parcel's." />
+    </plus_ps_box>
+    </panel>
+  </scroll_container>
+</panel>

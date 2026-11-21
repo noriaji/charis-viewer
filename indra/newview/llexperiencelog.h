@@ -64,6 +64,11 @@ public:
     bool isNotExpired(std::string& date);
     void handleExperienceMessage(LLSD& message);
 
+// <plus> fast-exit (research/276): the destructor is not run by the fast exit
+public:
+    void saveEventsAtExit() { saveEvents(); }
+// </plus>
+
 protected:
     void loadEvents();
     void saveEvents();

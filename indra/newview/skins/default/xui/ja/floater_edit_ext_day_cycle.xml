@@ -99,6 +99,9 @@
 						<panel filename="panel_settings_sky_atmos.xml" label="大気＆光源" name="atmosphere_panel"/>
 						<panel filename="panel_settings_sky_clouds.xml" label="雲" name="clouds_panel"/>
 						<panel filename="panel_settings_sky_sunmoon.xml" label="太陽＆月" name="moon_panel"/>
+						<!-- plus skyweather-ui -->
+						<panel filename="panel_settings_sky_weather.xml" label="天気" name="weather_panel"/>
+						<!-- /plus -->
 					</tab_container>
 				</layout_panel>
 			</layout_stack>

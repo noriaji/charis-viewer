@@ -7,8 +7,12 @@
 list(APPEND plus_SOURCE_FILES
     plus/radar/radar.cpp
     plus/radar/radarfloater.cpp
+    plus/radar/radarrml.cpp
+    plus/radar/radarui.cpp
     )
 
 list(APPEND plus_HEADER_FILES
     plus/radar/radar.h
+    plus/radar/radarrml.h
+    plus/radar/radarui.h
     )

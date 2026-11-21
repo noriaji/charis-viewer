@@ -130,18 +130,6 @@
      width="300">
        (People and/or Objects you have blocked)
     </text>
-    <!-- plus: privacy. The settings in the viewer statistics on or off (PlusSendSettingsStats,
-         plus/privacy; panel_plus_privacy_stats.xml, the other languages' texts are in that file) -->
-    <panel
-     filename="panel_plus_privacy_stats.xml"
-     follows="left|top"
-     height="48"
-     layout="topleft"
-     left="30"
-     name="plus_privacy_stats"
-     top_pad="24"
-     width="460"/>
-    <!-- /plus -->
     </panel>
 
     <panel

@@ -1,0 +1,15 @@
+<rml>
+<!-- The list of a <select> shown outside its window (plus/rmlui/rmlpopup.cpp, research/388). One element: the list
+     (id "list"); rmlpopup.cpp puts the rows in it as text nodes (the options' text is never read as RML) and sets
+     --popup-row-height on the body. #probe is never seen: rmlpopup.cpp reads the sizes the tokens give from its box
+     (SelectPopup::measure). The look is popup.rcss. -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+    <link type="text/rcss" href="popup.rcss"/>
+</head>
+<body class="popup">
+    <div id="list" class="popup-list"></div>
+    <div id="probe"></div>
+</body>
+</rml>

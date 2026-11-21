@@ -27,6 +27,7 @@
 
 #include "rmlhost.h"
 #include "rmlime.h"
+#include "rmlpopup.h"
 
 namespace plus::rmlui
 {
@@ -53,11 +54,20 @@ namespace plus::rmlui
             return true;    // no view in the XML: an empty window
         }
         mHost = view->getRmlHandle();
+        mSelectPopup = std::make_unique<SelectPopup>();
         LLRmlView::Hooks hooks;
         hooks.before_load = [this](Rml::Context& context) { beforeLoad(context); };
-        hooks.after_load = [this](Rml::ElementDocument& document) { afterLoad(document); };
+        hooks.after_load = [this](Rml::ElementDocument& document)
+        {
+            mSelectPopup->attach(mHost.get(), document);
+            afterLoad(document);
+        };
         hooks.before_update = [this]() { beforeUpdate(); };
-        hooks.after_update = [this]() { afterUpdate(); };
+        hooks.after_update = [this]()
+        {
+            afterUpdate();
+            mSelectPopup->ownerUpdated();
+        };
         hooks.on_event = [this](Rml::Event& event) { onEvent(event); };
         view->setHooks(std::move(hooks));
         view->load();
@@ -68,6 +78,29 @@ namespace plus::rmlui
     {
         closeDocument();
         LLFloater::onClose(app_quitting);
+    }
+
+    bool RmlFloater::handleUnicodeCharHere(llwchar uni_char)
+    {
+        // (what the host did not use reaches here: the host takes a character only for a text field)
+        return (mSelectPopup && mSelectPopup->handleChar(uni_char)) || LLFloater::handleUnicodeCharHere(uni_char);
+    }
+
+    bool RmlFloater::handleScrollWheel(S32 x, S32 y, S32 clicks)
+    {
+        // A closed <select> under the mouse takes the wheel first when PlusComboWheelSelect is on (the XUI combo box takes
+        // it before anything that scrolls under it); else LLFloater::handleScrollWheel's: the children, and always used
+        // (the wheel does not reach the world over a window).
+        LLRmlView* view = mHost.get();
+        S32 host_x = x;
+        S32 host_y = y;
+        if (mSelectPopup && view && localPointToOtherView(x, y, &host_x, &host_y, view) &&
+            mSelectPopup->handleWheel(host_x, host_y, clicks))
+        {
+            return true;
+        }
+        LLView::handleScrollWheel(x, y, clicks);
+        return true;
     }
 
     std::string RmlFloater::committedText(Rml::ElementFormControl& box)
@@ -94,6 +127,10 @@ namespace plus::rmlui
                 focus->Blur();
             }
             commitPending();
+        }
+        if (mSelectPopup)
+        {
+            mSelectPopup->detach();     // the open list, its listeners and its context go before the document does
         }
         unbind();
         if (view)

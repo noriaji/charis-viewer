@@ -1282,7 +1282,6 @@ void LLVertexBuffer::genBuffer(U32 size)
 
         mSize = size;
         sVBOPool->allocate(GL_ARRAY_BUFFER, mSize, mGLBuffer, mMappedData);
-        mRHIBuffer = LLRHI::bufferHandle(mGLBuffer); // LLRHI native (research/137 N14)
     }
 }
 
@@ -1298,7 +1297,6 @@ void LLVertexBuffer::genIndices(U32 size)
         llassert(mMappedIndexData == nullptr);
         mIndicesSize = size;
         sVBOPool->allocate(GL_ELEMENT_ARRAY_BUFFER, mIndicesSize, mGLIndices, mMappedIndexData);
-        mRHIIndices = LLRHI::bufferHandle(mGLIndices); // LLRHI native (research/137 N14)
     }
 }
 
@@ -1361,7 +1359,6 @@ void LLVertexBuffer::destroyGLBuffer()
 
         mSize = 0;
         mGLBuffer = 0;
-        mRHIBuffer = nullptr; // LLRHI native (research/137 N14)
         mMappedData = nullptr;
     }
 }
@@ -1379,7 +1376,6 @@ void LLVertexBuffer::destroyGLIndices()
 
         mIndicesSize = 0;
         mGLIndices = 0;
-        mRHIIndices = nullptr; // LLRHI native (research/137 N14)
         mMappedIndexData = nullptr;
     }
 }
@@ -1785,11 +1781,6 @@ void LLVertexBuffer::_unmapBuffer()
         return;
     }
 
-    if (unmapNative()) // LLRHI native (research/137 N14)
-    {
-        return;
-    }
-
     struct SortMappedRegion
     {
         bool operator()(const MappedRegion& lhs, const MappedRegion& rhs)
@@ -1909,122 +1900,6 @@ void LLVertexBuffer::_unmapBuffer()
         }
     }
 }
-
-// LLRHI native (research/137 N14) begin
-// _unmapBuffer with LLRHI_NATIVE_RESOURCES (llrhiresource.h): the same ranges
-// in the same order (the regions sorted, joined where one starts right after
-// the last, the empty first range skipped as flush_vbo skips a range ending
-// at 0), but a buffer with the backend's handle hands all of them over in one
-// LLRHI::sBufferWriteRanges call instead of one sBufferSubData each. A buffer
-// without a handle goes range by range through flush_vbo, as before. The
-// bindings are kept as _unmapBuffer keeps them. False: the hooks are not in,
-// or GL gets the data (the caller does it the old way).
-// A copy of _unmapBuffer's two loops (tools/shadowed-functions.json): when
-// upstream changes them, change this as well. It runs before _unmapBuffer's
-// Apple branch, which keeps no regions: the hooks are set by the Windows
-// Vulkan backend only.
-bool LLVertexBuffer::unmapNative()
-{
-    if (!LLRHI::sBufferWriteRanges) // <plus> research/207 T2: the rest are always there </plus>
-    {
-        return false;
-    }
-
-    struct SortMappedRegion
-    {
-        bool operator()(const MappedRegion& lhs, const MappedRegion& rhs)
-        {
-            return lhs.mStart < rhs.mStart;
-        }
-    };
-
-    // flush_vbo's ranges for one buffer's regions, in _unmapBuffer's order.
-    // This call's own (not a static one): nothing handed to the backend can
-    // be changed by another unmap meanwhile.
-    std::vector<LLRHI::BufferRange> ranges;
-    auto gather = [&ranges](std::vector<MappedRegion>& regions)
-    {
-        ranges.clear();
-        std::sort(regions.begin(), regions.end(), SortMappedRegion());
-        U32 start = 0;
-        U32 end = 0;
-        auto add = [&ranges](U32 range_start, U32 range_end)
-        {
-            if (range_end != 0)
-            {
-                LLRHI::BufferRange range;
-                range.offset = range_start;
-                range.size = range_end - range_start + 1;
-                ranges.push_back(range);
-            }
-        };
-        for (U32 i = 0; i < regions.size(); ++i)
-        {
-            const MappedRegion& region = regions[i];
-            if (region.mStart == end + 1)
-            {
-                end = region.mEnd;
-            }
-            else
-            {
-                add(start, end);
-                start = region.mStart;
-                end = region.mEnd;
-            }
-        }
-        add(start, end);
-        regions.clear();
-    };
-    auto write = [this, &ranges](GLenum target, U32 name, LLRHI::BufferHandle* handle, U8* data)
-    {
-        if (handle)
-        {
-            if (!ranges.empty())
-            {
-                // <plus> LLRHI (research/197 1b): the number's place first
-                for (const LLRHI::BufferRange& range : ranges)
-                {
-                    if (LLRHIVBCensus::sOn) // research/293 branch 0
-                    {
-                        censusWrite(mRHIRef.id, target == GL_ELEMENT_ARRAY_BUFFER, range.size, CensusSource::Mapped);
-                    }
-                    rhiWrite(target == GL_ELEMENT_ARRAY_BUFFER, range.offset, range.size, data + range.offset);
-                }
-                // </plus>
-                LLRHI::sBufferWriteRanges(handle, name, data, ranges.data(), (U32)ranges.size());
-            }
-            return;
-        }
-        for (const LLRHI::BufferRange& range : ranges)
-        {
-            flush_vbo(target, range.offset, range.offset + range.size - 1, data + range.offset, data);
-        }
-    };
-
-    if (!mMappedVertexRegions.empty())
-    {
-        LL_PROFILE_ZONE_NAMED_CATEGORY_VERTEX("unmapBuffer - vertex");
-        if (sGLRenderBuffer != mGLBuffer)
-        {
-            bindGLBuffer(GL_ARRAY_BUFFER, mGLBuffer);
-        }
-        gather(mMappedVertexRegions);
-        write(GL_ARRAY_BUFFER, mGLBuffer, mRHIBuffer, mMappedData);
-    }
-
-    if (!mMappedIndexRegions.empty())
-    {
-        LL_PROFILE_ZONE_NAMED_CATEGORY_VERTEX("unmapBuffer - index");
-        if (mGLIndices != sGLRenderIndices)
-        {
-            bindGLBuffer(GL_ELEMENT_ARRAY_BUFFER, mGLIndices);
-        }
-        gather(mMappedIndexRegions);
-        write(GL_ELEMENT_ARRAY_BUFFER, mGLIndices, mRHIIndices, mMappedIndexData);
-    }
-    return true;
-}
-// LLRHI native (research/137 N14) end
 
 //----------------------------------------------------------------------------
 

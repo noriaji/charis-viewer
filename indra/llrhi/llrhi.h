@@ -47,6 +47,9 @@ namespace LLRHI
     void onGLFunctionsLoaded();
     // Hook: called by LLGLManager::shutdownGL() (viewer exit, context switch).
     void onGLShutdown();
+    // fast-exit (research/276): the exit that does not take the viewer apart saves what the Vulkan
+    // side keeps on disk (the pipeline keys and the pipeline cache) and joins no thread.
+    void onFastExit();
 
     // research/207 T3: the GPU that renders, as LLGLManager::initGL fills
     // gGLManager from it (no GL strings or limits to ask). The strings keep
@@ -749,7 +752,10 @@ namespace LLRHI
     // BC7 in VRAM, a quarter of RGBA8: they are made plain as before, and a
     // few a frame are encoded on the GPU into BC7 images that take their
     // place. Devices with BC7 only. On unless
-    // LLRHI_TEX_BCN=0; bcn.toggle (for textures made from then on).
+    // LLRHI_TEX_BCN=0; bcn.toggle (for textures made from then on). Also the
+    // setting PlusTexBC7GPU (plus/texbc7), unless LLRHI_TEX_BCN is set: the main
+    // thread writes it while the viewer runs, a plain bool on purpose; the other
+    // threads may read the old or the new value (each reader copes with either).
     extern bool sTexBCN;
     // While true on a thread, a texture image specified by that thread (level
     // 0 with pixels) may be stored compressed.
@@ -2112,6 +2118,11 @@ namespace LLRHI
     // does not wait for the display (VSync off): with VSync, frame pacing reads
     // the presents right away.
     extern bool sPresentThread;
+    // LLRHI_SUBMIT_LANE (off unless set; submitlane.toggle flips it; research/393 E1): the end of frame's
+    // vkQueueSubmit goes to that present thread too (submit, then present, in that order), so the frame's
+    // thread does not pay for the driver's submit. Only when the present thread takes the main window's
+    // present (no VSync) and the frame has no other windows and no capture; everything else submits as before.
+    extern bool sSubmitLane;
     // LLRHI_PRESENT_MODE=mailbox (or presentmailbox.toggle): without VSync,
     // MAILBOX before IMMEDIATE (no tearing, the newest frame shows at the
     // vertical blank, and presents still never wait for the display). The

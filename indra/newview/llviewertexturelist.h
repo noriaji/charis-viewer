@@ -115,6 +115,7 @@ public:
 
     void init();
     void shutdown();
+    void saveTextureList(); // <plus> fast-exit (research/276): the list of loaded textures for the next start, written without shutting down </plus>
     void dump();
     void destroyGL();
     bool isInitialized() const {return mInitialized;}

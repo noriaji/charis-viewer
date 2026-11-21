@@ -6,13 +6,12 @@
      privacy_tab_container as an LLTabContainer and takes the Discord page out when the viewer is built without
      Discord, removeTabPanel(); the preferences' search opens a page with a match). Each page's label is its tab's.
      online_searchresults / online_visibility are enabled by the C++ after login (getChild<LLUICtrl>), block_list too.
-     The settings in the viewer statistics (plus/privacy) are panel_plus_prefs_privacy_stats.xml.
      Size (1080 base; a preferences page, plus/prefscharis/prefs_tab_template.xml): 574 x 515; the tabs' strip 36 at
      the top 4, the pages under it 475 high, each a scroll_container (574) with a panel 557 wide. Rows at left 14,
      529 wide.
        General: 10 + heading 40 + 4 checks 120 + 10 + heading 40 + 6 + button 40 + 6 + button 40 + 10 + heading 40
-                + the statistics 66 + 10 + heading 40 + posing my avatar 243 (panel_plus_prefs_pose_consent.xml)
-                + 14 = 735 (scrolls at the default size: the page is 475)
+                + heading 40 + posing my avatar 243 (panel_plus_prefs_pose_consent.xml)
+                + 14 = 619 (scrolls at the default size: the page is 475)
        Discord: 10 + heading 40 + 3 checks 90 + 14 = 154 (does not scroll). A button's note: the button 14..214, the note 224..543 (en 40 characters,
      ja 16). -->
 <panel
@@ -78,7 +77,7 @@
                      name="privacy_general_list"
                      background_visible="false"
                      follows="left|top"
-                     height="735"
+                     height="619"
                      layout="topleft"
                      left="0"
                      mouse_opaque="false"
@@ -203,28 +202,6 @@
                             (People and/or Objects you have blocked)
                         </plus_ps_text>
 
-                        <!-- the settings in the viewer statistics on or off (PlusSendSettingsStats, the feature plus/privacy) -->
-                        <plus_ps_header
-                         name="h_privacy_stats"
-                         divider="top"
-                         follows="left|top|right"
-                         height="40"
-                         label="Viewer statistics"
-                         layout="topleft"
-                         left="14"
-                         size="sub"
-                         top="322"
-                         width="529" />
-                        <panel
-                         name="plus_privacy_stats"
-                         filename="panel_plus_prefs_privacy_stats.xml"
-                         follows="left|top"
-                         height="66"
-                         layout="topleft"
-                         left="14"
-                         top="362"
-                         width="529" />
-
                         <!-- posing my avatar: the bridge (PlusPoseBridgeEnable, plus/lslbridge) and who may ask (PlusPoseAskPolicy,
                              plus/poseconsent); research/336 -->
                         <plus_ps_header
@@ -236,7 +213,7 @@
                          layout="topleft"
                          left="14"
                          size="sub"
-                         top="438"
+                         top="322"
                          width="529" />
                         <panel
                          name="plus_pose_consent"
@@ -245,7 +222,7 @@
                          height="243"
                          layout="topleft"
                          left="14"
-                         top="478"
+                         top="362"
                          width="529" />
                     </panel>
                 </scroll_container>

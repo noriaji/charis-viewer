@@ -63,15 +63,7 @@ const F32 CONVERSION_SCRATCH_BUFFER_GL_VERSION = 3.29f;
 // backend's own, by the bound name (research/207 T2: it goes once the native
 // API takes these too). Same arguments as the GL calls, plus the name of the
 // texture bound to target.
-static void tex_image_2d(U32 name, U32 target, S32 level, S32 intformat, S32 width, S32 height, U32 pixformat, U32 pixtype, const void* pixels)
-{
-    if (name && LLRHI::sTexImage2D(name, target, level, (U32)intformat, width, height, pixformat, pixtype, pixels)) // <plus> research/207 T2 </plus>
-    {
-        return;
-    }
-    glTexImage2D(target, level, intformat, width, height, 0, pixformat, pixtype, pixels);
-}
-
+// <plus> research/394 T17: tex_image_2d and generate_mipmap are LLRHI::texImage2D / LLRHI::generateMipmap (llrhigl.h), shared with newview </plus>
 static void compressed_tex_image_2d(U32 name, U32 target, S32 level, U32 intformat, S32 width, S32 height, S32 size, const void* data)
 {
     if (name && LLRHI::sCompressedTexImage2D(name, target, level, intformat, width, height, size, data)) // <plus> research/207 T2 </plus>
@@ -88,15 +80,6 @@ static void tex_sub_image_2d(U32 name, U32 target, S32 level, S32 x, S32 y, S32 
         return;
     }
     glTexSubImage2D(target, level, x, y, width, height, pixformat, pixtype, pixels);
-}
-
-static void generate_mipmap(U32 name, U32 target)
-{
-    if (name && LLRHI::sGenerateMipmap(name, target)) // <plus> research/207 T2 </plus>
-    {
-        return;
-    }
-    glGenerateMipmap(target);
 }
 
 // <plus> LLRHI (research/197 stage 1a): rhiSampler reads LLTexUnit's modes as
@@ -1035,7 +1018,7 @@ bool LLImageGL::setImage(const U8* data_in, bool data_hasmips /* = false */, S32
 
                     {
                         LL_PROFILE_GPU_ZONE("generate mip map");
-                        generate_mipmap(tex_name, mTarget);
+                        LLRHI::generateMipmap(tex_name, mTarget); // <plus> research/394 T17 </plus>
                     }
                     stop_glerror();
                 }
@@ -1550,7 +1533,7 @@ void LLImageGL::setManualImage(U32 target, S32 miplevel, S32 intformat, S32 widt
         DeferConvert defer(LLRHI::tTexConvertDefer && !(sManualScratch && pixels == sManualScratch));
         {
             LL_PROFILE_ZONE_NAMED("glTexImage2D alloc + copy");
-            tex_image_2d(tex_name, target, miplevel, intformat, width, height, pixformat, pixtype, pixels); // <plus> research/207 T2: never staggered </plus>
+            LLRHI::texImage2D(tex_name, target, miplevel, intformat, width, height, pixformat, pixtype, pixels); // <plus> research/207 T2: never staggered </plus>
         }
         alloc_tex_image(width, height, intformat, 1);
     }
@@ -2886,7 +2869,7 @@ bool LLImageGL::scaleDown(S32 desired_discard, LLVertexBuffer* screen_triangle)
             { // generate mipmaps if needed
                 LL_PROFILE_ZONE_NAMED_CATEGORY_TEXTURE("scaleDown - glGenerateMipmap");
                 gGL.getTexUnit(0)->bind(this);
-                generate_mipmap(mTexName, mTarget);
+                LLRHI::generateMipmap(mTexName, mTarget); // <plus> research/394 T17 </plus>
                 gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);
             }
         }
@@ -2931,7 +2914,7 @@ bool LLImageGL::scaleDown(S32 desired_discard, LLVertexBuffer* screen_triangle)
         if (mHasMipMaps)
         {
             LL_PROFILE_ZONE_NAMED_CATEGORY_TEXTURE("scaleDown - glGenerateMipmap");
-            generate_mipmap(mTexName, mTarget);
+            LLRHI::generateMipmap(mTexName, mTarget); // <plus> research/394 T17 </plus>
         }
 
         gGL.getTexUnit(0)->unbind(LLTexUnit::TT_TEXTURE);

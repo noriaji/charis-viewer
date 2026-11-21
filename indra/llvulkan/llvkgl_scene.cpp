@@ -29,7 +29,6 @@
 #include "llrhiframe.h"     // research/208 S1: LLRHI_FRAME_SNAPSHOT
 #include "llvkattribpool.h"
 #include "llvkscene.h"
-#include "llvktranslate.h"
 #include "llrhipassstate.h"  // research/204 10 (vk-s4c2): a declared pass's head
 #include "llvkpassstate.h"
 
@@ -676,9 +675,9 @@ namespace
         out = Words();
         permanent = false;
         LLVKMirror& mirror = LLVKMirror::instance();
-        if (LLVKTranslate::redirect() || tQueuedDraw)
+        if (tQueuedDraw)
         {
-            why = "the translation thread records";
+            why = "a queued draw records";
             return false;
         }
         if (sCapture.on || suppress_translation() || !mirror.isRecording())
@@ -1373,6 +1372,7 @@ namespace
         {
             ++sOIT.draws;
             ++sOIT.node_draws;
+            sOIT.complex |= !oit_state_blend_affine(h.state);   // research/395: the head's state is what its pipeline was made from
             sOIT.split_draws += h.oit_mode == OIT_DRAW_SPLIT ? 1 : 0;
         }
 

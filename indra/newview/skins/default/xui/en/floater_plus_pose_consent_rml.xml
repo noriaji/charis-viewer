@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Who may pose my avatar, RmlUi version (plus/poseconsent/poseconsentrml.cpp, research/386): the frame and the words. The
+  content is app_settings/plus/rmlui/pose_consent.rml in a plus_rml_view under the 18 px header (the XUI window,
+  floater_plus_pose_consent.xml, is frozen: safe mode and PlusRmlUiWindows off). Sizes as the XUI window's.
+-->
+<floater
+ can_close="true"
+ can_minimize="true"
+ can_resize="true"
+ height="344"
+ layout="topleft"
+ legacy_header_height="18"
+ min_height="284"
+ min_width="356"
+ name="plus_pose_consent"
+ positioning="cascading"
+ reuse_instance="false"
+ save_rect="true"
+ single_instance="true"
+ title="Who may pose my avatar"
+ width="356">
+    <string name="nobody">Nobody may pose your avatar now.</string>
+    <string name="loading">(name loading)</string>
+    <string name="withdraw_waiting_row">[NAME] (withdraw waiting)</string>
+    <string name="reflect_row">[NAME] (poses shown on your screen)</string>
+    <string name="reflect_now_row">[NAME] (their pose is on you now)</string>
+    <string name="note">These people may pose your avatar on their own screen, for this session. Those marked may also show their poses on your avatar: "Stop Reflect" ends only that.</string>
+    <string name="withdraw">Withdraw</string>
+    <string name="withdraw_all">Withdraw all</string>
+    <string name="reflect_stop">Stop Reflect</string>
+    <string name="tip_withdraw">Stop letting the selected people pose your avatar (and show their poses on it)</string>
+    <string name="tip_reflect_stop">Stop the selected people's poses from showing on your own avatar. They may still pose your avatar on their own screen.</string>
+    <string name="tip_withdraw_all">Stop letting anyone pose your avatar</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="pose_consent.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="356"
+     height="326" />
+</floater>

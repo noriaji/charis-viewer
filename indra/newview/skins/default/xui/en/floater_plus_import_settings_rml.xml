@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Bring settings over from another viewer, RmlUi version (plus/importsettings/importrml.cpp, research/386): the frame and
+  the words. The content is app_settings/plus/rmlui/import_settings.rml in a plus_rml_view under the 18 px header. The
+  XUI window (floater_plus_import_settings.xml, frozen) is used in safe mode and when PlusRmlUiWindows is off. The words
+  are the XUI window's (the strings, the column titles, the labels and the tool tips).
+-->
+<floater
+ positioning="centered"
+ save_rect="false"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="false"
+ can_minimize="false"
+ can_close="true"
+ legacy_header_height="18"
+ height="480"
+ width="580"
+ layout="topleft"
+ name="plus_import_settings"
+ title="BRING SETTINGS OVER FROM ANOTHER VIEWER">
+    <string name="intro_first">This is the first start of Charis Viewer. Bring your settings over from a viewer you have used? Its own files are only read, never changed.</string>
+    <string name="not_now">Start fresh</string>
+    <string name="none">No other viewer was found on this computer. If yours keeps its settings somewhere else (a portable install, another drive), choose its folder.</string>
+    <string name="not_viewer_folder">[FOLDER] holds no viewer settings (user_settings\settings.xml), or it is this viewer's own folder. Choose the folder that holds user_settings.</string>
+    <string name="confirm">The settings you chose are replaced by those of [NAME], and so are your key bindings if you chose them. What they replace is kept in user_settings (settings_before_import_, key_bindings_before_import_, colors_before_import_ and so on, with the date). Your chat logs and other files stay; those you do not have yet are added. Saved logins (user names and passwords) are not brought over. Go ahead?</string>
+    <string name="busy">The files of the last import are still being copied. Wait until it is done.</string>
+    <string name="logging_in">Logging in: the settings cannot be brought over now. Try again once you are in-world (or from the login screen).</string>
+    <string name="applying">Bringing the settings over... The viewer may stop for a while: the shaders are made again for the new settings.</string>
+    <string name="copying">The settings are brought over. Copying the files: [COPIED] of [TOTAL]... (you can go on meanwhile)</string>
+    <string name="done">From [NAME]: [SETTINGS] settings and [FILES] files were brought over.</string>
+    <string name="done_keys">The key bindings were replaced (the ones you had are kept in user_settings as key_bindings_before_import_ with the date).</string>
+    <string name="done_kept">[KEPT] files this viewer already had were left as they were.</string>
+    <string name="done_over">[OVER] files were too big or past the limit of one import (100,000 files, 2 GB) and were not copied; the log names them.</string>
+    <string name="done_errors">[ERRORS] things could not be brought over; the log has the details.</string>
+    <string name="restart">Some settings (the language, the size of the text, the graphics and the like) take effect at the next start.</string>
+    <string name="intro">Choose the viewer to bring settings over from. Its own files are only read, never changed.</string>
+    <string name="col_name">Viewer</string>
+    <string name="col_folder">Folder</string>
+    <string name="col_date">Last used</string>
+    <string name="btn_browse">Choose a folder...</string>
+    <string name="tip_browse">For a viewer that is not in the list: choose its folder (the one that holds user_settings)</string>
+    <string name="browse_hint">Not in the list? A portable install, another drive...</string>
+    <string name="what_label">What to bring over:</string>
+    <string name="chk_general">General settings (chat, camera, movement, sound, colors, messages not to show again, ...)</string>
+    <string name="chk_graphics">Graphics settings, graphics presets and the window's size</string>
+    <string name="tip_graphics">Ticked for another Charis Viewer only: other viewers' graphics settings and presets were made for their own renderers. From a Charis Viewer, its own picture settings (ambient occlusion, glare, looks, ...) are graphics too</string>
+    <string name="chk_keys">Key bindings</string>
+    <string name="chk_accounts">Settings of each account (presets, volumes, contact sets, ...)</string>
+    <string name="tip_accounts">An account's files are copied where this viewer has none of that name. Its contact sets also replace ours when ours have no sets, people or aliases (ours are kept as settings_friends_groups_before_import_(date).xml)</string>
+    <string name="chk_chat">Chat and IM logs</string>
+    <string name="chk_files">Poses, environments, dictionaries and other saved files</string>
+    <string name="btn_import">Bring over</string>
+    <string name="btn_close">Close</string>
+    <string name="tip_close">Closes this. You can open it again from Preferences &gt; Setup.</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="import_settings.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="580"
+     height="462" />
+</floater>

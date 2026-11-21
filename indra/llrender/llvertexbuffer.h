@@ -36,7 +36,7 @@
 #include "llrender.h"
 #include "lltrace.h"
 #include "llrhi.h"
-#include "llrhiresource.h" // LLRHI native (research/137 N14)
+#include "llrhiresource.h" // <plus> LLRHI (research/197 stage 1b): LLRHI::BufferRef </plus>
 
 class LLGLSLShader; // <plus> research/293 branch 0 (censusDraw) </plus>
 #include <set>
@@ -316,12 +316,6 @@ protected:
     // LLRHI: the draw template of this buffer's draws in the Vulkan backend
     // (LLRHI::sDrawTemplates, drawNative), 0: none.
     mutable U32 mRHIDrawTemplate = 0;
-    // LLRHI native (research/137 N14) begin
-    // The Vulkan backend's handles of mGLBuffer / mGLIndices while this buffer
-    // has them (LLRHI::bufferHandle, LLRHI_NATIVE_RESOURCES); null otherwise.
-    LLRHI::BufferHandle* mRHIBuffer = nullptr;
-    LLRHI::BufferHandle* mRHIIndices = nullptr;
-    // LLRHI native (research/137 N14) end
     // <plus> LLRHI (research/197 stage 1b): the buffer's number for its whole
     // life (0: none, it goes by its GL names), made with its first
     // allocation and kept through every allocation after it; what it is now
@@ -379,7 +373,6 @@ private:
 
     // actually unmap buffer
     void _unmapBuffer();
-    bool unmapNative(); // LLRHI native (research/137 N14): _unmapBuffer's ranges, one backend call a buffer
 
     // add to set of mapped buffers
     void _mapBuffer();

@@ -174,6 +174,8 @@ namespace
 namespace
 {
     void bcn_note_write(VkImage image, bool wait);  // research/200 (below, with the BC7 queue)
+    void bcn_cancel_held(Texture& tex);             // research/395 (below, with the BC7 queue)
+    void bcn_wait_verify(Texture& tex);
 } // namespace
 
     // Record a layout change for the whole image (no-op when already there).
@@ -191,6 +193,17 @@ namespace
         if (tex.bcn_shared && to != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
         {
             bcn_note_write(tex.image, true);    // research/200 H3: the compute queue may be reading it for BC7
+        }
+        if (tex.bcn_ticket && to != VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+        {
+            if (to == VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
+            {
+                bcn_wait_verify(tex);           // research/395: only read: the encoding stands
+            }
+            else
+            {
+                bcn_cancel_held(tex);           // written: the encoding is of the old contents
+            }
         }
         if (cmd != LLVKMirror::instance().uploadCommands())
         {
@@ -268,6 +281,8 @@ namespace
             tex.bcn_encoded = false;
         }
         tex.bcn_queued = false;     // a queued entry names this image: it is skipped
+        bcn_cancel_held(tex);       // research/395: a held encoding is of the image that goes
+        tex.bcn_rejected = false;   // (the next image is judged on its own)
         if (tex.bcn_shared)
         {
             // research/200: an encoding of it on the compute queue is thrown away
@@ -1518,11 +1533,48 @@ namespace
         U32 level0_writes = 0;              // Texture::level0_writes at the time
         U32 levels = 0;                     // sampled_levels at the time
         LLVKTexCompress::Encoded encoded;
+        U64 ticket = 0;                     // research/395: the verdict's number (0: none: taken at once)
         U64 value = 0;                      // its compute batch's value (0: this frame's, not submitted yet)
         bool written = false;               // the plain image was written or released meanwhile (bcn_note_write): thrown away
         bool wait = false;                  // written: the graphics submissions wait for its batch (H3)
     };
     std::vector<BCNInFlight> sBCNInFlight;
+
+    // research/395: an encoding recorded in the frame's commands that waits
+    // for its verdict; the texture keeps its plain image meanwhile.
+    struct BCNHeld
+    {
+        GLuint name = 0;
+        VkImage plain = VK_NULL_HANDLE;
+        U64 bytes = 0;                      // what the plain image takes (the held bytes' sum is limited)
+        U32 level0_writes = 0;
+        U32 levels = 0;
+        LLVKTexCompress::Encoded encoded;
+        bool written = false;               // the plain image was written or released meanwhile: thrown away
+        U64 verify_value = 0;               // VERIFY's second encoding of it, on the compute queue: its batch's value (0: none)
+        bool wait_pending = false;          // a write or read-back came before that value was known: wait for it once it is
+    };
+    // VERIFY's second encoding of a held texture was recorded in this frame's
+    // compute batch, whose value is not known yet (submit_async_bcn gives it).
+    constexpr U64 VERIFY_PENDING = ~0ull;
+    std::vector<BCNHeld> sBCNHeld;
+    std::vector<LLVKTexCompress::VerdictResult> sVerdictsReady;     // read, not matched to an entry yet
+    // The plain bytes held for verdicts (frame and compute entries): the frame stops encoding past this.
+    constexpr U64 PENDING_BYTES_MAX = 128ull << 20;
+
+    U64 held_bytes()
+    {
+        U64 bytes = 0;
+        for (const BCNHeld& h : sBCNHeld)
+        {
+            bytes += h.bytes;
+        }
+        for (const BCNInFlight& f : sBCNInFlight)
+        {
+            bytes += f.ticket ? f.bytes : 0;
+        }
+        return bytes;
+    }
 
     // research/285 X2: an encoding on the compute queue still reads `image`
     // (or will take its texture's place from it).
@@ -1583,9 +1635,10 @@ namespace
 
     // tex may be stored BC7: the viewer allowed it, and it is a plain RGBA8
     // 2D image of pixels, never rendered into, large enough.
+    // (A texture with an encoding held for its verdict is not one: bcn_ticket.)
     bool bcn_candidate(const Texture& tex)
     {
-        return LLRHI::sTexBCN && tex.bcn_wanted && !tex.bcn_encoded && tex.image &&
+        return LLRHI::sTexBCN && tex.bcn_wanted && !tex.bcn_encoded && !tex.bcn_rejected && !tex.bcn_ticket && tex.image &&
                tex.target == GL_TEXTURE_2D && tex.layers == 1 && tex.format.format == VK_FORMAT_R8G8B8A8_UNORM &&
                !tex.rendered_to && !tex.attach_wanted && (tex.defined_levels & 1) &&
                (U64)tex.width * tex.height >= LLVKTexCompress::minTexels();
@@ -1626,6 +1679,59 @@ namespace
                 }
             }
         }
+    }
+
+    // research/395 (VERIFY): the compute queue may still be reading tex's image for
+    // VERIFY's second encoding of it: what leaves shader reading (a write, or a
+    // read-back) waits for that batch (the value comes at the frame's submission).
+    void bcn_wait_verify(Texture& tex)
+    {
+        if (!tex.bcn_ticket)
+        {
+            return;
+        }
+        for (BCNHeld& h : sBCNHeld)
+        {
+            if (h.encoded.ticket != tex.bcn_ticket)
+            {
+                continue;
+            }
+            if (h.verify_value == VERIFY_PENDING)
+            {
+                h.wait_pending = true;
+            }
+            else if (h.verify_value)
+            {
+                LLVKQueues::instance().graphicsWaitsFor(h.verify_value);
+            }
+        }
+    }
+
+    // research/395: tex's plain image is written or released while an encoding
+    // of it waits for its verdict: the encoding is thrown away when the verdict
+    // comes, the texture may be queued again at once (it is not pending now).
+    void bcn_cancel_held(Texture& tex)
+    {
+        if (!tex.bcn_ticket)
+        {
+            return;
+        }
+        bcn_wait_verify(tex);
+        for (BCNHeld& h : sBCNHeld)
+        {
+            if (h.encoded.ticket == tex.bcn_ticket)
+            {
+                h.written = true;
+            }
+        }
+        for (BCNInFlight& f : sBCNInFlight)
+        {
+            if (f.ticket == tex.bcn_ticket)
+            {
+                f.written = true;
+            }
+        }
+        tex.bcn_ticket = 0;
     }
 
     // An encoded image no texture took: freed once the GPU is done with what
@@ -1676,10 +1782,12 @@ namespace
         }
     }
 
-    // Records the encoding of tex into cmd (the frame's upload commands) and
-    // gives it the encoded image; the plain one goes once the GPU is done.
-    // verify: a VERIFY pair's number (research/200), 0 for none.
-    bool compress_texture(Texture& tex, GLuint name, VkCommandBuffer cmd, U64 verify)
+    // Records the encoding of tex into cmd (the frame's upload commands).
+    // With a verdict (research/395) the texture keeps its plain image, and the
+    // encoded one waits in sBCNHeld for the check recorded with it; without
+    // (the check is off), the encoded image is given at once and the plain one
+    // goes once the GPU is done. verify: a VERIFY pair's number (research/200), 0 for none.
+    bool compress_texture(Texture& tex, GLuint name, VkCommandBuffer cmd, U64 verify, U64 bytes)
     {
         const U32 levels = sampled_levels(tex);
         LLVKTexCompress::Encoded encoded;
@@ -1687,8 +1795,100 @@ namespace
         {
             return false;
         }
-        take_encoded(tex, encoded, levels);
+        if (!encoded.ticket)
+        {
+            take_encoded(tex, encoded, levels);
+            return true;
+        }
+        BCNHeld held;
+        held.name = name;
+        held.plain = tex.image;
+        held.bytes = bytes;
+        held.level0_writes = tex.level0_writes;
+        held.levels = levels;
+        held.encoded = encoded;
+        held.verify_value = verify ? VERIFY_PENDING : 0;
+        sBCNHeld.push_back(held);
+        tex.bcn_ticket = encoded.ticket;
         return true;
+    }
+
+    // research/395: the verdict of a held encoding (an entry of sBCNHeld or of
+    // sBCNInFlight, done) has come: the encoded image takes its texture's place
+    // if it is good and the texture is still as it was (the same image, not
+    // written since, still a candidate with the same levels, in shader reading),
+    // and is thrown away otherwise. A bad one leaves the texture RGBA8
+    // (bcn_rejected: it is judged again only when written or made again). One
+    // that is no verdict's fault (no result, or the texture's layout or levels
+    // changed) is queued again.
+    // True: the encoded image was taken.
+    bool conclude(GLuint name, VkImage plain, U32 level0_writes, U32 levels, bool written, U64 ticket, U64 bytes,
+                  const LLVKTexCompress::Encoded& encoded, LLVKTexCompress::Verdict verdict, U64 wait_value)
+    {
+        Texture* tex = sTextures.find(name);
+        // unchanged: the same image with the same contents (a read-back may have marked it written meanwhile).
+        const bool unchanged = tex && tex->image == plain && tex->level0_writes == level0_writes;
+        const bool same = unchanged && !written;
+        if (tex && ticket && tex->bcn_ticket == ticket)
+        {
+            tex->bcn_ticket = 0;    // (tickets are unique for the session)
+        }
+        const bool current = same && tex->layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && bcn_candidate(*tex) && sampled_levels(*tex) == levels;
+        if (current && verdict == LLVKTexCompress::Verdict::GOOD)
+        {
+            if (wait_value)
+            {
+                // H6: what samples it from now on waits for the batch (done already: at once).
+                LLVKQueues::instance().graphicsWaitsFor(wait_value);
+            }
+            take_encoded(*tex, encoded, levels);
+            return true;
+        }
+        discard_encoded(encoded);
+        if (current && verdict == LLVKTexCompress::Verdict::BAD)
+        {
+            tex->bcn_rejected = true;
+        }
+        else if (unchanged && !tex->bcn_queued && bcn_candidate(*tex))
+        {
+            sBCNQueue.push_back({ name, plain, bytes, level0_writes });
+            sBCNQueuedBytes += bytes;
+            tex->bcn_queued = true;
+        }
+        return false;
+    }
+
+    bool take_verdict(U64 ticket, LLVKTexCompress::Verdict& verdict)
+    {
+        for (size_t i = 0; i < sVerdictsReady.size(); ++i)
+        {
+            if (sVerdictsReady[i].ticket == ticket)
+            {
+                verdict = sVerdictsReady[i].verdict;
+                sVerdictsReady[i] = sVerdictsReady.back();
+                sVerdictsReady.pop_back();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // The frame's held encodings whose verdict has been read.
+    void finish_held()
+    {
+        size_t kept = 0;
+        for (size_t i = 0; i < sBCNHeld.size(); ++i)
+        {
+            const BCNHeld h = sBCNHeld[i];
+            LLVKTexCompress::Verdict verdict = LLVKTexCompress::Verdict::NONE;
+            if (!take_verdict(h.encoded.ticket, verdict))
+            {
+                sBCNHeld[kept++] = h;
+                continue;
+            }
+            conclude(h.name, h.plain, h.level0_writes, h.levels, h.written, h.encoded.ticket, h.bytes, h.encoded, verdict, 0);
+        }
+        sBCNHeld.resize(kept);
     }
 
     // research/200: the encodings the compute queue has finished take their
@@ -1711,21 +1911,14 @@ namespace
                 sBCNInFlight[kept++] = f;
                 continue;
             }
-            Texture* tex = sTextures.find(f.name);
-            const bool current = tex && !f.written && tex->image == f.plain && tex->level0_writes == f.level0_writes &&
-                                 tex->layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && bcn_candidate(*tex) &&
-                                 sampled_levels(*tex) == f.levels;
-            if (current)
+            // research/395: with a ticket, once its verdict is read (a written one needs none: thrown away).
+            LLVKTexCompress::Verdict verdict = LLVKTexCompress::Verdict::GOOD;
+            if (f.ticket && !f.written && !take_verdict(f.ticket, verdict))
             {
-                // H6: what samples it from now on waits for the batch (done already: at once).
-                LLVKQueues::instance().graphicsWaitsFor(f.value);
-                take_encoded(*tex, f.encoded, f.levels);
+                sBCNInFlight[kept++] = f;
+                continue;
             }
-            else
-            {
-                discard_encoded(f.encoded);
-            }
-            LLVKTexCompress::noteAsyncResult(current);
+            LLVKTexCompress::noteAsyncResult(conclude(f.name, f.plain, f.level0_writes, f.levels, f.written, f.ticket, f.bytes, f.encoded, verdict, f.value));
         }
         sBCNInFlight.resize(kept);
     }
@@ -1734,7 +1927,7 @@ namespace
     // first on wait in sBCNInFlight for it. A failed submission ran nothing:
     // their images go and their textures are queued again (encoded in the
     // frame from then on: the compute queue is not used again).
-    void submit_async_bcn(size_t first)
+    U64 submit_async_bcn(size_t first)
     {
         const U64 value = LLVKTexCompress::submitAsync();
         if (value)
@@ -1748,13 +1941,17 @@ namespace
                     LLVKQueues::instance().graphicsWaitsFor(value);     // H3, written before the batch was submitted
                 }
             }
-            return;
+            return value;
         }
         for (size_t i = first; i < sBCNInFlight.size(); ++i)
         {
             const BCNInFlight& f = sBCNInFlight[i];
             discard_encoded(f.encoded);
             Texture* tex = sTextures.find(f.name);
+            if (tex && f.ticket && tex->bcn_ticket == f.ticket)
+            {
+                tex->bcn_ticket = 0;    // research/395: nothing ran: no verdict will come
+            }
             if (tex && !f.written && tex->image == f.plain && tex->level0_writes == f.level0_writes && !tex->bcn_queued)
             {
                 sBCNQueue.push_back({ f.name, f.plain, f.bytes, f.level0_writes });
@@ -1763,6 +1960,7 @@ namespace
             }
         }
         sBCNInFlight.resize(first);
+        return 0;
     }
 
 } // namespace
@@ -1779,7 +1977,10 @@ namespace
         // the textures waiting stay queued (plain), none is dropped.
         const bool encoder_coming = LLRHI::sTexBCN && LLVKTexCompress::prepare();
         LLVKTexCompress::beginFrame();
+        LLVKTexCompress::takeVerdicts(sVerdictsReady);
         finish_async_bcn();
+        finish_held();
+        sVerdictsReady.clear();     // (a result with no entry: its texture was dropped)
         VkCommandBuffer cmd = LLVKMirror::instance().uploadCommands();
         if (encoder_coming)
         {
@@ -1797,11 +1998,13 @@ namespace
         // hold after the first texture, the textures then stay queued).
         const LLVKTexCompress::Budget budget = on ? LLVKTexCompress::frameBudget(sBCNQueuedBytes) : LLVKTexCompress::Budget();
         const size_t first_in_flight = sBCNInFlight.size();
+        const size_t first_held = sBCNHeld.size();
         U64 texels = 0;
         U64 blocks = 0;
+        U64 held = held_bytes();    // research/395: the plain images kept for verdicts
         sBCNPutOff.clear();
         while (sBCNQueueHead < sBCNQueue.size() &&
-               (!on || (texels < budget.texels && blocks < budget.blocks && LLVKTexCompress::hasRoom())))
+               (!on || (texels < budget.texels && blocks < budget.blocks && held < PENDING_BYTES_MAX && LLVKTexCompress::hasRoom())))
         {
             const BCNPending pending = sBCNQueue[sBCNQueueHead];
             Texture* tex = sTextures.find(pending.name);
@@ -1811,6 +2014,24 @@ namespace
             if (to_compute && !LLVKTexCompress::asyncRoom())
             {
                 break;      // no compute batch free this frame (none waited for): it stays queued
+            }
+            // research/395: the check's readback has room for it (next frame if not;
+            // one no slot can hold stays RGBA8).
+            if (candidate)
+            {
+                const U32 check_levels = sampled_levels(*tex);
+                if (LLVKTexCompress::tooLarge(tex->width, tex->height, check_levels))
+                {
+                    ++sBCNQueueHead;
+                    sBCNQueuedBytes -= llmin(sBCNQueuedBytes, pending.bytes);
+                    tex->bcn_queued = false;
+                    LLVKTexCompress::noteLeftPlain();
+                    continue;
+                }
+                if (!LLVKTexCompress::hasRoomFor(tex->width, tex->height, check_levels, to_compute))
+                {
+                    break;
+                }
             }
             // bc7-fault: one larger than what is left of the share goes to the
             // back of the queue (the frame's first may take up to budget.single).
@@ -1856,6 +2077,9 @@ namespace
                 f.levels = sampled_levels(*tex);
                 if (f.levels && LLVKTexCompress::encodeAsync(tex->image, tex->width, tex->height, f.levels, pending.name, f.encoded))
                 {
+                    f.ticket = f.encoded.ticket;
+                    tex->bcn_ticket = f.ticket;
+                    held += f.bytes;
                     sBCNInFlight.push_back(f);
                     texels += (U64)tex->width * tex->height;
                     blocks += need;
@@ -1878,17 +2102,29 @@ namespace
                 }
                 discard_encoded(second);    // freed after this frame's fence, which follows the batch (submitted below)
             }
-            if (compress_texture(*tex, pending.name, cmd, verify))
+            if (compress_texture(*tex, pending.name, cmd, verify, pending.bytes))
             {
                 texels += (U64)tex->width * tex->height;
                 blocks += need;
+                held += pending.bytes;
             }
             else if (verify)
             {
                 LLVKTexCompress::dropVerify(verify);
             }
         }
-        submit_async_bcn(first_in_flight);
+        const U64 batch_value = submit_async_bcn(first_in_flight);
+        for (size_t i = first_held; i < sBCNHeld.size(); ++i)
+        {
+            if (sBCNHeld[i].verify_value == VERIFY_PENDING)
+            {
+                sBCNHeld[i].verify_value = batch_value;     // 0: nothing ran on the compute queue
+                if (batch_value && sBCNHeld[i].wait_pending)
+                {
+                    LLVKQueues::instance().graphicsWaitsFor(batch_value);
+                }
+            }
+        }
         if (on)
         {
             LLVKTexCompress::endFrameEncodes(cmd, !sBCNPutOff.empty());
@@ -1945,7 +2181,7 @@ namespace
         // images not in shader reading right now, images without contents,
         // cube maps, arrays and depth.
         return tex.image && tex.memory && tex.target == GL_TEXTURE_2D && tex.layers == 1 && !tex.format.depth &&
-               !tex.attach_wanted && !tex.rendered_to && !tex.attachable && !tex.attach_view && !tex.bcn_queued &&
+               !tex.attach_wanted && !tex.rendered_to && !tex.attachable && !tex.attach_view && !tex.bcn_queued && !tex.bcn_ticket &&
                (!tex.bcn_shared || (!bcn_in_flight(tex.image) && compute_queue_idle())) &&
                tex.layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && (tex.defined_levels & 1);
     }
@@ -2097,6 +2333,7 @@ namespace
         const U32 written_levels = (tex.written_levels >> shift) & kept;
         const bool attach_later = tex.attach_later;
         const bool encoded = tex.bcn_encoded;
+        const bool rejected = tex.bcn_rejected;     // research/395: the same contents, judged already
         const U64 plain_bytes = tex.bcn_plain_bytes >> (2 * shift);     // a plain image of the new size, about
         // The old image and its view go once the GPU is done with what was
         // recorded so far (the copy included); a new version, and its bindless
@@ -2111,6 +2348,7 @@ namespace
         tex.defined_levels = defined_levels;
         tex.written_levels = written_levels;
         tex.attach_later = attach_later;
+        tex.bcn_rejected = rejected;
         if (encoded)
         {
             // Still BC7 (destroy_texture_objects counted the old image out).

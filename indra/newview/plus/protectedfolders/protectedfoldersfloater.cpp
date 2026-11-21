@@ -35,7 +35,10 @@
 #include "llviewerprecompiledheaders.h"
 
 #include "protectedfolders.h"
+#include "protectedfoldersrml.h"
 #include "plus.h"
+#include "plus/safemode/safemode.h"
+#include "llviewercontrol.h"
 
 #include "llbutton.h"
 #include "llfloater.h"
@@ -183,10 +186,21 @@ namespace plus::protectedfolders
             boost::signals2::connection mChangedConnection;
         };
 
+        // The window is the RmlUi one (protectedfoldersrml.cpp, research/386). This XUI version is frozen (not changed
+        // any more) and is used in safe mode, where RmlUi is not started, and with PlusRmlUiWindows off (the choice is
+        // made once, here: it takes effect at the next start).
         void init()
         {
-            LLFloaterReg::add(FLOATER_NAME, "floater_plus_protected_folders.xml",
-                              (LLFloaterBuildFunc)&LLFloaterReg::build<ProtectedFoldersFloater>);
+            plus::declareUIImage("Plus_ProtFolders_Trash", "plus/protected_trash.png");     // the remove button of the RmlUi window
+            if (plus::safemode::active() || !gSavedSettings.getBOOL("PlusRmlUiWindows"))
+            {
+                LLFloaterReg::add(FLOATER_NAME, "floater_plus_protected_folders.xml",
+                                  (LLFloaterBuildFunc)&LLFloaterReg::build<ProtectedFoldersFloater>);
+            }
+            else
+            {
+                addRmlFloater(FLOATER_NAME);
+            }
         }
 
         plus::FeatureRegistration sRegistration({ "protectedfolders", &init, {} });

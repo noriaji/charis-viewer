@@ -9,8 +9,10 @@ list(APPEND plus_SOURCE_FILES
     plus/subtitle/lineclient.cpp
     plus/subtitle/streamtap.cpp
     plus/subtitle/subtitleclient.cpp
+    plus/subtitle/subtitlecore.cpp
     plus/subtitle/subtitledownload.cpp
     plus/subtitle/subtitlefloater.cpp
+    plus/subtitle/subtitlerml.cpp
     plus/subtitle/translateclient.cpp
     plus/subtitle/translatefetch.cpp
     )
@@ -20,9 +22,11 @@ list(APPEND plus_HEADER_FILES
     plus/subtitle/lineclient.h
     plus/subtitle/streamtap.h
     plus/subtitle/subtitleclient.h
+    plus/subtitle/subtitlecore.h
     plus/subtitle/subtitledownload.h
     plus/subtitle/subtitledialect.h
     plus/subtitle/subtitlehash.h
+    plus/subtitle/subtitlerml.h
     plus/subtitle/subtitlering.h
     plus/subtitle/subtitlespeaker.h
     plus/subtitle/subtitletranslate.h

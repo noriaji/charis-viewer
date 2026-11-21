@@ -6,9 +6,13 @@
 # LLSelectMgr::processObjectProperties() (the names and creators of the attached objects).
 
 list(APPEND plus_SOURCE_FILES
+    plus/avatarattach/attachmodel.cpp
+    plus/avatarattach/attachrml.cpp
     plus/avatarattach/avatarattach.cpp
     )
 
 list(APPEND plus_HEADER_FILES
+    plus/avatarattach/attachmodel.h
+    plus/avatarattach/attachrml.h
     plus/avatarattach/avatarattach.h
     )

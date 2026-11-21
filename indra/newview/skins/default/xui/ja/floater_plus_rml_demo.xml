@@ -4,7 +4,7 @@
   title="RmlUi の試作窓（開発用）">
   <string name="heading">RmlUi の試作窓</string>
   <string name="button_count">数える</string>
-  <string name="tip_count">ボタンの横の数を 1 つ増やします。</string>
+  <string name="tip_count">ボタンの横の数を 1 つ増やします。右クリックで窓独自のメニューが出ます。</string>
   <string name="check_option">オプション</string>
   <string name="tip_option">データモデルにつないだチェックボックスです（何も変わりません）。</string>
   <string name="slider_label">量</string>
@@ -15,6 +15,16 @@
   <string name="tip_colour">アクセント色の CSS 変数をビューワから書き換えます（もう一度で元に戻ります）。</string>
   <string name="button_size">文字の大きさを切り替え</string>
   <string name="tip_size">本文の文字の大きさの変数を切り替えます（もう一度で元に戻ります）。</string>
+  <string name="parts_label">宿主の部品: ログ・検索欄・数値欄・省略表示（research/387）</string>
+  <string name="button_append">ログに 1 行足す</string>
+  <string name="tip_append">下の読み取り専用のログに 1 行足します（末尾へ送られます）。</string>
+  <string name="tip_log">読み取り専用の文字です。選んで写せます（Ctrl+C か右クリックのメニュー）。キーでは変わらず、矢印と Page Up / Down でスクロールします。</string>
+  <string name="log_line">ログ [N] 行目</string>
+  <string name="search_label">検索</string>
+  <string name="tip_search">フォーカスを得ると全部選ばれます（クリック・Tab）。</string>
+  <string name="spin_label">数値</string>
+  <string name="tip_spin">0 から 200、5 刻み。矢印（押し続け）・ホイール・↑↓・Esc、10*3 と打って Enter も使えます。</string>
+  <string name="long_name">とても長い名前が狭い枠に入りきらない時は「…」で切れ、ツールチップに全文が出ます</string>
   <string name="list_label">1000 行（見えている行だけを作ります）</string>
   <string name="list_item">[N] 行目</string>
   <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>

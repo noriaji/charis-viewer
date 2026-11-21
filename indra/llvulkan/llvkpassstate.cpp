@@ -30,7 +30,6 @@
 // Before the #if: llvkgl_internal.h brings llglheaders.h, which defines
 // LL_GL_FUNC_POINTER (this file has no PCH; as llvkpass.cpp).
 #include "llvkgl_internal.h"
-#include "llvktranslate.h"  // research/204 10 (vk-s4c2): the GL state's thread
 
 #include <atomic>
 
@@ -144,10 +143,6 @@ namespace
 
     bool Backend::unitsLeft(U32 units)
     {
-        if (LLVKTranslate::redirect())
-        {
-            return false;   // the GL state is the translation thread's (thread_local): not watched
-        }
         std::lock_guard<LLVKTrackerMutex> lock(sLock);
         for (U32 unit = 0; unit < 32; ++unit)
         {

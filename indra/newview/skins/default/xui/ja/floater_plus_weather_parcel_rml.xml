@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_weather_parcel" title="区画の天候">
+  <string name="can_edit">この区画の説明欄に書き込みます。説明欄は誰でも読めます。「区画の天候を受け取る」をオンにした人に、この天候が見えます。</string>
+  <string name="cannot_edit">この区画の天候を決められるのは、持ち主か、編集を許された管理者だけです。</string>
+  <string name="bytes_left">説明欄の残りは [LEFT] バイトです（上限 255）。</string>
+  <string name="bytes_over">タグが入りません。説明欄を短くしてください（上限 255 バイト）。</string>
+  <string name="tag_warning">説明欄のタグに壊れた項目が [N] 個あり、無視されます。</string>
+  <string name="tag_unclosed">説明欄に、閉じていない「[slwx」があります。「]」で閉じるか消してから書き込んでください。</string>
+  <string name="confirm_apply">この区画の説明欄に、次の内容を書き込みます。
+
+[TAG]
+
+説明欄は誰でも読めます。書き込むと残りは [LEFT] バイトです。よろしいですか？</string>
+  <string name="confirm_clear">この区画の説明欄から、天候のタグを消します。よろしいですか？</string>
+  <string name="write_failed">区画の天候を書き込めませんでした。この区画を編集する権限がなくなったか、別の区画に移った可能性があります。</string>
+  <string name="rain">雨</string>
+  <string name="snow">雪</string>
+  <string name="wind_dir">風向（度・0=北）</string>
+  <string name="wind_speed">風速（m/s）</string>
+  <string name="gust">突風</string>
+  <string name="storm">嵐（雷）</string>
+  <string name="tip_rain">雨の量。</string>
+  <string name="tip_snow">雪の量。</string>
+  <string name="tip_wind_dir">風が吹いてくる方角（0=北、90=東）。</string>
+  <string name="tip_wind_speed">風の速さ（m/s）。</string>
+  <string name="tip_gust">突風の出やすさ。</string>
+  <string name="tip_storm">雷雨。このビューワではまだ効果がありません。</string>
+  <string name="storm_note">嵐はこのビューワではまだ効果がありません（雷は後で対応）。これを使うビューワのために、タグには書き込まれます。</string>
+  <string name="apply">この区画の天候にする</string>
+  <string name="clear">この区画の天候を消す</string>
+  <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+  <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、今までの窓になります。</string>
+</floater>

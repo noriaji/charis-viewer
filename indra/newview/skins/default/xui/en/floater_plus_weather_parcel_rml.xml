@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Parcel weather window, RmlUi version (plus/slwx/slwxparcelrml.cpp, research/389): the frame and the words. The
+  content is app_settings/plus/rmlui/weather_parcel.rml in a plus_rml_view filling the floater under its 18 px header.
+  The old XUI window (floater_plus_weather_parcel.xml, frozen) is used in safe mode and when PlusRmlUiWindows is off.
+  reuse_instance="false": a closed window is destroyed (an RmlUi window costs nothing while it is closed).
+-->
+<floater
+ positioning="specified"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="false"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="418"
+ width="380"
+ layout="topleft"
+ name="plus_weather_parcel"
+ title="PARCEL WEATHER">
+    <string name="can_edit">Writes into the description of this parcel. Anyone can read it. People who turned on "Use the Parcel's Weather" see this weather.</string>
+    <string name="cannot_edit">Only the owner of this parcel, or a group member allowed to edit it, can set its weather.</string>
+    <string name="bytes_left">[LEFT] bytes left in the description (255 at most).</string>
+    <string name="bytes_over">The tag does not fit: shorten the description (255 bytes at most).</string>
+    <string name="tag_warning">[N] item(s) of the tag in the description are broken and ignored.</string>
+    <string name="tag_unclosed">The description has a "[slwx" without a closing "]". Close or remove it first.</string>
+    <string name="confirm_apply">Write this into the description of this parcel?
+
+[TAG]
+
+The description is public: anyone can read it. [LEFT] bytes will be left.</string>
+    <string name="confirm_clear">Remove the weather tag from the description of this parcel?</string>
+    <string name="write_failed">The parcel weather could not be written. You may not be allowed to edit this parcel any more, or you are in another parcel now.</string>
+    <string name="rain">Rain</string>
+    <string name="snow">Snow</string>
+    <string name="wind_dir">Wind from (deg)</string>
+    <string name="wind_speed">Wind speed (m/s)</string>
+    <string name="gust">Gusts</string>
+    <string name="storm">Storm</string>
+    <string name="tip_rain">How much it rains.</string>
+    <string name="tip_snow">How much it snows.</string>
+    <string name="tip_wind_dir">The direction the wind blows from (0 = north, 90 = east).</string>
+    <string name="tip_wind_speed">Wind speed in m/s.</string>
+    <string name="tip_gust">How easily gusts come.</string>
+    <string name="tip_storm">Thunderstorm. It has no effect in this viewer yet.</string>
+    <string name="storm_note">Storm has no effect in this viewer yet (lightning comes later). It is saved in the tag for viewers that use it.</string>
+    <string name="apply">Set as this parcel's weather</string>
+    <string name="clear">Remove</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="weather_parcel.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="380"
+     height="400" />
+</floater>

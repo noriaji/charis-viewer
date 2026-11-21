@@ -27,6 +27,7 @@
 
 #include "v4color.h"
 
+#include <cmath>
 #include <cstdio>
 
 namespace plus::rmlui
@@ -103,7 +104,36 @@ namespace plus::rmlui
         case Kind::Colour:
             slot.shown = hexColour(LLColor4(value));
             break;
+        case Kind::Choice:
+            slot.shown = value.asString();
+            break;
+        case Kind::Int:
+            slot.number = slot.shown_number = settingNumber(value, slot.entry);
+            break;
         }
+    }
+
+    // An integer setting's number (a real one is rounded, as the XUI spinner), in the entry's range.
+    S32 SettingsModel::settingNumber(const LLSD& value, const Entry& entry)
+    {
+        S32 number = 0;
+        if (value.isReal())
+        {
+            const F64 real = value.asReal();
+            // (not a number: the range's start; the conversion of a NaN to an integer is undefined)
+            number = std::isfinite(real) ? (S32)ll_round((F32)llclamp(real, -2.0e9, 2.0e9)) : entry.min_value;
+        }
+        else
+        {
+            number = value.asInteger();
+        }
+        return llclamp(number, entry.min_value, entry.max_value);
+    }
+
+    // The number as the setting stores it (a real setting, an F32, keeps its type in the saved file).
+    LLSD SettingsModel::numberValue(Slot& slot, S32 number)
+    {
+        return (slot.control.notNull() && slot.control->type() == TYPE_F32) ? LLSD((F64)number) : LLSD(number);
     }
 
     void SettingsModel::bind(Rml::DataModelConstructor& model, const std::vector<Entry>& entries)
@@ -130,10 +160,25 @@ namespace plus::rmlui
                 slot.connection = slot.control->getSignal()->connect(
                     [this, index](LLControlVariable*, const LLSD&, const LLSD&) { onChanged(index); });
             }
+            if (entry.kind == Kind::Choice)
+            {
+                mQuiet = true;      // the document's first update may make a select take its first option
+            }
             if (entry.kind == Kind::Bool)
             {
                 model.BindFunc(slot.variable, [this, index](Rml::Variant& value) { value = mSlots[index].flag; },
                                [this, index](const Rml::Variant& value) { setBool(index, value.Get<bool>(false)); });
+            }
+            else if (entry.kind == Kind::Choice)
+            {
+                model.BindFunc(slot.variable, [this, index](Rml::Variant& value) { value = mSlots[index].shown; },
+                               [this, index](const Rml::Variant& value) { setChoice(index, value.Get<Rml::String>("")); });
+            }
+            else if (entry.kind == Kind::Int)
+            {
+                model.BindFunc(slot.variable, [this, index](Rml::Variant& value) { value = mSlots[index].shown_number; },
+                               [this, index](const Rml::Variant& value) { setInt(index, value.Get<int>(mSlots[index].number)); });
+                model.BindFunc(slot.variable + "_now", [this, index](Rml::Variant& value) { value = mSlots[index].number; });
             }
             else
             {
@@ -149,6 +194,7 @@ namespace plus::rmlui
         {
             slot.connection.disconnect();
             slot.dirty = false;
+            slot.dirty_now = false;
             slot.held = false;
         }
         mAnyDirty = false;
@@ -193,6 +239,16 @@ namespace plus::rmlui
         }
     }
 
+    void SettingsModel::markDirtyNow(Slot& slot)
+    {
+        slot.dirty_now = true;
+        mAnyDirty = true;
+        if (mWake)
+        {
+            mWake();
+        }
+    }
+
     void SettingsModel::beforeUpdate()
     {
         if (!mAnyDirty)
@@ -205,9 +261,21 @@ namespace plus::rmlui
             if (slot.dirty)
             {
                 slot.dirty = false;
+                if (slot.entry.kind == Kind::Choice)
+                {
+                    mQuiet = true;      // the select shows the new value in this update; what it says back is not the user's
+                }
                 if (mHandle)
                 {
                     mHandle.DirtyVariable(slot.variable);
+                }
+            }
+            if (slot.dirty_now)
+            {
+                slot.dirty_now = false;
+                if (mHandle)
+                {
+                    mHandle.DirtyVariable(slot.variable + "_now");
                 }
             }
         }
@@ -258,6 +326,31 @@ namespace plus::rmlui
             }
             break;
         }
+        case Kind::Choice:
+        {
+            const std::string now = value.asString();
+            if (now != slot.shown)
+            {
+                slot.shown = now;
+                markDirty(slot);
+            }
+            break;
+        }
+        case Kind::Int:
+        {
+            const S32 now = settingNumber(value, slot.entry);
+            if (now != slot.number)
+            {
+                slot.number = now;
+                markDirtyNow(slot);
+                if (!slot.held)     // a field with the focus keeps its text: endEdit decides
+                {
+                    slot.shown_number = now;
+                    markDirty(slot);
+                }
+            }
+            break;
+        }
         }
     }
 
@@ -281,11 +374,65 @@ namespace plus::rmlui
         write(mSlots[index], LLSD(value));
     }
 
+    void SettingsModel::setChoice(size_t index, const std::string& value)
+    {
+        if (index >= mSlots.size() || mQuiet || mSlots[index].shown == value)
+        {
+            return;     // (quiet: not the user's choice, see rmlsettings.h)
+        }
+        mSlots[index].shown = value;
+        write(mSlots[index], LLSD(value));
+    }
+
+    void SettingsModel::setInt(size_t index, S32 value)
+    {
+        if (index >= mSlots.size())
+        {
+            return;
+        }
+        Slot& slot = mSlots[index];
+        const S32 clamped = llclamp(value, slot.entry.min_value, slot.entry.max_value);
+        if (clamped != value)
+        {
+            markDirty(slot);    // the field shows what was typed: give it the kept value again
+        }
+        if (clamped == slot.number)
+        {
+            return;
+        }
+        slot.number = slot.shown_number = clamped;
+        markDirtyNow(slot);
+        write(slot, numberValue(slot, clamped));
+    }
+
+    void SettingsModel::commitInt(const std::string& variable, S32 value)
+    {
+        Slot* slot = find(variable);
+        if (!slot || slot->entry.kind != Kind::Int)
+        {
+            return;
+        }
+        // What the box committed is the number it shows now, held or not: a window that wrote the setting by itself would
+        // advance only the setting while the field is held, and the next update would give the field the old number back.
+        const S32 clamped = llclamp(value, slot->entry.min_value, slot->entry.max_value);
+        if (slot->shown_number != clamped)
+        {
+            slot->shown_number = clamped;
+            markDirty(*slot);
+        }
+        if (slot->number != clamped)
+        {
+            slot->number = clamped;
+            markDirtyNow(*slot);
+            write(*slot, numberValue(*slot, clamped));
+        }
+    }
+
     void SettingsModel::beginEdit(const std::string& variable)
     {
         if (Slot* slot = find(variable))
         {
-            slot->held = slot->entry.kind == Kind::String;
+            slot->held = slot->entry.kind == Kind::String || slot->entry.kind == Kind::Int;
         }
     }
 
@@ -303,6 +450,19 @@ namespace plus::rmlui
     void SettingsModel::endEdit(const std::string& variable, const std::string& text)
     {
         Slot* slot = find(variable);
+        if (slot && slot->entry.kind == Kind::Int)
+        {
+            // The focus left the number box. When the user typed, its commit has written the setting already (the number
+            // shown is the user's); when not, what changed outside meanwhile shows now (the XUI's lost-focus: not dirty,
+            // updateEditor()).
+            slot->held = false;
+            if (slot->shown_number != slot->number)
+            {
+                slot->shown_number = slot->number;
+                markDirty(*slot);
+            }
+            return;
+        }
         if (!slot || slot->entry.kind != Kind::String)
         {
             return;

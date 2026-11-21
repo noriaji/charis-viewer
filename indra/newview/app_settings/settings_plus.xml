@@ -616,6 +616,17 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
+  <key>PlusSkyWeather</key>
+  <map>
+    <key>Comment</key>
+    <string>Use the weather saved in a sky or a day cycle (its Weather tab): the rain, snow and wind it carries are used while that sky is on. Off: a weather inside a sky is ignored. It is used only while the viewer's own rain and snow (PlusRain, PlusSnow) are both off, and it comes ahead of a parcel's [slwx ...] tag. A weather that came with a parcel's, a region's or a script's environment is marked when it arrives, and the mark stays on every copy of it (the photo mode's sun, the personal environment window, an edit window, a day cycle saved in the inventory): such a weather is used only while PlusWeatherAllowParcel is on, however it got to your own environment (also after a log-in with EnvironmentPersistAcrossLogin on: a sky or day cycle with a weather is saved whole, not by its asset ID, so that what comes back is what was there; one with no name is not kept, and the land's environment comes back). Skies without a weather are not touched. Vulkan only; needs HDR (RenderHDREnabled), as the rain does.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
   <!-- splash when diving into water (plus/splash; the viewer's particle system, so it works with any renderer) -->
   <key>PlusSplash</key>
   <map>
@@ -2909,18 +2920,6 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
-  <!-- privacy (research/123 H2) -->
-  <key>PlusSendSettingsStats</key>
-  <map>
-    <key>Comment</key>
-    <string>On: the statistics sent to the region at logout and quit (as every viewer sends) include the settings you changed: only on/off, number and color settings, never text or other free-form ones (login names, places, devices, paths, URLs), nor secrets (names with key, token, secret, password or api), nor the Charis settings (also the ones Charis added to the official settings.xml, and the Charis tone maps of RenderTonemapType). Off: no settings are sent with the statistics. Preferences > Privacy.</string>
-    <key>Persist</key>
-    <integer>1</integer>
-    <key>Type</key>
-    <string>Boolean</string>
-    <key>Value</key>
-    <integer>1</integer>
-  </map>
   <!-- support (Charis's own place for reports and release notes, research/123 H1 M3) -->
   <key>PlusSupportURL</key>
   <map>
@@ -3847,6 +3846,20 @@
     <key>Value</key>
     <integer>0</integer>
   </map>
+  <!-- outfit-hierarchy: which folders of the outfit list are open (PerAccount) -->
+  <key>PlusOutfitOpenFolders</key>
+  <map>
+    <key>Comment</key>
+    <string>Outfits window, My Outfits: the UUIDs of the folders that are open in the hierarchical list (Show folders). Kept per account across restarts. Folders that no longer exist or were moved out of My Outfits are dropped once the whole inventory has loaded. Edited through the viewer only: a change made in Debug Settings or by importing settings is not picked up by the open list and is overwritten at its next click on a folder.</string>
+    <key>PerAccount</key>
+    <integer>1</integer>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>LLSD</string>
+    <key>Value</key>
+    <array />
+  </map>
   <!-- protectedfolders (from Firestorm; PerAccount: in the account's settings_per_account.xml like Firestorm's FSProtectedFolders) -->
   <key>PlusProtectedFolders</key>
   <map>
@@ -4230,6 +4243,18 @@
     <key>Value</key>
     <integer>4</integer>
   </map>
+  <!-- avatarfilter (plus/avatarfilter): World menu "Hide everyone but me" -->
+  <key>PlusHideOtherAvatars</key>
+  <map>
+    <key>Comment</key>
+    <string>Hides every avatar but yourself (not drawn, not updated; like RenderAvatarFriendsOnly but friends are hidden too). Does not affect animesh control avatars. World menu: Hide everyone but me. Not saved: it is off again at the next start, so nobody stays invisible by accident.</string>
+    <key>Persist</key>
+    <integer>0</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>0</integer>
+  </map>
   <!-- hitchlog (plus/hitchlog, research/274) -->
   <key>PlusHitchLogMs</key>
   <map>
@@ -4243,6 +4268,17 @@
     <integer>0</integer>
   </map>
   <!-- fastexit (plus/fastexit, research/276) -->
+  <key>PlusFastExit</key>
+  <map>
+    <key>Comment</key>
+    <string>Fast exit (research/276): when the quit is settled the window is hidden at once, the viewer logs out, saves the settings and caches, and ends the process without taking everything apart. Off (or the environment variable LLRHI_FAST_EXIT=0): the official, slower shutdown. Read once at the first quit request.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
   <key>PlusExitTimeLog</key>
   <map>
     <key>Comment</key>
@@ -4455,6 +4491,18 @@
     <string>String</string>
     <key>Value</key>
     <string>0.1 0.18 0.3 0.5 1 1.6 2.5 4 6</string>
+  </map>
+  <!-- texbc7 (BC7 texture compression on the GPU on or off; research/370; Vulkan only) -->
+  <key>PlusTexBC7GPU</key>
+  <map>
+    <key>Comment</key>
+    <string>BC7 texture compression on the GPU: object textures are stored compressed in video memory (a quarter of the size). On: as before. Off: the textures loaded from then on are kept uncompressed, which takes more video memory and a little more loading time but cannot show the coloured blocks or noise that some GPUs and drivers make when compressing. Textures already compressed stay as they are until loaded again. Changes take effect at once. The environment variable LLRHI_TEX_BCN (0/1, for development) wins over it. A GPU driver known to fail in it has it off whatever this says. Vulkan only.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
   </map>
   <!-- gpudgc (DGC on NVIDIA's GPUs only by default in the alpha; research/124 V5; Vulkan only) -->
   <key>PlusGpuDrivenDGC</key>
@@ -6161,6 +6209,51 @@
     <string>F32</string>
     <key>Value</key>
     <real>4.0</real>
+  </map>
+  <!-- floatersnap (research/387): windows that touch move together; snapping to the near windows only -->
+  <key>PlusFloaterGroupMove</key>
+  <map>
+    <key>Comment</key>
+    <string>Windows that touch move together: 0 = no, each window moves alone (the official way); 1 = dragging a window by its title bar takes the windows touching it along (and the ones touching those), Shift held takes it alone; 2 = only with Shift held. The group is found when the title bar is pressed and is not kept after the drag. Dragged together they stay in the main window (no detaching).</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusFloaterSnapNearOnly</key>
+  <map>
+    <key>Comment</key>
+    <string>While a window is dragged or resized by its edges or corners, it snaps only to the edges of windows that are near it on the other axis too (so windows far above or below do not catch it). A double click on a resize bar (spreading the window to the nearest edge) is not changed. Off: it snaps to the edge lines of every window, as the official viewer does.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusFloaterSnapHint</key>
+  <map>
+    <key>Comment</key>
+    <string>While windows that touch are dragged together (PlusFloaterGroupMove 1), show a line over the dragged window: hold Shift as you grab the title bar to move only this window. Shown once the drag has begun; not shown when the windows move alone or only with Shift held.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>Boolean</string>
+    <key>Value</key>
+    <integer>1</integer>
+  </map>
+  <key>PlusFloaterSnapGap</key>
+  <map>
+    <key>Comment</key>
+    <string>The gap in pixels (0 to 8) left between windows when a dragged window snaps to another one (not to the edge of the screen). 0: they touch, as the official viewer does. Windows within the gap plus one pixel of each other count as touching for the group.</string>
+    <key>Persist</key>
+    <integer>1</integer>
+    <key>Type</key>
+    <string>S32</string>
+    <key>Value</key>
+    <integer>0</integer>
   </map>
 </map>
 </llsd>

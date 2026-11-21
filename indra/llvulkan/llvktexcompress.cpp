@@ -58,11 +58,17 @@ namespace
 #include "llvkbc7.glsl.inl"
         ;
 
-    // The quality check: the squared error of each channel and the largest
-    // error between a texture and its encoding (level 0), per 16x16 tile.
+    // research/395: the block rule of the verdict, shared with the CPU test.
+    const char* const CHECK_RULE_SOURCE =
+#include "llvkbc7check.glsl.inl"
+        ;
+
+    // The quality check (research/395): per 16x16 tile of a level (lod), the
+    // squared error of each channel, the largest error, and the number of 4x4
+    // blocks that are bad and flat-like (the block rule, llvkbc7check.glsl.inl).
     // bc7-fault2: one invocation a tile, its sums in its own variables: no
-    // shared memory, barrier or atomic (CHECK_SOURCE_OLD has them; the same
-    // sums). A tile's squared errors fit: 256 x 255^2 < 2^32.
+    // shared memory, barrier or atomic (CHECK_SOURCE_OLD has them, and does not
+    // make a verdict). A tile's squared errors fit: 256 x 255^2 < 2^32.
     const char* const CHECK_SOURCE = R"GLSL(
 layout(local_size_x = 64) in;
 layout(set = 0, binding = 0) uniform sampler2D u_source;
@@ -70,11 +76,12 @@ layout(set = 0, binding = 1) uniform sampler2D u_encoded;
 layout(std430, set = 0, binding = 2) writeonly buffer Sums { uint sums[]; };
 layout(push_constant) uniform Params
 {
-    uint width;
+    uint width;     // of the level
     uint height;
     uint tiles_x;
     uint first;     // in words
     uint tiles;
+    uint lod;
 } params;
 void main()
 {
@@ -86,93 +93,90 @@ void main()
     uvec2 origin = uvec2(tile % params.tiles_x, tile / params.tiles_x) * 16u;
     uvec4 squares = uvec4(0u);
     uint largest = 0u;
-    for (uint y = 0u; y < 16u; ++y)
+    uint bad = 0u;
+    uint flat_like = 0u;
+    for (uint by = 0u; by < 4u; ++by)
     {
-        for (uint x = 0u; x < 16u; ++x)
+        for (uint bx = 0u; bx < 4u; ++bx)
         {
-            uvec2 xy = origin + uvec2(x, y);
-            if (xy.x < params.width && xy.y < params.height)
+            uint n = 0u;
+            uint err = 0u;
+            uint sq = 0u;
+            uvec4 s = uvec4(0u);
+            for (uint y = 0u; y < 4u; ++y)
             {
-                ivec4 a = ivec4(floor(texelFetch(u_source, ivec2(xy), 0) * 255.0 + vec4(0.5)));
-                ivec4 b = ivec4(floor(texelFetch(u_encoded, ivec2(xy), 0) * 255.0 + vec4(0.5)));
-                uvec4 d = uvec4(abs(a - b));
-                squares += d * d;
-                largest = max(largest, max(max(d.x, d.y), max(d.z, d.w)));
+                for (uint x = 0u; x < 4u; ++x)
+                {
+                    uvec2 xy = origin + uvec2(bx * 4u + x, by * 4u + y);
+                    if (xy.x < params.width && xy.y < params.height)
+                    {
+                        ivec4 a = ivec4(floor(texelFetch(u_source, ivec2(xy), int(params.lod)) * 255.0 + vec4(0.5)));
+                        ivec4 b = ivec4(floor(texelFetch(u_encoded, ivec2(xy), int(params.lod)) * 255.0 + vec4(0.5)));
+                        uvec4 d = uvec4(abs(a - b));
+                        uvec4 e = d * d;
+                        squares += e;
+                        err += e.x + e.y + e.z + e.w;
+                        largest = max(largest, max(max(d.x, d.y), max(d.z, d.w)));
+                        uvec4 u = uvec4(a);
+                        sq += u.x * u.x + u.y * u.y + u.z * u.z + u.w * u.w;
+                        s += u;
+                        n += 1u;
+                    }
+                }
+            }
+            if (n > 0u)
+            {
+                bad += block_is_bad(n, err, sq, s.x, s.y, s.z, s.w) ? 1u : 0u;
+                flat_like += block_is_flat_like(n, err, sq, s.x, s.y, s.z, s.w) ? 1u : 0u;
             }
         }
     }
-    uint at = params.first + tile * 5u;
+    uint at = params.first + tile * CHECK_WORDS;
     sums[at] = squares.x;
     sums[at + 1u] = squares.y;
     sums[at + 2u] = squares.z;
     sums[at + 3u] = squares.w;
     sums[at + 4u] = largest;
+    sums[at + CHECK_WORD_BAD] = bad;
+    sums[at + CHECK_WORD_FLAT] = flat_like;
 }
 )GLSL";
 
-    // The form up to 2026-11-03 (LLRHI_TEX_BCN_CHECK=old): a group a tile, an
-    // invocation a texel, the sums by shared-memory atomics between barriers.
-    const char* const CHECK_SOURCE_OLD = R"GLSL(
-layout(local_size_x = 16, local_size_y = 16) in;
-layout(set = 0, binding = 0) uniform sampler2D u_source;
-layout(set = 0, binding = 1) uniform sampler2D u_encoded;
-layout(std430, set = 0, binding = 2) writeonly buffer Sums { uint sums[]; };
-layout(push_constant) uniform Params
-{
-    uint width;
-    uint height;
-    uint tiles_x;
-    uint first;     // in words
-    uint tiles;     // (not read here)
-} params;
-shared uint s_sums[5];
-void main()
-{
-    uint lane = gl_LocalInvocationIndex;
-    if (lane < 5u)
-    {
-        s_sums[lane] = 0u;
-    }
-    barrier();
-    uvec2 xy = gl_GlobalInvocationID.xy;
-    if (xy.x < params.width && xy.y < params.height)
-    {
-        ivec4 a = ivec4(floor(texelFetch(u_source, ivec2(xy), 0) * 255.0 + vec4(0.5)));
-        ivec4 b = ivec4(floor(texelFetch(u_encoded, ivec2(xy), 0) * 255.0 + vec4(0.5)));
-        ivec4 d = abs(a - b);
-        atomicAdd(s_sums[0], uint(d.x * d.x));
-        atomicAdd(s_sums[1], uint(d.y * d.y));
-        atomicAdd(s_sums[2], uint(d.z * d.z));
-        atomicAdd(s_sums[3], uint(d.w * d.w));
-        atomicMax(s_sums[4], uint(max(max(d.x, d.y), max(d.z, d.w))));
-    }
-    barrier();
-    if (lane < 5u)
-    {
-        sums[params.first + (gl_WorkGroupID.y * params.tiles_x + gl_WorkGroupID.x) * 5u + lane] = s_sums[lane];
-    }
-}
-)GLSL";
 
     constexpr U32 BLOCK_BYTES = 16;
     constexpr U32 ENCODE_GROUP = 64;            // the encoder's local_size_x
     constexpr U32 CHECK_TILE = 16;              // the check's tile (each way)
     constexpr U32 CHECK_GROUP = 64;             // bc7-fault2: the safe check's local_size_x (tiles a group)
-    constexpr U32 CHECK_WORDS = 5;              // per tile: squared error R, G, B, A, largest error
+    // Per tile: squared error R, G, B, A, largest error, bad blocks, flat-like blocks (research/395).
+    // The check shader gets these as defines (check_defines), so the layout is written once.
+    constexpr U32 CHECK_WORDS = 7;
+    constexpr U32 CHECK_WORD_BAD = 5;
+    constexpr U32 CHECK_WORD_FLAT = 6;
+    constexpr U32 NO_RESULT = 0xffffffffu;      // what the readback holds before the GPU writes a tile (its bad-block word)
     constexpr U32 MAX_LEVELS = 16;
-    // The first textures of a session are always checked: when their average
-    // colour PSNR is under this, the encoder is broken on this GPU or driver
-    // and compression turns off.
-    constexpr U32 SELF_CHECK_TEXTURES = 8;
-    constexpr F64 SELF_CHECK_MIN_PSNR = 30.0;
+    // research/395: every encoded texture is checked, every level, before it
+    // takes its texture's place. A texture with BAD_BLOCKS_REJECT blocks or
+    // more that decode worse than the source's mean colour (block_is_bad,
+    // llvkbc7check.glsl.inl) stays RGBA8. FLAT_LIKE_REJECT: the same for
+    // "flat-like" blocks (0: counted and logged only). The session's encoder
+    // is turned off when the first CUTOFF_FIRST verdicts all reject, or of
+    // CUTOFF_MIN or more verdicts more than CUTOFF_PERCENT % do.
+    constexpr U64 BAD_BLOCKS_REJECT = 1;
+    constexpr U64 FLAT_LIKE_REJECT = 0;
+    constexpr U32 CUTOFF_FIRST = 8;
+    constexpr U32 CUTOFF_MIN = 16;
+    constexpr U32 CUTOFF_PERCENT = 25;
     // Textures under this PSNR are named in the log (up to LOW_PSNR_LOGS).
     constexpr F64 LOW_PSNR = 35.0;
     constexpr U32 LOW_PSNR_LOGS = 20;
     constexpr F64 PERFECT_PSNR = 99.0;
     // Per frame: descriptor sets (an encode takes one, a check another) and checks.
     constexpr U32 SETS_PER_FRAME = 128;
-    constexpr U32 CHECKS_PER_FRAME = 2;
-    constexpr VkDeviceSize READBACK_BYTES = (VkDeviceSize)CHECKS_PER_FRAME * (2048 / CHECK_TILE) * (2048 / CHECK_TILE) * CHECK_WORDS * 4;
+    // A slot's readback holds this many tiles' words (a 2048x2048 texture with its mips: about 22000 tiles).
+    constexpr U32 READBACK_TILES = 131072;
+    constexpr VkDeviceSize READBACK_BYTES = (VkDeviceSize)READBACK_TILES * CHECK_WORDS * 4;
+    constexpr U32 MAX_VERDICT_LOGS = 20;
+    constexpr U32 MAX_VERDICT_LOGS_ALL = 200;
     constexpr VkDeviceSize SCRATCH_MIN_BYTES = 8 << 20;
     // research/200 VERIFY: textures encoded both ways a frame, pairs waiting at
     // most, the comparisons auto needs before it moves on, and each slot's
@@ -264,6 +268,13 @@ void main()
     constexpr S64 STOP_WAIT_SECONDS = 10;
     constexpr U32 NO_FAIL = 0xffffffffu;    // Settings::fail_piece
 
+    // research/395: the check shader's layout of a tile's words, from the constants above.
+    std::string check_defines()
+    {
+        return llformat("#define CHECK_WORDS %uu\n#define CHECK_WORD_BAD %uu\n#define CHECK_WORD_FLAT %uu\n", CHECK_WORDS, CHECK_WORD_BAD,
+                        CHECK_WORD_FLAT);
+    }
+
     const VkPipelineStageFlags2 SAMPLED_STAGES =
         VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 
@@ -272,7 +283,7 @@ void main()
         U64 min_texels = 256 * 256;
         U64 frame_texels = 2 << 20;
         bool tint = false;          // LLRHI_TEX_BCN_TINT=1: compressed textures drawn with less green
-        bool check_all = false;     // LLRHI_TEX_BCN_PSNR=1: every texture checked (CHECKS_PER_FRAME a frame)
+        bool check_all = false;     // LLRHI_TEX_BCN_PSNR=1: every verdict logged (MAX_VERDICT_LOGS_ALL)
         // bc7-fault (above). LLRHI_TEX_BCN_CHUNK=<blocks>: a dispatch's most (0: a level's all);
         // LLRHI_TEX_BCN_MS=<ms>: a frame's GPU time for encodings (0: not timed, the share by
         // texels alone as before); LLRHI_TEX_BCN_HOLD=<s>: the hold (0: none, nor the wait for the world);
@@ -292,7 +303,7 @@ void main()
         // (the default): the stages on AMD, 1 elsewhere. LLRHI_TEX_BCN_BUILD_THREADS=<1..6>:
         // the compile threads for the pipelines after the first (default 2, 1 on an integrated GPU).
         // LLRHI_TEX_BCN_CHECK=1|old|0: the quality check without shared memory, barriers or
-        // atomics (default), as up to 2026-11-03, or none (the self check then never decides).
+        // atomics (default), or none (old and 0: no check, so no verdict: textures are encoded and taken at once).
         U32 modes = ALL_MODES;
         U32 kernel = KERNEL_AUTO;
         U32 passes = 1;
@@ -512,7 +523,9 @@ void main()
         U32 name = 0;
         U32 width = 0;
         U32 height = 0;
-        U32 tiles = 0;
+        U32 levels = 0;
+        U32 tiles = 0;              // of every level
+        U64 ticket = 0;             // research/395: the verdict's number (0: none wanted)
         VkDeviceSize offset = 0;    // bytes into the slot's readback buffer
     };
 
@@ -618,7 +631,7 @@ void main()
     {
         bool tried = false;
         bool unavailable = false;   // the device cannot, or the first pipelines failed: textures stay as they are
-        bool failed = false;        // the self check failed: off for the session
+        bool failed = false;        // the verdicts rejected too many encodings: off for the session
         // bc7-fault: the last session lost the GPU while encoding on this GPU,
         // driver, encoder and forms (fault_*, in bc7-fault.txt): off for the session.
         bool blocked = false;
@@ -705,6 +718,7 @@ void main()
         U32 tiles_x;
         U32 first;
         U32 tiles;      // bc7-fault2: the safe form's invocations
+        U32 lod;        // research/395: the level
     };
 
     struct Counters
@@ -726,11 +740,22 @@ void main()
         F64 rgb_sum = 0.0, alpha_sum = 0.0;
         F64 rgb_lowest = PERFECT_PSNR, alpha_lowest = PERFECT_PSNR;
         U32 largest_error = 0;
-        U32 self_checked = 0;
-        F64 self_rgb_sum = 0.0;
         U32 low_logged = 0;
+        U32 all_logged = 0;
+        // research/395: the verdicts. checked counts every check read; verdicts
+        // those with a ticket; no_result the ones the GPU never wrote.
+        U32 verdicts = 0;
+        U32 rejected = 0;
+        U32 no_result = 0;
+        U64 bad_blocks = 0;
+        U64 flat_like = 0;
+        U64 worst_bad = 0;
+        U32 worst_name = 0;
     };
     Quality sQuality;
+    std::mutex sQualityMutex;
+    std::vector<LLVKTexCompress::VerdictResult> sVerdicts;     // read, not taken yet
+    U64 sNextTicket = 0;
 
     // research/200: the compute queue's encodings, and VERIFY's comparisons.
     struct AsyncState
@@ -1306,9 +1331,9 @@ void main()
             piece.layout = layout;
             piece.what = what;
         };
-        if (s.check != CHECK_OFF)
+        if (s.check == CHECK_SAFE)
         {
-            add(std::string("#version 450\n") + (s.check == CHECK_OLD ? CHECK_SOURCE_OLD : CHECK_SOURCE), e.check_layout, "BC7 quality check");
+            add(std::string("#version 450\n") + check_defines() + CHECK_RULE_SOURCE + CHECK_SOURCE, e.check_layout, "BC7 quality check");
             build->check_pieces = 1;
         }
         std::string forms = s.rolled ? "#extension GL_EXT_control_flow_attributes : require\n" : "";
@@ -1381,6 +1406,9 @@ void main()
                            << s.hold_seconds << " s after the world is shown, encoder forms " << s.safe << " of 15"
                            << llformat("; bc7-fault2: modes 0x%X, kernel %s, check %s", s.modes, kernel_name().c_str(),
                                        s.check == CHECK_OLD ? "old" : s.check == CHECK_OFF ? "off" : "safe")
+                           << (s.check != CHECK_SAFE ? "; verdicts OFF (no quality check: LLRHI_TEX_BCN_CHECK)"
+                               : s.tint              ? "; verdicts OFF (LLRHI_TEX_BCN_TINT changes the colours)"
+                               : !(s.modes & (1u << 6)) ? "; verdicts OFF (LLRHI_TEX_BCN_MODES has no mode 6)" : "; verdicts on (research/395)")
                            << llformat("; bc7-fast-start: made off the frame in %.1f s", seconds)
                            << (e.stages && e.usable < STAGE_COUNT ? llformat(", encoding with %u of %u stages while the others are made",
                                                                              e.usable, STAGE_COUNT)
@@ -1442,7 +1470,7 @@ void main()
         }
         // The passes: all of them. The stages: without mode 6 (LLRHI_TEX_BCN_MODES),
         // the first stage alone would give every block its mean colour, kept
-        // for good: all of them then too. The self check from the first texture on.
+        // for good: all of them then too. (The verdicts judge each encoding by itself.)
         const bool all_needed = !e.stages || !(settings().modes & (1u << 6));
         if ((all_needed && usable < e.pipeline_count) || (build->check_pieces && !e.check_pipeline))
         {
@@ -1820,67 +1848,157 @@ void main()
         return llmin(10.0 * std::log10(255.0 * 255.0 / mse), PERFECT_PSNR);
     }
 
-    // Records the check of level 0 of encoded against source (both sampled
-    // by compute already), read back when the slot's frame has finished.
-    // on_compute: cmd is a compute batch's (research/200): no barrier for the
-    // graphics stages there (the compute timeline orders the frames after it).
-    void record_check(VkCommandBuffer cmd, Slot& slot, VkImageView source_view, VkImage encoded, U32 width, U32 height, U32 name,
-                      bool on_compute)
+    // The tiles of every level of a texture of this size (16x16 texels each).
+    U32 check_tiles(U32 width, U32 height, U32 levels)
+    {
+        U32 tiles = 0;
+        for (U32 level = 0; level < levels; ++level)
+        {
+            tiles += ((level_size(width, level) + CHECK_TILE - 1) / CHECK_TILE) * ((level_size(height, level) + CHECK_TILE - 1) / CHECK_TILE);
+        }
+        return tiles;
+    }
+
+    VkDeviceSize check_bytes(U32 width, U32 height, U32 levels)
+    {
+        return (VkDeviceSize)check_tiles(width, height, levels) * CHECK_WORDS * 4;
+    }
+
+    // The slot's readback has room for this texture's check (a buffer not made yet: a new one's).
+    bool check_room(const Slot& slot, U32 width, U32 height, U32 levels)
+    {
+        const VkDeviceSize size = slot.readback.buffer ? slot.readback.size : READBACK_BYTES;
+        return slot.readback_head + check_bytes(width, height, levels) <= size;
+    }
+
+    // research/395: the readback holds NO_RESULT in each tile's bad-block word
+    // until the GPU writes it (a frame abandoned or never submitted leaves it),
+    // and is put back so after each read.
+    void mark_no_result(Slot& slot, VkDeviceSize offset, VkDeviceSize bytes)
+    {
+        if (slot.readback.mapped && bytes)
+        {
+            std::memset((U8*)slot.readback.mapped + offset, 0xff, (size_t)bytes);
+            vmaFlushAllocation(LLVKDevice::instance().getAllocator(), slot.readback.memory, offset, bytes);
+        }
+    }
+
+    // A texture's check, prepared before its encoding is recorded (so a failure
+    // here records nothing): the readback room, the view of the encoded image
+    // (every level) and the descriptor set.
+    struct CheckPlan
+    {
+        VkImageView view = VK_NULL_HANDLE;
+        VkDescriptorSet set = VK_NULL_HANDLE;
+        VkDeviceSize offset = 0;
+    };
+
+    bool prepare_check(Slot& slot, VkImage encoded, VkImageView source_view, U32 width, U32 height, U32 levels, CheckPlan& plan)
     {
         Encoder& e = sEncoder;
-        const U32 tiles_x = (width + CHECK_TILE - 1) / CHECK_TILE;
-        const U32 tiles_y = (height + CHECK_TILE - 1) / CHECK_TILE;
-        const VkDeviceSize bytes = (VkDeviceSize)tiles_x * tiles_y * CHECK_WORDS * 4;
-        if (!slot.readback.buffer && !create_buffer(READBACK_BYTES, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, true, slot.readback))
+        const VkDeviceSize bytes = check_bytes(width, height, levels);
+        if (!slot.readback.buffer)
         {
-            return;
+            if (!create_buffer(READBACK_BYTES, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, true, slot.readback))
+            {
+                return false;
+            }
+            mark_no_result(slot, 0, slot.readback.size);
         }
         if (slot.readback_head + bytes > slot.readback.size)
         {
-            return;
+            return false;
         }
-        const VkImageView encoded_view = make_view(encoded, LLVKTexCompress::ENCODED_FORMAT, 1);
-        const VkDescriptorSet set = encoded_view ? allocate_set(slot, e.check_sets) : VK_NULL_HANDLE;
-        if (!set)
+        plan.view = make_view(encoded, LLVKTexCompress::ENCODED_FORMAT, levels);
+        plan.set = plan.view ? allocate_set(slot, e.check_sets) : VK_NULL_HANDLE;
+        if (!plan.set)
         {
-            destroy_view_later(encoded_view);
-            return;
+            destroy_view_later(plan.view);
+            plan = CheckPlan();
+            return false;
         }
-        const VkImageView views[2] = { source_view, encoded_view };
-        write_sets(set, views, 2, slot.readback);
-        Check check;
-        check.name = name;
-        check.width = width;
-        check.height = height;
-        check.tiles = tiles_x * tiles_y;
-        check.offset = slot.readback_head;
+        const VkImageView views[2] = { source_view, plan.view };
+        write_sets(plan.set, views, 2, slot.readback);
+        plan.offset = slot.readback_head;
         slot.readback_head += bytes;
+        return true;
+    }
 
-        const CheckParams params = { width, height, tiles_x, (U32)(check.offset / 4), tiles_x * tiles_y };
+    // Records the check of every level of encoded against source (both sampled
+    // by compute already), read back when the slot's frame has finished.
+    // on_compute: cmd is a compute batch's (research/200): no barrier for the
+    // graphics stages there (the compute timeline orders the frames after it).
+    void record_check(VkCommandBuffer cmd, Slot& slot, const CheckPlan& plan, VkImage encoded, U32 width, U32 height, U32 levels, U32 name,
+                      U64 ticket, bool on_compute)
+    {
+        Encoder& e = sEncoder;
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, e.check_pipeline);
-        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, e.check_layout, 0, 1, &set, 0, nullptr);
-        vkCmdPushConstants(cmd, e.check_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(params), &params);
-        // bc7-fault2: the safe form takes a tile an invocation, the old one a tile a group.
-        if (settings().check == CHECK_OLD)
+        vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_COMPUTE, e.check_layout, 0, 1, &plan.set, 0, nullptr);
+        U32 first_tile = 0;
+        for (U32 level = 0; level < levels; ++level)
         {
-            vkCmdDispatch(cmd, tiles_x, tiles_y, 1);
+            const U32 w = level_size(width, level), h = level_size(height, level);
+            const U32 tiles_x = (w + CHECK_TILE - 1) / CHECK_TILE;
+            const U32 tiles = tiles_x * ((h + CHECK_TILE - 1) / CHECK_TILE);
+            const CheckParams params = { w, h, tiles_x, (U32)(plan.offset / 4) + first_tile * CHECK_WORDS, tiles, level };
+            vkCmdPushConstants(cmd, e.check_layout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(params), &params);
+            // (a tile an invocation, bc7-fault2.)
+            vkCmdDispatch(cmd, (tiles + CHECK_GROUP - 1) / CHECK_GROUP, 1, 1);
+            first_tile += tiles;
         }
-        else
-        {
-            vkCmdDispatch(cmd, (params.tiles + CHECK_GROUP - 1) / CHECK_GROUP, 1, 1);
-        }
-        buffer_barrier(cmd, slot.readback.buffer, check.offset, bytes, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
+        const VkDeviceSize bytes = check_bytes(width, height, levels);
+        buffer_barrier(cmd, slot.readback.buffer, plan.offset, bytes, VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT,
                        VK_ACCESS_2_SHADER_STORAGE_WRITE_BIT, VK_PIPELINE_STAGE_2_HOST_BIT, VK_ACCESS_2_HOST_READ_BIT);
         // llvkgl's next barrier on the texture waits for draws' shader stages:
         // those wait for this read first, so a layout change after it is ordered too.
         if (!on_compute)
         {
-            image_barrier(cmd, encoded, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            image_barrier(cmd, encoded, levels, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                           VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, 0,
                           VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, 0);
         }
-        destroy_view_later(encoded_view);
+        destroy_view_later(plan.view);
+        Check check;
+        check.name = name;
+        check.width = width;
+        check.height = height;
+        check.levels = levels;
+        check.ticket = ticket;
+        check.offset = plan.offset;
+        check.tiles = check_tiles(width, height, levels);
         slot.checks.push_back(check);
+    }
+
+    void note_verdict(U64 ticket, LLVKTexCompress::Verdict verdict)
+    {
+        if (ticket)
+        {
+            LLVKTexCompress::VerdictResult result;
+            result.ticket = ticket;
+            result.verdict = verdict;
+            sVerdicts.push_back(result);
+        }
+    }
+
+    // The session's verdicts too bad to go on (the encoder is broken on this GPU or driver).
+    void check_cutoff()
+    {
+        Quality& q = sQuality;
+        if (sEncoder.failed)
+        {
+            return;
+        }
+        const bool all_first = q.verdicts == CUTOFF_FIRST && q.rejected == CUTOFF_FIRST;
+        const bool many = q.verdicts >= CUTOFF_MIN && (U64)q.rejected * 100 > (U64)q.verdicts * CUTOFF_PERCENT;
+        // A GPU that never writes the checks (a driver fault): every encoding is thrown away and queued again.
+        const bool blind = q.no_result >= CUTOFF_MIN && q.no_result > q.verdicts;
+        if (all_first || many || blind)
+        {
+            sEncoder.failed = true;
+            LL_WARNS("TexBCN") << "BC7 verdicts (research/395): " << q.rejected << " of " << q.verdicts << " encoded textures rejected, "
+                               << q.no_result << " checks without a result; texture compression off for this session (what is encoded and good stays)"
+                               << LL_ENDL;
+        }
     }
 
     // The slot's checks, now that its frame has finished.
@@ -1891,21 +2009,40 @@ void main()
             return;
         }
         vmaInvalidateAllocation(LLVKDevice::instance().getAllocator(), slot.readback.memory, 0, VK_WHOLE_SIZE);
+        std::lock_guard<std::mutex> lock(sQualityMutex);    // (logSummary reads it at shutdown, on another thread)
         Quality& q = sQuality;
         for (const Check& check : slot.checks)
         {
             const U32* words = (const U32*)((const U8*)slot.readback.mapped + check.offset);
             U64 sums[4] = {};
             U32 largest = 0;
+            U64 bad = 0, flat_like = 0, texels = 0;
+            bool missing = false;
             for (U32 t = 0; t < check.tiles; ++t)
             {
+                const U32* tile = words + t * CHECK_WORDS;
+                missing = missing || tile[CHECK_WORD_BAD] == NO_RESULT;
                 for (U32 c = 0; c < 4; ++c)
                 {
-                    sums[c] += words[t * CHECK_WORDS + c];
+                    sums[c] += tile[c];
                 }
-                largest = llmax(largest, words[t * CHECK_WORDS + 4]);
+                largest = llmax(largest, tile[4]);
+                bad += tile[CHECK_WORD_BAD];
+                flat_like += tile[CHECK_WORD_FLAT];
             }
-            const U64 texels = (U64)check.width * check.height;
+            for (U32 level = 0; level < check.levels; ++level)
+            {
+                texels += (U64)level_size(check.width, level) * level_size(check.height, level);
+            }
+            mark_no_result(slot, check.offset, (VkDeviceSize)check.tiles * CHECK_WORDS * 4);
+            if (missing)
+            {
+                // The GPU never wrote it (the frame was abandoned): no verdict, no numbers.
+                ++q.no_result;
+                note_verdict(check.ticket, LLVKTexCompress::Verdict::NONE);
+                check_cutoff();
+                continue;
+            }
             const F64 rgb = psnr(sums[0] + sums[1] + sums[2], texels * 3);
             const F64 alpha = psnr(sums[3], texels);
             ++q.checked;
@@ -1914,29 +2051,34 @@ void main()
             q.rgb_lowest = llmin(q.rgb_lowest, rgb);
             q.alpha_lowest = llmin(q.alpha_lowest, alpha);
             q.largest_error = llmax(q.largest_error, largest);
-
-            const bool self_check = q.self_checked < SELF_CHECK_TEXTURES;
-            if (self_check || (rgb < LOW_PSNR && q.low_logged < LOW_PSNR_LOGS))
+            q.flat_like += flat_like;
+            const bool reject = check.ticket && (bad >= BAD_BLOCKS_REJECT || (FLAT_LIKE_REJECT && flat_like >= FLAT_LIKE_REJECT));
+            if (check.ticket)
             {
-                q.low_logged += self_check ? 0 : 1;
-                LL_INFOS("TexBCN") << "BC7 check (research/88): texture " << check.name << ", " << check.width << "x" << check.height
-                                   << ", PSNR RGB " << llformat("%.1f", rgb) << " dB, alpha " << llformat("%.1f", alpha)
-                                   << " dB, largest error " << largest << (self_check ? " (self check)" : "") << LL_ENDL;
+                ++q.verdicts;
+                q.rejected += reject ? 1 : 0;
+                q.bad_blocks += bad;
+                if (bad > q.worst_bad)
+                {
+                    q.worst_bad = bad;
+                    q.worst_name = check.name;
+                }
             }
-            if (!self_check)
+            const bool low = !reject && rgb < LOW_PSNR && q.low_logged < LOW_PSNR_LOGS;
+            const bool all = settings().check_all && q.all_logged < MAX_VERDICT_LOGS_ALL;
+            if ((reject && q.rejected <= MAX_VERDICT_LOGS) || all || low)
             {
-                continue;
+                q.low_logged += low ? 1 : 0;
+                q.all_logged += all ? 1 : 0;
+                LL_INFOS("TexBCN") << "BC7 verdict (research/395): texture " << check.name << ", " << check.width << "x" << check.height << ", "
+                                   << check.levels << " levels, " << (reject ? "REJECTED (left RGBA8)" : "accepted") << ", bad blocks " << bad
+                                   << ", flat-like " << flat_like << ", PSNR RGB " << llformat("%.1f", rgb) << " dB, alpha "
+                                   << llformat("%.1f", alpha) << " dB, largest error " << largest << LL_ENDL;
             }
-            ++q.self_checked;
-            q.self_rgb_sum += rgb;
-            // (The tint changes the colours on purpose: no verdict then.)
-            if (q.self_checked == SELF_CHECK_TEXTURES && !settings().tint &&
-                q.self_rgb_sum / SELF_CHECK_TEXTURES < SELF_CHECK_MIN_PSNR)
+            note_verdict(check.ticket, reject ? LLVKTexCompress::Verdict::BAD : LLVKTexCompress::Verdict::GOOD);
+            if (check.ticket)
             {
-                sEncoder.failed = true;
-                LL_WARNS("TexBCN") << "BC7 self check failed (research/88): average PSNR "
-                                   << llformat("%.1f", q.self_rgb_sum / SELF_CHECK_TEXTURES)
-                                   << " dB over the first textures; texture compression off for this session" << LL_ENDL;
+                check_cutoff();
             }
         }
         slot.checks.clear();
@@ -2041,6 +2183,10 @@ void main()
         }
         else
         {
+            for (const Check& check : slot.checks)
+            {
+                note_verdict(check.ticket, LLVKTexCompress::Verdict::NONE);     // research/395
+            }
             slot.checks.clear();
         }
         read_verify(slot, SIDE_ASYNC, written);
@@ -2121,6 +2267,13 @@ void main()
             return false;
         }
         const bool second = on_compute && verify;
+        // research/395: the encoding is checked, every level, before it may
+        // take its texture's place (not VERIFY's second encoding, thrown away).
+        const bool verdict = !second && LLVKTexCompress::verdictActive();
+        if (verdict && !check_room(slot, width, height, levels))
+        {
+            return false;
+        }
 
         // The blocks of each level, one level after the other in the scratch memory.
         U32 first_block[MAX_LEVELS];
@@ -2176,6 +2329,14 @@ void main()
             return false;
         }
         write_sets(set, &source_view, 1, slot.scratch);
+        CheckPlan plan;
+        if (verdict && !prepare_check(slot, image, source_view, width, height, levels, plan))
+        {
+            destroy_view_later(source_view);
+            LLVKDevice::instance().forgetImage(memory);
+            vmaDestroyImage(LLVKDevice::instance().getAllocator(), image, memory);
+            return false;
+        }
 
         // bc7-fault: in the frame, the encodings' GPU time begins with the
         // first, and a checkpoint (LLRHI_VK_CHECKPOINTS) names each in a fault report.
@@ -2291,11 +2452,20 @@ void main()
             }
         }
 
-        const bool check = !second && settings().check != CHECK_OFF && (sQuality.self_checked < SELF_CHECK_TEXTURES || settings().check_all) &&
-                           slot.checks.size() < CHECKS_PER_FRAME;
-        if (check)
+        if (verdict)
         {
-            record_check(cmd, slot, source_view, image, width, height, name, on_compute);
+            out.ticket = ++sNextTicket;
+            record_check(cmd, slot, plan, image, width, height, levels, name, out.ticket, on_compute);
+            // research/395 S1: the source stays the texture's image until the
+            // verdict, and may be written meanwhile; a layout change away from
+            // shader reading waits for the vertex and fragment stages only, so
+            // the encoder's and the check's compute reads are chained to them.
+            if (!on_compute)
+            {
+                image_barrier(cmd, source, levels, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                              VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT, 0,
+                              VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT, 0);
+            }
         }
         destroy_view_later(source_view);
 
@@ -2617,6 +2787,46 @@ bool LLVKTexCompress::hasRoom()
     return current_slot().sets + 2 <= SETS_PER_FRAME;
 }
 
+bool LLVKTexCompress::hasRoomFor(U32 width, U32 height, U32 levels, bool on_compute)
+{
+    const Encoder& e = sEncoder;
+    const Slot* slot = on_compute ? (e.batch_open ? &e.async_slots[e.batch.index] : nullptr) : &current_slot();
+    return slot && slot->sets + 2 <= SETS_PER_FRAME && (!verdictActive() || check_room(*slot, width, height, levels));
+}
+
+bool LLVKTexCompress::tooLarge(U32 width, U32 height, U32 levels)
+{
+    return verdictActive() && check_bytes(width, height, levels) > READBACK_BYTES;
+}
+
+bool LLVKTexCompress::verdictActive()
+{
+    const Settings& s = settings();
+    return s.check == CHECK_SAFE && !s.tint && (s.modes & (1u << 6)) && sEncoder.check_pipeline != VK_NULL_HANDLE;
+}
+
+void LLVKTexCompress::takeVerdicts(std::vector<VerdictResult>& out)
+{
+    out.insert(out.end(), sVerdicts.begin(), sVerdicts.end());
+    sVerdicts.clear();
+}
+
+void LLVKTexCompress::logSummary()
+{
+    std::lock_guard<std::mutex> lock(sQualityMutex);
+    const Quality& q = sQuality;
+    if (!q.verdicts && !q.no_result)
+    {
+        return;
+    }
+    LL_INFOS("TexBCN") << "BC7 verdict summary (research/395): " << q.verdicts << " encoded textures judged, " << (q.verdicts - q.rejected)
+                       << " accepted, " << q.rejected << " rejected (left RGBA8), bad blocks " << q.bad_blocks << ", flat-like blocks "
+                       << q.flat_like << ", no result " << q.no_result << "; lowest PSNR RGB " << llformat("%.1f", q.rgb_lowest) << " dB, alpha "
+                       << llformat("%.1f", q.alpha_lowest) << " dB, largest error " << q.largest_error << ", worst texture " << q.worst_name
+                       << " (" << q.worst_bad << " bad blocks)" << (sEncoder.failed ? "; compression was turned off (too many rejected)" : "")
+                       << LL_ENDL;
+}
+
 bool LLVKTexCompress::encode(VkCommandBuffer cmd, VkImage source, U32 width, U32 height, U32 levels, U32 name, Encoded& out, U64 verify)
 {
     return encode_into(current_slot(), cmd, false, source, width, height, levels, name, out, verify);
@@ -2806,9 +3016,18 @@ std::string LLVKTexCompress::report()
             << llformat("%.1f", q.rgb_lowest) << "), alpha " << llformat("%.1f", q.alpha_sum / q.checked) << " dB (lowest "
             << llformat("%.1f", q.alpha_lowest) << "), largest error " << q.largest_error;
     }
+    if (q.verdicts || q.no_result)
+    {
+        out << "; verdicts " << q.verdicts << ": rejected " << q.rejected << " (bad blocks " << q.bad_blocks << ", flat-like " << q.flat_like
+            << ", worst texture " << q.worst_name << ")";
+        if (q.no_result)
+        {
+            out << ", no result " << q.no_result;
+        }
+    }
     if (e.failed)
     {
-        out << "; OFF: the self check failed";
+        out << "; OFF: too many encodings rejected by the verdicts (research/395)";
     }
     // bc7-fault: the GPU time of the frames' encodings, and why it is off.
     const Pace& p = sPace;

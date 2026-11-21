@@ -1,0 +1,20 @@
+<rml>
+<!-- The new-version window (plus/updatecheck/updatecheck.cpp UpdateRmlFloater, research/386). Its words are "[[name]]":
+     the <string>s of floater_plus_update_rml.xml (en, ja). The ids the C++ uses: message (the read-only text: a <textarea readonly>, the
+     host's part, put in with setLogText), btn_download, btn_later, btn_skip. The text and the first button's words are put in
+     by the C++ (they depend on the offer). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare">
+    <div class="upd">
+        <div class="ro">
+            <textarea id="message" class="ps-readonly" readonly></textarea>
+        </div>
+        <button id="btn_download" title="[[tip_download]]">[[btn_download]]</button>
+        <button id="btn_later" title="[[tip_later]]">[[later]]</button>
+        <button id="btn_skip" title="[[tip_skip]]">[[skip]]</button>
+    </div>
+</body>
+</rml>

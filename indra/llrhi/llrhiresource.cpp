@@ -1,6 +1,6 @@
 /**
  * @file llrhiresource.cpp
- * @brief Resources by the backend's own handle (research/137 N14): the switch and the hooks.
+ * @brief The vertex buffers' numbers (research/197 stage 1b): the switches and the hooks.
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
  * Charis Viewer Source Code
@@ -27,11 +27,6 @@
 #include "llrhiresource.h"
 
 #include "llrhi.h"
-
-// Off unless set and not starting with '0'.
-bool LLRHI::sNativeResources = !LLRHI::envUnset("LLRHI_NATIVE_RESOURCES") && LLRHI::envFirstChar("LLRHI_NATIVE_RESOURCES") != '0';
-LLRHI::BufferHandle* (*LLRHI::sBufferHandle)(U32) = nullptr;
-void (*LLRHI::sBufferWriteRanges)(BufferHandle*, U32, const U8*, const BufferRange*, U32) = nullptr;
 
 // research/197 stage 1b: LLRHI_VB_HANDLES on (unset, the default since
 // research/218 vk-s7f; was auto) / 0 / 1 / verify / auto (verify first, as before).

@@ -541,6 +541,7 @@ public:
         AV_ALWAYS_RENDER   = 2
     };
     void        setVisualMuteSettings(VisualMuteSettings set);
+    bool        isAlwaysRenderFully() const { return mVisuallyMuteSetting == AV_ALWAYS_RENDER; } // <plus> avatarfilter: "Always render fully" </plus>
 
 protected:
     // If you think you need to access this outside LLVOAvatar, you probably want getOverallAppearance()

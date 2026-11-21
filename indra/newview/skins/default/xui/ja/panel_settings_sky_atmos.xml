@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<panel label="大気と雷" name="panel_settings_sky_atmos">
+<panel label="大気＆光源" name="panel_settings_sky_atmos">
 	<string name="hdr_string">
 		HDR の強さ：
 	</string>

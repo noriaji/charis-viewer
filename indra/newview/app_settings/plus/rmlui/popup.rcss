@@ -1,0 +1,69 @@
+/* The list of a <select> (popup.rml, plus/rmlui/rmlpopup.cpp, research/388): psui's combo box list (PsCombo: the list's
+   ground, the chosen row, the row under the mouse). Variables of charis_tokens.rcss only; basic drawing only
+   (research/364 2.1.6: no transform, box-shadow, filter or gradient; no calc()). The row's height is set by the
+   code (--popup-row-height: the XUI list's, so a list is as high as the combo box's was). */
+
+body.popup
+{
+    box-sizing: border-box;
+    overflow: hidden;
+    border: 1dp var(--combo-border);
+    border-radius: var(--combo-radius);
+    background-color: var(--list-bg);
+}
+
+/* The padding keeps the first and last row's hover and cursor backgrounds off the body's rounded corners. */
+.popup-list
+{
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: var(--combo-radius) 0;
+    overflow-y: auto;
+}
+
+/* Not drawn. Its box is the sizes rmlpopup.cpp lays the list out with, from the same tokens as the rows' padding and the
+   scroll bar: content width --combo-pad, content height --scroll-width, top padding --combo-radius. */
+#probe
+{
+    position: absolute;
+    visibility: hidden;
+    width: var(--combo-pad);
+    height: var(--scroll-width);
+    padding-top: var(--combo-radius);
+}
+
+.popup-row
+{
+    display: block;
+    box-sizing: border-box;
+    height: var(--popup-row-height);
+    line-height: var(--popup-row-height);
+    padding: 0 var(--combo-pad);
+    white-space: nowrap;
+    overflow: hidden;
+    color: var(--list-row-text);
+}
+
+.popup-row:hover
+{
+    background-color: var(--row-hover-bg);
+}
+
+/* the chosen row, and the one the arrow keys are on */
+.popup-row.cursor
+{
+    color: var(--text-white);
+    background-color: var(--list-selected);
+}
+
+.popup-row.disabled
+{
+    opacity: var(--state-disabled);
+}
+
+.popup-row.disabled:hover
+{
+    background-color: transparent;
+}

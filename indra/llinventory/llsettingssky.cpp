@@ -137,6 +137,10 @@ const std::string LLSettingsSky::SETTING_SKY_ICE_LEVEL("ice_level");
 
 const std::string LLSettingsSky::SETTING_REFLECTION_PROBE_AMBIANCE("reflection_probe_ambiance");
 
+// <plus> sky-weather (research/371)
+const std::string LLSettingsSky::SETTING_WEATHER("weather");
+// </plus>
+
 const LLUUID LLSettingsSky::DEFAULT_ASSET_ID("651510b8-5f4d-8991-1592-e7eeab2a5a06");
 
 const F32 LLSettingsSky::DEFAULT_AUTO_ADJUST_PROBE_AMBIANCE = 1.f;
@@ -254,6 +258,15 @@ LLSettingsSky::validation_list_t mieValidationList()
     }
     return mieValidation;
 }
+
+// <plus> sky-weather (research/371)
+// Never fails: the map is clamped in place (unknown keys, wrong types and NaN are dropped).
+bool validateWeather(LLSD &value, U32)
+{
+    value = LLSkyWeather::fromLLSD(value).toLLSD();
+    return true;
+}
+// </plus>
 
 bool validateLegacyHaze(LLSD &value, U32 flags)
 {
@@ -400,9 +413,26 @@ bool validateMieLayers(LLSD &value, U32 flags)
 
 }
 
+// <plus> sky-weather (research/371): a weather value that is not a map is dropped when the sky is built,
+// so that neither validation (a type mismatch fails the whole sky) nor a later save sees it
+namespace
+{
+    LLSD dropBadWeather(const LLSD& data)
+    {
+        if (data.isMap() && data.has("weather") && !data["weather"].isMap())
+        {
+            LLSD copy = data;
+            copy.erase("weather");
+            return copy;
+        }
+        return data;
+    }
+}
+// </plus>
+
 //=========================================================================
 LLSettingsSky::LLSettingsSky(const LLSD &data) :
-    LLSettingsBase(data),
+    LLSettingsBase(dropBadWeather(data)), // <plus> sky-weather (research/371) </plus>
     mNextSunTextureId(),
     mNextMoonTextureId(),
     mNextCloudTextureId(),
@@ -476,6 +506,10 @@ void LLSettingsSky::replaceSettings(const LLSettingsBase::ptr_t& other_sky)
     mSkyDropletRadius = other->mSkyDropletRadius;
     mSkyIceLevel = other->mSkyIceLevel;
     mPlanetRadius = other->mPlanetRadius;
+    // <plus> sky-weather (research/371)
+    mWeather = other->mWeather;
+    mHasWeather = other->mHasWeather;
+    // </plus>
 
     mHasLegacyHaze = other->mHasLegacyHaze;
     mDistanceMultiplier = other->mDistanceMultiplier;
@@ -632,6 +666,16 @@ void LLSettingsSky::blend(LLSettingsBase::ptr_t &end, F64 blendf)
         mSkyDropletRadius = lerp(mSkyDropletRadius, other->mSkyDropletRadius, (F32)blendf);
         mSkyIceLevel = lerp(mSkyIceLevel, other->mSkyIceLevel, (F32)blendf);
         mPlanetRadius = lerp(mPlanetRadius, other->mPlanetRadius, (F32)blendf);
+
+        // <plus> sky-weather (research/371): a side without weather counts as the default (no rain, no snow)
+        if (mHasWeather || other->mHasWeather)
+        {
+            const LLSkyWeather dflt;
+            mWeather = LLSkyWeather::lerp(mHasWeather ? mWeather : dflt, other->mHasWeather ? other->mWeather : dflt, (F32)blendf);
+            // at the end point the result is the end sky itself (none stays none)
+            mHasWeather = (blendf >= 1.0) ? other->mHasWeather : true;
+        }
+        // </plus>
 
         // Legacy settings
 
@@ -816,6 +860,9 @@ LLSettingsSky::validation_list_t LLSettingsSky::validationList()
         validation.push_back(Validator(SETTING_ABSORPTION_CONFIG, true, LLSD::TypeArray, &validateAbsorptionLayers));
         validation.push_back(Validator(SETTING_MIE_CONFIG, true, LLSD::TypeArray, &validateMieLayers));
         validation.push_back(Validator(SETTING_LEGACY_HAZE, false, LLSD::TypeMap, &validateLegacyHaze));
+        // <plus> sky-weather (research/371)
+        validation.push_back(Validator(SETTING_WEATHER, false, LLSD::TypeMap, &validateWeather));
+        // </plus>
     }
     return validation;
 }
@@ -1221,6 +1268,11 @@ void LLSettingsSky::loadValuesFromLLSD()
     mSkyIceLevel = (F32)settings[SETTING_SKY_ICE_LEVEL].asReal();
     mPlanetRadius = (F32)settings[SETTING_PLANET_RADIUS].asReal();
 
+    // <plus> sky-weather (research/371)
+    mHasWeather = settings.has(SETTING_WEATHER) && settings[SETTING_WEATHER].isMap();
+    mWeather = mHasWeather ? LLSkyWeather::fromLLSD(settings[SETTING_WEATHER]) : LLSkyWeather();
+    // </plus>
+
     // special case for legacy handling
     mHasLegacyHaze = settings.has(LLSettingsSky::SETTING_LEGACY_HAZE);
     mDistanceMultiplier = get_float(mLegacyDistanceMultiplier, settings, SETTING_DISTANCE_MULTIPLIER, 0.8f);
@@ -1303,6 +1355,17 @@ void LLSettingsSky::saveValuesToLLSD()
     settings[SETTING_SKY_DROPLET_RADIUS] = mSkyDropletRadius;
     settings[SETTING_SKY_ICE_LEVEL] = mSkyIceLevel;
     settings[SETTING_PLANET_RADIUS] = mPlanetRadius;
+
+    // <plus> sky-weather (research/371)
+    if (mHasWeather)
+    {
+        settings[SETTING_WEATHER] = mWeather.toLLSD();
+    }
+    else
+    {
+        settings.erase(SETTING_WEATHER);
+    }
+    // </plus>
 
     LLSD& legacy = settings[SETTING_LEGACY_HAZE];
     set_legacy(settings, legacy, SETTING_DISTANCE_MULTIPLIER, mLegacyDistanceMultiplier, LLSD::Real(mDistanceMultiplier));
@@ -1497,6 +1560,27 @@ void LLSettingsSky::setSkyMoistureLevel(F32 moisture_level)
     mSkyMoistureLevel = moisture_level;
     setDirtyFlag(true);
 }
+
+// <plus> sky-weather (research/371)
+void LLSettingsSky::setWeather(const LLSkyWeather& weather)
+{
+    mWeather = weather.clamped();
+    mHasWeather = true;
+    setDirtyFlag(true);
+    setLLSDDirty();
+}
+
+void LLSettingsSky::clearWeather()
+{
+    if (!mHasWeather)
+    {
+        return;
+    }
+    mHasWeather = false;
+    setDirtyFlag(true);
+    setLLSDDirty();
+}
+// </plus>
 
 void LLSettingsSky::setSkyDropletRadius(F32 radius)
 {

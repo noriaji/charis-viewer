@@ -38,6 +38,7 @@
 #include "lleventtimer.h"
 #include "llfile.h"
 #include "llviewertexturelist.h"
+#include "llexperiencelog.h" // <plus> fast-exit (research/276) </plus>
 #include "llgroupmgr.h"
 #include "llagent.h"
 #include "llagentcamera.h"
@@ -297,6 +298,7 @@ using namespace LL;
 #include "plus/rlv/rlvhooks.h"
 #include "plus/fastexit/exittime.h"
 #include "plus/fastexit/exitwatch.h" // exit-hang (research/292)
+#include "plus/fastexit/fastexit.h" // fast-exit (research/276)
 #include "plus/multiinstance/multiinstance.h" // research/337: Charis viewers on one GPU make room for the one in front
 // </plus>
 
@@ -1660,7 +1662,7 @@ bool LLAppViewer::doFrame()
                     LL_PROFILE_ZONE_NAMED_CATEGORY_APP("df Snapshot");
                     pingMainloopTimeout("Main:Snapshot");
                     // <plus> UI frames (plus/uiframe): the probes are world drawing too
-                    if (!ui_only_frame)
+                    if (!ui_only_frame && !plus::fastexit::hidden()) // fast-exit (research/276): a hidden window needs no probes
                     // </plus>
                     gPipeline.mReflectionMapManager.update();
                     LLRHI::cpuMark("snapshot");
@@ -1805,8 +1807,24 @@ bool LLAppViewer::doFrame()
         }
     }
 
+    // <plus> fast-exit (research/276): the window is hidden and the logout is stuck behind something that needs it
+    if (!LLApp::isExiting() && plus::fastexit::overdue())
+    {
+        if (wantFastExit())
+        {
+            fastExit(); // does not return
+        }
+        forceQuit();    // not wanted any more (badNetworkHandler asked to purge the cache): the official cleanup, behind the hidden window
+    }
+    // </plus>
     if (LLApp::isExiting())
     {
+        // <plus> fast-exit (research/276): the saves that matter, then the process ends (does not return); false: the official exit below
+        if (wantFastExit() && fastExit())
+        {
+            return true;    // not reached: the process has ended
+        }
+        // </plus>
         plus::exittime::mark("main loop: exiting"); // <plus> exit-measure (research/276) </plus>
         pingMainloopTimeout("Main:qSnapshot");
         // Save snapshot for next time, if we made it through initialization
@@ -1878,6 +1896,215 @@ void LLAppViewer::flushLFSIO()
         }
     }
 }
+
+// <plus> fast-exit (research/276): the saves of cleanup(), moved here unchanged so the fast exit calls the same code
+void LLAppViewer::saveDataAtExit()
+{
+    LL_INFOS() << "Saving Data" << LL_ENDL;
+
+    // Store the time of our current logoff
+    gSavedPerAccountSettings.setU32("LastLogoff", (U32)time_corrected());
+
+    if (LLEnvironment::instanceExists())
+    {
+        //Store environment settings if necessary
+        LLEnvironment::getInstance()->saveToSettings();
+    }
+
+    // Must do this after all panels have been deleted because panels that have persistent rects
+    // save their rects on delete.
+    gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), true);
+
+    LLUIColorTable::instance().saveUserSettings();
+
+    // PerAccountSettingsFile should be empty if no user has been logged on.
+    // *FIX:Mani This should get really saved in a "logoff" mode.
+    if (gSavedSettings.getString("PerAccountSettingsFile").empty())
+    {
+        LL_INFOS() << "Not saving per-account settings; don't know the account name yet." << LL_ENDL;
+    }
+    // Only save per account settings if the previous login succeeded, otherwise
+    // we might end up with a cleared out settings file in case a previous login
+    // failed after loading per account settings.
+    else if (!mSavePerAccountSettings)
+    {
+        LL_INFOS() << "Not saving per-account settings; last login was not successful." << LL_ENDL;
+    }
+    else
+    {
+        gSavedPerAccountSettings.saveToFile(gSavedSettings.getString("PerAccountSettingsFile"), true);
+        LL_INFOS() << "Saved settings" << LL_ENDL;
+
+        if (LLViewerParcelAskPlay::instanceExists())
+        {
+            LLViewerParcelAskPlay::getInstance()->saveSettings();
+        }
+    }
+
+    std::string warnings_settings_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, getSettingsFilename("Default", "Warnings"));
+    gWarningSettings.saveToFile(warnings_settings_filename, true);
+
+    // Save URL history file
+    LLURLHistory::saveFile("url_history.xml");
+
+    // save mute list. gMuteList used to also be deleted here too.
+    if (gAgent.isInitialized() && LLMuteList::instanceExists())
+    {
+        LLMuteList::getInstance()->cache(gAgent.getID());
+    }
+
+    //save call log list
+    if (LLConversationLog::instanceExists())
+    {
+        LLConversationLog::instance().cache();
+    }
+
+    clearSecHandler();
+
+    if (mPurgeCacheOnExit)
+    {
+        LL_INFOS() << "Purging all cache files on exit" << LL_ENDL;
+        gDirUtilp->deleteFilesInDir(gDirUtilp->getExpandedFilename(LL_PATH_CACHE,""), "*.*");
+    }
+
+    writeDebugInfo();
+
+    LLLocationHistory::getInstance()->save();
+
+    LLAvatarIconIDCache::getInstance()->save();
+}
+
+// The loop of cleanup()'s "Let threads finish", with the time limit as an argument (the fast exit waits 1 s).
+void LLAppViewer::finishBackgroundTasks(BackgroundTasks which, F64 max_idle_time)
+{
+    LLTimer idleTimer;
+    idleTimer.reset();
+    while(1)
+    {
+        S32 pending = 0;
+        pending += static_cast<S32>(LLAppViewer::getTextureCache()->update(1)); // unpauses the worker thread
+        if (which == BackgroundTasks::All) // the fast exit does not start new fetches and decodes, it only waits for the writers
+        {
+            pending += static_cast<S32>(LLAppViewer::getImageDecodeThread()->update(1)); // unpauses the image thread
+            pending += static_cast<S32>(LLAppViewer::getTextureFetch()->update(1)); // unpauses the texture fetch thread
+        }
+        pending += LLLFSThread::updateClass(0);
+        F64 idle_time = idleTimer.getElapsedTimeF64();
+        if(!pending)
+        {
+            break ; //done
+        }
+        else if(idle_time >= max_idle_time)
+        {
+            LL_WARNS() << "Quitting with pending background tasks." << LL_ENDL;
+            break;
+        }
+    }
+}
+
+// Whether this exit may be the fast one: the setting, and none of the rare exits that need the official cleanup
+// (purge the cache or the user data, the performance analysis, a file to launch on quit, an error exit).
+// The conditions are the same for H1 and H2; the only one that can change in between is mPurgeCacheOnExit
+// (badNetworkHandler): the window is then already hidden and the official cleanup runs behind it
+// (forceQuit() when the exit is overdue, so that a modal nobody can see does not keep the process).
+bool LLAppViewer::wantFastExit() const
+{
+    return plus::fastexit::wanted()
+        && gViewerWindow
+        && !mPurgeCacheOnExit
+        && !mPurgeUserDataOnExit
+        && !LLFastTimerView::sAnalyzePerformance
+        && gLaunchFileOnQuit.empty()
+        && !isError();
+}
+
+// The fast exit (plus/fastexit, research/276): the saves of cleanup() and disconnectViewer() that matter,
+// and the end of the process. Only the UI is taken apart (its panels write their state when deleted); the
+// world, the textures and the threads are not: the process end frees the memory and stops the threads
+// (the same as a crash would, but after everything was written).
+// Keep it beside cleanup(): when the official cleanup() gains a save, add it here too. Returns false when
+// the exit has to be the official one (a rare exit); true is never returned: the process ends.
+bool LLAppViewer::fastExit()
+{
+    if (!wantFastExit())
+    {
+        return false;
+    }
+    plus::exittime::begin("fastExit: start");
+    pauseMainloopTimeout();
+    if (!logoutRequestSent() && !gDisconnected)
+    {
+        sendSimpleLogoutRequest();      // an exit that came before the official logout (as forceDisconnect does)
+    }
+    plus::fastexit::commit();           // normally done long ago, when the quit was settled; for an exit that did not pass idleShutdown
+    plus::exitwatch::prepare();         // reads PlusExitWatchdog* now; arm() comes after the settings are written (below)
+    LLPluginProcessParent::shutdown();  // goodbye to the plugin processes (does not wait)
+
+#if LL_VELOPACK
+    // Apply any pending Velopack update before shutdown
+    if (velopack_is_update_pending())
+    {
+        LL_INFOS("AppInit") << "Applying pending Velopack update on shutdown..." << LL_ENDL;
+        velopack_apply_pending_update(velopack_should_restart_after_update());
+    }
+    velopack_cleanup();
+#endif
+
+    gAgentAvatarp = NULL;
+    // The window position and the settings that live in the window: before anything is written
+    cleanupSavedSettings();
+    // The files that the official exit writes while it takes things apart (research/276 5, the review of this branch)
+    if (LLSpeakerVolumeStorage::instanceExists())
+    {
+        LLSpeakerVolumeStorage::getInstance()->saveAtExit();    // the volume of each speaker
+    }
+    if (LLExperienceLog::instanceExists())
+    {
+        LLExperienceLog::getInstance()->saveEventsAtExit();
+    }
+    gTextureList.saveTextureList();     // the textures to load first at the next start
+    disconnectViewer(true);             // the inventory cache, the name cache, the agent's settings, each region's object cache
+    plus::exittime::mark("fastExit: disconnectViewer (inventory cache, object caches)");
+
+    removeCacheFiles("*.wav");
+    removeCacheFiles("*.tmp");
+    removeCacheFiles("*.lso");
+    removeCacheFiles("*.out");
+    removeCacheFiles("*.dsf");
+    removeCacheFiles("*.bodypart");
+    removeCacheFiles("*.clothing");
+    // The UI is destroyed as in cleanup(): many panels write their state (the inventory filters, the chat window's
+    // folds, the sort orders) into the settings when they are deleted, and that must come before the settings are saved.
+    if (gViewerWindow)
+    {
+        gViewerWindow->shutdownViews();
+    }
+    plus::exittime::mark("fastExit: views shut down");
+
+    saveDataAtExit();                   // the settings, the lists, the location history
+    plus::exittime::mark("fastExit: data saved");
+    // From here a join or a write that never returns (the texture cache, the pipeline cache, the inventory cache's
+    // compression) ends the process after PlusExitWatchdogSeconds (research/292, 10 s): the settings are on disk.
+    plus::exitwatch::arm();
+
+    // The workers that write the texture cache: let them finish what they hold (1 s at most), then the
+    // index of the entries changed since it was last written.
+    finishBackgroundTasks(BackgroundTasks::WritersOnly, 1.0);
+    getTextureCache()->writeUpdatedEntriesAtExit();
+    plus::exittime::mark("fastExit: texture cache written");
+
+    LLRHI::onFastExit();                // the pipeline keys and the pipeline cache
+    plus::exittime::mark("fastExit: Vulkan caches saved");
+
+    LLInventoryModel::waitForPendingCacheWrites();   // the compressed inventory cache is renamed into place by its thread
+    plus::exittime::mark("fastExit: inventory cache compressed");
+
+    removeMarkerFiles();
+    removeDumpDir();
+    LL_INFOS() << "Goodbye! (fast exit)" << LL_ENDL;
+    plus::fastexit::terminate();
+}
+// </plus>
 
 bool LLAppViewer::cleanup()
 {
@@ -2119,78 +2346,7 @@ bool LLAppViewer::cleanup()
     SUBSYSTEM_CLEANUP(LLFolderViewItem);
 
     plus::exittime::mark("cleanup: selections, objects, volumes, parcels"); // <plus> exit-measure </plus>
-    LL_INFOS() << "Saving Data" << LL_ENDL;
-
-    // Store the time of our current logoff
-    gSavedPerAccountSettings.setU32("LastLogoff", (U32)time_corrected());
-
-    if (LLEnvironment::instanceExists())
-    {
-        //Store environment settings if necessary
-        LLEnvironment::getInstance()->saveToSettings();
-    }
-
-    // Must do this after all panels have been deleted because panels that have persistent rects
-    // save their rects on delete.
-    gSavedSettings.saveToFile(gSavedSettings.getString("ClientSettingsFile"), true);
-
-    LLUIColorTable::instance().saveUserSettings();
-
-    // PerAccountSettingsFile should be empty if no user has been logged on.
-    // *FIX:Mani This should get really saved in a "logoff" mode.
-    if (gSavedSettings.getString("PerAccountSettingsFile").empty())
-    {
-        LL_INFOS() << "Not saving per-account settings; don't know the account name yet." << LL_ENDL;
-    }
-    // Only save per account settings if the previous login succeeded, otherwise
-    // we might end up with a cleared out settings file in case a previous login
-    // failed after loading per account settings.
-    else if (!mSavePerAccountSettings)
-    {
-        LL_INFOS() << "Not saving per-account settings; last login was not successful." << LL_ENDL;
-    }
-    else
-    {
-        gSavedPerAccountSettings.saveToFile(gSavedSettings.getString("PerAccountSettingsFile"), true);
-        LL_INFOS() << "Saved settings" << LL_ENDL;
-
-        if (LLViewerParcelAskPlay::instanceExists())
-        {
-            LLViewerParcelAskPlay::getInstance()->saveSettings();
-        }
-    }
-
-    std::string warnings_settings_filename = gDirUtilp->getExpandedFilename(LL_PATH_USER_SETTINGS, getSettingsFilename("Default", "Warnings"));
-    gWarningSettings.saveToFile(warnings_settings_filename, true);
-
-    // Save URL history file
-    LLURLHistory::saveFile("url_history.xml");
-
-    // save mute list. gMuteList used to also be deleted here too.
-    if (gAgent.isInitialized() && LLMuteList::instanceExists())
-    {
-        LLMuteList::getInstance()->cache(gAgent.getID());
-    }
-
-    //save call log list
-    if (LLConversationLog::instanceExists())
-    {
-        LLConversationLog::instance().cache();
-    }
-
-    clearSecHandler();
-
-    if (mPurgeCacheOnExit)
-    {
-        LL_INFOS() << "Purging all cache files on exit" << LL_ENDL;
-        gDirUtilp->deleteFilesInDir(gDirUtilp->getExpandedFilename(LL_PATH_CACHE,""), "*.*");
-    }
-
-    writeDebugInfo();
-
-    LLLocationHistory::getInstance()->save();
-
-    LLAvatarIconIDCache::getInstance()->save();
+    saveDataAtExit(); // <plus> fast-exit (research/276): the block that was here, moved into a function the fast exit also calls </plus>
 
     // Stop the plugin read thread if it's running.
     LLPluginProcessParent::setUseReadThread(false);
@@ -2199,27 +2355,7 @@ bool LLAppViewer::cleanup()
     LL_INFOS() << "Shutting down Threads" << LL_ENDL;
 
     // Let threads finish
-    LLTimer idleTimer;
-    idleTimer.reset();
-    const F64 max_idle_time = 5.f; // 5 seconds
-    while(1)
-    {
-        S32 pending = 0;
-        pending += static_cast<S32>(LLAppViewer::getTextureCache()->update(1)); // unpauses the worker thread
-        pending += static_cast<S32>(LLAppViewer::getImageDecodeThread()->update(1)); // unpauses the image thread
-        pending += static_cast<S32>(LLAppViewer::getTextureFetch()->update(1)); // unpauses the texture fetch thread
-        pending += LLLFSThread::updateClass(0);
-        F64 idle_time = idleTimer.getElapsedTimeF64();
-        if(!pending)
-        {
-            break ; //done
-        }
-        else if(idle_time >= max_idle_time)
-        {
-            LL_WARNS() << "Quitting with pending background tasks." << LL_ENDL;
-            break;
-        }
-    }
+    finishBackgroundTasks(BackgroundTasks::All, 5.0); // <plus> fast-exit (research/276): the loop that was here, in a function </plus>
     plus::exittime::mark("cleanup: background tasks finished (5 s at most)"); // <plus> exit-measure </plus>
 
     if (mPurgeUserDataOnExit)
@@ -6153,6 +6289,14 @@ void LLAppViewer::idleShutdown()
         return;
     }
 
+    // <plus> fast-exit (research/276): the quit can no longer be cancelled; the window goes away now and
+    // the logout (uploads, LogoutRequest, the reply) goes on behind it
+    if (wantFastExit())
+    {
+        plus::fastexit::commit();
+    }
+    // </plus>
+
     const F32 SHUTDOWN_UPLOAD_SAVE_TIME = 5.f;
 
     S32 pending_uploads = gAssetStorage->getNumPendingUploads();
@@ -6584,7 +6728,7 @@ void LLAppViewer::idleNetwork()
     }
 }
 
-void LLAppViewer::disconnectViewer()
+void LLAppViewer::disconnectViewer(bool keep_world) // <plus> fast-exit (research/276) </plus>
 {
     // This is idempotent and also covers disconnect paths that bypass the normal logout request.
     LLChatServiceHistory::stop();
@@ -6649,6 +6793,19 @@ void LLAppViewer::disconnectViewer()
 
     // This is where we used to call gObjectList.destroy() and then delete gWorldp.
     // Now we just ask the LLWorld singleton to cleanly shut down.
+    // <plus> fast-exit (research/276): keep_world: the objects are not destroyed (the process ends); only each region's object cache is written
+    if (keep_world)
+    {
+        if (LLWorld::instanceExists())
+        {
+            for (LLViewerRegion* regionp : LLWorld::getInstance()->getRegionList())
+            {
+                regionp->saveObjectCache();
+            }
+        }
+    }
+    else
+    // </plus>
     if(LLWorld::instanceExists())
     {
         LLWorld::getInstance()->resetClass();

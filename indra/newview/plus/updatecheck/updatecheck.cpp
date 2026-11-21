@@ -1,6 +1,6 @@
 /**
  * @file updatecheck.cpp
- * @brief Update check: once a day at start, read a small JSON file and, when it
+ * @brief Update check: at every start, read a small JSON file and, when it
  *        names a newer Charis Viewer, say so in a band at the bottom of the login
  *        screen (or in a small window once the world is up).
  *
@@ -82,6 +82,11 @@
 #include "plus.h"
 #include "photoscreen/psui/pswidgets.h"
 #include "update/update.h"
+#include "rmlui/rmlfloater.h"
+#include "rmlui/rmlhost.h"
+#include "rmlui/rmllist.h"
+#include "rmlui/rmlparts.h"
+#include "safemode/safemode.h"
 #include "version/version.h"
 
 #include "llapp.h"
@@ -938,6 +943,61 @@ namespace plus::updatecheck
 
         // ---- The window ----------------------------------------------------
 
+        // What the window shows for an offer, and what its buttons do: the same for the XUI window (UpdateFloater) and the
+        // RmlUi one (UpdateRmlFloater), so that they cannot differ. strings: the window's own <string>s.
+        struct WindowView
+        {
+            std::string message;            // the text: the sentence, the file's message, the pages (plain, no links)
+            std::string download_label;
+            std::string download_tip;
+            bool installs = false;          // the first button says "Download" and installs (plus/update)
+            bool download_enabled = false;
+            bool skip_visible = false;
+        };
+
+        // fix-round68 3: with only the notes named, the button says it opens them (the text has no links: the button is
+        // the only way to a page). default_label / default_tip: the button's own words for the download page.
+        WindowView windowView(const LLPanel& strings, const Offer& offer, const std::string& default_label,
+                              const std::string& default_tip)
+        {
+            WindowView view;
+            view.message = bodyText(strings, offer);
+            view.installs = plus::update::canInstall();
+            view.download_enabled = view.installs || !pageURL(offer).empty();
+            const bool notes_only = notesOnly(offer);
+            if (view.installs)
+            {
+                view.download_label = strings.getString("btn_install");
+                view.download_tip = strings.getString("btn_install_tip");
+            }
+            else
+            {
+                view.download_label = notes_only ? strings.getString("btn_notes") : default_label;
+                view.download_tip = notes_only ? strings.getString("btn_notes_tip") : default_tip;
+            }
+            view.skip_visible = !offer.required;
+            return view;
+        }
+
+        // As the button says (windowView): nothing is downloaded from a button that read "Open download page".
+        void downloadFromWindow(const Offer& offer, bool installs)
+        {
+            if (installs)
+            {
+                installOrOpen(offer);
+            }
+            else
+            {
+                openPage(offer);
+            }
+        }
+
+        void skipFromWindow(const Offer& offer)
+        {
+            skipVersion(offer);
+            saveSettingsNow();
+        }
+
         class UpdateFloater : public LLFloater
         {
             friend class ::LLFloaterReg;
@@ -948,15 +1008,7 @@ namespace plus::updatecheck
                 LLButton* page_button = getChild<LLButton>("btn_download");
                 page_button->setCommitCallback([this](LLUICtrl*, const LLSD&)
                 {
-                    // As the button says (onOpen()): nothing is downloaded from a button that read "Open download page"
-                    if (mInstalls)
-                    {
-                        installOrOpen(mOffer);
-                    }
-                    else
-                    {
-                        openPage(mOffer);
-                    }
+                    downloadFromWindow(mOffer, mInstalls);
                     closeFloater();
                 });
                 mDownloadLabel = page_button->getLabelUnselected();
@@ -964,8 +1016,7 @@ namespace plus::updatecheck
                 getChild<LLButton>("btn_later")->setCommitCallback([this](LLUICtrl*, const LLSD&) { closeFloater(); });
                 getChild<LLButton>("btn_skip")->setCommitCallback([this](LLUICtrl*, const LLSD&)
                 {
-                    skipVersion(mOffer);
-                    saveSettingsNow();
+                    skipFromWindow(mOffer);
                     closeFloater();
                 });
                 return true;
@@ -977,25 +1028,14 @@ namespace plus::updatecheck
                 {
                     mOffer = *sOffer;
                 }
-                getChild<LLUICtrl>("message")->setValue(bodyText(*this, mOffer));
-
-                // fix-round68 3: with only the notes named, the button says it opens them (the
-                // text has no links: the button is the only way to a page).
+                const WindowView view = windowView(*this, mOffer, mDownloadLabel, mDownloadTip);
+                mInstalls = view.installs;
+                getChild<LLUICtrl>("message")->setValue(view.message);
                 LLButton* page_button = getChild<LLButton>("btn_download");
-                mInstalls = plus::update::canInstall();
-                page_button->setEnabled(mInstalls || !pageURL(mOffer).empty());
-                const bool notes_only = notesOnly(mOffer);
-                if (mInstalls)
-                {
-                    page_button->setLabel(getString("btn_install"));
-                    page_button->setToolTip(getString("btn_install_tip"));
-                }
-                else
-                {
-                    page_button->setLabel(notes_only ? getString("btn_notes") : mDownloadLabel);
-                    page_button->setToolTip(notes_only ? getString("btn_notes_tip") : mDownloadTip);
-                }
-                getChild<LLButton>("btn_skip")->setVisible(!mOffer.required);
+                page_button->setEnabled(view.download_enabled);
+                page_button->setLabel(view.download_label);
+                page_button->setToolTip(view.download_tip);
+                getChild<LLButton>("btn_skip")->setVisible(view.skip_visible);
             }
 
         private:
@@ -1005,6 +1045,137 @@ namespace plus::updatecheck
             bool mInstalls = false;         // btn_download says "Download" and installs (plus/update): set in onOpen()
             std::string mDownloadLabel;     // btn_download as the XUI has it (the download page)
             std::string mDownloadTip;
+        };
+
+        // The same window as UpdateFloater, made with RmlUi (research/386): the content is app_settings/plus/rmlui/update.rml.
+        // What it shows and what its buttons do are windowView(), downloadFromWindow() and skipFromWindow() above. The text
+        // comes from outside (the update file's message and addresses, checked by readOffer): it is put in a read-only
+        // <textarea readonly> (the host's read-only field, plus::rmlui::setLogText: the text goes in as plain text, never
+        // RML; no editing keys, typed text or IME; it can be selected and copied).
+        class UpdateRmlFloater : public plus::rmlui::RmlFloater
+        {
+            friend class ::LLFloaterReg;
+
+        public:
+            ~UpdateRmlFloater() override
+            {
+                closeDocument();
+            }
+
+            void onOpen(const LLSD& key) override
+            {
+                RmlFloater::onOpen(key);
+                if (sOffer)
+                {
+                    mOffer = *sOffer;
+                }
+                mView = windowView(*this, mOffer, getString("btn_download"), getString("tip_download"));
+                mMessageShown = false;
+                mShown = false;
+                if (LLRmlView* view = host())
+                {
+                    view->markDirty();
+                }
+            }
+
+            void draw() override
+            {
+                if (mClose)
+                {
+                    mClose = false;
+                    closeFloater();     // not inside RmlUi's event (the buttons only ask)
+                    return;
+                }
+                RmlFloater::draw();
+            }
+
+        protected:
+            void afterLoad(Rml::ElementDocument& document) override
+            {
+                LLRmlView* view = host();
+                if (!view)
+                {
+                    return;
+                }
+                for (const char* id : { "btn_download", "btn_later", "btn_skip" })
+                {
+                    view->listen(document.GetElementById(id), "click");
+                }
+                mMessageShown = false;
+                mShown = false;
+            }
+
+            void beforeUpdate() override
+            {
+                LLRmlView* view = host();
+                Rml::ElementDocument* document = view ? view->getDocument() : nullptr;
+                if (!document)
+                {
+                    return;
+                }
+                if (!mMessageShown)
+                {
+                    // The message is from outside (the update file): cut to the XUI text editor's max_length.
+                    mMessageShown = true;
+                    plus::rmlui::setLogText(*view, document->GetElementById("message"),
+                                            truncateUtf8(mView.message, MESSAGE_MAX_BYTES), plus::rmlui::Follow::Keep);
+                }
+                if (mShown || mView.message.empty())
+                {
+                    return;
+                }
+                mShown = true;
+                if (Rml::Element* download = document->GetElementById("btn_download"))
+                {
+                    download->SetInnerRML(plus::rmlui::escapeRml(mView.download_label));
+                    download->SetAttribute("title", Rml::String(mView.download_tip));
+                    plus::rmlui::setElementDisabled(download, !mView.download_enabled);
+                }
+                if (Rml::Element* skip = document->GetElementById("btn_skip"))
+                {
+                    skip->SetClass("hidden", !mView.skip_visible);
+                }
+            }
+
+            // In RmlUi's event: nothing is removed from the document here.
+            void onEvent(Rml::Event& event) override
+            {
+                const Rml::Element* element = event.GetCurrentElement();
+                if (!element)
+                {
+                    return;
+                }
+                if (event.GetId() == Rml::EventId::Click && plus::rmlui::isElementDisabled(element))
+                {
+                    return;     // a disabled button takes no click (RmlUi 6.3 does not stop it): "Download" with nothing to open
+                }
+                const std::string id = element->GetId();
+                if (id == "btn_download")
+                {
+                    downloadFromWindow(mOffer, mView.installs);
+                    mClose = true;
+                }
+                else if (id == "btn_later")
+                {
+                    mClose = true;
+                }
+                else if (id == "btn_skip")
+                {
+                    skipFromWindow(mOffer);
+                    mClose = true;
+                }
+            }
+
+        private:
+            explicit UpdateRmlFloater(const LLSD& key) : RmlFloater(key) {}
+
+            static constexpr size_t MESSAGE_MAX_BYTES = 4096;      // the XUI text editor's max_length
+
+            Offer mOffer;
+            WindowView mView;
+            bool mMessageShown = false;     // the message is in the read-only area
+            bool mShown = false;            // mView's buttons are in the document
+            bool mClose = false;
         };
 
         // ---- The on/off box in Preferences > Setup -------------------------
@@ -1125,8 +1296,18 @@ namespace plus::updatecheck
 
         void init()
         {
-            LLFloaterReg::add(FLOATER_NAME, "floater_plus_update.xml",
-                              (LLFloaterBuildFunc)&LLFloaterReg::build<UpdateFloater>);
+            // The window is the RmlUi one (UpdateRmlFloater, research/386). The XUI version is frozen and is used in safe
+            // mode and with PlusRmlUiWindows off (chosen once, here: it takes effect at the next start).
+            if (plus::safemode::active() || !gSavedSettings.getBOOL("PlusRmlUiWindows"))
+            {
+                LLFloaterReg::add(FLOATER_NAME, "floater_plus_update.xml",
+                                  (LLFloaterBuildFunc)&LLFloaterReg::build<UpdateFloater>);
+            }
+            else
+            {
+                LLFloaterReg::add(FLOATER_NAME, "floater_plus_update_rml.xml",
+                                  (LLFloaterBuildFunc)&LLFloaterReg::build<UpdateRmlFloater>);
+            }
         }
 
         // The login screen is being shown: the copy of the last answer first (shown at once), then the

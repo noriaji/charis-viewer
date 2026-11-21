@@ -35,6 +35,7 @@
 #include "buffer_util.h"
 #include "llimagejpeg.h"
 #include "../llskinningutil.h"
+#include "llrhigl.h" // <plus> research/394 T17: the uniform buffer writes and names through LLRHI </plus>
 
 #include <future>
 
@@ -180,12 +181,10 @@ void Asset::uploadTransforms()
 
     if (mNodesUBO == 0)
     {
-        glGenBuffers(1, &mNodesUBO);
+        LLRHI::genBuffers(1, &mNodesUBO); // <plus> research/394 T17 </plus>
     }
 
-    glBindBuffer(GL_UNIFORM_BUFFER, mNodesUBO);
-    glBufferData(GL_UNIFORM_BUFFER, glmp.size() * sizeof(F32), glmp.data(), GL_STREAM_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    LLRHI::uniformBufferData(mNodesUBO, glmp.size() * sizeof(F32), glmp.data()); // <plus> research/394 T17: was glBindBuffer/glBufferData/glBindBuffer </plus>
 }
 
 void Asset::uploadMaterials()
@@ -229,12 +228,10 @@ void Asset::uploadMaterials()
 
     if (mMaterialsUBO == 0)
     {
-        glGenBuffers(1, &mMaterialsUBO);
+        LLRHI::genBuffers(1, &mMaterialsUBO); // <plus> research/394 T17 </plus>
     }
 
-    glBindBuffer(GL_UNIFORM_BUFFER, mMaterialsUBO);
-    glBufferData(GL_UNIFORM_BUFFER, md.size() * sizeof(vec4), md.data(), GL_STREAM_DRAW);
-    glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    LLRHI::uniformBufferData(mMaterialsUBO, md.size() * sizeof(vec4), md.data()); // <plus> research/394 T17: was glBindBuffer/glBufferData/glBindBuffer </plus>
 }
 
 S32 Asset::lineSegmentIntersect(const LLVector4a& start, const LLVector4a& end,

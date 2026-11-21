@@ -1,0 +1,47 @@
+<rml>
+<!-- The local mesh window (plus/localmesh/localmeshrml.cpp, research/386). Its words are "[[name]]": the <string>s of
+     floater_plus_local_mesh_rml.xml (en, ja). The layout is the XUI window's own rows: charis.rcss's ".lm". The contract
+     with the C++ (ids): list_head and list (RmlList, with columns), add reload remove show take_off (buttons), meshes
+     (a <select>: the file's meshes), target (the selected object's line), log (read-only text: a <textarea readonly>), and the data model
+     "localmesh" (plus::rmlui::SettingsModel): auto_reload, file_size (PlusLocalMeshAutoReload / FileSize). -->
+<head>
+    <link type="text/rcss" href="charis_tokens.rcss"/>
+    <link type="text/rcss" href="charis.rcss"/>
+</head>
+<body class="bare" data-model="localmesh">
+    <div class="lm">
+        <p class="lm-text lm-files">[[files_label]]</p>
+        <div class="ps-list-box lm-list">
+            <div id="list_head" class="ps-list-head"></div>
+            <div id="list" class="ps-list" tabindex="0"></div>
+        </div>
+        <div class="lm-row lm-buttons">
+            <button id="add" class="inline lm-btn100" title="[[tip_add]]">[[add]]</button>
+            <button id="reload" class="inline lm-btn100 lm-gap6" title="[[tip_reload]]">[[reload]]</button>
+            <button id="remove" class="inline lm-btn100 lm-gap6" title="[[tip_remove]]">[[remove]]</button>
+            <div class="line lm-auto" title="[[tip_auto_reload]]">
+                <input type="checkbox" id="c_auto" data-checked="auto_reload"/>
+                <label for="c_auto">[[auto_reload]]</label>
+            </div>
+        </div>
+        <p class="lm-text lm-object">[[object_label]]</p>
+        <p id="target" class="lm-text lm-target">[[target_default]]</p>
+        <div class="lm-row lm-meshrow">
+            <span class="lm-text lm-meshes-label">[[meshes_label]]</span>
+            <select id="meshes" class="ps-select lm-meshes" title="[[tip_meshes]]" disabled="disabled"></select>
+        </div>
+        <div class="line lm-size" title="[[tip_file_size]]">
+            <input type="checkbox" id="c_size" data-checked="file_size"/>
+            <label for="c_size">[[file_size]]</label>
+        </div>
+        <div class="lm-row lm-show">
+            <button id="show" class="inline lm-btn170" title="[[tip_show]]" disabled="disabled">[[show]]</button>
+            <button id="take_off" class="inline lm-btn170 lm-gap6" title="[[tip_take_off]]" disabled="disabled">[[take_off]]</button>
+        </div>
+        <p class="lm-text lm-logl">[[log_label]]</p>
+        <div class="lm-log">
+            <textarea id="log" class="ps-readonly" readonly></textarea>
+        </div>
+    </div>
+</body>
+</rml>

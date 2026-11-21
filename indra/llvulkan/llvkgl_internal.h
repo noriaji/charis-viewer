@@ -534,24 +534,19 @@ namespace llvkgl
     void native_buffer_data(U32 name, size_t size, const void* data);
     void native_buffer_sub_data(U32 name, size_t offset, size_t size, const void* data);
     void native_bind_buffer_base(U32 target, U32 index, U32 buffer);
-    // research/137 N14 (LLRHI::sBufferWriteRanges, llvkresource.cpp): several
-    // ranges of b (GL name `name`) from data + offset, in one call (under sLock).
-    void buffer_write_ranges(GLuint name, Buffer& b, const U8* data, const LLRHI::BufferRange* ranges, U32 count);
-    // Buffer writes through the native hooks, both ways (one range by name,
-    // LLRHI::sBufferSubData; ranges by handle, sBufferWriteRanges), for the
-    // VKPerf line (LLVKResource::report). Under sLock.
+    // Buffer writes through the native hook (one range by name,
+    // LLRHI::sBufferSubData), for the VKPerf line (LLVKResource::report). Under sLock.
     struct BufferWriteCounts
     {
         U32 calls = 0;
         U32 ranges = 0;
-        U32 by_handle = 0;      // of the calls
         U64 bytes = 0;
         U64 ticks = 0;          // __rdtsc, LLRHI_VK_PERF only (the lock included)
     };
     extern BufferWriteCounts sBufferWrites;
-    // research/137 N14: while llvkimmediate.cpp draws from the frame's ring,
-    // the ring's Vulkan buffer: direct_inputs takes the draw's vertices from
-    // it instead of from the GL name's buffer. Null at any other time.
+    // While llvkgl_scene.cpp's DirectBufferScope is open, the Vulkan buffer
+    // direct_inputs takes the draw's vertices from, instead of the GL name's
+    // buffer. Null at any other time.
     extern thread_local VkBuffer tDirectVertexBuffer;
 
     // research/293 branch 0 (LLRHI_VB_CENSUS): counting only. The owner mark of GL name `name` is
@@ -651,6 +646,11 @@ namespace llvkgl
         bool bcn_queued = false;
         bool bcn_encoded = false;
         bool bcn_shared = false;    // research/200: the image is shared with the compute queue (the encoder may read it there)
+        // research/395: an encoding of this (plain) image waits for its verdict
+        // (the ticket of the encoding; 0: none), or the verdict rejected it:
+        // the image stays RGBA8 until it is written or made again.
+        U64 bcn_ticket = 0;
+        bool bcn_rejected = false;
         U64 bcn_plain_bytes = 0;
         U64 bcn_bytes = 0;
         // Bumped by every write into level 0 (note_level0_write; under sLock like
@@ -821,6 +821,7 @@ namespace llvkgl
     {
         ++tex.level0_writes;
         tex.bcn_queued = false;
+        tex.bcn_rejected = false;   // research/395: the contents changed: judged again once encoded
     }
 
     extern NameTable<Texture> sTextures;
@@ -1926,6 +1927,9 @@ namespace llvkgl
     // (oit_blend_inert, llvkgl_pipeline.cpp: a blend word whose node at alpha 0 leaves the target as it is, to the
     // last bit) make no node. Below 0: off. Read at startup, fixed for the process; any thread.
     F32 oit_skip_alpha();
+    // research/395 (A-OIT, llvkgl_pipeline.cpp): whether a node drawn with this GL state is an affine function of the
+    // color behind it (oit_blend_affine), so that the resolve can fold the session's nodes into one blend.
+    bool oit_state_blend_affine(const State& s);
     // row_word (research/205 3a-2): not U32_MAX, a draw reading rows takes its
     // priority from that word of its row (row_priority: it does; false when
     // the fragment file with main reads no rows).

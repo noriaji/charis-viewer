@@ -40,6 +40,9 @@
             </plus_ps_combo>
             <plus_ps_label name="note_dgc_1" label="変更は次回の起動から。AMD・Intel では未確認です。" />
             <plus_ps_label name="note_dgc_2" label="オンにして不具合があれば、オフに戻してください。" />
+            <plus_ps_check name="c_bc7_gpu" label="テクスチャを GPU で圧縮する（BC7）" tool_tip="オン: テクスチャがビデオメモリの 4 分の 1 で済みます。あとから読み込むテクスチャから効きます。セーフモードの間と、不具合の知られた一部のドライバーでは使われません。環境変数 LLRHI_TEX_BCN で決めている間は変えられません。" />
+            <plus_ps_label name="note_bc7_1" label="物に色つきのブロックやノイズが出る時は、オフにしてください。" />
+            <plus_ps_label name="note_bc7_2" label="オフにするとビデオメモリを多く使います（テクスチャ 1 枚あたり 4 倍）。" />
           </panel>
         </scroll_container>
       </panel>

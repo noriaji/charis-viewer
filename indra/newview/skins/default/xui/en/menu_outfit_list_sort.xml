@@ -33,6 +33,20 @@
      parameter="favorites_to_top" />
   </menu_item_check>
 
+  <!-- plus outfit-hierarchy -->
+  <menu_item_check
+   label="Show folders"
+   layout="topleft"
+   name="show_folders">
+    <on_click
+     function="Sort.OnSort"
+    parameter="show_folders" />
+    <on_check
+     function="Sort.OnEnable"
+     parameter="show_folders" />
+  </menu_item_check>
+  <!-- /plus -->
+
   <menu_item_separator/>
 
   <menu_item_check

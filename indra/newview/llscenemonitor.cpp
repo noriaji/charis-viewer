@@ -315,13 +315,15 @@ void LLSceneMonitor::capture()
         U32 old_FBO = LLRenderTarget::sCurFBO;
 
         gGL.getTexUnit(0)->bind(&cur_target);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0); //point to the main frame buffer.
+        // <plus> research/394 T17: through LLRHI (the backend's framebuffer bind and the named texture copy)
+        LLRHI::bindFramebuffer(GL_READ_FRAMEBUFFER, 0); //point to the main frame buffer.
 
-        glCopyTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, 0, 0, cur_target.getWidth(), cur_target.getHeight()); //copy the content
+        LLRHI::copyTexSubImage2D(cur_target.getTexture(), GL_TEXTURE_2D, 0, 0, 0, 0, 0, cur_target.getWidth(), cur_target.getHeight()); //copy the content
 
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glBindFramebuffer(GL_FRAMEBUFFER, old_FBO);
+        LLRHI::bindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+        LLRHI::bindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        LLRHI::bindFramebuffer(GL_FRAMEBUFFER, old_FBO);
+        // </plus>
 
         mDiffState = NEED_DIFF;
     }

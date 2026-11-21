@@ -83,6 +83,9 @@ namespace LLVKGL
     // destroyed at exit. Waits for one pipeline or one compile at most per
     // thread (a shader prewarm's planning job: its own loop).
     void stopPrewarm();
+    // fast-exit (research/276): writes the pipeline keys not saved yet (the part of stopPrewarm that
+    // reaches the disk), with the prewarm threads left running.
+    void savePrewarmKeys();
 
     // One-line summary of this frame's translation (draws replayed / skipped and why).
     std::string frameReport();

@@ -150,6 +150,8 @@
 			<menu_item_check label="雲の動きを一時停止" name="pause_clouds"/>
 		</menu>
 		<menu_item_check name="toggle_sound" label="音のミュート／解除"/>
+		<menu_item_check name="Render Friends Only" label="フレンドだけ表示"/>
+		<menu_item_check name="Hide Other Avatars" label="自分以外を非表示"/>
 	</menu>
 	<menu label="制作" name="BuildTools">
 		<menu_item_check label="制作" name="Show Build Tools"/>

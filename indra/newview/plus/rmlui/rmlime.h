@@ -26,16 +26,22 @@
 // field through the Rml::TextInputContext it hands over. RmlPreeditor is both ends, one for the viewer:
 //
 //   RmlUi (main thread, inside a host's work)       the bridge
-//     OnActivate(field)                              keeps the field, its host and element; asks the window for
-//                                                    the IME (not for a password field, nor without the host's
-//                                                    keyboard focus); the host takes the edit menu (with the focus)
+//     OnActivate(field)                              keeps the field, its host and element (the element is the
+//                                                    target of the focus event, from Parts::focusTarget(): the
+//                                                    context's focus is still the old one inside the event; checked
+//                                                    against the field's box); asks the window for the IME (only for
+//                                                    a plain text field without ime="off": imeAllowed; not a
+//                                                    password or read-only one, nor without the host's keyboard
+//                                                    focus); the host takes the edit menu (with the focus)
 //     hostFocusChanged (the host's focus received    the same, for a field active before the host had the focus
 //                       or lost)                     (allowed), or kept when the host's blur did not reach the field
 //                                                    (let go)
 //     OnDeactivate(field)                            ends a composition (drops it; keeps its text in a field with
 //                                                    ime-blur="keep"), lets the IME and the edit menu go
 //     OnDestroy(field)                               the same without touching the field (it is going)
-//     SystemInterface::ActivateKeyboard              the caret (context pixels) and the line's height
+//     SystemInterface::ActivateKeyboard              the caret (context pixels) and the line's height (a field that
+//                                                    is just getting the focus reports it before OnActivate: kept
+//                                                    aside, taken by OnActivate)
 //   the window's IME (main thread, posted)
 //     updatePreedit(text, ..., caret)                SetText over the composition (first: over the selection, or
 //                                                    over a reconversion's word), SetCompositionRange,
@@ -47,7 +53,7 @@
 //                                                    they run, waits for the next idle: its loop over a result still
 //                                                    holds the bridge as its preeditor. The idle works out the state
 //                                                    that is right then: allowed only for an active field of a host with
-//                                                    the keyboard focus, not a password field)
+//                                                    the keyboard focus that imeAllowed() accepts)
 //   the window thread (WM_IME_REQUEST, synchronous)
 //     getPreeditRange, getSelectionRange, getPreeditString, getPreeditLocation, getPreeditFontSize
 //                                                    answered from the copy the main thread wrote (under mMutex);
@@ -87,12 +93,19 @@ namespace plus::rmlui
         void OnDeactivate(Rml::TextInputContext* input) override;
         void OnDestroy(Rml::TextInputContext* input) override;
 
-        // SystemInterface::ActivateKeyboard: the active field's caret (context pixels) and its line height.
+        // SystemInterface::ActivateKeyboard: the active field's caret (context pixels) and its line height. (A field
+        // that is just getting the focus reports it before OnActivate: it is kept for that call.)
         void setCaret(const LLRmlView* host, Rml::Vector2f caret_px, float line_height_px);
         // After the host's Context::Update (and after an edit): the copy the window thread reads.
         void refresh(LLRmlView& host);
         // An <input type="password"> (no IME, no copy or cut, no text in the window's copy).
         static bool isPassword(const Rml::Element* element);
+        // Whether the window's IME is allowed for this field: a text field (fieldKind: not a password or read-only one)
+        // without the attribute ime="off" (a field of digits only; the XUI line editor turns the IME off for a field
+        // with a prevalidator).
+        // Read when the field takes the focus; changing the attribute while it is focused acts at the next focus.
+        static bool imeAllowed(const Rml::Element* element);
+        static constexpr char IME_ATTRIBUTE[] = "ime";
         // The host unloads or goes away: the IME is let go, nothing of its document is touched.
         void forgetHost(const LLRmlView* host);
         // The host's keyboard focus changed (onFocusReceived / onFocusLost) while a text field of it is active: the
@@ -188,6 +201,10 @@ namespace plus::rmlui
         int mCompositionEnd = 0;
         Rml::Vector2f mCaretPx;
         float mLineHeightPx = 0.f;
+        // The caret a field reported before it was active here (see setCaret and OnActivate); host is compared only.
+        const LLRmlView* mLastCaretHost = nullptr;
+        Rml::Vector2f mLastCaretPx;
+        float mLastLineHeightPx = 0.f;
         int mImeDepth = 0;                          // open ImeEntry objects
         bool mSyncPending = false;                  // a deferred syncWindow waits for the next idle
         bool mWindowAllowed = false;                // what applyWindow last gave the window

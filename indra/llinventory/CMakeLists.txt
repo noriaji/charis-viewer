@@ -22,6 +22,8 @@ set(llinventory_SOURCE_FILES
     llsettingsdaycycle.cpp
     llsettingssky.cpp
     llsettingswater.cpp
+    llskyweather.cpp # <plus> sky-weather (research/371) </plus>
+    llskyweathermark.cpp # <plus> sky-weather (research/371) </plus>
     lltransactionflags.cpp
     lluserrelations.cpp
     )
@@ -47,6 +49,7 @@ set(llinventory_HEADER_FILES
     llsettingsdaycycle.h
     llsettingssky.h
     llsettingswater.h
+    llskyweather.h # <plus> sky-weather (research/371) </plus>
     lltransactionflags.h
     lltransactiontypes.h
     lluserrelations.h

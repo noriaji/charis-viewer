@@ -595,6 +595,9 @@ bool LLRHI::sFramePacingGPUBound = LLRHI::envDefaultOn("LLRHI_FRAME_PACING_GPU_B
 // research/179 9: light -0.76 ms, heavy-leeaf-2 no change, no validation warning, resize and minimize fine).
 bool LLRHI::sPresentThread = LLRHI::envDefaultOn("LLRHI_PRESENT_THREAD");
 bool LLRHI::sPresentMailbox = LLRHI::envIs("LLRHI_PRESENT_MODE", "mailbox");
+// research/393 (E1): the end of frame's vkQueueSubmit on the present thread. Off unless set (and not 0); only
+// with sPresentThread, without VSync, with no other windows and no capture.
+bool LLRHI::sSubmitLane = LLRHI::envSet("LLRHI_SUBMIT_LANE");
 
 // Off unless set (and not 0): the alpha census (research/54).
 bool LLRHI::sAlphaCensus = LLRHI::envSet("LLRHI_ALPHA_CENSUS");
@@ -738,6 +741,11 @@ void LLRHI::onGLShutdown()
     LLRHIVKMirror::onGLShutdown();
 }
 
+void LLRHI::onFastExit()
+{
+    LLRHIVKMirror::onFastExit();
+}
+
 void LLRHI::onFrameNotShown()
 {
     LLRHIVKMirror::onFrameNotShown();
@@ -863,6 +871,7 @@ namespace
         { "framepacing.toggle",   &sFramePacing,         "VSync frame pacing (research/94)" },
         { "pacinggpu.toggle",     &sFramePacingGPUBound, "frame pacing skips the wait while the GPU sets the pace (research/103 F1)" },
         { "presentthread.toggle", &sPresentThread,       "main window present on the present thread without VSync (research/179 6.6 4)" },
+        { "submitlane.toggle",    &sSubmitLane,          "end of frame submit on the present thread too, with LLRHI_SUBMIT_LANE (research/393)" },
         { "presentmailbox.toggle", &sPresentMailbox,     "MAILBOX before IMMEDIATE without VSync, swapchain made again (research/179 6.6 4)" },
         { "alphacensus.toggle",   &sAlphaCensus,         "alpha census (research/54)" },
         { "slotcache.toggle",     &sSlotCache,           "texture slot cache across render targets (research/58)" },

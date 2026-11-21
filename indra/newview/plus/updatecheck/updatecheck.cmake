@@ -1,5 +1,5 @@
 # -*- cmake -*-
-# Update check: once a day at start, read a small JSON file (PlusUpdateCheckURL)
+# Update check: at every start, read a small JSON file (PlusUpdateCheckURL)
 # and say so when it names a newer Charis Viewer: a band at the bottom of the
 # login screen, or a small window once the world is up
 # (research/123-update-check.md and 325 in the sl-viewer repository). Included by

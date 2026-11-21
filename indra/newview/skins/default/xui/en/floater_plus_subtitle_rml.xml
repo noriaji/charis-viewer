@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<!--
+  Subtitles window, RmlUi version (plus/subtitle/subtitlerml.cpp, research/386): the frame and the words. The content is
+  app_settings/plus/rmlui/subtitle.rml in a plus_rml_view filling the floater under its 18 px header. What the window
+  does is plus/subtitle/subtitlecore.cpp (shared with the XUI window, floater_plus_subtitle.xml, which is frozen and
+  used in safe mode and with PlusRmlUiWindows off). reuse_instance="false": a closed window is destroyed; the model
+  download is outside the window (sharedModelDownload) and goes on. threads_label_w and threads_w: the
+  width (dp) of the Threads label and of the Threads box (the XUI window's; ja is wider).
+-->
+<floater
+ positioning="specified"
+ save_rect="true"
+ save_visibility="false"
+ single_instance="true"
+ reuse_instance="false"
+ can_resize="true"
+ can_minimize="true"
+ can_close="true"
+ legacy_header_height="18"
+ height="308"
+ min_height="250"
+ min_width="480"
+ width="480"
+ layout="topleft"
+ name="plus_subtitle"
+ title="SUBTITLES (VOICE)">
+    <string name="loading">Getting ready... (the first time can take a minute)</string>
+    <string name="ready">Listening to the voice you hear (nearby and group voice).</string>
+    <string name="dropped">Recognition could not keep up: [SECONDS] s skipped. Use fewer threads or close busy programs.</string>
+    <string name="error">The recognizer reported a problem (see the log).</string>
+    <string name="exited">The recognizer stopped. Close and reopen this window.</string>
+    <string name="start_failed">Could not start the recognizer (see the log).</string>
+    <string name="no_helper">charis-subtitle.exe is missing next to the viewer.</string>
+    <string name="unknown_speaker">?</string>
+    <string name="and_others"> + others</string>
+    <string name="translate_unconfigured">Translation is on, but no translation service is set up in Preferences > Chat.</string>
+    <string name="translated_mark">=></string>
+    <string name="radio_label">Radio</string>
+    <string name="radio_listening">Also listening to the parcel's internet radio while nobody is speaking.</string>
+    <string name="radio_failed">Could not listen to the radio (see the log). Needs Windows 10 version 2004 or later.</string>
+    <string name="no_model">The recognition model (490 MB) is not here yet. Get it with the button, or put it where shown below.</string>
+    <string name="model_place">To put the model in by hand, place the file here: [PATH]</string>
+    <string name="download_label">Get the model</string>
+    <string name="cancel_label">Cancel</string>
+    <string name="downloading">Downloading the model... [PERCENT]%</string>
+    <string name="verifying">Checking the downloaded model...</string>
+    <string name="download_cancelled">The download was cancelled.</string>
+    <string name="download_cannot_start">Could not start the download (see the log).</string>
+    <string name="download_failed">The download failed (see the log). Try again with the button.</string>
+    <string name="translate_local_unsupported">Translating on this PC covers English into Japanese, Chinese, Spanish, French, German, Russian, Italian and Portuguese, and Japanese into English; other sentences are left as they are.</string>
+    <string name="translate_local_missing">The translation models are not here yet. Get them with the button.</string>
+    <string name="translate_local_no_helper">charis-translate.exe is missing next to the viewer.</string>
+    <string name="translate_local_failed">The translator on this PC could not be started (see the log).</string>
+    <string name="translate_fetch_label">Get translation models</string>
+    <string name="translate_fetching">Downloading the translation models... [PERCENT]%</string>
+    <string name="translate_fetch_unpacking">Unpacking the translation models...</string>
+    <string name="translate_fetch_done">The translation models are ready.</string>
+    <string name="translate_fetch_not_published">The translation models cannot be fetched yet (no download address).</string>
+    <string name="translate">Translate</string>
+    <string name="radio">Also write out the parcel's internet radio (when nobody is speaking)</string>
+    <string name="threads">Threads</string>
+    <string name="threads_label_w">50</string>
+    <string name="threads_w">110</string>
+    <string name="tip_download">Downloads the recognition model (about 490 MB) from Hugging Face. Press again to cancel.</string>
+    <string name="tip_fetch">Downloads the models that translate into the chosen language on this PC (60 to 240 MB each). Press again to cancel. The sources and licenses of the models:</string>
+    <string name="tip_service">How sentences are translated. Service: the translation service set in Preferences &gt; Chat (the text goes to it). This PC: with models fetched here (English into Japanese, Chinese, Spanish, French, German, Russian, Italian, Portuguese; Japanese into English); nothing is sent anywhere.</string>
+    <string name="tip_to">The language sentences are translated into. The first one: the language the chat translation uses (Preferences &gt; Chat).</string>
+    <string name="tip_dialect">Translations into Japanese can be written in a dialect (a game; only the translated text changes, never what was spoken).</string>
+    <string name="tip_radio">Listens to the sound of the stream player only, so nothing else is mixed in. It does not connect to the station a second time. Sentences are cut by loudness, and music can give wrong text. Windows 10 version 2004 or later.</string>
+    <string name="tip_threads">How many processor threads recognition uses. More is quicker; fewer is lighter. Applies when this window is opened again.</string>
+    <string name="tip_language">The language spoken. Auto finds it out for each sentence (slower, and less exact). Applies when this window is opened again.</string>
+    <string name="tip_up">More</string>
+    <string name="tip_down">Fewer</string>
+    <string name="opt_service">Translate: service</string>
+    <string name="opt_local">Translate: this PC</string>
+    <string name="to_chat">Into: as chat</string>
+    <string name="lang_auto">Language: Auto</string>
+    <string name="dialect_standard">Dialect: standard</string>
+    <string name="dialect_kansai">Kansai</string>
+    <string name="dialect_hakata">Hakata</string>
+    <string name="dialect_tohoku">Tohoku</string>
+    <string name="lang_ja">Japanese</string>
+    <string name="lang_en">English</string>
+    <string name="lang_zh">Chinese</string>
+    <string name="lang_ko">Korean</string>
+    <string name="lang_es">Spanish</string>
+    <string name="lang_fr">French</string>
+    <string name="lang_de">German</string>
+    <string name="lang_pt">Portuguese</string>
+    <string name="lang_ru">Russian</string>
+    <string name="lang_it">Italian</string>
+    <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
+    <string name="rml_failed">The page could not be loaded (the log says why). Turning off the setting PlusRmlUiWindows and restarting brings back the old window.</string>
+    <plus_rml_view
+     name="body"
+     document="subtitle.rml"
+     follows="all"
+     layout="topleft"
+     left="0"
+     top="18"
+     width="480"
+     height="290" />
+</floater>

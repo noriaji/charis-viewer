@@ -49,7 +49,6 @@
 #include "llvkpass.h"
 #include "llvkpassstate.h"
 #include "llvkrecorder.h"
-#include "llvkresource.h"
 #include "llvkswapchain.h"
 #include "llvktracker.h"
 #include "llvkwindows.h"
@@ -333,6 +332,11 @@ namespace
         if (m.other_windows > 0.0 || m.other_presents > 0.0)
         {
             out << ", detached windows " << m.other_windows / n << " (presents " << m.other_presents / n << ")";
+        }
+        if (m.lane_submits)
+        {
+            // research/393 (LLRHI_SUBMIT_LANE): "submit" above is the hand-over then.
+            out << ", submit lane: its vkQueueSubmit " << m.lane_submit_call / m.lane_submits << " ms each (" << m.lane_submits << " submits)";
         }
         if (m.main_presents || m.main_present_wait > 0.0)
         {
@@ -883,12 +887,22 @@ namespace
     // back; only a new device would, which is not made here.
     void exit_if_lost()
     {
-        const bool device_lost = LLVKDevice::instance().isLost();
-        const VkResult stuck = LLVKMirror::instance().stuckSubmitResult();
-        if (!device_lost && stuck == VK_SUCCESS && !sSwapchain.surfaceLost())
+        if (!LLVKDevice::instance().isLost() && LLVKMirror::instance().stuckSubmitResult() == VK_SUCCESS && !sSwapchain.surfaceLost())
         {
             return;
         }
+        // research/393: a submit that failed on the present thread (LLRHI_SUBMIT_LANE) only marked the
+        // device; its fault report is made by waitMainPresent, here before the message below. Under the
+        // tracker lock, as the report reads what the texture threads change under it (not held here, and
+        // the present thread never takes it).
+        {
+            std::lock_guard<LLVKTrackerMutex> lock(LLVKTracker::lock());
+            LLVKMirror::instance().drainLane();
+        }
+        // Read again: the lane marks the device (noteDeviceLost) before it sets the failed submit
+        // (submitFailed), so what was read above may be one step behind.
+        const bool device_lost = LLVKDevice::instance().isLost();
+        const VkResult stuck = LLVKMirror::instance().stuckSubmitResult();
         // The GPU fault report (LLVKDevice::reportDeviceLost) came with the
         // fence wait or submission that saw the loss.
         if (device_lost)
@@ -1083,7 +1097,6 @@ void LLRHIVKMirror::install(bool validation)
     LLVKOcclusion::install();   // research/137 N8: occlusion boxes in one batch
     LLVKPass::install();        // research/137 N12: full-screen passes as units
     LLVKPassState::install();   // research/204: the world passes' declared states
-    LLVKResource::install();    // research/137 N14: resources by handle (LLRHI_NATIVE_RESOURCES)
     // fix-threads4: the draw list guard wraps its hooks now, once every hook
     // is set and before other threads call them.
     LLRHI::DrawList::installGuard();
@@ -1133,6 +1146,8 @@ void LLRHIVKMirror::onGLShutdown()
     // fix-threads4: the other windows' present thread ends too (detached;
     // the mirror's mutex and queue are statics destroyed at exit).
     LLVKMirror::instance().stopPresentThread();
+    // research/393: the last frame's lane submit (finished by the thread before it stopped) is reported here.
+    LLVKMirror::instance().waitMainPresent();
     step_done("present thread stopped");
     if (LLVKDevice::instance().isReady())
     {
@@ -1141,6 +1156,19 @@ void LLRHIVKMirror::onGLShutdown()
     }
     // The device, the main window's swapchain and the tables are not destroyed
     // at exit (llvkdevice.cpp, LLVKDevice::shutdown): the process exit frees them.
+}
+
+void LLRHIVKMirror::onFastExit()
+{
+    // research/276: nothing is joined or destroyed (the process ends right after). The main loop has
+    // drawn no world since the window was hidden (display() takes its not-visible branch), so the render
+    // thread and the recording worker have no job. Only what reaches the disk is done: a capture still open, the pipeline keys, the cache.
+    LLRHIReplayCapture::shutdown();
+    LLVKGL::savePrewarmKeys();
+    if (LLVKDevice::instance().isReady())
+    {
+        LLVKDevice::instance().savePipelineCache(2000);
+    }
 }
 
 void LLRHIVKMirror::onFrameNotShown()
@@ -1256,6 +1284,10 @@ void LLRHIVKMirror::install(bool)
 }
 
 void LLRHIVKMirror::onGLShutdown()
+{
+}
+
+void LLRHIVKMirror::onFastExit()
 {
 }
 

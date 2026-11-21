@@ -2508,6 +2508,13 @@ std::string LLFolderBridge::getLabelSuffix() const
         }
     }
 
+    // <plus> protected folders: "(Protected)" after the name (as Firestorm does; plus/protectedfolders)
+    if (plus::protectedfolders::isProtected(getUUID()))
+    {
+        suffix = " " + LLTrans::getString("PlusProtectedFolderSuffix") + suffix;
+    }
+    // </plus>
+
     return LLInvFVBridge::getLabelSuffix() + suffix;
 }
 

@@ -49,6 +49,18 @@ const S32 LEFT_PAD = BORDER_PAD + TITLE_HPAD + LEADING_PAD;
 
 S32 LLDragHandle::sSnapMargin = 5;
 
+// <plus> plus/floatersnap (research/387): windows that touch move together; set by the plus code
+// A title bar is pressed (mask: the keys then), and let go
+void (*gPlusDragBegin)(LLDragHandle* handle, MASK mask) = nullptr;
+void (*gPlusDragEnd)(LLDragHandle* handle) = nullptr;
+// A step of a drag: where the dragged floater (at its new place for a moment) snaps, instead of the official
+// snap; true when it did (new_rect and snap_view set)
+bool (*gPlusDragSnap)(LLDragHandle* handle, LLFloater* floater, const LLRect& original_rect, const LLCoordGL& mouse_dir,
+                      S32 margin, LLRect& new_rect, LLView*& snap_view) = nullptr;
+// After the dragged floater was moved to requested_rect (from original_rect)
+void (*gPlusDragMoved)(LLDragHandle* handle, LLFloater* floater, const LLRect& original_rect, const LLRect& requested_rect) = nullptr;
+// </plus>
+
 LLDragHandle::LLDragHandle(const LLDragHandle::Params& p)
 :   LLView(p),
     mDragLastScreenX( 0 ),
@@ -281,6 +293,13 @@ bool LLDragHandle::handleMouseDown(S32 x, S32 y, MASK mask)
     mLastMouseScreenX = mDragLastScreenX;
     mLastMouseScreenY = mDragLastScreenY;
 
+    // <plus> plus/floatersnap (research/387)
+    if (gPlusDragBegin)
+    {
+        gPlusDragBegin(this, mask);
+    }
+    // </plus>
+
     // Note: don't pass on to children
     return true;
 }
@@ -293,6 +312,13 @@ bool LLDragHandle::handleMouseUp(S32 x, S32 y, MASK mask)
         // Release the mouse
         gFocusMgr.setMouseCapture( NULL );
     }
+
+    // <plus> plus/floatersnap (research/387)
+    if (gPlusDragEnd)
+    {
+        gPlusDragEnd(this);
+    }
+    // </plus>
 
     // Note: don't pass on to children
     return true;
@@ -351,7 +377,13 @@ bool LLDragHandle::handleHover(S32 x, S32 y, MASK mask)
         mLastMouseScreenX = screen_x;
         mLastMouseScreenY = screen_y;
 
-        LLView* snap_view = getParent()->findSnapRect(new_rect, mouse_dir, SNAP_PARENT_AND_SIBLINGS, sSnapMargin);
+        // <plus> plus/floatersnap (research/387): the snap of the windows that go together, the near ones only, the gap
+        LLView* snap_view = NULL;
+        if (!(parent && gPlusDragSnap && gPlusDragSnap(this, parent, original_rect, mouse_dir, sSnapMargin, new_rect, snap_view)))
+        {
+            snap_view = getParent()->findSnapRect(new_rect, mouse_dir, SNAP_PARENT_AND_SIBLINGS, sSnapMargin);
+        }
+        // </plus>
 
         getParent()->setSnappedTo(snap_view);
         delta_x = new_rect.mLeft - pre_snap_x;
@@ -361,6 +393,12 @@ bool LLDragHandle::handleHover(S32 x, S32 y, MASK mask)
         // restore original rect so delta are detected, then call user reshape method to handle snapped floaters, etc
         getParent()->setRect(original_rect);
         getParent()->setShape(translated_rect, true);
+        // <plus> plus/floatersnap (research/387): the windows that go with it
+        if (parent && gPlusDragMoved)
+        {
+            gPlusDragMoved(this, parent, original_rect, translated_rect);
+        }
+        // </plus>
 
         mDragLastScreenX += delta_x;
         mDragLastScreenY += delta_y;

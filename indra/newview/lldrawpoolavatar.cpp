@@ -55,6 +55,7 @@
 #include "llviewertexturelist.h"
 // <plus>
 #include "plus/skinsss/skinsss.h"
+#include "plus/avatarfilter/avatarfilter.h"
 // </plus>
 
 static U32 sShaderLevel = 0;
@@ -372,14 +373,12 @@ void LLDrawPoolAvatar::renderShadow(S32 pass)
         return;
     }
 
-    static LLCachedControl<bool> friends_only(gSavedSettings, "RenderAvatarFriendsOnly", false);
-    if (friends_only()
-        && !avatarp->isControlAvatar()
-        && !avatarp->isSelf()
-        && !avatarp->isBuddy())
+    // <plus> avatarfilter: friends only / hide others (one shared test)
+    if (plus::isHiddenByAvatarFilter(avatarp))
     {
         return;
     }
+    // </plus>
 
     LLVOAvatar::AvatarOverallAppearance oa = avatarp->getOverallAppearance();
     bool impostor = !LLPipeline::sImpostorRender && avatarp->isImpostor();
@@ -778,16 +777,12 @@ void LLDrawPoolAvatar::renderAvatars(LLVOAvatar* single_avatar, S32 pass)
         return;
     }
 
-    static LLCachedControl<bool> friends_only(gSavedSettings, "RenderAvatarFriendsOnly", false);
-    if (!single_avatar
-        && friends_only()
-        && !avatarp->isUIAvatar()
-        && !avatarp->isControlAvatar()
-        && !avatarp->isSelf()
-        && !avatarp->isBuddy())
+    // <plus> avatarfilter: friends only / hide others (one shared test)
+    if (!single_avatar && plus::isHiddenByAvatarFilter(avatarp))
     {
         return;
     }
+    // </plus>
 
     bool impostor = !LLPipeline::sImpostorRender && avatarp->isImpostor() && !single_avatar;
 

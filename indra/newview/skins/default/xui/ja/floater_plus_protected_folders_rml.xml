@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<floater name="plus_protected_folders" title="保護したフォルダ">
+  <string name="unknown_folder">（不明なフォルダ）</string>
+  <string name="filter_hint">名前で絞り込む</string>
+  <string name="tip_remove">選んだフォルダを一覧から外します（外すと、削除も移動もできるようになります）</string>
+  <string name="folder">フォルダ</string>
+  <string name="rml_unavailable">セーフモードでは RmlUi を使いません。</string>
+  <string name="rml_failed">ページを読み込めませんでした（理由はログにあります）。設定 PlusRmlUiWindows をオフにして再起動すると、今までの窓になります。</string>
+</floater>

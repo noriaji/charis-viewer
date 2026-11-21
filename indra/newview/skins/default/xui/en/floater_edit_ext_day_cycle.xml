@@ -557,6 +557,8 @@
                         width="700"
                         min_height="0"
                         visible="true">
+                    <!-- plus skyweather-ui: tab_width 140 -> 128 (five tabs fit the width) -->
+                    <!-- /plus -->
                     <tab_container
                             follows="all"
                             halign="left"
@@ -566,7 +568,7 @@
                             left="0"
                             name="sky_tabs"
                             tab_position="top"
-                            tab_width="140"
+                            tab_width="128"
                             tab_padding_right="3"
                             top_pad="0"
                             width="700">
@@ -597,6 +599,17 @@
                                 left_delta="0"
                                 top_pad="5"
                                 name="moon_panel" />
+                        <!-- plus skyweather-ui: the weather tab (research/371) -->
+                        <panel
+                                border="true"
+                                class="panel_settings_weather"
+                                filename="panel_settings_sky_weather.xml"
+                                label="Weather"
+                                layout="topleft"
+                                left_delta="0"
+                                top_pad="5"
+                                name="weather_panel" />
+                        <!-- /plus -->
                         <!-- added programatically so it doesn't show up whether we want it or not
                         <panel
                                 border="true"

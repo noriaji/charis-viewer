@@ -1,10 +1,9 @@
 /**
- * @file llvktranslate.h
- * @brief What is left of the retired translation thread: its two questions, always "no".
+ * @file grouptitlesrml.h
+ * @brief The RmlUi version of the group titles window (research/386).
  *
  * $LicenseInfo:firstyear=2026&license=viewerlgpl$
- * Charis Viewer Source Code
- * Copyright (C) 2026, Charis Viewer contributors
+ * Second Life Viewer Source Code
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -22,18 +21,14 @@
  * $/LicenseInfo$
  */
 
-#ifndef LL_LLVKTRANSLATE_H
-#define LL_LLVKTRANSLATE_H
+#ifndef PLUS_GROUPTITLESRML_H
+#define PLUS_GROUPTITLESRML_H
 
-// The translation thread (LLRHI_TRANSLATE_THREAD, research/118) was retired
-// in stage 7 (research/207 T1, 2026-10-27): every call into the backend runs
-// on the thread that makes it. Two files of the retained scene
-// (llvkscene.cpp, llvkgl_scene.cpp) still ask; they are left alone until
-// their stage 7.2 work, and then this header goes.
-namespace LLVKTranslate
+namespace plus::grouptitles
 {
-    constexpr int wanted() { return 0; }
-    constexpr bool redirect() { return false; }
+    // Registers the RmlUi version of the window (floater_plus_group_titles_rml.xml) under floater_name.
+    // grouptitlesfloater.cpp chooses it or the frozen XUI version when the feature starts.
+    void addRmlFloater(const char* floater_name);
 }
 
-#endif // LL_LLVKTRANSLATE_H
+#endif // PLUS_GROUPTITLESRML_H

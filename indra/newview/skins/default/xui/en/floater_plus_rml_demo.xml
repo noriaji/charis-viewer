@@ -8,7 +8,7 @@
   can_close="true"
   can_minimize="true"
   can_resize="true"
-  height="560"
+  height="780"
   layout="topleft"
   legacy_header_height="18"
   min_height="320"
@@ -20,7 +20,7 @@
   width="420">
   <string name="heading">RmlUi test window</string>
   <string name="button_count">Count</string>
-  <string name="tip_count">Adds one to the number beside the button.</string>
+  <string name="tip_count">Adds one to the number beside the button. Right click for the window's own menu.</string>
   <string name="check_option">An option</string>
   <string name="tip_option">A check box bound to the data model (it changes nothing).</string>
   <string name="slider_label">Amount</string>
@@ -31,6 +31,16 @@
   <string name="tip_colour">Sets the accent colour's CSS variable from the viewer, and back.</string>
   <string name="button_size">Switch Text Size</string>
   <string name="tip_size">Switches the body text's size variable, and back.</string>
+  <string name="parts_label">The host's parts: the log, the search field, the number box and the cut name (research/387).</string>
+  <string name="button_append">Add a log line</string>
+  <string name="tip_append">Adds a line to the read-only log below (it follows its end).</string>
+  <string name="tip_log">Read-only text: select it, copy it (Ctrl+C or the right click menu); keys do not change it; the arrows and Page Up / Down scroll it.</string>
+  <string name="log_line">Log line [N]</string>
+  <string name="search_label">Search</string>
+  <string name="tip_search">Selects all when it gets the focus (click, Tab).</string>
+  <string name="spin_label">Number</string>
+  <string name="tip_spin">0 to 200 in steps of 5. The arrows (hold them), the wheel, Up / Down, Esc, and 10*3 + Enter work.</string>
+  <string name="long_name">A very long name that does not fit in the narrow box: the tool tip shows all of it</string>
   <string name="list_label">1000 rows: only the visible ones are made.</string>
   <string name="list_item">Row [N]</string>
   <string name="rml_unavailable">RmlUi is not used in safe mode.</string>
@@ -43,5 +53,5 @@
     left="0"
     top="18"
     width="420"
-    height="542" />
+    height="762" />
 </floater>

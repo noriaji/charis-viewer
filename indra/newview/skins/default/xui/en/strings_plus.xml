@@ -5,6 +5,10 @@
   these by name, as they do strings.xml.
 -->
 <strings>
+  <!-- floatersnap: the drop-down item of a snap distance or gap that is not one of the listed values (Preferences > Charis > General) -->
+  <string name="PlusFloaterSnapCustom">Custom ([VALUE])</string>
+  <!-- floatersnap: the line over a window dragged together with the windows touching it -->
+  <string name="PlusFloaterSnapHint">Hold Shift as you grab the title bar to move only this window</string>
   <!-- quickprefs: the toolbar button (app_settings/commands_plus.xml) -->
   <string name="Command_PlusQuickprefs_Label">Quick prefs</string>
   <string name="Command_PlusQuickprefs_Tooltip">Quick preferences for changing often used settings</string>
@@ -69,6 +73,8 @@
   <string name="PlusRadarRegionEnterDistance">entered the region ([DISTANCE] m).</string>
   <string name="PlusRadarRegionLeave">left the region.</string>
   <!-- protectedfolders: shown when a protected folder is refused a delete or move (plus/protectedfolders) -->
+  <!-- protectedfolders: after the name of a protected folder in the inventory -->
+  <string name="PlusProtectedFolderSuffix">(Protected)</string>
   <string name="PlusProtectedFolderMoveRefused">The folder "[NAME]" is protected, so it was not moved or deleted. Unprotect it first (right-click it, or Charis > Protected Folders).</string>
   <string name="PlusProtectedFolderTrashRefused">The folder "[NAME]" holds the protected folder "[INSIDE]", so it was not moved to the Trash. Move "[INSIDE]" out of it or unprotect it first.</string>
   <string name="PlusProtectedFolderRemoveRefused">The folder "[NAME]" holds the protected folder "[INSIDE]", so it was not deleted or emptied. Move "[INSIDE]" out of it or unprotect it first.</string>
@@ -245,4 +251,6 @@
   <string name="PlusPoseConsentBlockListFull">[NAME] was not blocked: the list of people blocked from asking to pose you is full ([COUNT]). Their request was refused. Unblock everyone in Preferences &gt; Privacy to make room.</string>
   <!-- research/343: the value text of the distance slider (Preferences > Graphics) -->
   <string name="plus_full_distance_off">Off</string>
+  <!-- research/388: the last row of the list of a drop-down with more options than it shows (RmlUi windows) -->
+  <string name="PlusRmlSelectMore">...and [COUNT] more</string>
 </strings>

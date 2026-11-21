@@ -60,6 +60,7 @@ public:
     static const VkFormat DEPTH_FORMAT = VK_FORMAT_D32_SFLOAT_S8_UINT;
     // CPU records frame N while the GPU still runs frame N-1.
     static const U32 FRAMES_IN_FLIGHT = 2;
+    static_assert(FRAMES_IN_FLIGHT >= 2, "research/393: the submit lane holds one frame while the next slot is begun");
 
     // Colour attachments a target may have at once: the G-buffer's four and its
     // motion vectors (research/373 tu-motion-v1; was 4). The GL translation's
@@ -142,9 +143,20 @@ public:
     // other windows'), so the frame's thread does not sit in vkQueuePresentKHR.
     // Until it has returned nothing may touch that swapchain: the thread that
     // presents calls waitMainPresent before it does (endFrame does too, before
-    // its acquire). Its own thread only.
-    bool mainPresentQueued() const { return mMainPresentQueued; }
+    // its acquire). The frame's thread, or one that holds the tracker lock for
+    // it (relaxed: they never run together).
+    bool mainPresentQueued() const { return mMainPresentQueued.load(std::memory_order_relaxed); }
     void waitMainPresent();
+    // research/393 (LLRHI::sSubmitLane, off unless LLRHI_SUBMIT_LANE): with the
+    // present thread, the end of frame's vkQueueSubmit goes there too (then the
+    // present, in that order). Returns once it has submitted and presented what
+    // it was handed; every other submission waits for that first, so the queue
+    // takes them in the order they were made. A bool test when nothing is
+    // handed over. The frame's thread, or a thread that holds the tracker lock
+    // while the frame's thread does not (immediate, waitAll): they never run together.
+    // It may make the GPU fault report (reportResult, from the lane's results), so
+    // a caller outside the frame's own work (exit_if_lost) takes the tracker lock first.
+    void drainLane();
     bool isRecording() const { return mRecording; }
     // Submits what the frame recorded so far and waits until the GPU has done
     // it; recording then goes on in the same frame (the command buffers start
@@ -335,6 +347,9 @@ public:
         U32 main_presents = 0;      // presented there (the period's)
         F64 main_present_call = 0.0;    // its vkQueuePresentKHR (on that thread)
         F64 main_present_wait = 0.0;    // waitMainPresent: the next frame waiting for it
+        // research/393 (LLRHI_SUBMIT_LANE): the end of frame's submit on the present thread.
+        U32 lane_submits = 0;           // submitted there (the period's)
+        F64 lane_submit_call = 0.0;     // its vkQueueSubmit (on that thread)
         F64 fence_wait = 0.0;       // beginFrame: the slot's last frame on the GPU
         F64 deferred = 0.0;         // deferred destruction
         F64 reset = 0.0;            // query results read, descriptor pools reset
@@ -454,9 +469,47 @@ private:
     std::condition_variable mPresentWake;   // work, or stop
     std::condition_variable mPresentDone;   // the queue is empty and nothing is being presented
     std::vector<ExtraWindow> mPresentQueue;
+    // research/393: a frame whose commands are closed, handed to the present
+    // thread to submit (what endFrame would pass to vkQueueSubmit, by value: no
+    // allocation, and nothing it reads is the next frame's). Only frames that
+    // go to the main window alone (no other windows, no capture).
+    struct ClosedFrame
+    {
+        VkCommandBuffer buffers[2] = {};
+        VkFence fence = VK_NULL_HANDLE;
+        VkSemaphore wait = VK_NULL_HANDLE;      // the image's acquire semaphore
+        VkSemaphore signal = VK_NULL_HANDLE;    // its render-done semaphore
+        LLVKSwapchain* swapchain = nullptr;
+        U32 image_index = 0;
+        U32 slot = 0;
+    };
+    ClosedFrame mLaneFrames[FRAMES_IN_FLIGHT];  // oldest first (mPresentMutex)
+    U32 mLaneCount = 0;                         // (mPresentMutex)
+    std::atomic<bool> mLaneQueued{ false };     // drainLane has not been called since the last hand-over (relaxed; see drainLane for who calls)
+    U32 mLaneSlot = 0;                          // the slot of the frame handed over last (valid while mLaneQueued)
+    // The lane's submits (under mPresentMutex), taken into mCost by waitMainPresent.
+    U32 mLaneSubmits = 0;
+    F64 mLaneSubmitMs = 0.0;
+    // Nothing queued and nothing in the present thread's hands (mPresentMutex held).
+    bool presentIdle() const { return mPresentQueue.empty() && mLaneCount == 0 && !mPresenting; }
+    // Starts the present thread if it is not running (mPresentMutex held).
+    void ensurePresentThread();
+    // The lane's work for one frame: submits it, presents it, or drops it as
+    // a failed one (on the present thread).
+    // The first failed submit's and the first failed empty submission's VkResult
+    // go to the two out parameters (reported later by the frame's thread:
+    // reportResult makes the GPU fault report, which a present thread must not).
+    void submitClosedFrame(const ClosedFrame& frame, U32& presents, F64& present_ms, F64& submit_ms,
+                           VkResult& submit_result, VkResult& abandon_result);
+    // An empty submission waits for the semaphores and signals the fence in the
+    // failed frame's place (abandonFrame's part that is the same on both threads).
+    // Returns its VkResult, which the caller reports.
+    VkResult abandonSubmit(const VkSemaphore* waits, U32 count, VkFence fence, U32 slot);
+    VkResult mLaneSubmitResult = VK_SUCCESS;    // (mPresentMutex) the lane's first failed submit, until waitMainPresent reports it
+    VkResult mLaneAbandonResult = VK_SUCCESS;   // (mPresentMutex) the same for the empty submission
     bool mPresenting = false;
     bool mPresentStop = false;
-    bool mMainPresentQueued = false;    // mainPresentQueued (the frame's thread only)
+    std::atomic<bool> mMainPresentQueued{ false };  // mainPresentQueued (relaxed: the frame's thread, or one holding the tracker lock for it)
     bool mPresentThreadStopped = false; // stopPresentThread was called: the main window's presents stay on the frame's thread
     // The present thread's count and time of main window presents (under
     // mPresentMutex), taken into mCost by waitMainPresent.

@@ -29,6 +29,8 @@
 
 #include "lldir.h"
 #include "llfile.h"
+#include "llevents.h"
+#include "llthread.h"
 #include "llstring.h"
 
 #include <atomic>
@@ -358,5 +360,25 @@ namespace plus
         ModelDownload::FailureKind ModelDownload::failureKind() const { return FailureKind::None; }
 
 #endif
+
+        ModelDownload& sharedModelDownload()
+        {
+            // Never destroyed: its curl is tied to the viewer. At LLApp's "quitting" (main thread) it is cancelled, so no
+            // partial file stays and no worker runs into the end.
+            static ModelDownload* const sDownload = []
+            {
+                ModelDownload* download = new ModelDownload;
+                LLEventPumps::instance().obtain("LLApp").listen("PlusModelDownload", [download](const LLSD& event)
+                {
+                    if (event["status"].asString() == "quitting" && on_main_thread())
+                    {
+                        download->cancel();
+                    }
+                    return false;
+                });
+                return download;
+            }();
+            return *sDownload;
+        }
     }
 }

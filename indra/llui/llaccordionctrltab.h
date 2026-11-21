@@ -130,6 +130,18 @@ public:
 
     void setCollapsible(bool collapsible) { mCollapsible = collapsible; };
     void changeOpenClose(bool is_open);
+    // <plus> outfit-hierarchy
+    // Header-only row (Charis): never opens a body, the arrow follows mHeaderOnlyOpen.
+    // Used for the folder rows of the hierarchical outfit list.
+    void setHeaderOnly(bool value) { mHeaderOnly = value; }
+    bool getHeaderOnlyOpen() const { return mHeaderOnlyOpen; }
+    void setHeaderOnlyOpen(bool open) { mHeaderOnlyOpen = open; }
+    bool getArrowOpen() const { return mHeaderOnly ? mHeaderOnlyOpen : mDisplayChildren; }
+    // Left indent in pixels of the arrow and the title (nesting level)
+    void setHeaderIndent(S32 pixels);
+    // Icon drawn between the arrow and the title (null: none)
+    void setHeaderIcon(LLUIImage* icon);
+    // </plus>
 
     void canOpenClose(bool can_open_close) { mCanOpenClose = can_open_close; };
     bool canOpenClose() const { return mCanOpenClose; };
@@ -229,6 +241,10 @@ private:
     bool mHeaderVisible;
 
     bool mCanOpenClose;
+    // <plus> outfit-hierarchy
+    bool mHeaderOnly = false;
+    bool mHeaderOnlyOpen = false;
+    // </plus>
     bool mFitPanel;
 
     S32 mPaddingLeft;

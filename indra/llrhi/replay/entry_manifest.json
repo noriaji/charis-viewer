@@ -144,7 +144,7 @@
     "glVertexAttribIPointer",
     "glVertexAttribPointer"
   ],
-  "hash": "07ac529af0272ebbeff1f991fef0d4efb150d66184d67ea846cdefb233e4244d",
+  "hash": "55022ead0871f0a650f469381bce3878bae0dd51d489f8c12ef3b2f272b5a32f",
   "hooks": {
     "sActiveTexture": {
       "direction": "forward",
@@ -206,20 +206,10 @@
       "flag": null,
       "header": "llrhi.h"
     },
-    "sBufferHandle": {
-      "direction": "forward",
-      "flag": "pointer_return",
-      "header": "llrhiresource.h"
-    },
     "sBufferSubData": {
       "direction": "forward",
       "flag": null,
       "header": "llrhi.h"
-    },
-    "sBufferWriteRanges": {
-      "direction": "forward",
-      "flag": null,
-      "header": "llrhiresource.h"
     },
     "sCPUMark": {
       "direction": "forward",
