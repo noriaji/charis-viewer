@@ -1,10 +1,10 @@
 {
   "version": "0.1.0",
   "stage": "alpha",
-  "stage_number": 4,
-  "build": 4227,
+  "stage_number": 5,
+  "build": 4401,
   "download_url": "https://github.com/noriaji/charis-viewer/releases/latest",
-  "notes_url": "https://github.com/noriaji/charis-viewer/releases/tag/v0.1.0-alpha4",
-  "message_ja": "0.1.0 alpha 4 が公開されました。",
-  "message_en": "0.1.0 alpha 4 is out."
+  "notes_url": "https://github.com/noriaji/charis-viewer/releases/tag/v0.1.0-alpha5",
+  "message_ja": "0.1.0 alpha 5 が公開されました。",
+  "message_en": "0.1.0 alpha 5 is out."
 }
